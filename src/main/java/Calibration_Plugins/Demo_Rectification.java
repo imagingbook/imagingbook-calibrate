@@ -39,6 +39,7 @@ public class Demo_Rectification implements PlugIn {
 	public void run(String arg0) {
 		// open the test image (stack):
 		String path = ZhangData.getResourcePath(TestImgName);
+		IJ.log("opening path = " + path);
 		ImagePlus distIm = new Opener().openImage(path);
 		if (distIm == null) {
 			IJ.error("Could not open calibration images!");
