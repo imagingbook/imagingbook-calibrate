@@ -100,18 +100,16 @@ public class Camera {
 	}
 	
 	/**
-	 * Projects the given 3D point onto the image plane of this camera
+	 * Projects the given 3D point onto the sensor plane of this camera
 	 * for the provided extrinsic view parameters.
+	 * 
 	 * @param view The extrinsic camera (view) parameters.
 	 * @param XYZw A point in 3D world coordinates.
-	 * @return The continuous 2D image coordinates of the projected point.
+	 * @return the 2D sensor coordinates of the projected point.
 	 */
 	public double[] project(ViewTransform view, double[] XYZw) {
-		// does the radial distortion on the "ideal" projection (f = 1)
-		// BEFORE applying the intrinsic camera transformation
-		// this is the correct version!
-		
-		double[] xy = mapToIdealImage(view, XYZw);
+		// map to the normalized projection plane (f = 1)
+		double[] xy = mapToNormalizedProjection(view, XYZw);
 		
 		// apply radial lens distortion to the normalized projection
 		double[] xyd = warp(xy);
@@ -123,10 +121,10 @@ public class Camera {
 	
 	public double[] mapToIdealImage(ViewTransform view, Point2D P) {
 		double[] XY0 = new double[] {P.getX(), P.getY(), 0};
-		return mapToIdealImage(view, XY0);
+		return mapToNormalizedProjection(view, XY0);
 	}
 	
-	public double[] mapToIdealImage(ViewTransform view, double[] XYZw) {
+	public double[] mapToNormalizedProjection(ViewTransform view, double[] XYZw) {
 		double[] XYZc = view.applyTo(XYZw);
 		// Compute normalized projection coordinates (f = 1):
 		final double x = XYZc[0] / XYZc[2];
@@ -135,7 +133,7 @@ public class Camera {
 	}
 	
 	// not used in this form, just for symmetry
-	private double fRad(double r) {
+	private double warp(double r) {
 		return r * (1 + D(r));
 	}
 	
@@ -150,17 +148,17 @@ public class Camera {
 	
 	/**
 	 * Inverse radial distortion function. Finds the original
-	 * (undistorted) radius r from the distorted radius rr.
+	 * (undistorted) radius r from the distorted radius R.
 	 * Finds r as the root of the polynomial
-	 * p(r) = - R + r + k1 * r^3 + k_2 * r^5,
+	 * p(r) = - R + r + k0 * r^3 + k1 * r^5,
 	 * where R is constant.
 	 * @param R The distorted radius.
 	 * @return The undistorted radius.
 	 */
-	public double fRadInv(double R) {
-		double k1 = K[0];
-		double k2 = K[1];
-		double[] coefficients = {-R, 1, 0, k1, 0, k2};
+	public double unwarp(double R) {
+		double k0 = K[0];
+		double k1 = K[1];
+		double[] coefficients = {-R, 1, 0, k0, 0, k1};
 		PolynomialFunction p = new PolynomialFunction(coefficients);
 		UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
 		double rInit = R;
@@ -174,23 +172,36 @@ public class Camera {
 	public double[] unwarp(double[] xyd) {
 		final double xd = xyd[0];
 		final double yd = xyd[1];
-		final double rr = Math.sqrt(xd * xd + yd * yd);	// distorted radius
-		final double r = fRadInv(rr);	// undistorted radius
+		final double R = Math.sqrt(xd * xd + yd * yd);	// distorted radius
+		final double r = unwarp(R);	// undistorted radius
 //		System.out.format("undistort: rr=%.4f r=%.4f\n",rr, r);
-		final double s = r / rr;
+		final double s = r / R;
 		return new double[] {s * xd, s * yd};
 	}
 	
-	// radial distortion function: r' = r * (1 + D(r))
+
+	/**
+	 * Radial distortion function, to be applied in the form r' = r * (1 + D(r))
+	 * to points in the normalized projection plane.
+	 * Distortion coefficients k0, k1 are a property of the enclosing {@link Camera}.
+	 * @param r original radius of a point in the normalized projection plane
+	 * @return the pos/neg deviation for the given radius 
+	 */
 	public double D(double r) {
-		final double k1 = (K.length > 0) ? K[0] : 0;
-		final double k2 = (K.length > 1) ? K[1] : 0;
+		final double k0 = (K.length > 0) ? K[0] : 0;
+		final double k1 = (K.length > 1) ? K[1] : 0;
 		final double r2 = r * r;
-		return (k1 + k2 * r2) * r2;		// D(r) = k1 * r^2 + k2 * r^4
+		return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
 	}
 	
 	
-	// xyd is the distorted 2D-point on the ideal projection plane
+	/**
+	 * Maps from the normalized projection plane to sensor coordinates,
+	 * using the camera's intrinsic parameters.
+	 * 
+	 * @param xyd a 2D point on the normalized projection plane
+	 * @return the resulting 2D sensor coordinate
+	 */
 	public double[] mapToSensorPlane(double[] xyd) {
 		final double x = xyd[0];
 		final double y = xyd[1];
@@ -199,18 +210,6 @@ public class Camera {
 		return new double[] {u, v};	
 	}
 	
-	
-	// r in [0,1]
-//	public static double getRadialDistortion(double r, double[] dCoeff) {
-//		double r2 = r * r;
-//		double d = 0;							// TODO: needs fixing!!
-//		double rk = r2;
-//		for (int k = 0; k < dCoeff.length; k++) {
-//			d = d + dCoeff[k] * rk;
-//			rk = rk * r2;
-//		}
-//		return d;
-//	}
 	// -------------------------------------------------------------------
 	
 	public double[] getParameterVector() {
@@ -323,9 +322,9 @@ public class Camera {
 		System.out.format("u=%.4f, u=%.4f\n", uv1[0], uv1[1]);
 		
 		double r = 0.95;
-		double rr = camera1.fRad(r);
+		double rr = camera1.warp(r);
 		System.out.format("radial distortion: r=%.4f -> rr=%.4f\n", r, rr);
-		r = camera1.fRadInv(rr);
+		r = camera1.unwarp(rr);
 		System.out.format("inv. radial distortion: rr=%.4f -> r=%.4f\n", rr, r);
 		
 		System.out.println();
@@ -345,9 +344,9 @@ public class Camera {
 		System.out.format("u=%.4f, u=%.4f\n", uv2[0], uv2[1]);
 		
 		r = 0.95;
-		rr = camera2.fRad(r);
+		rr = camera2.warp(r);
 		System.out.format("radial distortion: r=%.4f -> rr=%.4f\n", r, rr);
-		r = camera2.fRadInv(rr);
+		r = camera2.unwarp(rr);
 		System.out.format("inv. radial distortion: rr=%.4f -> r=%.4f\n", rr, r);
 		
 		System.out.println("\nTesting radial lens distortion:");
@@ -360,8 +359,8 @@ public class Camera {
 		
 		System.out.println("\nTesting only radial lens distortion fun:");
 		double ra = 0.10;
-		double rb = camera2.fRad(ra);
-		double rc = camera2.fRadInv(rb);
+		double rb = camera2.warp(ra);
+		double rc = camera2.unwarp(rb);
 		System.out.format("ra=%.4f, rb=%.4f, rc=%.4f\n", ra, rb, rc);
 	}
 	
