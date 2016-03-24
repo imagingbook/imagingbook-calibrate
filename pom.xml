@@ -1,58 +1,53 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.imagingbook</groupId>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
   <artifactId>imagingbook-calibrate</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
-  
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  </properties>
-  
-   <repositories>
- 	<repository>
-   	<id>imagej.public</id>
-   	<url>http://maven.imagej.net/content/groups/public</url>
-	 </repository>
-   </repositories>
-   
-  <dependencies>
-  	<dependency>
-  		<groupId>net.imagej</groupId>
-  		<artifactId>ij</artifactId>
-  		<version>1.50e</version>
-  	</dependency>
-  	<dependency>
-		<groupId>org.apache.commons</groupId>
-		<artifactId>commons-math3</artifactId>
-		<version>3.5</version>
-	</dependency>
-  	<dependency>
-		<groupId>com.imagingbook</groupId>
-		<artifactId>imagingbook-common</artifactId>
-	</dependency>
-  </dependencies>
-  
-  
-  <build>
-	<pluginManagement>
-	     <plugins>
-	        <plugin>
-	           <groupId>org.apache.maven.plugins</groupId>
-	           <artifactId>maven-compiler-plugin</artifactId>
-	           <version>3.3</version>
-	           <configuration>
-	              <source>1.8</source>
-	              <target>1.8</target>
-	           </configuration>
-	        </plugin>
-	     </plugins>
-	  </pluginManagement>
-	
-	<outputDirectory>${project.basedir}/ImageJ/plugins</outputDirectory>
+	<packaging>jar</packaging>
 
-	<plugins>
+	<parent>
+		<groupId>com.imagingbook</groupId>
+		<artifactId>imagingbook-all</artifactId>
+		<version>1.2-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+  	</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+	</dependency>
+
+		<dependency>
+			<groupId>com.imagingbook</groupId>
+			<artifactId>imagingbook-common</artifactId>
+		</dependency>
+
+	</dependencies>
+
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.3</version>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<outputDirectory>${project.basedir}/ImageJ/plugins</outputDirectory>
+
+		<plugins>
 			<!-- we rename the target jar and place it in another subdir -->
 			<!-- http://stackoverflow.com/questions/6689511/maven-how-to-place-the-output-jar-into-another-folder -->
 			<plugin>
@@ -64,57 +59,58 @@
 					<!-- <finalName>${project.name}_XXX_${project.version}</finalName> -->
 				</configuration>
 			</plugin>
-			
-		<!-- make a local copy of the current ij.jar for development,
-			see https://maven.apache.org/plugins/maven-dependency-plugin/examples/copying-artifacts.html -->
-		<plugin>
-       		<groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-dependency-plugin</artifactId>
-	        <version>2.10</version>
-	        <executions>
-	          <execution>
-	            <id>copy</id>
-	            <phase>package</phase>
-	            <goals>
-	              <goal>copy</goal>
-	            </goals>
-	            <configuration>
-	              <artifactItems>
-	                <artifactItem>
-	                  <groupId>net.imagej</groupId>
-	                  <artifactId>ij</artifactId>
-	                  <!-- <version>1.50e</version> -->
-	                  <overWrite>false</overWrite>
-	                  <outputDirectory>${project.basedir}/ImageJ</outputDirectory>
-	                  <destFileName>ij.jar</destFileName>
-	                </artifactItem>
-	                
-	                 <!-- copy apache-commons-math.jar into ImageJ/jars -->
-	                <artifactItem>
-	                  <groupId>org.apache.commons</groupId>
-					  <artifactId>commons-math3</artifactId>
-	                  <overWrite>false</overWrite>
-	                  <outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
-	                </artifactItem>
-	                
-	                <!-- copy the current imagingbook-common.jar into ImageJ/jars -->
-	                <artifactItem>
-	                  <groupId>com.imagingbook</groupId>
-	                  <artifactId>imagingbook-common</artifactId>
-	                  <overWrite>false</overWrite>
-	                  <outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
-	                </artifactItem>
-	                
-	              </artifactItems>
-	              <!-- <outputDirectory>${project.build.directory}/wars</outputDirectory> -->
-	              <overWriteReleases>false</overWriteReleases>
-	              <overWriteSnapshots>true</overWriteSnapshots>
-	            </configuration>
-	          </execution>
-	        </executions>
-	      </plugin>
-		  <!-- end of copy -->
+
+			<!-- make a local copy of the current ij.jar for development, see https://maven.apache.org/plugins/maven-dependency-plugin/examples/copying-artifacts.html -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.10</version>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+
+								<!-- copy ij.jar into ImageJ/ -->
+								<artifactItem>
+									<groupId>net.imagej</groupId>
+									<artifactId>ij</artifactId>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.basedir}/ImageJ</outputDirectory>
+									<destFileName>ij.jar</destFileName>
+								</artifactItem>
+
+								<!-- copy the current imagingbook-common.jar into ImageJ/jars/ -->
+								<artifactItem>
+									<groupId>com.imagingbook</groupId>
+									<artifactId>imagingbook-common</artifactId>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
+									<destFileName>imagingbook-common.jar</destFileName>
+								</artifactItem>
+
+								<!-- copy apache-commons-math.jar into ImageJ/jars -->
+								<artifactItem>
+									<groupId>org.apache.commons</groupId>
+									<artifactId>commons-math3</artifactId>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
+									<destFileName>commons-math3.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- end of copy -->
 		</plugins>
-  </build>
-  
+	</build>
+
 </project>

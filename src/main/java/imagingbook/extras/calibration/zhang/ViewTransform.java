@@ -6,6 +6,7 @@ import imagingbook.lib.math.Matrix;
 import java.util.Arrays;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -35,7 +36,8 @@ public class ViewTransform {
 	}
 	
 	public ViewTransform(double rX, double rY, double rZ, double tX, double tY, double tZ) {
-		this.rotation = new Rotation(RotationOrder.XYX, rX, rY, rZ);
+		//this.rotation = new Rotation(RotationOrder.XYX, rX, rY, rZ);
+		this.rotation = new Rotation(RotationOrder.XYX, RotationConvention.VECTOR_OPERATOR, rX, rY, rZ);
 		this.translation = new double[] {tX, tY, tZ};
 	}
 	
@@ -75,7 +77,9 @@ public class ViewTransform {
 	private Rotation makeRotation(double[] w) {
 		Vector3D axis = new Vector3D(w[0], w[1], w[2]);
 		double angle = axis.getNorm();
-		return new Rotation(axis, angle);
+		//return new Rotation(axis, angle);
+		return new Rotation(axis, angle, RotationConvention.VECTOR_OPERATOR);
+		 
 	}
 		
 	protected int getParameterLength() {
@@ -83,7 +87,8 @@ public class ViewTransform {
 	}
 	
 	protected double[] getParameters() {
-		double[] rotAxis = rotation.getAxis().toArray();
+		//double[] rotAxis = rotation.getAxis().toArray();
+		double[] rotAxis = rotation.getAxis(RotationConvention.VECTOR_OPERATOR).toArray();
 		double rotAngle = rotation.getAngle();
 		return new double[] {
 			rotAxis[0] * rotAngle,
@@ -96,8 +101,9 @@ public class ViewTransform {
 		return rotation;
 	}
 	
-	public double[] getRotationVector() {
-		double[] rotAxis = rotation.getAxis().toArray();
+	public double[] getRotationAxis() {
+		//double[] rotAxis = rotation.getAxis().toArray();
+		double[] rotAxis = rotation.getAxis(RotationConvention.VECTOR_OPERATOR).toArray();
 		double rotAngle = rotation.getAngle();
 		rotAxis[0] *= rotAngle;
 		rotAxis[1] *= rotAngle;
