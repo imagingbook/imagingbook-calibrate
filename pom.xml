@@ -6,8 +6,8 @@
 
 	<parent>
 		<groupId>com.imagingbook</groupId>
-		<artifactId>imagingbook-all</artifactId>
-		<version>1.2-SNAPSHOT</version>
+		<artifactId>_parent</artifactId>
+		<version>FIXED</version>
 	</parent>
 
 	<dependencies>
