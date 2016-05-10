@@ -31,9 +31,9 @@ public class Camera {
 	private final double[] K;
 		
 	// for the standard Zhang camera
-	public Camera(double alpha, double beta, double gamma, double uc, double vc, double k1, double k2) {
+	public Camera(double alpha, double beta, double gamma, double uc, double vc, double k0, double k1) {
 		this.A = makeA(alpha, beta, gamma, uc, vc);
-		this.K = new double[] {k1, k2};
+		this.K = new double[] {k0, k1};
 	}
 	
 	public Camera (double[] s) {

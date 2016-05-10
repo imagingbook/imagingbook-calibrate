@@ -50,14 +50,14 @@ public abstract class NonlinearOptimizer {
 		this.viewParLength = views[0].getParameters().length;
 
 		LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
-		MultivariateVectorFunction value = makeValueFun();
-		MultivariateMatrixFunction jacobian = makeJacobianFun();
+		MultivariateVectorFunction V = makeValueFun();
+		MultivariateMatrixFunction J = makeJacobianFun();
 
 		RealVector start = makeInitialParameters(initCam, initViews);
 		RealVector observed = makeObservedVector();
 		MultivariateJacobianFunction model = 
-				LeastSquaresFactory.model(value, jacobian);
-		//showJacobian(jacobian, start);
+				LeastSquaresFactory.model(V, J);
+		//showJacobian(J, start);
 
 		Optimum result = lm.optimize(LeastSquaresFactory.create(
 				model,
@@ -73,6 +73,33 @@ public abstract class NonlinearOptimizer {
 
 	abstract MultivariateVectorFunction makeValueFun();
 	abstract MultivariateMatrixFunction makeJacobianFun();
+	
+	
+	/**
+	 * Common value function for both types of optimizers.
+	 *
+	 */
+	protected class ValueFun implements MultivariateVectorFunction {
+		@Override
+		public double[] value(double[] params) {
+			final double[] a = Arrays.copyOfRange(params, 0, camParLength);
+			final Camera cam = new Camera(a);
+			final double[] Y = new double[2 * M * N];
+			int l = 0; 
+			for (int i = 0; i < M; i++) {
+				int m = camParLength + i * viewParLength;
+				double[] w = Arrays.copyOfRange(params, m, m + viewParLength);
+				ViewTransform view = new ViewTransform(w);
+				for (int j = 0; j < N; j++) {
+					double[] uv = cam.project(view, modelPts[j]);
+					Y[l * 2 + 0] = uv[0];
+					Y[l * 2 + 1] = uv[1];
+					l = l + 1;
+				}
+			}
+			return Y;
+		}
+	}	// end of inner class 'ValueFun'
 
 	// ---------------------------------------------------------------------
 

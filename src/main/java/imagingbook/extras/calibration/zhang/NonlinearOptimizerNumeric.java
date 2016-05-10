@@ -75,27 +75,28 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	 * @author Jonathon Hare (jsh2@ecs.soton.ac.uk)
 	 * 
 	 */
-	private class ValueFun implements MultivariateVectorFunction {
-		@Override
-		public double[] value(double[] params) {
-			final double[] a = Arrays.copyOfRange(params, 0, camParLength);
-			final Camera cam = new Camera(a);
-			final double[] Y = new double[2 * M * N];
-			int l = 0; 
-			for (int i = 0; i < M; i++) {
-				int m = camParLength + i * viewParLength;
-				double[] w = Arrays.copyOfRange(params, m, m + viewParLength);
-				ViewTransform view = new ViewTransform(w);
-				for (int j = 0; j < N; j++) {
-					double[] uv = cam.project(view, modelPts[j]);
-					Y[l * 2 + 0] = uv[0];
-					Y[l * 2 + 1] = uv[1];
-					l = l + 1;
-				}
-			}
-			return Y;
-		}
-	}	// end of inner class 'ValueFun'
+	
+//	private class ValueFun implements MultivariateVectorFunction {
+//		@Override
+//		public double[] value(double[] params) {
+//			final double[] a = Arrays.copyOfRange(params, 0, camParLength);
+//			final Camera cam = new Camera(a);
+//			final double[] Y = new double[2 * M * N];
+//			int l = 0; 
+//			for (int i = 0; i < M; i++) {
+//				int m = camParLength + i * viewParLength;
+//				double[] w = Arrays.copyOfRange(params, m, m + viewParLength);
+//				ViewTransform view = new ViewTransform(w);
+//				for (int j = 0; j < N; j++) {
+//					double[] uv = cam.project(view, modelPts[j]);
+//					Y[l * 2 + 0] = uv[0];
+//					Y[l * 2 + 1] = uv[1];
+//					l = l + 1;
+//				}
+//			}
+//			return Y;
+//		}
+//	}	// end of inner class 'ValueFun'
 
 	
 	
