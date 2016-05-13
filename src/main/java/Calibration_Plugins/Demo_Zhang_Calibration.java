@@ -87,7 +87,7 @@ public class Demo_Zhang_Calibration implements PlugIn {
 		
 		Calibrator zcalib = new Calibrator(params, modelPoints);
 		for (int i = 0; i < M; i++) {
-			zcalib.addViewData(obsPoints[i]);
+			zcalib.addView(obsPoints[i]);
 		}
 		
 		Camera camFinal = zcalib.calibrate();

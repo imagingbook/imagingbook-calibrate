@@ -54,7 +54,7 @@ public class Calibrator {
 	}
 	
 	// attach a new observation (set of image points)
-	public void addViewData(Point2D[] pts) {
+	public void addView(Point2D[] pts) {
 		imgPntSet.add(pts);
 	}
 	

@@ -50,7 +50,7 @@ public class Camera {
 	/**
 	 * Create a standard camera. 
 	 * @param A the (min) 2x3 matrix holding the intrinsic camera parameters.
-	 * @param distort radial distortion coefficients k1, k2, ...
+	 * @param distort radial distortion coefficients k0, k1, ...
 	 */
 	public Camera(RealMatrix A, double[] K) {
 		this.K = (K == null) ? new double[0] : K.clone();
