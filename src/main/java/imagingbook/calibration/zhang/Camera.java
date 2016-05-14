@@ -1,6 +1,6 @@
-package imagingbook.extras.calibration.zhang;
+package imagingbook.calibration.zhang;
 
-import imagingbook.extras.calibration.zhang.util.MathUtil;
+import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.lib.math.Matrix;
 
 import java.awt.geom.Point2D;

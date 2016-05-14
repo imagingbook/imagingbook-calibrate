@@ -1,4 +1,4 @@
-package imagingbook.extras.calibration.zhang.util;
+package imagingbook.calibration.zhang.util;
 
 import java.awt.geom.Point2D;
 import java.util.Locale;

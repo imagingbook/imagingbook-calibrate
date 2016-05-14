@@ -8,9 +8,9 @@ import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.io.Opener;
 import ij.plugin.PlugIn;
-import imagingbook.extras.calibration.zhang.Camera;
-import imagingbook.extras.calibration.zhang.ViewTransform;
-import imagingbook.extras.calibration.zhang.testdata.ZhangData;
+import imagingbook.calibration.zhang.Camera;
+import imagingbook.calibration.zhang.ViewTransform;
+import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
 

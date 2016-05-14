@@ -1,12 +1,12 @@
-package imagingbook.extras.calibration.zhang.testdata;
-
-import imagingbook.extras.calibration.zhang.Camera;
-import imagingbook.extras.calibration.zhang.ViewTransform;
+package imagingbook.calibration.zhang.testdata;
 
 import java.awt.geom.Point2D;
 import java.net.URL;
 
 import org.apache.commons.math3.linear.MatrixUtils;
+
+import imagingbook.calibration.zhang.Camera;
+import imagingbook.calibration.zhang.ViewTransform;
 
 
 /**

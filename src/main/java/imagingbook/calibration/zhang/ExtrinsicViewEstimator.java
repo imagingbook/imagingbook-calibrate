@@ -1,10 +1,10 @@
-package imagingbook.extras.calibration.zhang;
-
-import imagingbook.extras.calibration.zhang.util.MathUtil;
+package imagingbook.calibration.zhang;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+
+import imagingbook.calibration.zhang.util.MathUtil;
 
 
 public class ExtrinsicViewEstimator {

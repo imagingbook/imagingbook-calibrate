@@ -1,4 +1,4 @@
-package imagingbook.extras.calibration.zhang.util;
+package imagingbook.calibration.zhang.util;
 
 import ij.process.ImageProcessor;
 

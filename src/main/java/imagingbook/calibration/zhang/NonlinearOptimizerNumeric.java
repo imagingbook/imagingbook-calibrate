@@ -1,4 +1,4 @@
-package imagingbook.extras.calibration.zhang;
+package imagingbook.calibration.zhang;
 
 import java.awt.geom.Point2D;
 import java.util.Arrays;
@@ -30,127 +30,9 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	}
 	
 
-	/**
-	 * This is the implementation of the value function for the optimiser. It
-	 * computes the predicted location of an image point by projecting a model
-	 * point through the camera homography and then applying the distortion. The
-	 * implementation is converted from the C code produced by the following
-	 * matlab symbolic code:
-	 * 
-	 * <pre>
-	 * <code>
-	 * syms u0 v0 fx fy sk real
-	 * syms tx ty tz wx wy wz real
-	 * syms k1 k2 real
-	 * syms X Y real
-	 * 
-	 * % the intrinsic parameter matrix
-	 * K=[fx sk u0; 0 fy v0; 0 0 1];
-	 * 
-	 * % Expression for the rotation matrix based on the Rodrigues formula
-	 * theta=sqrt(wx^2+wy^2+wz^2);
-	 * omega=[0 -wz wy; wz 0 -wx; -wy wx 0];
-	 * R = eye(3) + (sin(theta)/theta)*omega + ((1-cos(theta))/theta^2)*(omega*omega);
-	 * 
-	 * % Expression for the translation vector
-	 * t=[tx;ty;tz];
-	 * 
-	 * % perspective projection of the model point (X,Y)
-	 * uvs=K*[R(:,1) R(:,2) t]*[X; Y; 1];
-	 * u=uvs(1)/uvs(3);
-	 * v=uvs(2)/uvs(3);
-	 * 
-	 * % application of 2-term radial distortion
-	 * uu0 = u - u0;
-	 * vv0 = v - v0;
-	 * x =  uu0/fx;
-	 * y =  vv0/fy;
-	 * r2 = x*x + y*y;
-	 * r4 = r2*r2;
-	 * uv = [u + uu0*(k1*r2 + k2*r4); v + vv0*(k1*r2 + k2*r4)];
-	 * ccode(uv, 'file', 'zhang-value.c')
-	 * </code>
-	 * </pre>
-	 * 
-	 * @author Jonathon Hare (jsh2@ecs.soton.ac.uk)
-	 * 
-	 */
-	
-//	private class ValueFun implements MultivariateVectorFunction {
-//		@Override
-//		public double[] value(double[] params) {
-//			final double[] a = Arrays.copyOfRange(params, 0, camParLength);
-//			final Camera cam = new Camera(a);
-//			final double[] Y = new double[2 * M * N];
-//			int l = 0; 
-//			for (int i = 0; i < M; i++) {
-//				int m = camParLength + i * viewParLength;
-//				double[] w = Arrays.copyOfRange(params, m, m + viewParLength);
-//				ViewTransform view = new ViewTransform(w);
-//				for (int j = 0; j < N; j++) {
-//					double[] uv = cam.project(view, modelPts[j]);
-//					Y[l * 2 + 0] = uv[0];
-//					Y[l * 2 + 1] = uv[1];
-//					l = l + 1;
-//				}
-//			}
-//			return Y;
-//		}
-//	}	// end of inner class 'ValueFun'
-
-	
-	
-	/**
-	 * This is the implementation of the Jacobian function for the optimiser; it
-	 * is the partial derivative of the value function with respect to the
-	 * parameters. The implementation is based on the matlab symbolic code:
-	 * 
-	 * <pre>
-	 * <code>
-	 * syms u0 v0 fx fy sk real
-	 * syms tx ty tz wx wy wz real
-	 * syms k1 k2 real
-	 * syms X Y real
-	 * 
-	 * % the intrinsic parameter matrix
-	 * K=[fx sk u0; 0 fy v0; 0 0 1];
-	 * 
-	 * % Expression for the rotation matrix based on the Rodrigues formula
-	 * theta=sqrt(wx^2+wy^2+wz^2);
-	 * omega=[0 -wz wy; wz 0 -wx; -wy wx 0];
-	 * R = eye(3) + (sin(theta)/theta)*omega + ((1-cos(theta))/theta^2)*(omega*omega);
-	 * 
-	 * % Expression for the translation vector
-	 * t=[tx;ty;tz];
-	 * 
-	 * % perspective projection of the model point (X,Y)
-	 * uvs=K*[R(:,1) R(:,2) t]*[X; Y; 1];
-	 * u=uvs(1)/uvs(3);
-	 * v=uvs(2)/uvs(3);
-	 * 
-	 * % application of 2-term radial distortion
-	 * uu0 = u - u0;
-	 * vv0 = v - v0;
-	 * x =  uu0/fx;
-	 * y =  vv0/fy;
-	 * r2 = x*x + y*y;
-	 * r4 = r2*r2;
-	 * uv = [u + uu0*(k1*r2 + k2*r4); v + vv0*(k1*r2 + k2*r4)];
-	 * J=jacobian(uv,[fx,fy,u0,v0,sk,k1,k2, wx wy wz tx ty tz]); 
-	 * ccode(J, 'file', 'zhang-jacobian.c')
-	 * </code>
-	 * </pre>
-	 * 
-	 * @author Jonathon Hare (jsh2@ecs.soton.ac.uk)
-	 * 
-	 */
 	private class JacobianFun implements MultivariateMatrixFunction {
 		// THIS VERSION only calculates single blocks of the Jacobian!
 	    public double[][] value(double[] params) {
-//			long starttime = System.nanoTime();
-			
-	    	//System.out.println("JacobianFun " + Matrix.toString(params));
-	    	// M = number of views, N = number of target points
 	        double[][] J = new double[2 * M * N][params.length];	// the Jacobian matrix (initialized to zeroes!)
 	        double[] refValues = new double[2 * M * N];	// values obtained with undisturbed parameters 
 	        

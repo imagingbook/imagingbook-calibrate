@@ -1,4 +1,4 @@
-package imagingbook.extras.calibration.zhang;
+package imagingbook.calibration.zhang;
 
 import ij.ImagePlus;
 import ij.process.FloatProcessor;

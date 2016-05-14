@@ -1,6 +1,4 @@
-package imagingbook.extras.calibration.zhang;
-
-import imagingbook.extras.calibration.zhang.util.MathUtil;
+package imagingbook.calibration.zhang;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -8,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.math3.linear.RealMatrix;
 
+import imagingbook.calibration.zhang.util.MathUtil;
 
 
 /**
@@ -19,7 +18,7 @@ import org.apache.commons.math3.linear.RealMatrix;
  * See also http://research.microsoft.com/en-us/um/people/zhang/Calib/ and
  * http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf
  * @author W. Burger
- * @version 2015/05/26
+ * @version 2016/05/14
  *
  */
 public class Calibrator {
@@ -40,10 +39,10 @@ public class Calibrator {
 	private final Point2D[] modelPts;			// the sequence of 2D points in the planar model
 	private final List<Point2D[]> imgPntSet; 	// list of vectors containing observed 2D image points for each view
 	
-	private Point2D[][] obsPoints = null;
+	private Point2D[][] obsPts = null;
 	private final Parameters params;
-	private Camera initialCam, finalCam;
-	private ViewTransform[] initialViews, finalViews;
+	private Camera initCam, finalCam;
+	private ViewTransform[] initViews, finalViews;
 	
 	// ------- constructors ------------------------------
 	
@@ -68,42 +67,31 @@ public class Calibrator {
 			throw new IllegalStateException("Calibration: at least two views needed");
 		}
 		
-		obsPoints = imgPntSet.toArray(new Point2D[0][]);
+		obsPts = imgPntSet.toArray(new Point2D[0][]);
 		
 		// Step 1: Calculate the homographies for each of the given N views:
 		HomographyEstimator hest = new HomographyEstimator();
-		RealMatrix[] homographies = hest.estimateHomographies(modelPts, obsPoints);
+		RealMatrix[] H_init = hest.estimateHomographies(modelPts, obsPts);
 		
 		// Step 2: Estimate the intrinsic parameters by linear optimization:
 		CameraIntrinsicsEstimator cis = new CameraIntrinsicsEstimator();
 		
-		RealMatrix A = cis.getIntrinsics(homographies);
-		MathUtil.print("A Cholesky:", A);
-		
-		RealMatrix AZ1 = cis.getIntrinsicsZhang1(homographies);
-		MathUtil.print("A Zhang1:", AZ1);
-		
-		RealMatrix AZ2 = cis.getIntrinsicsZhang2(homographies);
-		MathUtil.print("A Zhang2:", AZ2);
-		
-		RealMatrix AZ3 = cis.getIntrinsicsZhang3(homographies);
-		MathUtil.print("A Zhang3:", AZ3);
-		
-		initialCam = new Camera(A, new double[params.lensDistortionKoeffients]);
+		RealMatrix A_init = cis.getCameraIntrinsics(H_init);
+		initCam = new Camera(A_init, new double[params.lensDistortionKoeffients]);
 		
 		// Step 3: calculate the extrinsic view parameters:
-		ExtrinsicViewEstimator eve = new ExtrinsicViewEstimator(A);
-		initialViews = eve.getExtrinsics(homographies);
+		ExtrinsicViewEstimator eve = new ExtrinsicViewEstimator(A_init);
+		initViews = eve.getExtrinsics(H_init);
 		
 		// Step 4: Determine the lens distortion from initial estimates:
 		RadialDistortionEstimator rde = new RadialDistortionEstimator();
-		double[] distParams = rde.estimateLensDistortion(initialCam, initialViews, modelPts, obsPoints);
-		Camera improvedCam = new Camera(A, distParams);
+		double[] distParams = rde.estimateLensDistortion(initCam, initViews, modelPts, obsPts);
+		Camera improvedCam = new Camera(A_init, distParams);
 		
 		// Step 5: Refine all parameters by non-linear optimization
-//		NonlinearOptimizer optimizer = new NonlinearOptimizerAnalytic(modelPts, observations);
-		NonlinearOptimizer optimizer = new NonlinearOptimizerNumeric(modelPts, obsPoints);
-		finalCam = optimizer.optimize(improvedCam, initialViews);
+		NonlinearOptimizer optimizer = new NonlinearOptimizerAnalytic(modelPts, obsPts);
+//		NonlinearOptimizer optimizer = new NonlinearOptimizerNumeric(modelPts, obsPts);
+		finalCam = optimizer.optimize(improvedCam, initViews);
 		finalViews = optimizer.getFinalViews();
 
 		return finalCam;
@@ -145,14 +133,14 @@ public class Calibrator {
     // ----------------------------------------------------------------------
     
     public Camera getInitialCamera() {
-    	return initialCam;
+    	return initCam;
     }
     public Camera getFinalCamera() {
     	return finalCam;
     }
     
     public ViewTransform[] getInitialViews() {
-    	return initialViews;
+    	return initViews;
     }
     
     public ViewTransform[] getFinalViews() {

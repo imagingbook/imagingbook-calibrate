@@ -1,6 +1,6 @@
-package imagingbook.extras.calibration.zhang;
+package imagingbook.calibration.zhang;
 
-import imagingbook.extras.calibration.zhang.util.MathUtil;
+import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.lib.math.Matrix;
 
 import java.util.Arrays;
@@ -61,7 +61,7 @@ public class ViewTransform {
 //			throw new IllegalArgumentException("Rotation matrix must be 3 x 3");
 //		}
 //		if (t.getDimension() != 3) {
-//			throw new IllegalArgumentException("Translation vector must be of domension 3");
+//			throw new IllegalArgumentException("Translation vector must be of dimension 3");
 //		}
 //		rotation = new Rotation(R.getData(), OrthogonalityThreshold);
 //		translation = t.toArray();
@@ -142,15 +142,6 @@ public class ViewTransform {
 		return XYZc;
 	}
 	
-	/**
-	 * 
-	 * @param RT a 3x4 matrix composed of a 3x3 rotation matrix and a 3D translation vector
-	 * @param XZZ1
-	 * @return
-	 */
-//	public static RealVector map(RealMatrix RT, RealVector XYZ) {
-//		return null;
-//	}
 	
 	public void print() {
 		RealMatrix R = this.getRotationMatrix();

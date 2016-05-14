@@ -1,4 +1,4 @@
-package imagingbook.extras.calibration.zhang.testdata;
+package imagingbook.calibration.zhang.testdata;
 
 import java.util.ArrayList;
 import java.util.List;

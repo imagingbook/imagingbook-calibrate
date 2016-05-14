@@ -3,7 +3,7 @@ package Calibration_Plugins;
 import ij.ImagePlus;
 import ij.io.Opener;
 import ij.plugin.PlugIn;
-import imagingbook.extras.calibration.zhang.testdata.ZhangData;
+import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
 
 /**

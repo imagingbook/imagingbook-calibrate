@@ -4,4 +4,4 @@
  * method as a set of Java resources. 
  * @author W. Burger
  */
-package imagingbook.extras.calibration.zhang.testdata;
+package imagingbook.calibration.zhang.testdata;

@@ -7,12 +7,12 @@ import ij.io.Opener;
 import ij.plugin.PlugIn;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
-import imagingbook.extras.calibration.zhang.Calibrator;
-import imagingbook.extras.calibration.zhang.Camera;
-import imagingbook.extras.calibration.zhang.ViewTransform;
-import imagingbook.extras.calibration.zhang.Calibrator.Parameters;
-import imagingbook.extras.calibration.zhang.testdata.ZhangData;
-import imagingbook.extras.calibration.zhang.util.GridPainter;
+import imagingbook.calibration.zhang.Calibrator;
+import imagingbook.calibration.zhang.Camera;
+import imagingbook.calibration.zhang.ViewTransform;
+import imagingbook.calibration.zhang.Calibrator.Parameters;
+import imagingbook.calibration.zhang.testdata.ZhangData;
+import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
 

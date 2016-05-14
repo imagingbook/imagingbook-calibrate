@@ -1,4 +1,4 @@
-package imagingbook.extras.calibration.zhang;
+package imagingbook.calibration.zhang;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.pow;
@@ -6,12 +6,9 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 
 import java.awt.geom.Point2D;
-import java.util.Arrays;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-
-
 
 /**
  * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix
@@ -37,238 +34,11 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 		return new JacobianFun();
 	}
 
-
-	/**
-	 * This is the implementation of the value function for the optimiser. It
-	 * computes the predicted location of an image point by projecting a model
-	 * point through the camera homography and then applying the distortion. The
-	 * implementation is converted from the C code produced by the following
-	 * matlab symbolic code:
-	 * 
-	 * <pre>
-	 * <code>
-	 * syms u0 v0 fx fy sk real
-	 * syms tx ty tz wx wy wz real
-	 * syms k1 k2 real
-	 * syms X Y real
-	 * 
-	 * % the intrinsic parameter matrix
-	 * K=[fx sk u0; 0 fy v0; 0 0 1];
-	 * 
-	 * % Expression for the rotation matrix based on the Rodrigues formula
-	 * theta=sqrt(wx^2+wy^2+wz^2);
-	 * omega=[0 -wz wy; wz 0 -wx; -wy wx 0];
-	 * R = eye(3) + (sin(theta)/theta)*omega + ((1-cos(theta))/theta^2)*(omega*omega);
-	 * 
-	 * % Expression for the translation vector
-	 * t=[tx;ty;tz];
-	 * 
-	 * % perspective projection of the model point (X,Y)
-	 * uvs=K*[R(:,1) R(:,2) t]*[X; Y; 1];
-	 * u=uvs(1)/uvs(3);
-	 * v=uvs(2)/uvs(3);
-	 * 
-	 * % application of 2-term radial distortion
-	 * uu0 = u - u0;
-	 * vv0 = v - v0;
-	 * x =  uu0/fx;
-	 * y =  vv0/fy;
-	 * r2 = x*x + y*y;
-	 * r4 = r2*r2;
-	 * uv = [u + uu0*(k1*r2 + k2*r4); v + vv0*(k1*r2 + k2*r4)];
-	 * ccode(uv, 'file', 'zhang-value.c')
-	 * </code>
-	 * </pre>
-	 * 
-	 * @author Jonathon Hare (jsh2@ecs.soton.ac.uk)
-	 * 
-	 */
 	
-//	private class ValueFun implements MultivariateVectorFunction {
-//		@Override
-//		public double[] value(double[] params) {
-//			final double[] a = Arrays.copyOfRange(params, 0, camParLength);
-//			final Camera cam = new Camera(a);
-//			final double[] Y = new double[2 * M * N];
-//			int l = 0; 
-//			for (int i = 0; i < M; i++) {
-//				int m = camParLength + i * viewParLength;
-//				double[] w = Arrays.copyOfRange(params, m, m + viewParLength);
-//				ViewTransform view = new ViewTransform(w);
-//				for (int j = 0; j < N; j++) {
-//					double[] uv = cam.project(view, modelPts[j]);
-//					Y[l * 2 + 0] = uv[0];
-//					Y[l * 2 + 1] = uv[1];
-//					l = l + 1;
-//				}
-//			}
-//			//			System.out.println(counter + " result: " +  new ArrayRealVector(result).toString());
-//			return Y;
-//		}
-//	}	// end of inner class 'ValueFun'
-
-
-		// old matlab version (working)
-//		private double[] computeValue(int i, int j, double[] params) {
-//			final double X = modelPts[j].getX();
-//			final double Y = modelPts[j].getY();
-//			
-//			double[] s = Arrays.copyOfRange(params, 0, camParLength);
-//			Camera cam = new Camera(s);
-//
-//			final double fx = cam.getAlpha(); //params[0];
-//			final double fy = cam.getBeta(); //params[1];
-//			final double sk = cam.getGamma(); //params[2];
-//			final double u0 = cam.getUc(); //params[3];
-//			final double v0 = cam.getVc(); //params[4];
-//			final double k1 = cam.getK()[0]; //params[5];
-//			final double k2 = cam.getK()[1]; //params[6];
-//			
-//			int start = camParLength + i * viewParLength;
-//			double[] w = Arrays.copyOfRange(params, start, start + viewParLength);
-//			View view = new View(w);
-//			double[] vp = view.getParameters();
-//
-//			final double wx = vp[0]; //params[i * viewParLength + camParLength + 0];
-//			final double wy = vp[1]; //params[i * viewParLength + camParLength + 1];
-//			final double wz = vp[2]; //params[i * viewParLength + camParLength + 2];
-//			final double tx = vp[3]; //params[i * viewParLength + camParLength + 3];
-//			final double ty = vp[4]; //params[i * viewParLength + camParLength + 4];
-//			final double tz = vp[5]; //params[i * viewParLength + camParLength + 5];
-//
-//			// begin matlab code
-//			final double t2 = wx * wx;
-//			final double t3 = wy * wy;
-//			final double t4 = wz * wz;
-//			final double t5 = t2 + t3 + t4;
-//			final double t6 = sqrt(t5);
-//			final double t7 = sin(t6);
-//			final double t8 = 1.0 / sqrt(t5);
-//			final double t9 = cos(t6);
-//			final double t10 = t9 - 1.0;
-//			final double t11 = 1.0 / t5;
-//			final double t12 = t7 * t8 * wy;
-//			final double t13 = t10 * t11 * wx * wz;
-//			final double t14 = t12 + t13;
-//			final double t15 = t7 * t8 * wz;
-//			final double t16 = t7 * t8 * wx;
-//			final double t18 = t10 * t11 * wy * wz;
-//			final double t17 = t16 - t18;
-//			final double t19 = Y * t17;
-//			final double t39 = X * t14;
-//			final double t20 = t19 - t39 + tz;
-//			final double t21 = 1.0 / t20;
-//			final double t22 = t10 * t11 * wx * wy;
-//			final double t23 = t3 + t4;
-//			final double t24 = t10 * t11 * t23;
-//			final double t25 = t24 + 1.0;
-//			final double t26 = fx * t25;
-//			final double t27 = t15 + t22;
-//			final double t28 = t17 * u0;
-//			final double t29 = t2 + t4;
-//			final double t30 = t10 * t11 * t29;
-//			final double t31 = t30 + 1.0;
-//			final double t32 = sk * t31;
-//			final double t47 = fx * t27;
-//			final double t33 = t28 + t32 - t47;
-//			final double t34 = Y * t33;
-//			final double t35 = fx * tx;
-//			final double t36 = sk * ty;
-//			final double t37 = tz * u0;
-//			final double t40 = t15 - t22;
-//			final double t43 = sk * t40;
-//			final double t44 = t14 * u0;
-//			final double t45 = t26 + t43 - t44;
-//			final double t46 = X * t45;
-//			final double t48 = t34 + t35 + t36 + t37 + t46;
-//			final double t49 = t21 * t48;
-//			final double t38 = -t49 + u0;
-//			final double t53 = fy * ty;
-//			final double t54 = fy * t40;
-//			final double t55 = t14 * v0;
-//			final double t56 = t54 - t55;
-//			final double t57 = X * t56;
-//			final double t58 = tz * v0;
-//			final double t59 = t17 * v0;
-//			final double t60 = fy * t31;
-//			final double t61 = t59 + t60;
-//			final double t62 = Y * t61;
-//			final double t63 = t53 + t57 + t58 + t62;
-//			final double t64 = t21 * t63;
-//			final double t41 = -t64 + v0;
-//			final double t42 = 1.0 / (fx * fx);
-//			final double t50 = t38 * t38;
-//			final double t51 = t42 * t50;
-//			final double t52 = 1.0 / (fy * fy);
-//			final double t65 = t41 * t41;
-//			final double t66 = t52 * t65;
-//			final double t67 = t51 + t66;
-//			final double t68 = k1 * t67;
-//			final double t69 = t67 * t67;
-//			final double t70 = k2 * t69;
-//			final double t71 = t68 + t70;
-//			double A0 = -t38 * t71 + t21
-//					* (t34 + t35 + t36 + t37 + X * (t26 - t14 * u0 + sk * (t15 - t10 * t11 * wx * wy)));
-//			double A1 = t64 - t41 * t71;
-//			// end matlab code
-//			return new double[] {A0, A1};
-//		}
-
-
-
-	/**
-	 * This is the implementation of the Jacobian function for the optimiser; it
-	 * is the partial derivative of the value function with respect to the
-	 * parameters. The implementation is based on the matlab symbolic code:
-	 * 
-	 * <pre>
-	 * <code>
-	 * syms u0 v0 fx fy sk real
-	 * syms tx ty tz wx wy wz real
-	 * syms k1 k2 real
-	 * syms X Y real
-	 * 
-	 * % the intrinsic parameter matrix
-	 * K=[fx sk u0; 0 fy v0; 0 0 1];
-	 * 
-	 * % Expression for the rotation matrix based on the Rodrigues formula
-	 * theta=sqrt(wx^2+wy^2+wz^2);
-	 * omega=[0 -wz wy; wz 0 -wx; -wy wx 0];
-	 * R = eye(3) + (sin(theta)/theta)*omega + ((1-cos(theta))/theta^2)*(omega*omega);
-	 * 
-	 * % Expression for the translation vector
-	 * t=[tx;ty;tz];
-	 * 
-	 * % perspective projection of the model point (X,Y)
-	 * uvs=K*[R(:,1) R(:,2) t]*[X; Y; 1];
-	 * u=uvs(1)/uvs(3);
-	 * v=uvs(2)/uvs(3);
-	 * 
-	 * % application of 2-term radial distortion
-	 * uu0 = u - u0;
-	 * vv0 = v - v0;
-	 * x =  uu0/fx;
-	 * y =  vv0/fy;
-	 * r2 = x*x + y*y;
-	 * r4 = r2*r2;
-	 * uv = [u + uu0*(k1*r2 + k2*r4); v + vv0*(k1*r2 + k2*r4)];
-	 * J=jacobian(uv,[fx,fy,u0,v0,sk,k1,k2, wx wy wz tx ty tz]); 
-	 * ccode(J, 'file', 'zhang-jacobian.c')
-	 * </code>
-	 * </pre>
-	 * 
-	 * @author Jonathon Hare (jsh2@ecs.soton.ac.uk)
-	 * 
-	 */
 	private class JacobianFun implements MultivariateMatrixFunction {
 		@Override
 		public double[][] value(double[] params) {
-//			long starttime = System.nanoTime();
-			// Note that we're building the jacobian for all cameras/images and
-			// points. The params vector is 7 + 6*numCameras elements long (7
-			// intrinsic params and 6 extrinsic per camera)	
 			final double[][] J = new double[2 * M * N][];
-
 			for (int i = 0, k = 0; i < M; i++) {
 				for (int j = 0; j < N; j++, k++) {
 					final double[][] tmp = computeJacobian(i, j, params);
@@ -276,8 +46,6 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 					J[k * 2 + 1] = tmp[1];
 				}
 			}
-//			long endtime = System.nanoTime();
-//			System.out.println("time diff = " + (endtime - starttime) + " ns");
 			return J;
 		}
 
