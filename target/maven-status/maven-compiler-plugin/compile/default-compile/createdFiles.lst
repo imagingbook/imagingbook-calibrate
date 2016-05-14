@@ -1,4 +1,5 @@
 Calibration_Plugins\Demo_Zhang_Calibration.class
+imagingbook\extras\calibration\zhang\NonlinearOptimizer$ValueFun.class
 imagingbook\extras\calibration\zhang\util\MathUtil.class
 imagingbook\extras\calibration\zhang\util\GridPainter.class
 imagingbook\extras\calibration\zhang\testdata\ZhangData.class
@@ -9,13 +10,11 @@ imagingbook\extras\calibration\zhang\NonlinearOptimizerNumeric$1.class
 imagingbook\extras\calibration\zhang\util\PlanarCalibrationPattern.class
 Calibration_Plugins\Demo_Zhang_Projection_Overlay.class
 Calibration_Plugins\Open_Test_Images.class
-imagingbook\extras\calibration\zhang\NonlinearOptimizerAnalytic$ValueFun.class
 imagingbook\extras\calibration\zhang\testdata\ZhangCameraViews.class
 imagingbook\extras\calibration\zhang\testdata\ZhangObservedPoints.class
 imagingbook\extras\calibration\zhang\NonlinearOptimizerAnalytic$1.class
 imagingbook\extras\calibration\zhang\Calibrator$Parameters.class
 Calibration_Plugins\Demo_View_Interpolation.class
-imagingbook\extras\calibration\zhang\NonlinearOptimizerNumeric$ValueFun.class
 imagingbook\extras\calibration\zhang\NonlinearOptimizerAnalytic.class
 imagingbook\extras\calibration\zhang\Camera.class
 imagingbook\extras\calibration\zhang\Calibrator.class

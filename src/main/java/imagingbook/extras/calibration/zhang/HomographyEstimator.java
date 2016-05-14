@@ -12,6 +12,7 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
@@ -23,6 +24,12 @@ public class HomographyEstimator {
 	static int maxLmEvaluations = 1000;
 	static int maxLmIterations = 1000;
 	static boolean normalize = true;
+	
+	//private final double[][] J;
+	
+	public HomographyEstimator() {
+		//J = new double[][9];
+	}
 	
 	
 	public RealMatrix[] estimateHomographies(Point2D[] modelPts, Point2D[][] obsPoints) {
@@ -92,15 +99,25 @@ public class HomographyEstimator {
 		}			
 		MultivariateVectorFunction value = getValueFunction(modelPts);
 		MultivariateMatrixFunction jacobian = getJacobianFunction(modelPts);
-
-		LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
-		Optimum result = lm.optimize(LeastSquaresFactory.create(
+		
+		LeastSquaresProblem problem = LeastSquaresFactory.create(
 				LeastSquaresFactory.model(value, jacobian),
 				MatrixUtils.createRealVector(observed), 
 				MathUtil.getRowPackedVector(Hinit), 
 				null,  // ConvergenceChecker
 				maxLmEvaluations, 
-				maxLmIterations));
+				maxLmIterations);
+		
+		LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
+		Optimum result = lm.optimize(problem);
+		
+//		Optimum result = lm.optimize(LeastSquaresFactory.create(
+//				LeastSquaresFactory.model(value, jacobian),
+//				MatrixUtils.createRealVector(observed), 
+//				MathUtil.getRowPackedVector(Hinit), 
+//				null,  // ConvergenceChecker
+//				maxLmEvaluations, 
+//				maxLmIterations));
 		
 		RealVector optimum = result.getPoint();
 		RealMatrix Hopt = MathUtil.fromRowPackedVector(optimum, 3, 3);
@@ -109,68 +126,139 @@ public class HomographyEstimator {
 	}
 	
 	
-	private MultivariateVectorFunction getValueFunction(final Point2D[] data1) {
+	private MultivariateVectorFunction getValueFunction(final Point2D[] X) {
+		System.out.println("MultivariateVectorFunction getValueFunction");
 		return new MultivariateVectorFunction() {
 			@Override
 			public double[] value(double[] h) { // throws IllegalArgumentException {
-				final double[] result = new double[data1.length * 2];
-				for (int i = 0; i < data1.length; i++) {
-					final double X1 = data1[i].getX();
-					final double Y1 = data1[i].getY();
-					final double t2 = X1 * h[6];
-					final double t3 = Y1 * h[7];
-					final double t4 = h[8] + t2 + t3;
-					final double t5 = 1.0 / t4;
-					result[i * 2 + 0] = t5 * (h[2] + X1 * h[0] + Y1 * h[1]);
-					result[i * 2 + 1] = t5 * (h[5] + X1 * h[3] + Y1 * h[4]);
+				final double[] Y = new double[X.length * 2];
+				for (int j = 0; j < X.length; j++) {
+					final double x = X[j].getX();
+					final double y = X[j].getY();
+					final double w = h[6] * x + h[7] * y + h[8];
+					Y[j * 2 + 0] = (h[0] * x + h[1] * y + h[2]) / w;
+					Y[j * 2 + 1] = (h[3] * x + h[4] * y + h[5]) / w;
 				}
-				return result;
+				return Y;
 			}
 		};
 	}
 	
-	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] data1) {
+	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] X) {
+		return new MultivariateMatrixFunction() {
+			@Override
+			public double[][] value(double[] h) {
+				final double[][] J = new double[2 * X.length][];
+				for (int i = 0; i < X.length; i++) {
+					final double x = X[i].getX();
+					final double y = X[i].getY();
+					
+					final double w  = h[6] * x + h[7] * y + h[8];
+					final double w2 = w * w;
+					
+					final double sx = h[0] * x + h[1] * y + h[2];		
+					J[2 * i + 0] = new double[] {x/w, y/w, 1/w, 0, 0, 0, -sx*x/w2, -sx*y/w2, -sx/w2};
+					
+					final double sy = h[3] * x + h[4] * y + h[5];
+					J[2 * i + 1] = new double[] {0, 0, 0, x/w, y/w, 1/w, -sy*x/w2, -sy*y/w2, -sy/w2};
+				}
+				return J;
+			}
+		};
+	}
+
+/*
+	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] X) {
+		System.out.println("MultivariateMatrixFunction getJacobianFunction");
+		return new MultivariateMatrixFunction() {
+			@Override
+			public double[][] value(double[] h) {
+				final double[][] J = new double[2 * X.length][9];
+				for (int i = 0; i < X.length; i++) {
+					final double x = X[i].getX();
+					final double y = X[i].getY();
+					
+					final double w  = h[6] * x + h[7] * y + h[8];
+					final double w2 = w * w;
+					
+					final double sx = h[0] * x + h[1] * y + h[2];		
+					J[2 * i + 0][0] = x / w;
+					J[2 * i + 0][1] = y / w;
+					J[2 * i + 0][2] = 1.0 / w;
+					J[2 * i + 0][3] = 0;
+					J[2 * i + 0][4] = 0;
+					J[2 * i + 0][5] = 0;
+					J[2 * i + 0][6] = -sx * x / w2;
+					J[2 * i + 0][7] = -sx * y / w2;
+					J[2 * i + 0][8] = -sx / w2;
+					
+					final double sy = h[3] * x + h[4] * y + h[5];
+					J[2 * i + 1][0] = 0;
+					J[2 * i + 1][1] = 0;
+					J[2 * i + 1][2] = 0;
+					J[2 * i + 1][3] = x / w;
+					J[2 * i + 1][4] = y / w;
+					J[2 * i + 1][5] = 1.0 / w;
+					J[2 * i + 1][6] = -sy * x / w2;
+					J[2 * i + 1][7] = -sy * y / w2;
+					J[2 * i + 1][8] = -sy / w2;
+				}
+				return J;
+			}
+		};
+	}
+*/
+	
+/*
+ 	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] X) {
 		return new MultivariateMatrixFunction() {
 			// See Multi-View Geometry in Computer Vision, eq 4.21, p129
 			@Override
 			public double[][] value(double[] h) {
-				final double[][] result = new double[2 * data1.length][9];
-				for (int i = 0; i < data1.length; i++) {
-					final double X1 = data1[i].getX();
-					final double Y1 = data1[i].getY();
+				final double[][] J = new double[2 * X.length][9];
+				for (int i = 0; i < X.length; i++) {
+					final double x = X[i].getX();
+					final double y = X[i].getY();
 
-					final double t2 = X1 * h[6];
-					final double t3 = Y1 * h[7];
+					final double t2 = x * h[6];
+					final double t3 = y * h[7];
 					final double t4 = h[8] + t2 + t3;
 					final double t5 = 1.0 / t4;
-					final double t6 = X1 * h[0];
-					final double t7 = Y1 * h[1];
+					final double t6 = x * h[0];
+					final double t7 = y * h[1];
 					final double t8 = h[2] + t6 + t7;
 					final double t9 = 1.0 / (t4 * t4);
-					final double t10 = X1 * t5;
-					final double t11 = Y1 * t5;
-					final double t12 = X1 * h[3];
-					final double t13 = Y1 * h[4];
+					final double t10 = x * t5;
+					final double t11 = y * t5;
+					final double t12 = x * h[3];
+					final double t13 = y * h[4];
 					final double t14 = h[5] + t12 + t13;
 					
-					result[i * 2 + 0][0] = t10;
-					result[i * 2 + 0][1] = t11;
-					result[i * 2 + 0][2] = t5;
-					result[i * 2 + 0][6] = -X1 * t8 * t9;
-					result[i * 2 + 0][7] = -Y1 * t8 * t9;
-					result[i * 2 + 0][8] = -t8 * t9;
+					J[2 * i + 0][0] = t10;
+					J[2 * i + 0][1] = t11;
+					J[2 * i + 0][2] = t5;
+//					J[2 * i + 0][3] = 0;
+//					J[2 * i + 0][4] = 0;
+//					J[2 * i + 0][5] = 0;
+					J[2 * i + 0][6] = -x * t8 * t9;
+					J[2 * i + 0][7] = -y * t8 * t9;
+					J[2 * i + 0][8] = -t8 * t9;
 					
-					result[i * 2 + 1][3] = t10;
-					result[i * 2 + 1][4] = t11;
-					result[i * 2 + 1][5] = t5;
-					result[i * 2 + 1][6] = -X1 * t9 * t14;
-					result[i * 2 + 1][7] = -Y1 * t9 * t14;
-					result[i * 2 + 1][8] = -t9 * t14;
+//					J[2 * i + 1][0] = 0;
+//					J[2 * i + 1][1] = 0;
+//					J[2 * i + 1][2] = 0;
+					J[2 * i + 1][3] = t10;
+					J[2 * i + 1][4] = t11;
+					J[2 * i + 1][5] = t5;
+					J[2 * i + 1][6] = -x * t9 * t14;
+					J[2 * i + 1][7] = -y * t9 * t14;
+					J[2 * i + 1][8] = -t9 * t14;
 				}
-				return result;
+				return J;
 			}
 		};
 	}
+ */
 	
 	
 	private double[] transform(double[] p, RealMatrix M3x3) {

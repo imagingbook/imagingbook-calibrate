@@ -8,6 +8,7 @@
 		<groupId>com.imagingbook</groupId>
 		<artifactId>_parent</artifactId>
 		<version>FIXED</version>
+		<relativePath>../imagingbook-parent</relativePath>
 	</parent>
 
 	<dependencies>
