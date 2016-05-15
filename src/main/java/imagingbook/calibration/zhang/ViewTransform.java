@@ -36,8 +36,7 @@ public class ViewTransform {
 	}
 	
 	public ViewTransform(double rX, double rY, double rZ, double tX, double tY, double tZ) {
-		//this.rotation = new Rotation(RotationOrder.XYX, rX, rY, rZ);
-		this.rotation = new Rotation(RotationOrder.XYX, RotationConvention.VECTOR_OPERATOR, rX, rY, rZ);
+		this.rotation = makeRotation(new double[] {rX, rY, rZ});
 		this.translation = new double[] {tX, tY, tZ};
 	}
 	
