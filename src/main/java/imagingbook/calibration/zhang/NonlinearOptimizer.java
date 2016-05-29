@@ -42,6 +42,10 @@ public abstract class NonlinearOptimizer {
 	/**
 	 * Perform Levenberg-Marquardt non-linear optimization to get better
 	 * estimates of the parameters
+	 * 
+	 * @param cam initial camera parameters
+	 * @param views initial view transforms
+	 * @return the improved camera parameters
 	 */
 	protected Camera optimize(Camera cam, ViewTransform[] views) {
 		this.initCam = cam;

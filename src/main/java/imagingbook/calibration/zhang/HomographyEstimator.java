@@ -85,10 +85,10 @@ public class HomographyEstimator {
 
 	/**
 	 * Refines the initial homography by Levenberg-Marquart nonlinear optimization.
-	 * @param Hinit
-	 * @param modelPts
-	 * @param obsPts
-	 * @return
+	 * @param Hinit initial homography matrix
+	 * @param modelPts model points (2D)
+	 * @param obsPts observed points (2D)
+	 * @return the refined homography matrix
 	 */
 	public RealMatrix refineHomography(RealMatrix Hinit, Point2D[] modelPts, Point2D[] obsPts) {
 		final int M = modelPts.length;		

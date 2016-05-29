@@ -30,7 +30,7 @@ import java.util.List;
  * EasyCalib program. No calibration is performed.
  * 
  * All graphic elements are drawn as non-destructive vector overlays
- * - LOOK CLOSELY! The complete stack with overly can be saved as a 
+ * - LOOK CLOSELY! The complete stack with overlay can be saved as a 
  * tiff file. 
  * 
  * @author W. Burger

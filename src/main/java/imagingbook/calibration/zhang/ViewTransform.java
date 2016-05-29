@@ -129,8 +129,8 @@ public class ViewTransform {
 	 * Moves point X from 3D world coordinates to 3D camera coordinates,
 	 * as specified by the transformations of this view.
 	 * No projection is performed at this point.
-	 * @param XYZw a 3D point
-	 * @return the point {@link XYZw} mapped to 3D camera coordinates
+	 * @param XYZw a 3D (world) point
+	 * @return the given world point mapped to 3D camera coordinates
 	 */
 	protected double[] applyTo(double[] XYZw) {	// 3D vector X assumed
 		double[] XYZc = new double[3];

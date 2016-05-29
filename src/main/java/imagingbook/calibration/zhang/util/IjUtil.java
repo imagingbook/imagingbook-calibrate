@@ -29,9 +29,9 @@ public class IjUtil {
 	 * Creates a float-type image of the supplied matrix.
 	 * Matrix rows/columns correspond to image rows/columns.
 	 * Typical usage: makeImage("my matrix", M).show()
-	 * @param title
-	 * @param M
-	 * @return
+	 * @param title the image title
+	 * @param M the matrix to be displayed
+	 * @return the resulting image
 	 */
 	public static ImagePlus makeImage(String title, RealMatrix M) {
 		float[][] fdata = Matrix.duplicateToFloat(M.transpose().getData());

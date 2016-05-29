@@ -106,46 +106,46 @@ public class MathUtil {
 	}
 
 
-	/**               
-	 * Finds a nontrivial solution (x) to the homogeneous linear system M . x = 0.
-	 * @param M	
-	 * @param fromRight
-	 * @return
-	 */
-	@Deprecated 	// use the simpler version below
-	public static RealVector solveHomogeneousSystemOLD(RealMatrix M, boolean fromRight) {
-		SingularValueDecomposition svd = new SingularValueDecomposition(M);
-		RealMatrix U = svd.getU();
-		RealMatrix V = svd.getV();
-		
-		// dimensions of the original (decomposed) matrix;
-		int svdnumRows = U.getRowDimension();
-		int svdnumCols = V.getColumnDimension();
-		double[] s = svd.getSingularValues();
-		
-		RealMatrix A = fromRight ? svd.getVT() /*V is transposed!*/ : svd.getU();
-		      
-		// find the row/column index of the smallest singular value (diagonal)
-		int minIndex = -1;
-		if (fromRight && svdnumCols > svdnumRows)
-			minIndex = svdnumCols - 1;
-		else if (!fromRight && svdnumCols < svdnumRows)
-			minIndex = svdnumRows - 1;
-		else {
-			// find the index of the smallest singular value
-			double minValue = Double.MAX_VALUE;
-			for (int i = 0; i < s.length; i++) {
-				if (s[i] < minValue) {
-					minValue = s[i];
-					minIndex = i;
-				}
-			}
-		}
-		//System.out.println("nullspace: smallestIndex = " + minIndex);
-		
-		RealVector nullVec = fromRight ? A.getRowVector(minIndex) : A.getColumnVector(minIndex);
-		return nullVec;
-	}
+//	/**               
+//	 * Finds a nontrivial solution (x) to the homogeneous linear system M . x = 0.
+//	 * @param M	
+//	 * @param fromRight
+//	 * @return
+//	 */
+//	@Deprecated 	// use the simpler version below
+//	public static RealVector solveHomogeneousSystemOLD(RealMatrix M, boolean fromRight) {
+//		SingularValueDecomposition svd = new SingularValueDecomposition(M);
+//		RealMatrix U = svd.getU();
+//		RealMatrix V = svd.getV();
+//		
+//		// dimensions of the original (decomposed) matrix;
+//		int svdnumRows = U.getRowDimension();
+//		int svdnumCols = V.getColumnDimension();
+//		double[] s = svd.getSingularValues();
+//		
+//		RealMatrix A = fromRight ? svd.getVT() /*V is transposed!*/ : svd.getU();
+//		      
+//		// find the row/column index of the smallest singular value (diagonal)
+//		int minIndex = -1;
+//		if (fromRight && svdnumCols > svdnumRows)
+//			minIndex = svdnumCols - 1;
+//		else if (!fromRight && svdnumCols < svdnumRows)
+//			minIndex = svdnumRows - 1;
+//		else {
+//			// find the index of the smallest singular value
+//			double minValue = Double.MAX_VALUE;
+//			for (int i = 0; i < s.length; i++) {
+//				if (s[i] < minValue) {
+//					minValue = s[i];
+//					minIndex = i;
+//				}
+//			}
+//		}
+//		//System.out.println("nullspace: smallestIndex = " + minIndex);
+//		
+//		RealVector nullVec = fromRight ? A.getRowVector(minIndex) : A.getColumnVector(minIndex);
+//		return nullVec;
+//	}
 	
 	
 	/**               

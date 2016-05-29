@@ -69,7 +69,7 @@ public class ZhangData {
 	/**
 	 * Returns the path to the test image for the given view number
 	 * @param vn view number (0,...,4)
-	 * @return
+	 * @return the path to the test image for the given view number
 	 */
 	public static String getViewImagePath(int vn) {
 		String imgName = "CalibIm" + (vn + 1) + ".gif";
