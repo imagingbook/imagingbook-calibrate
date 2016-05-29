@@ -11,3 +11,7 @@ This implementation depends on
 [**ImageJ**](https://imagej.nih.gov/ij/), 
 the [**imagingbook-common**](https://bitbucket.org/imagingbook/imagingbook-public) library and 
 [**Apache Commons Math**](http://commons.apache.org/proper/commons-math/).
+
+### Documentation ###
+
+* **[JavaDoc](http://imagingbook.bitbucket.org/javadoc/imagingbook-common)**
