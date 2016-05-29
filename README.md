@@ -9,4 +9,4 @@ This implementation depends on
 the [**imagingbook-common**](https://bitbucket.org/imagingbook/imagingbook-public) library and 
 [**Apache Commons Math**](http://commons.apache.org/proper/commons-math/).
 
-![frame-0-0.png](https://bitbucket.org/repo/ebk5Gq/images/1861955533-frame-0-0.png)
+![figure3.png](https://bitbucket.org/repo/ebk5Gq/images/3660179635-figure3.png)
