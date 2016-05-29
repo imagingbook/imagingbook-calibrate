@@ -50,7 +50,7 @@ public class Camera {
 	/**
 	 * Create a standard camera. 
 	 * @param A the (min) 2x3 matrix holding the intrinsic camera parameters.
-	 * @param distort radial distortion coefficients k0, k1, ...
+	 * @param K radial distortion coefficients k0, k1, ...
 	 */
 	public Camera(RealMatrix A, double[] K) {
 		this.K = (K == null) ? new double[0] : K.clone();
@@ -85,7 +85,6 @@ public class Camera {
 	/**
 	 * Utility method. Projects a set of 3D model points to the image of this
 	 * camera for the given view.
-	 * @param cam The camera.
 	 * @param view The extrinsic view parameters.
 	 * @param modelPoints 3D points on the Z = 0 plane. 
 	 * @return The projected image points.
@@ -263,7 +262,8 @@ public class Camera {
 	 * as a 3x3 matrix (without the last row {0,0,1}).
 	 * This version uses closed form matrix inversion.
 	 * Used for rectifying images (removing lens distortion).
-	 * @return
+	 * 
+	 * @return the inverse of the camera intrinsic matrix A
 	 */
 	public RealMatrix getInverseA() {
 		double alpha = A[0][0];

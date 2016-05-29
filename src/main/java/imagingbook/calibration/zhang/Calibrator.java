@@ -59,7 +59,8 @@ public class Calibrator {
 	
 	/**
 	 * The actual calibration is being done here.
-	 * @return
+	 * 
+	 * @return the estimated camera parameters as a {@link Camera} object
 	 */
 	public Camera calibrate() {
 		M = imgPntSet.size();	// number of views to process

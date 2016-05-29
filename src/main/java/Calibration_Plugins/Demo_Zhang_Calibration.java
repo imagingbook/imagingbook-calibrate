@@ -124,10 +124,10 @@ public class Demo_Zhang_Calibration implements PlugIn {
 	 * Draws the array of image points to a given (possibly empty) stack image.
 	 * The image points are assumed to be the corners of the standard
 	 * calibration model, i.e., 4 consecutive points form a projected square.
-	 * @param stack
-	 * @param imagePoints
+	 * @param stack a stack with M images (views)
+	 * @param imagePoints a sequence of 2D point sets, one for each view
 	 */
-	public void drawSquares(ImageStack stack, Point2D[][] imagePoints) {
+	private void drawSquares(ImageStack stack, Point2D[][] imagePoints) {
 		final int width = stack.getWidth();
 		final int height = stack.getHeight();
 		int M = imagePoints.length;
