@@ -8,3 +8,5 @@ This implementation depends on
 [**ImageJ**](https://imagej.nih.gov/ij/), 
 the [**imagingbook-common**](https://bitbucket.org/imagingbook/imagingbook-public) library and 
 [**Apache Commons Math**](http://commons.apache.org/proper/commons-math/).
+
+![frame-0-0.png](https://bitbucket.org/repo/ebk5Gq/images/1861955533-frame-0-0.png)
