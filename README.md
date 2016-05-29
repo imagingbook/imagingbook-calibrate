@@ -11,4 +11,4 @@ the [**imagingbook-common**](https://bitbucket.org/imagingbook/imagingbook-publi
 
 ### Documentation ###
 
-* **[JavaDoc](http://imagingbook.bitbucket.org/javadoc/imagingbook-common)**
+* **[JavaDoc](http://imagingbook.bitbucket.org/javadoc/imagingbook-calibrate)**
