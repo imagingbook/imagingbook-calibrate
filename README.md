@@ -12,3 +12,4 @@ the [**imagingbook-common**](https://bitbucket.org/imagingbook/imagingbook-publi
 ### Documentation ###
 
 * **[JavaDoc](http://imagingbook.bitbucket.org/javadoc/imagingbook-calibrate)**
+* **[Report](https://www.researchgate.net/publication/303233579_Zhang%27s_Camera_Calibration_Algorithm_In-Depth_Tutorial_and_Implementation)**
