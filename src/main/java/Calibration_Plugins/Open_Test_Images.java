@@ -53,8 +53,8 @@ public class Open_Test_Images implements PlugIn {
 		InputStream strm = FileUtils.getResourceStream(ZhangData.class, "resources/" + resourceName);
 		IJ.log("stream = " + strm);
 		
-		Path p2 = FileUtils.getResourcePath2(ZhangData.class, "resources/" + resourceName);
-		IJ.log("path 2 = " + p2);
+//		Path p2 = FileUtils.getResourcePath2(ZhangData.class, "resources/" + resourceName);
+//		IJ.log("path 2 = " + p2);
 	
 
 		
