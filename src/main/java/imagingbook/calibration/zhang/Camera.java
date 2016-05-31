@@ -41,12 +41,7 @@ public class Camera {
 		this.A = makeA(s[0], s[1], s[2], s[3], s[4]);
 		this.K = new double[] {s[5], s[6]};
 	}
-	
-//	public Camera(double alpha, double beta, double gamma, double uc, double vc, double[] K) {
-//		this.A = makeA(alpha, beta, gamma, uc, vc);
-//		this.K = (K == null) ? new double[0] : K.clone();
-//	}
-	
+		
 	/**
 	 * Create a standard camera. 
 	 * @param A the (min) 2x3 matrix holding the intrinsic camera parameters.
@@ -58,14 +53,14 @@ public class Camera {
 	}
 	
 	/**
-	 * Create a simple pinhole model (no distortion whatsoever).
+	 * Create a simple pinhole camera (no distortion whatsoever).
 	 * @param f the focal length (in pixel units).
 	 * @param uc the x-position of the optical axis (in pixel units).
 	 * @param vc the y-position of the optical axis (in pixel units).
 	 */
 	public Camera(double f, double uc, double vc) {
 		this.K = new double[0];
-		this.A = makeA(f, f, 0, uc, vc);	// TODO: need to be care about flipping the vertical coordinate??
+		this.A = makeA(f, f, 0, uc, vc);	// TODO: need to care about flipping the vertical coordinate??
 	}
 	
 	// --------------------------------------------------------------------------
@@ -102,13 +97,13 @@ public class Camera {
 	 * Projects the given 3D point onto the sensor plane of this camera
 	 * for the provided extrinsic view parameters.
 	 * 
-	 * @param view The extrinsic camera (view) parameters.
-	 * @param XYZw A point in 3D world coordinates.
-	 * @return the 2D sensor coordinates of the projected point.
+	 * @param view the extrinsic camera (view) parameters
+	 * @param XYZw a point in 3D world coordinates
+	 * @return the 2D sensor coordinates of the projected point
 	 */
 	public double[] project(ViewTransform view, double[] XYZw) {
 		// map to the normalized projection plane (f = 1)
-		double[] xy = mapToNormalizedProjection(view, XYZw);
+		double[] xy = projectNormalized(view, XYZw);
 		
 		// apply radial lens distortion to the normalized projection
 		double[] xyd = warp(xy);
@@ -118,12 +113,30 @@ public class Camera {
 		return uv;
 	}
 	
-	public double[] mapToIdealImage(ViewTransform view, Point2D P) {
+	
+	/**
+	 * Projects the given 3D point to normalized image coordinates
+	 * for the provided extrinsic view parameters. The world point is
+	 * specified as a 2D coordinate in the Z = 0 plane.
+	 * 
+	 * @param view the extrinsic camera (view) parameters
+	 * @param P a point in 3D world coordinates (Z = 0)
+	 * @return the 2D normalized projection
+	 */
+	public double[] projectNormalized(ViewTransform view, Point2D P) {
 		double[] XY0 = new double[] {P.getX(), P.getY(), 0};
-		return mapToNormalizedProjection(view, XY0);
+		return projectNormalized(view, XY0);
 	}
 	
-	public double[] mapToNormalizedProjection(ViewTransform view, double[] XYZw) {
+	/**
+	 * Projects the given 3D point to normalized image coordinates
+	 * for the provided extrinsic view parameters.
+	 * 
+	 * @param view the extrinsic camera (view) parameters
+	 * @param XYZw a point in 3D world coordinates
+	 * @return the 2D normalized projection
+	 */
+	public double[] projectNormalized(ViewTransform view, double[] XYZw) {
 		double[] XYZc = view.applyTo(XYZw);
 		// Compute normalized projection coordinates (f = 1):
 		final double x = XYZc[0] / XYZc[2];
@@ -244,18 +257,6 @@ public class Camera {
 		return MatrixUtils.createRealMatrix(A);
 	}
 	
-//	/**
-//	 * Returns the inverse of the camera intrinsic matrix A
-//	 * as a 2x3 matrix (without the last row {0,0,1}).
-//	 * This version uses numerical matrix inversion.
-//	 * @return
-//	 */
-//	public RealMatrix getInverseA() {
-//		RealMatrix Af = MatrixUtils.createRealMatrix(3, 3);
-//		Af.setSubMatrix(A, 0, 0);
-//		Af.setEntry(2, 2, 1);
-//		return MatrixUtils.inverse(Af).getSubMatrix(0, 1, 0, 2);
-//	}
 	
 	/**
 	 * Returns the inverse of the camera intrinsic matrix A
@@ -364,9 +365,6 @@ public class Camera {
 		System.out.format("ra=%.4f, rb=%.4f, rc=%.4f\n", ra, rb, rc);
 	}
 	
-
-	
-
 }
 
 

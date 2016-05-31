@@ -29,7 +29,7 @@ public class RadialDistortionEstimator {
 
 			for (int j = 0; j < N; j++) {
 				// determine the radius in the ideal image plane
-				double[] xy = cam.mapToIdealImage(views[i], modelPts[j]);
+				double[] xy = cam.projectNormalized(views[i], modelPts[j]);
 				double x = xy[0];
 				double y = xy[1];
 				double r2 = x * x + y * y;

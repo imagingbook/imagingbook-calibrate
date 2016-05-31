@@ -1,20 +1,15 @@
 package imagingbook.calibration.zhang.util;
 
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.gui.Plot;
-import ij.gui.PlotWindow;
-import ij.process.ColorProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
-import imagingbook.calibration.zhang.Camera;
-import imagingbook.calibration.zhang.ViewTransform;
-import imagingbook.lib.math.Matrix;
-
 import java.awt.Color;
-import java.awt.geom.Point2D;
 
 import org.apache.commons.math3.linear.RealMatrix;
+
+import ij.ImagePlus;
+import ij.gui.Plot;
+import ij.gui.PlotWindow;
+import ij.process.FloatProcessor;
+import imagingbook.calibration.zhang.Camera;
+import imagingbook.lib.math.Matrix;
 
 
 /**

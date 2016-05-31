@@ -7,14 +7,12 @@ import ij.io.Opener;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.Camera;
+import imagingbook.calibration.zhang.RectificationMapping;
 import imagingbook.calibration.zhang.testdata.ZhangData;
-import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.lib.ij.IjLogStream;
+import imagingbook.lib.interpolation.InterpolationMethod;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.pub.geometry.mappings.Mapping;
-import imagingbook.lib.interpolation.InterpolationMethod;
-
-import org.apache.commons.math3.linear.RealMatrix;
 
 
 /**
@@ -24,7 +22,7 @@ import org.apache.commons.math3.linear.RealMatrix;
  * in a new image stack.
  * 
  * @author W. Burger
- * @version 2015-06-05
+ * @version 2016-05-31
  */
 public class Demo_Rectification implements PlugIn {
 
@@ -39,7 +37,7 @@ public class Demo_Rectification implements PlugIn {
 	public void run(String arg0) {
 		// open the test image (stack):
 		String path = ZhangData.getResourcePath(TestImgName);
-		IJ.log("opening path = " + path);
+		//IJ.log("opening path = " + path);
 		ImagePlus distIm = new Opener().openImage(path);
 		if (distIm == null) {
 			IJ.error("Could not open calibration images!");
@@ -52,7 +50,7 @@ public class Demo_Rectification implements PlugIn {
 		Camera camera = ZhangData.getCameraIntrinsics();
 		
 		// create a special geometric mapping
-		Mapping mapping = new UndistortMapping(camera);
+		Mapping mapping = new RectificationMapping(camera);
 		
 		// rectify the images and create a new stack:
 		ImageStack distStack = distIm.getStack();
@@ -69,33 +67,5 @@ public class Demo_Rectification implements PlugIn {
 		}
 		new ImagePlus(title + "-rectified", rectStack).show();
 	}
-
-	/** 
-	 * This class represents a special geometric mapping for
-	 * rectifying (i.e., removing the lens distortion from)
-	 * an image, given the associated camera parameters.
-	 */
-	private class UndistortMapping extends Mapping {
-		private final Camera cam;
-		private final RealMatrix Ai;	// inverse of the intrinsic camera matrix (2 x 3)
-
-		public UndistortMapping (Camera cam) {
-			this.isInverseFlag = true;	// maps target -> source
-			this.cam = cam;
-			this.Ai = cam.getInverseA();
-		}
-		
-		@Override
-		public double[] applyTo(double[] uv) {
-			// (u,v) is an observed sensor point
-			// apply the inverse camera mapping to get the normalized (x,y) point:
-			double[] xy = Ai.operate(MathUtil.toHomogeneous(uv));
-			// apply the camera's radial lens distortion in the normalized plane:
-			double[] xyd = cam.warp(xy);
-			// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
-			return cam.mapToSensorPlane(xyd);
-		}
-	}
-	
 
 }
