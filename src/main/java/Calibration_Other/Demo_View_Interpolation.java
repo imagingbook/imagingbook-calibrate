@@ -1,4 +1,4 @@
-package Calibration_Plugins;
+package Calibration_Other;
 
 import ij.IJ;
 import ij.ImagePlus;
