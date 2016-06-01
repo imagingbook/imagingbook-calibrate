@@ -109,7 +109,7 @@ public class Open_Image_from_Jar implements PlugIn {
 			InputStream inStrm = clazz.getResourceAsStream(relPath);
 			ImagePlus im = null;
 			try {
-				copyFile(inStrm, tmpFile);
+				copyToFile(inStrm, tmpFile);
 				im = new Opener().openImage(tmpPath);
 				Files.deleteIfExists(tmpFile.toPath());
 			} catch (IOException e) { }
@@ -118,13 +118,18 @@ public class Open_Image_from_Jar implements PlugIn {
 			throw new IllegalArgumentException("Cannot handle this path type: " + scheme);
 		}
 	}
+	
+	public File extractResourceToFile(Class<?> clazz, String directory, String name) {
+		
+		return null;
+	}
 
 
 
 	// from https://bukkit.org/threads/extracting-file-from-jar.16962/
-	public void copyFile(InputStream in, File out) throws IOException {
+	public void copyToFile(InputStream in, File file) throws IOException {
 		InputStream fis = in;
-		FileOutputStream fos = new FileOutputStream(out);
+		FileOutputStream fos = new FileOutputStream(file);
 		try {
 			byte[] buf = new byte[1024];
 			int i = 0;
