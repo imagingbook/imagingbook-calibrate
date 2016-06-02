@@ -28,5 +28,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/PROJECTS-BITBUCKET/parent/imagingbook-calibrate/ImageJ/jars/resources.jar"/>
 	<classpathentry kind="output" path="ImageJ/plugins"/>
 </classpath>

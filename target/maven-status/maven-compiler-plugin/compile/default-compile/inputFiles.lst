@@ -5,9 +5,9 @@ C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Plu
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\util\package-info.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\Camera.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\util\GridPainter.java
+C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Other\Open_Image_from_Jar.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Plugins\Open_Test_Images.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\RadialDistortionEstimator.java
-C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Plugins\Open_Image_from_Jar.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\NonlinearOptimizer.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\CameraIntrinsicsEstimator.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\testdata\ZhangStandardModel.java
@@ -15,12 +15,14 @@ C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\cal
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Plugins\Demo_Replace_Camera.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\testdata\package-info.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Plugins\package-info.java
+C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\InterCameraMapping.java
+C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Plugins\Demo_Draw_3D_Axes.java
+C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Other\Demo_View_Interpolation.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Plugins\Demo_Zhang_Projection.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\ExtrinsicViewEstimator.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\Calibrator.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\NonlinearOptimizerAnalytic.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Plugins\Demo_Zhang_Projection_Overlay.java
-C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\Calibration_Plugins\Demo_View_Interpolation.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\NonlinearOptimizerNumeric.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\ViewTransform.java
 C:\PROJECTS-BITBUCKET\parent\imagingbook-calibrate\src\main\java\imagingbook\calibration\zhang\util\RotationTests.java

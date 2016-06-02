@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -18,6 +19,7 @@ import ij.io.Opener;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
+import imagingbook.lib.util.FileUtils;
 
 /**
  * Opens Zhang's standard calibration images as a stack of RGB images. 
@@ -50,7 +52,13 @@ public class Open_Image_from_Jar implements PlugIn {
 		IJ.log("resourceURI = " + resourcePath.toUri());
 		IJ.log("resourcePath file name = " + resourcePath.getFileName());
 		
-		ImagePlus im = openImageFromResource(ZhangData.class, "resources/" + resourceName);
+		//ImagePlus im = openImageFromResource(ZhangData.class, "resources/" + resourceName);
+		//ImagePlus im = openImageFromResource(ZhangData.class, "resources/", resourceName);
+		
+		//ImagePlus im = openImageFromResource(jarWithResouces.Root.class, "resources/", "bridge.gif");
+		//ImagePlus im = openImageFromResource(jarWithResouces.Root.class, "resources/", "clown.jpg");
+		//ImagePlus im = openImageFromResource(jarWithResouces.Root.class, "resources/", "clown.png");
+		ImagePlus im = openImageFromResource(jarWithResouces.Root.class, "resources/", "CalibImageStack.tif");
 		
 		if (im != null) {
 			im.show();
@@ -96,6 +104,12 @@ public class Open_Image_from_Jar implements PlugIn {
 	private ImagePlus openImageFromResource(Class<?> clazz, String relPath) {
 		Path path = this.getResourcePath(clazz, relPath);
 		URI uri = path.toUri();
+		
+		IJ.log("URI = " + uri.toString());
+		try {
+			IJ.log("URL = " + uri.toURL().toString());
+		} catch (MalformedURLException e1) {}
+		
 		String scheme = uri.getScheme();
 		switch (scheme) {
 		case "file": {	// resource in ordinary file system
@@ -113,7 +127,50 @@ public class Open_Image_from_Jar implements PlugIn {
 				im = new Opener().openImage(tmpPath);
 				Files.deleteIfExists(tmpFile.toPath());
 			} catch (IOException e) { }
+			im.setTitle("TITLE TO BE SET");
 			return im;
+		default:
+			throw new IllegalArgumentException("Cannot handle this path type: " + scheme);
+		}
+	}
+	
+	private ImagePlus openImageFromResource(Class<?> clazz, String directory, String name) {
+		IJ.log("openImageFromResource(Class<?> clazz, String directory, String name)");
+		String relPath = directory + name;
+		Path path = this.getResourcePath(clazz, relPath);
+		URI uri = path.toUri();
+		
+		IJ.log("URI = " + uri.toString());
+		
+		String scheme = uri.getScheme();
+		switch (scheme) {
+		case "file": {	// resource in ordinary file system
+			IJ.log("opening image from file");
+			return new Opener().openImage(path.toString());
+		}
+		case "jar": { // resource in JAR
+			IJ.log("opening image from JAR");
+//			String tmpPath = tmpDir + "/" + path.getFileName();
+//			File tmpFile = new File(tmpPath);	// TODO: use File.createTempFile()?
+			String ext = FileUtils.getFileExtension(name);
+			// create a temporary file:
+			File tmpFile = null;
+			try {
+				tmpFile = File.createTempFile("prefix", "." + ext);
+				tmpFile.deleteOnExit();
+			} catch (IOException e) {e.printStackTrace();}
+			
+			IJ.log("copying to tmp file: " + tmpFile.getPath());
+			InputStream inStrm = clazz.getResourceAsStream(relPath);
+			ImagePlus im = null;
+			try {
+				copyToFile(inStrm, tmpFile);
+				im = new Opener().openImage(tmpFile.getPath());
+				Files.deleteIfExists(tmpFile.toPath());
+			} catch (IOException e) { }
+			im.setTitle(name);
+			return im;
+		}
 		default:
 			throw new IllegalArgumentException("Cannot handle this path type: " + scheme);
 		}
