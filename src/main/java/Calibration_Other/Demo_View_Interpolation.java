@@ -14,9 +14,11 @@ import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
+import imagingbook.lib.util.FileUtils;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
+import java.io.IOException;
 
 import org.apache.commons.math3.complex.Quaternion;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
@@ -49,8 +51,13 @@ public class Demo_View_Interpolation implements PlugIn {
 	
 	@Override
 	public void run(String arg0) {
-		String path = ZhangData.getResourcePath(imgName);
-		ImagePlus testIm = new Opener().openImage(path);
+//		String path = ZhangData.getResourcePath(imgName);
+//		ImagePlus testIm = new Opener().openImage(path);
+		
+		ImagePlus testIm = null;
+		try {
+			testIm = FileUtils.openImageFromResource(ZhangData.class, "XXresources/", imgName);
+		} catch (IOException e) {}
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;
