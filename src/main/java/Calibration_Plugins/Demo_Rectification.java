@@ -1,5 +1,7 @@
 package Calibration_Plugins;
 
+import java.nio.file.Path;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -12,6 +14,7 @@ import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.interpolation.InterpolationMethod;
 import imagingbook.lib.settings.PrintPrecision;
+import imagingbook.lib.util.ResourceUtils;
 import imagingbook.pub.geometry.mappings.Mapping;
 
 
@@ -36,9 +39,8 @@ public class Demo_Rectification implements PlugIn {
 	@Override
 	public void run(String arg0) {
 		// open the test image (stack):
-		String path = ZhangData.getResourcePath(TestImgName);
-		//IJ.log("opening path = " + path);
-		ImagePlus distIm = new Opener().openImage(path);
+		Path path = ZhangData.getResourcePath(TestImgName);
+		ImagePlus distIm = new Opener().openImage(path.toString());
 		if (distIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;

@@ -1,4 +1,4 @@
-package Calibration_Other;
+package Calibration_Plugins;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -51,10 +51,8 @@ public class Demo_View_Interpolation implements PlugIn {
 	
 	@Override
 	public void run(String arg0) {
-//		String path = ZhangData.getResourcePath(imgName);
-//		ImagePlus testIm = new Opener().openImage(path);
-		
-		ImagePlus testIm = ResourceUtils.openImageFromResource(ZhangData.class, "XXresources/", imgName);
+	
+		ImagePlus testIm = ResourceUtils.openImageFromResource(ZhangData.class, "resources/", imgName);
 
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
@@ -173,6 +171,5 @@ public class Demo_View_Interpolation implements PlugIn {
 			painter.drawLine(imageSq[3], pk);
 		}
 	}
-	
 
 }

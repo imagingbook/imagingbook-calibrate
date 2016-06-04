@@ -1,9 +1,5 @@
 package Calibration_Plugins;
 
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
 import java.nio.file.Path;
 
 import ij.IJ;
@@ -12,7 +8,6 @@ import ij.io.Opener;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
-import imagingbook.lib.util.ResourceUtils;
 
 /**
  * Opens Zhang's standard calibration images as a stack of RGB images. 
@@ -31,41 +26,15 @@ public class Open_Test_Images implements PlugIn {
 	static String resourceName = "CalibImageStack.tif";
 
 	public void run(String arg0) {
-		String path = ZhangData.getResourcePath(resourceName);
+		Path path = ZhangData.getResourcePath(resourceName);
 		IJ.log("resource path = " + path);
-		try {
-			IJ.log("resource URL = " + new URL("file:" + path));
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		// ------------------------------------------
-		
-		Path[] paths = ResourceUtils.listResources(ZhangData.class, "resources");
-		for (Path p : paths) {
-			IJ.log("path = " + p.toString());
-			
-		}
-		
-		//InputStream strm = ResourceUtils.getResourceStream(ZhangData.class, "resources/" + resourceName);
-		InputStream strm = ZhangData.class.getResourceAsStream("resources/" + resourceName);
-		IJ.log("stream = " + strm);
-		
-//		Path p2 = FileUtils.getResourcePath2(ZhangData.class, "resources/" + resourceName);
-//		IJ.log("path 2 = " + p2);
-	
-
-		
-		// ------------------------------------------
 		
 		if (path == null) {
 			System.out.println("Image not found: " + resourceName);
 			return;
 		}
 		
-			
-		ImagePlus im = new Opener().openImage(path);
+		ImagePlus im = new Opener().openImage(path.toString());
 		if (im == null) {
 			System.out.println("Opening failed.");
 			return;

@@ -1,7 +1,7 @@
 package Calibration_Plugins;
 
 import java.awt.Color;
-import java.awt.geom.Point2D;
+import java.nio.file.Path;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -14,6 +14,7 @@ import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
+import imagingbook.lib.util.ResourceUtils;
 
 
 /**
@@ -47,8 +48,8 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 		double[] p3 = {0.0, 0.0, axisLength};
 		
 		// open the test image (stack):
-		String path = ZhangData.getResourcePath(TestImgName);
-		ImagePlus testIm = new Opener().openImage(path);
+		Path path = ZhangData.getResourcePath(TestImgName);
+		ImagePlus testIm = new Opener().openImage(path.toString());
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;

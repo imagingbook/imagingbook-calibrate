@@ -1,12 +1,13 @@
 package imagingbook.calibration.zhang.testdata;
 
 import java.awt.geom.Point2D;
-import java.net.URL;
+import java.nio.file.Path;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
+import imagingbook.lib.util.ResourceUtils;
 
 
 /**
@@ -71,42 +72,31 @@ public class ZhangData {
 	 * @param vn view number (0,...,4)
 	 * @return the path to the test image for the given view number
 	 */
-	public static String getViewImagePath(int vn) {
+	public static Path getViewImagePath(int vn) {
 		String imgName = "CalibIm" + (vn + 1) + ".gif";
-		String path = getResourcePath(imgName);
-//		File imgPath = new File(imgDir + imgName);
-//		return imgPath.getAbsolutePath();
-		return path;
+		return getResourcePath(imgName);
 	}
 	
+	private static final String resourceDir = "resources/";
 	
-	private static final String resourcePath = "resources/";
-	
-	//TODO: replicated from imagingbook.lib.util.FileUtils.java
-	public static String getResourcePath(String name) {
-		URL url = ZhangData.class.getResource(resourcePath + name);
-		if (url == null) {
-			return null;
-		}
-		else {
-			return url.getPath();
-		}
+	public static Path getResourcePath(String name) {
+		return ResourceUtils.getResourcePath(ZhangData.class, resourceDir + name);
 	}
 	
 	// -----------------------------------------------------
 	
-	public static void main(String[] args) {
-		System.out.println("testing access to resources:");
-		String path = "resources/testFile1.txt";
-		URL location = ZhangData.class.getResource(path);
-		
-		if (location == null) {
-			System.out.println("Resource not found: " + path);
-		}
-		else {
-			System.out.println("Class found: " + location.toString());
-		}
-	}
+//	public static void main(String[] args) {
+//		System.out.println("testing access to resources:");
+//		String path = "resources/testFile1.txt";
+//		URL location = ZhangData.class.getResource(path);
+//		
+//		if (location == null) {
+//			System.out.println("Resource not found: " + path);
+//		}
+//		else {
+//			System.out.println("Class found: " + location.toString());
+//		}
+//	}
 	
 
 }

@@ -13,9 +13,11 @@ import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
+import imagingbook.lib.util.ResourceUtils;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,8 +56,9 @@ public class Demo_Zhang_Projection_Overlay implements PlugIn {
 	
 	@Override
 	public void run(String arg0) {
-		String path = ZhangData.getResourcePath(TestImgName);
-		ImagePlus testIm = new Opener().openImage(path);
+		
+		Path path = ZhangData.getResourcePath(TestImgName);
+		ImagePlus testIm = new Opener().openImage(path.toString());
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;

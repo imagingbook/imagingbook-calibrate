@@ -15,9 +15,11 @@ import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
+import imagingbook.lib.util.ResourceUtils;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
+import java.nio.file.Path;
 
 
 /**
@@ -47,8 +49,8 @@ public class Demo_Zhang_Calibration implements PlugIn {
 	}
 	
 	public void run(String arg0) {
-		String path = ZhangData.getResourcePath(imgName);
-		ImagePlus testIm = new Opener().openImage(path);
+		Path path = ZhangData.getResourcePath(imgName);
+		ImagePlus testIm = new Opener().openImage(path.toString());
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;
