@@ -12,7 +12,7 @@ import ij.io.Opener;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
-import imagingbook.lib.util.FileUtils;
+import imagingbook.lib.util.ResourceUtils;
 
 /**
  * Opens Zhang's standard calibration images as a stack of RGB images. 
@@ -23,8 +23,6 @@ import imagingbook.lib.util.FileUtils;
  *
  */
 public class Open_Test_Images implements PlugIn {
-	
-	static boolean BeVerbose = false;
 	
 	static {
 		IjLogStream.redirectSystem();
@@ -44,13 +42,14 @@ public class Open_Test_Images implements PlugIn {
 		
 		// ------------------------------------------
 		
-		Path[] paths = FileUtils.listResources(ZhangData.class, "resources");
+		Path[] paths = ResourceUtils.listResources(ZhangData.class, "resources");
 		for (Path p : paths) {
 			IJ.log("path = " + p.toString());
 			
 		}
 		
-		InputStream strm = FileUtils.getResourceStream(ZhangData.class, "resources/" + resourceName);
+		//InputStream strm = ResourceUtils.getResourceStream(ZhangData.class, "resources/" + resourceName);
+		InputStream strm = ZhangData.class.getResourceAsStream("resources/" + resourceName);
 		IJ.log("stream = " + strm);
 		
 //		Path p2 = FileUtils.getResourcePath2(ZhangData.class, "resources/" + resourceName);
@@ -65,8 +64,6 @@ public class Open_Test_Images implements PlugIn {
 			return;
 		}
 		
-		if (BeVerbose)
-			System.out.println("Opening image: " + path);
 			
 		ImagePlus im = new Opener().openImage(path);
 		if (im == null) {
