@@ -6,10 +6,10 @@ See this extensive [**report**](https://www.researchgate.net/publication/3032335
 
 This implementation depends on 
 [**ImageJ**](https://imagej.nih.gov/ij/), 
-the [**imagingbook-common**](https://bitbucket.org/imagingbook/imagingbook-public) library and 
+the [**imagingbook-common**](https://github.com/imagingbook/imagingbook-public) library and 
 [**Apache Commons Math**](http://commons.apache.org/proper/commons-math/).
 
 ### Documentation ###
 
-* **[JavaDoc](http://imagingbook.bitbucket.org/javadoc/imagingbook-calibrate)**
+* **[JavaDoc](https://imagingbook.github.io/imagingbook-doc/javadoc/imagingbook-calibrate)**
 * **[Report](https://www.researchgate.net/publication/303233579_Zhang%27s_Camera_Calibration_Algorithm_In-Depth_Tutorial_and_Implementation)**
