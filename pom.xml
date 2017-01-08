@@ -15,6 +15,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<imagingbook.webdir>${project.basedir}/../website/javadoc</imagingbook.webdir>
+		<!-- <imagingbook.webdir>${project.basedir}/../imagingbook-doc/javadoc</imagingbook.webdir> -->
 	</properties>
 
 	<dependencies>
