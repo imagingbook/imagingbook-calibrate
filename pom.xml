@@ -1,15 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.imagingbook</groupId>
 	<artifactId>imagingbook-calibrate</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<parent>
+<!-- 	<parent>
 		<groupId>com.imagingbook</groupId>
 		<artifactId>_public</artifactId>
 		<version>1.5-SNAPSHOT</version>
 		<relativePath>../imagingbook-public/_pom-public</relativePath>
-	</parent>
+	</parent> -->
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,21 +21,38 @@
 		<imagingbook.webdir>${project.basedir}/docs/javadoc</imagingbook.webdir>
 		<!-- <reportOutputDirectory>${project.basedir}/docs/javadoc</reportOutputDirectory> -->
 	</properties>
+	
+	<repositories>
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+		<repository>
+			<id>imagingbook-maven-repository</id>
+			<name>imagingbook-maven-repository on GitHub</name>
+			<url>https://raw.github.com/imagingbook/imagingbook-maven-repository/master</url>
+			<!-- <url>https://raw.githubusercontent.com/imagingbook/imagingbook-maven-repository/master</url> -->
+			<layout>default</layout>
+		</repository>
+	</repositories>
 
 	<dependencies>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
+			<version>1.51h</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
+			<version>3.6.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-common</artifactId>
+			<version>1.5-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
