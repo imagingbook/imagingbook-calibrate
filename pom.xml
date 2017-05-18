@@ -8,7 +8,7 @@
 
 <!-- 	<parent>
 		<groupId>com.imagingbook</groupId>
-		<artifactId>_public</artifactId>
+		<artifactId>imagingbook-public-pom</artifactId>
 		<version>1.5-SNAPSHOT</version>
 		<relativePath>../imagingbook-public/_pom-public</relativePath>
 	</parent> -->
