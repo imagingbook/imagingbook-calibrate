@@ -5,13 +5,6 @@
 	<artifactId>imagingbook-calibrate</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
-
-<!-- 	<parent>
-		<groupId>com.imagingbook</groupId>
-		<artifactId>imagingbook-public-pom</artifactId>
-		<version>1.5-SNAPSHOT</version>
-		<relativePath>../imagingbook-public/_pom-public</relativePath>
-	</parent> -->
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,14 +17,9 @@
 	
 	<repositories>
 		<repository>
-			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
-		</repository>
-		<repository>
 			<id>imagingbook-maven-repository</id>
 			<name>imagingbook-maven-repository on GitHub</name>
 			<url>https://raw.github.com/imagingbook/imagingbook-maven-repository/master</url>
-			<!-- <url>https://raw.githubusercontent.com/imagingbook/imagingbook-maven-repository/master</url> -->
 			<layout>default</layout>
 		</repository>
 	</repositories>
