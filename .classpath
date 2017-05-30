@@ -28,6 +28,5 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="ImageJ/jars/jarWithResources.jar"/>
 	<classpathentry kind="output" path="ImageJ/plugins"/>
 </classpath>
