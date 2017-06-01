@@ -1,15 +1,12 @@
-package Calibration_Plugins;
-
-import java.nio.file.Path;
+package calibration_demos_more;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.io.Opener;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.Camera;
-import imagingbook.calibration.zhang.InterCameraMapping;
+import imagingbook.calibration.zhang.RectificationMapping;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.interpolation.InterpolationMethod;
@@ -17,63 +14,51 @@ import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
 import imagingbook.pub.geometry.mappings.Mapping;
 
-
 /**
  * This plugin projects opens an image stack containing the 5 Zhang
- * test images (assumed to be taken with camera A) and re-renders 
- * the images by mapping them to a new camera B. In this example,
- * only the lens distortion coefficients are modified but in
- * principle all intrinsic parameters of camera B could be changed.
+ * test images and removes the lens distortion based on the calibrated 
+ * camera parameters. The resulting (rectified) frames are shown
+ * in a new image stack.
  * 
  * @author W. Burger
- * @version 2016-06-01
+ * @version 2017-05-30
  */
-public class Demo_Replace_Camera implements PlugIn {
+public class Demo_Rectification implements PlugIn {
 
-	// modified lens distortion coefficients:
-	static double k1 = -0.1;
-	static double k2 =  2.0;
-	
 	static boolean BeVerbose = false;
+
+	static Class<?> resourceRootClass = ZhangData.class;
+	static String resourceDir = "resources/";
+	static String resourceName = "CalibImageStack.tif";
 	
-	static final String TestImgName = "CalibImageStack.tif";
 	static {
 		IjLogStream.redirectSystem();
 		PrintPrecision.set(6);
 	}
 	
-	
 	@Override
 	public void run(String arg0) {
 		// open the test image (stack):
-		Path path = ZhangData.getResourcePath(TestImgName);
-		ImagePlus distIm = new Opener().openImage(path.toString());
+		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
 		
-		if (distIm == null) {
+		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;
 		}
-		distIm.show();
-		String title = distIm.getShortTitle();
+		testIm.show();
+		String title = testIm.getShortTitle();
 		
 		// get the camera intrinsics (typically by calibration):
-		Camera cameraA = ZhangData.getCameraIntrinsics();
-			
-		double[] paramsA = cameraA.getParameterVector();
-		paramsA[5] = k1;
-		paramsA[6] = k2;
-		
-		Camera cameraB = new Camera(paramsA);
+		Camera camera = ZhangData.getCameraIntrinsics();
 		
 		// create a special geometric mapping
-		Mapping mapping = new InterCameraMapping(cameraA, cameraB);
-				
+		Mapping mapping = new RectificationMapping(camera);
+		
 		// rectify the images and create a new stack:
-		ImageStack distStack = distIm.getStack();
+		ImageStack distStack = testIm.getStack();
 		final int w = distStack.getWidth();
 		final int h = distStack.getHeight();
 		final int M = distStack.getSize();
-		
 		ImageStack rectStack = new ImageStack(w, h);
 		for (int i = 0; i < M; i++) {
 			IJ.showProgress(i, M);
@@ -82,8 +67,7 @@ public class Demo_Replace_Camera implements PlugIn {
 			mapping.applyTo(source, target, InterpolationMethod.Bicubic);
 			rectStack.addSlice("frame"+ (i + 1), target);
 		}
-		
-		new ImagePlus(title+"-modfied", rectStack).show();
+		new ImagePlus(title + "-rectified", rectStack).show();
 	}
-	
+
 }

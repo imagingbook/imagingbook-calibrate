@@ -18,7 +18,7 @@
 	<repositories>
 		<repository>
 			<id>imagingbook-maven-repository</id>
-			<name>imagingbook-maven-repository on GitHub</name>
+			<!-- <name>imagingbook-maven-repository on GitHub</name> -->
 			<url>https://raw.github.com/imagingbook/imagingbook-maven-repository/master</url>
 			<layout>default</layout>
 		</repository>
@@ -72,6 +72,9 @@
 				<configuration>
 					<!-- <outputDirectory>${project.build.directory}/ImageJ/jars</outputDirectory> -->
 					<!-- <finalName>${project.name}_XXX_${project.version}</finalName> -->
+					<includes>
+						<include>**/imagingbook/**</include>  <!-- include the library classes only (no plugins) -->
+					</includes>
 				</configuration>
 			</plugin>
 

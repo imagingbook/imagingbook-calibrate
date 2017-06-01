@@ -1,9 +1,14 @@
-package Calibration_Plugins;
+package calibration_demos_more;
+
+import java.awt.Color;
+import java.awt.geom.Point2D;
+
+import org.apache.commons.math3.complex.Quaternion;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.io.Opener;
 import ij.plugin.PlugIn;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
@@ -16,13 +21,6 @@ import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
 
-import java.awt.Color;
-import java.awt.geom.Point2D;
-import java.io.IOException;
-
-import org.apache.commons.math3.complex.Quaternion;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-
 /**
  * This plugin performs interpolation of views, given a sequence
  * of key views.
@@ -30,19 +28,23 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
  * Pairs of rotations are interpolated by linear mixture
  * of the corresponding quaternion representations (see
  * http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/#How_do_I_interpolate_between_2_quaternions__).
- * @author WB
+ *
+ * @author W. Burger
+ * @version 2017-05-30
  *
  */
 public class Demo_View_Interpolation implements PlugIn {
 	
+	static Class<?> resourceRootClass = ZhangData.class;
+	static String resourceDir = "resources/";
+	static String resourceName = "CalibImageStack.tif";
+	
 	static int NumberOfInterpolatedFrames = 10;
-	static double PeakHeightZ = -0.5;
+	static double PeakHeightZ = -1.5;
 	
 	static Color LineColor = Color.black;
 	static Color BackGroundColor = Color.white;
 	static boolean BeVerbose = false;
-	
-	static final String imgName = "CalibImageStack.tif";
 	
 	static {
 		IjLogStream.redirectSystem();
@@ -51,8 +53,7 @@ public class Demo_View_Interpolation implements PlugIn {
 	
 	@Override
 	public void run(String arg0) {
-	
-		ImagePlus testIm = ResourceUtils.openImageFromResource(ZhangData.class, "resources/", imgName);
+		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
 
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 

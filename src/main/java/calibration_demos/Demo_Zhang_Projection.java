@@ -1,38 +1,42 @@
-package Calibration_Plugins;
+package calibration_demos;
 
 import java.awt.Color;
-import java.nio.file.Path;
+import java.awt.geom.Point2D;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.io.Opener;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.testdata.ZhangData;
+import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
 
 
 /**
- * This plugin projects and draws the projected X/Y/Z coordinate axes
- * for each of the given camera views.
+ * This plugin projects opens an image stack containing the 5 Zhang
+ * test images and projects the model points into each view,
+ * using the (known) camera and view parameters.
+ * All data are part of Zhang's demo data set that comes with the
+ * EasyCalib program. No calibration is performed.
  * 
  * @author W. Burger
- * @version 2016-06-01
+ * @version 2017-05-30
  */
-public class Demo_Draw_3D_Axes implements PlugIn {
+public class Demo_Zhang_Projection implements PlugIn {
+	
+	static Class<?> resourceRootClass = ZhangData.class;
+	static String resourceDir = "resources/";
+	static String resourceName = "CalibImageStack.tif";
 	
 	static Color BackGroundColor = Color.white;
 	static Color LineColor = Color.magenta;
 	static boolean BeVerbose = false;
 	
-	static double axisLength = 5;
-	
-	static final String TestImgName = "CalibImageStack.tif";
 	static {
 		IjLogStream.redirectSystem();
 		PrintPrecision.set(6);
@@ -40,21 +44,16 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 	
 	@Override
 	public void run(String arg0) {
-		// create a 3D model:
-
-		double[] p0 = {0.0, 0.0, 0.0}; // 3D origin
-		double[] p1 = {axisLength, 0.0, 0.0};
-		double[] p2 = {0.0, axisLength, 0.0};
-		double[] p3 = {0.0, 0.0, axisLength};
-		
 		// open the test image (stack):
-		Path path = ZhangData.getResourcePath(TestImgName);
-		ImagePlus testIm = new Opener().openImage(path.toString());
+		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;
 		}
 		testIm.show();
+		
+		// get the 3D model points:
+		Point2D[] modelPoints = ZhangData.getModelPoints();
 		
 		// get the camera intrinsics (typically by calibration):
 		Camera camera = ZhangData.getCameraIntrinsics();
@@ -66,27 +65,15 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 		// project and draw the model into the views:
 		ImageStack stack = testIm.getStack();
 		for (int i = 0; i < M; i++) {
+			// project the model points:
+			Point2D[] projectedPoints = camera.project(views[i], modelPoints);
 			ImageProcessor ip = stack.getProcessor(i + 1);
-			ip.setColor(Color.red);
-			drawProjectedSegment(ip, camera, views[i], p0, p1);
-			ip.setColor(Color.green);
-			drawProjectedSegment(ip, camera, views[i], p0, p2);
-			ip.setColor(Color.blue);
-			drawProjectedSegment(ip, camera, views[i], p0, p3);
+			// draw the squares:
+			GridPainter painter = new GridPainter(ip);
+			painter.lineCol = LineColor;
+			painter.drawSquares(projectedPoints);
 		}
 		testIm.updateAndDraw();
 	}
-	
-	private void drawProjectedSegment(ImageProcessor ip, Camera cam, 
-			ViewTransform V, double[] P1, double[] P2) {
-		double[] u1 = cam.project(V, P1);
-		int u1x = (int) Math.round(u1[0]);
-		int u1y = (int) Math.round(u1[1]);
-		double[] u2 = cam.project(V, P2);
-		int u2x = (int) Math.round(u2[0]);
-		int u2y = (int) Math.round(u2[1]);
-		ip.drawLine(u1x, u1y, u2x, u2y);
-	}
-	
 
 }

@@ -1,22 +1,20 @@
-package Calibration_Plugins;
-
-import java.nio.file.Path;
+package calibration_demos;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.io.Opener;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
+import imagingbook.lib.util.ResourceUtils;
 
 /**
  * Opens Zhang's standard calibration images as a stack of RGB images. 
  * The image data are stored as a resource in the local Java class tree.
  * This plugin also demonstrates the use of the resource access
  * mechanism.
- * @author W. Burger
  * 
- * TODO: fix opening images from JAR, see Open_Image_from_Resource.java (in programming examples)!
+ * @author W. Burger
+ * @version 2017-05-30
  *
  */
 public class Open_Test_Images implements PlugIn {
@@ -25,25 +23,24 @@ public class Open_Test_Images implements PlugIn {
 		IjLogStream.redirectSystem();
 	}
 	
+	static Class<?> resourceRootClass = ZhangData.class;
+	static String resourceDir = "resources/";
 	static String resourceName = "CalibImageStack.tif";
 
 	public void run(String arg0) {
-		Path path = ZhangData.getResourcePath(resourceName);
-		IJ.log("resource path = " + path);
+		if(ResourceUtils.isInsideJar(resourceRootClass))
+			IJ.log("Loading resource from JAR file");
+		else
+			IJ.log("Loading resource from file system");
 		
-		if (path == null) {
-			System.out.println("Image not found: " + resourceName);
-			return;
+		ImagePlus im = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
+		
+		if (im != null) {
+			im.show();
 		}
-		
-		ImagePlus im = new Opener().openImage(path.toString());
-		if (im == null) {
-			System.out.println("Opening failed.");
-			return;
+		else {
+			IJ.error("Could not load resource!");
 		}
-		
-		im.show();
 	}
 	
-
 }

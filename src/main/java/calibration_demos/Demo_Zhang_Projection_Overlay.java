@@ -1,4 +1,9 @@
-package Calibration_Plugins;
+package calibration_demos;
+
+import java.awt.Color;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -6,7 +11,6 @@ import ij.gui.Line;
 import ij.gui.OvalRoi;
 import ij.gui.Overlay;
 import ij.gui.Roi;
-import ij.io.Opener;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
@@ -14,12 +18,6 @@ import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
-
-import java.awt.Color;
-import java.awt.geom.Point2D;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -31,14 +29,20 @@ import java.util.List;
  * All data are part of Zhang's demo data set that comes with the
  * EasyCalib program. No calibration is performed.
  * 
- * All graphic elements are drawn as non-destructive vector overlays
- * - LOOK CLOSELY! The complete stack with overlay can be saved as a 
- * tiff file. 
+ * Graphic elements are drawn as non-destructive vector overlays:
+ * Blue circles: observed corner points (used for calibration).
+ * Red crosses: projected model points (to validate parameters).
+ * - LOOK CLOSELY! 
+ * The complete stack with overlay can be saved as a tiff file. 
  * 
  * @author W. Burger
- * @version 2015-05-25
+ * @version 2017-05-30
  */
 public class Demo_Zhang_Projection_Overlay implements PlugIn {
+	
+	static Class<?> resourceRootClass = ZhangData.class;
+	static String resourceDir = "resources/";
+	static String resourceName = "CalibImageStack.tif";
 	
 	static double CircleRadius = 1.0;
 	static double CrossRadius  = 2.0;
@@ -46,7 +50,6 @@ public class Demo_Zhang_Projection_Overlay implements PlugIn {
 	static Color CrossColor = Color.red;
 	static double StrokeWidth  = 0.25;
 	
-	static final String TestImgName = "CalibImageStack.tif";
 	static boolean BeVerbose = false;
 	
 	static {
@@ -56,9 +59,7 @@ public class Demo_Zhang_Projection_Overlay implements PlugIn {
 	
 	@Override
 	public void run(String arg0) {
-		
-		Path path = ZhangData.getResourcePath(TestImgName);
-		ImagePlus testIm = new Opener().openImage(path.toString());
+		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;

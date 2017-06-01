@@ -1,26 +1,23 @@
-package Calibration_Plugins;
+package calibration_demos;
+
+import java.awt.Color;
+import java.awt.geom.Point2D;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.io.Opener;
 import ij.plugin.PlugIn;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.Calibrator;
+import imagingbook.calibration.zhang.Calibrator.Parameters;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
-import imagingbook.calibration.zhang.Calibrator.Parameters;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
-
-import java.awt.Color;
-import java.awt.geom.Point2D;
-import java.nio.file.Path;
-
 
 /**
  * This plugin performs Zhang's camera calibration on the
@@ -30,10 +27,15 @@ import java.nio.file.Path;
  * then projected onto the corresponding calibration images
  * (a stack).
  * All rendering is done by pixel drawing (no graphic overlays).
- * @author WB
- * @version 2015/05/24
+ * 
+ * @author W. Burger
+ * @version 2017-05-30
  */
 public class Demo_Zhang_Calibration implements PlugIn {
+	
+	static Class<?> resourceRootClass = ZhangData.class;
+	static String resourceDir = "resources/";
+	static String resourceName = "CalibImageStack.tif";
 	
 	static boolean ShowObservedModelPoints = true;		// draw observed image points into a new stack
 	static boolean ShowProjectedImagePoints = true;		// draw projected image points into the test image stack
@@ -41,7 +43,6 @@ public class Demo_Zhang_Calibration implements PlugIn {
 	static boolean BeVerbose = false;
 	
 	static Color BackGroundColor = Color.white;
-	static String imgName = "CalibImageStack.tif";		// image retrieved from local resource
 	
 	static {
 		IjLogStream.redirectSystem();
@@ -49,8 +50,7 @@ public class Demo_Zhang_Calibration implements PlugIn {
 	}
 	
 	public void run(String arg0) {
-		Path path = ZhangData.getResourcePath(imgName);
-		ImagePlus testIm = new Opener().openImage(path.toString());
+		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;
