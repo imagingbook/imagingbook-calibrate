@@ -1,17 +1,16 @@
 package imagingbook.calibration.zhang;
 
-import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.lib.math.Matrix;
-
 import java.util.Arrays;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+
+import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.lib.math.Matrix;
 
 
 /**
