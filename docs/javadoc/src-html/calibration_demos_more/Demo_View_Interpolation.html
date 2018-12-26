@@ -42,23 +42,23 @@
 <span class="sourceLineNo">034</span> *<a name="line.34"></a>
 <span class="sourceLineNo">035</span> */<a name="line.35"></a>
 <span class="sourceLineNo">036</span>public class Demo_View_Interpolation implements PlugIn {<a name="line.36"></a>
-<span class="sourceLineNo">037</span>        <a name="line.37"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
 <span class="sourceLineNo">038</span>        static Class&lt;?&gt; resourceRootClass = ZhangData.class;<a name="line.38"></a>
 <span class="sourceLineNo">039</span>        static String resourceDir = "resources/";<a name="line.39"></a>
 <span class="sourceLineNo">040</span>        static String resourceName = "CalibImageStack.tif";<a name="line.40"></a>
-<span class="sourceLineNo">041</span>        <a name="line.41"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
 <span class="sourceLineNo">042</span>        static int NumberOfInterpolatedFrames = 10;<a name="line.42"></a>
 <span class="sourceLineNo">043</span>        static double PeakHeightZ = -1.5;<a name="line.43"></a>
-<span class="sourceLineNo">044</span>        <a name="line.44"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
 <span class="sourceLineNo">045</span>        static Color LineColor = Color.black;<a name="line.45"></a>
 <span class="sourceLineNo">046</span>        static Color BackGroundColor = Color.white;<a name="line.46"></a>
 <span class="sourceLineNo">047</span>        static boolean BeVerbose = false;<a name="line.47"></a>
-<span class="sourceLineNo">048</span>        <a name="line.48"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
 <span class="sourceLineNo">049</span>        static {<a name="line.49"></a>
 <span class="sourceLineNo">050</span>                IjLogStream.redirectSystem();<a name="line.50"></a>
 <span class="sourceLineNo">051</span>                PrintPrecision.set(6);<a name="line.51"></a>
 <span class="sourceLineNo">052</span>        }<a name="line.52"></a>
-<span class="sourceLineNo">053</span>        <a name="line.53"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
 <span class="sourceLineNo">054</span>        @Override<a name="line.54"></a>
 <span class="sourceLineNo">055</span>        public void run(String arg0) {<a name="line.55"></a>
 <span class="sourceLineNo">056</span>                ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);<a name="line.56"></a>
@@ -67,14 +67,14 @@
 <span class="sourceLineNo">059</span>                        IJ.error("Could not open calibration images!"); <a name="line.59"></a>
 <span class="sourceLineNo">060</span>                        return;<a name="line.60"></a>
 <span class="sourceLineNo">061</span>                }<a name="line.61"></a>
-<span class="sourceLineNo">062</span>                <a name="line.62"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
 <span class="sourceLineNo">063</span>                Camera cam = ZhangData.getCameraIntrinsics();<a name="line.63"></a>
 <span class="sourceLineNo">064</span>                Point2D[] modelPoints = ZhangData.getModelPoints();<a name="line.64"></a>
-<span class="sourceLineNo">065</span>                <a name="line.65"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
 <span class="sourceLineNo">066</span>                int w = testIm.getWidth();<a name="line.66"></a>
 <span class="sourceLineNo">067</span>                int h = testIm.getHeight();<a name="line.67"></a>
 <span class="sourceLineNo">068</span>                int M = testIm.getNSlices();<a name="line.68"></a>
-<span class="sourceLineNo">069</span>                <a name="line.69"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
 <span class="sourceLineNo">070</span>                ImageStack animation = new ImageStack(w, h);<a name="line.70"></a>
 <span class="sourceLineNo">071</span><a name="line.71"></a>
 <span class="sourceLineNo">072</span>                for (int a = 0; a &lt; M; a++) {<a name="line.72"></a>
@@ -88,20 +88,20 @@
 <span class="sourceLineNo">080</span>                        Rotation rB = viewB.getRotation();<a name="line.80"></a>
 <span class="sourceLineNo">081</span>                        double[] tA = viewA.getTranslation();<a name="line.81"></a>
 <span class="sourceLineNo">082</span>                        double[] tB = viewB.getTranslation();<a name="line.82"></a>
-<span class="sourceLineNo">083</span>                        <a name="line.83"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
 <span class="sourceLineNo">084</span>                        // interpolation step k for view pair (a,b)<a name="line.84"></a>
 <span class="sourceLineNo">085</span>                        for (int k = 0; k &lt; NumberOfInterpolatedFrames; k++) {<a name="line.85"></a>
 <span class="sourceLineNo">086</span>                                double alpha = (double) k / NumberOfInterpolatedFrames;<a name="line.86"></a>
-<span class="sourceLineNo">087</span>                                <a name="line.87"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
 <span class="sourceLineNo">088</span>                                // interpolate rotation<a name="line.88"></a>
 <span class="sourceLineNo">089</span>                                Rotation rk = Lerp(rA, rB, alpha);<a name="line.89"></a>
-<span class="sourceLineNo">090</span>                                <a name="line.90"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
 <span class="sourceLineNo">091</span>                                // interpolate translation:<a name="line.91"></a>
 <span class="sourceLineNo">092</span>                                double[] tk = Lerp(tA, tB, alpha);<a name="line.92"></a>
-<span class="sourceLineNo">093</span>                                <a name="line.93"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
 <span class="sourceLineNo">094</span>                                ViewTransform viewK = new ViewTransform(rk, tk);<a name="line.94"></a>
 <span class="sourceLineNo">095</span>                                //viewK.print();<a name="line.95"></a>
-<span class="sourceLineNo">096</span>                                <a name="line.96"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
 <span class="sourceLineNo">097</span>                                // Create a new frame for the interpolated view<a name="line.97"></a>
 <span class="sourceLineNo">098</span>                                // and project the target model:<a name="line.98"></a>
 <span class="sourceLineNo">099</span>                                ImageProcessor frame = new ColorProcessor(w, h);<a name="line.99"></a>
@@ -114,16 +114,16 @@
 <span class="sourceLineNo">106</span>                                animation.addSlice(title, frame);<a name="line.106"></a>
 <span class="sourceLineNo">107</span>                        }<a name="line.107"></a>
 <span class="sourceLineNo">108</span>                }<a name="line.108"></a>
-<span class="sourceLineNo">109</span>                <a name="line.109"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
 <span class="sourceLineNo">110</span>                new ImagePlus("Animation", animation).show();<a name="line.110"></a>
 <span class="sourceLineNo">111</span>        }<a name="line.111"></a>
-<span class="sourceLineNo">112</span>        <a name="line.112"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
 <span class="sourceLineNo">113</span>        Rotation Lerp(Rotation R0, Rotation R1, double alpha) {<a name="line.113"></a>
 <span class="sourceLineNo">114</span>                Quaternion qa = MathUtil.toQuaternion(R0);<a name="line.114"></a>
 <span class="sourceLineNo">115</span>                Quaternion qb = MathUtil.toQuaternion(R1);<a name="line.115"></a>
 <span class="sourceLineNo">116</span>                return MathUtil.toRotation(Lerp(qa, qb, alpha));<a name="line.116"></a>
 <span class="sourceLineNo">117</span>        }<a name="line.117"></a>
-<span class="sourceLineNo">118</span>        <a name="line.118"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
 <span class="sourceLineNo">119</span>        /**<a name="line.119"></a>
 <span class="sourceLineNo">120</span>         * Linear quaternion interpolation (LERP)<a name="line.120"></a>
 <span class="sourceLineNo">121</span>         * @param Q0<a name="line.121"></a>
@@ -134,7 +134,7 @@
 <span class="sourceLineNo">126</span>        Quaternion Lerp(Quaternion Q0, Quaternion Q1, double a) {<a name="line.126"></a>
 <span class="sourceLineNo">127</span>                return Quaternion.add(Q0.multiply(1 - a), Q1.multiply(a));<a name="line.127"></a>
 <span class="sourceLineNo">128</span>        }<a name="line.128"></a>
-<span class="sourceLineNo">129</span>        <a name="line.129"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
 <span class="sourceLineNo">130</span>        /**<a name="line.130"></a>
 <span class="sourceLineNo">131</span>         * Linear translation interpolation<a name="line.131"></a>
 <span class="sourceLineNo">132</span>         * @param t0<a name="line.132"></a>
@@ -151,7 +151,7 @@
 <span class="sourceLineNo">143</span>        }<a name="line.143"></a>
 <span class="sourceLineNo">144</span><a name="line.144"></a>
 <span class="sourceLineNo">145</span>        // ----------------------------------------------------------------------<a name="line.145"></a>
-<span class="sourceLineNo">146</span>                        <a name="line.146"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
 <span class="sourceLineNo">147</span>        // draw pyramids instead of squares at Z = PeakHeightZ (inch)<a name="line.147"></a>
 <span class="sourceLineNo">148</span>        void projectAndDrawPyramids(ImageProcessor ip, Camera cam, ViewTransform view, Point2D[] modelPoints) {<a name="line.148"></a>
 <span class="sourceLineNo">149</span>                GridPainter painter = new GridPainter(ip);<a name="line.149"></a>
@@ -165,13 +165,13 @@
 <span class="sourceLineNo">157</span>                        }<a name="line.157"></a>
 <span class="sourceLineNo">158</span>                        painter.lineCol = LineColor;<a name="line.158"></a>
 <span class="sourceLineNo">159</span>                        painter.drawSquare(imageSq);<a name="line.159"></a>
-<span class="sourceLineNo">160</span>                        <a name="line.160"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
 <span class="sourceLineNo">161</span>                        // make the 3D pyramid peak:<a name="line.161"></a>
 <span class="sourceLineNo">162</span>                        double[] modelPeak3d = new double[3];<a name="line.162"></a>
 <span class="sourceLineNo">163</span>                        modelPeak3d[0] = (modelSq[0].getX() + modelSq[2].getX()) / 2;   // X<a name="line.163"></a>
 <span class="sourceLineNo">164</span>                        modelPeak3d[1] = (modelSq[0].getY() + modelSq[2].getY()) / 2;   // Y<a name="line.164"></a>
 <span class="sourceLineNo">165</span>                        modelPeak3d[2] = PeakHeightZ;   // Z<a name="line.165"></a>
-<span class="sourceLineNo">166</span>                        <a name="line.166"></a>
+<span class="sourceLineNo">166</span><a name="line.166"></a>
 <span class="sourceLineNo">167</span>                        // project and draw the pyramid peak:<a name="line.167"></a>
 <span class="sourceLineNo">168</span>                        Point2D pk = MathUtil.toPoint2D(cam.project(view, modelPeak3d));<a name="line.168"></a>
 <span class="sourceLineNo">169</span>                        painter.drawLine(imageSq[0], pk);<a name="line.169"></a>
