@@ -60,5 +60,14 @@ public class IjUtil {
 	
 	// ---------------------------------------------------------------
 	
-
+//	public void showJacobian(MultivariateMatrixFunction jacobianFun, RealVector point) {
+//		double[][] J = jacobianFun.value(point.toArray());
+//		FloatProcessor fp = new FloatProcessor(J[0].length, J.length);
+//		for (int i = 0; i < J.length; i++) {
+//			for (int j = 0; j < J[i].length; j++) {
+//				fp.setf(j, i, (float) J[i][j]); 
+//			}
+//		}
+//		(new ImagePlus("Jacobian", fp)).show();
+//	}
 }

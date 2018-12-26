@@ -16,22 +16,30 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
 import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.lib.math.Matrix;
 
-
-
+/**
+ * This class defines methods for estimating the homography (projective)
+ * transformation between pairs of 2D point sets.
+ * @author WB
+ */
 public class HomographyEstimator {
 	
 	static int maxLmEvaluations = 1000;
 	static int maxLmIterations = 1000;
 	static boolean normalize = true;
 	
-	//private final double[][] J;
-	
 	public HomographyEstimator() {
-		//J = new double[][9];
 	}
 	
-	
+	/**
+	 * Estimates the homographies between a fixed set of 2D model points and
+	 * multiple observations (image point sets).
+	 * The correspondence between the points is assumed to be known.
+	 * @param modelPts a sequence of 2D points on the model (calibration target)
+	 * @param obsPoints a sequence 2D image point sets (one set per view).
+	 * @return the sequence of estimated homographies (3 x 3 matrices), one for each view
+	 */
 	public RealMatrix[] estimateHomographies(Point2D[] modelPts, Point2D[][] obsPoints) {
 		final int M = obsPoints.length;
 		RealMatrix[] homographies = new RealMatrix[M];
@@ -43,13 +51,18 @@ public class HomographyEstimator {
 		return homographies;
 	}
 	
+	/**
+	 * Estimates the homography (projective) transformation from two given 2D point sets.
+	 * The correspondence between the points is assumed to be known.
+	 * @param ptsA the 1st sequence of 2D points 
+	 * @param ptsB the 2nd sequence of 2D points
+	 * @return the estimated homography (3 x 3 matrix)
+	 */
 	public RealMatrix estimateHomography(Point2D[] ptsA, Point2D[] ptsB) {
-		System.out.println("estimating homography");
 		int n = ptsA.length;
 		
 		RealMatrix Na = (normalize) ? getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
-		RealMatrix Nb = (normalize) ? getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);
-		
+		RealMatrix Nb = (normalize) ? getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);	
 		RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
 
 		for (int j = 0, k = 0; j < ptsA.length; j++, k += 2) {
@@ -84,21 +97,21 @@ public class HomographyEstimator {
 	
 
 	/**
-	 * Refines the initial homography by Levenberg-Marquart nonlinear optimization.
-	 * @param Hinit initial homography matrix
-	 * @param modelPts model points (2D)
-	 * @param obsPts observed points (2D)
+	 * Refines the initial homography by non-linear (Levenberg-Marquart) optimization.
+	 * @param Hinit the initial (estimated) homography matrix
+	 * @param pntsA the 1st sequence of 2D points 
+	 * @param pntsB the 2nd sequence of 2D points
 	 * @return the refined homography matrix
 	 */
-	public RealMatrix refineHomography(RealMatrix Hinit, Point2D[] modelPts, Point2D[] obsPts) {
-		final int M = modelPts.length;		
+	public RealMatrix refineHomography(RealMatrix Hinit, Point2D[] pntsA, Point2D[] pntsB) {
+		final int M = pntsA.length;		
 		double[] observed = new double[2 * M];
 		for (int i = 0; i < M; i++) {
-			observed[i * 2 + 0] = obsPts[i].getX();
-			observed[i * 2 + 1] = obsPts[i].getY();
+			observed[i * 2 + 0] = pntsB[i].getX();
+			observed[i * 2 + 1] = pntsB[i].getY();
 		}			
-		MultivariateVectorFunction value = getValueFunction(modelPts);
-		MultivariateMatrixFunction jacobian = getJacobianFunction(modelPts);
+		MultivariateVectorFunction value = getValueFunction(pntsA);
+		MultivariateMatrixFunction jacobian = getJacobianFunction(pntsA);
 		
 		LeastSquaresProblem problem = LeastSquaresFactory.create(
 				LeastSquaresFactory.model(value, jacobian),
@@ -127,7 +140,7 @@ public class HomographyEstimator {
 	
 	
 	private MultivariateVectorFunction getValueFunction(final Point2D[] X) {
-		System.out.println("MultivariateVectorFunction getValueFunction");
+		//System.out.println("MultivariateVectorFunction getValueFunction");
 		return new MultivariateVectorFunction() {
 			@Override
 			public double[] value(double[] h) { // throws IllegalArgumentException {
@@ -169,7 +182,6 @@ public class HomographyEstimator {
 
 /*
 	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] X) {
-		System.out.println("MultivariateMatrixFunction getJacobianFunction");
 		return new MultivariateMatrixFunction() {
 			@Override
 			public double[][] value(double[] h) {
@@ -309,6 +321,10 @@ public class HomographyEstimator {
 		return new Point2D.Double(xn + Xb[0]/Xb[2], yn + Xb[1]/Xb[2]);
 	}
 	
+	/**
+	 * Used for testing only.
+	 * @param args ignored
+	 */
 	public static void main(String[] args) {
 		RealMatrix Hreal = MatrixUtils.createRealMatrix(new double[][]
 				{{3, 2, -1},
@@ -341,7 +357,8 @@ public class HomographyEstimator {
 		HomographyEstimator hest = new HomographyEstimator();
 		RealMatrix H = hest.estimateHomography(pntsA, pntsB);
 		
-		MathUtil.print("H = ", H); System.out.println();
+		System.out.println("H = "); 
+		System.out.println(Matrix.toString(H.getData()));
 		
 		for (Point2D a : pntlistA) {
 			Point2D b = apply(H, a, 0);

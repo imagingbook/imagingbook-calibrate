@@ -10,9 +10,22 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 
-
+/**
+ * This class defines methods for estimating the radial lens distortion parameters
+ * 
+ * @author W. Burger
+ *
+ */
 public class RadialDistortionEstimator {
 	
+	/**
+	 * Estimates the lens distortion from multiple views, starting from an initial (linear) camera model.
+	 * @param cam the initial (linear) camera model
+	 * @param views a sequence of extrinsic view transformations
+	 * @param modelPts the set of 2D model points (on the planar calibration target)
+	 * @param obsPts a sequence of 2D image point sets, one set for each view
+	 * @return a vector of lens distortion coefficients
+	 */
 	protected double[] estimateLensDistortion(Camera cam, ViewTransform[] views, Point2D[] modelPts, Point2D[][] obsPts) {
 		final int M = views.length;
 		final int N = modelPts.length;
@@ -61,9 +74,9 @@ public class RadialDistortionEstimator {
 		DecompositionSolver solver = new SingularValueDecomposition(D).getSolver();
 		RealVector k = solver.solve(d);
 		
-		double err1 = D.operate(new ArrayRealVector(new double[] {0,0})).subtract(d).getNorm();
-		double err2 = D.operate(k).subtract(d).getNorm();
-		System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
+//		double err1 = D.operate(new ArrayRealVector(new double[] {0,0})).subtract(d).getNorm();
+//		double err2 = D.operate(k).subtract(d).getNorm();
+//		System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 		
 		return k.toArray();
 	}

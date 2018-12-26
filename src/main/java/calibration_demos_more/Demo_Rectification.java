@@ -30,30 +30,30 @@ public class Demo_Rectification implements PlugIn {
 	static Class<?> resourceRootClass = ZhangData.class;
 	static String resourceDir = "resources/";
 	static String resourceName = "CalibImageStack.tif";
-	
+
 	static {
 		IjLogStream.redirectSystem();
 		PrintPrecision.set(6);
 	}
-	
+
 	@Override
 	public void run(String arg0) {
 		// open the test image (stack):
 		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
-		
+
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;
 		}
 		testIm.show();
 		String title = testIm.getShortTitle();
-		
+
 		// get the camera intrinsics (typically by calibration):
 		Camera camera = ZhangData.getCameraIntrinsics();
-		
+
 		// create a special geometric mapping
 		Mapping mapping = new RectificationMapping(camera);
-		
+
 		// rectify the images and create a new stack:
 		ImageStack distStack = testIm.getStack();
 		final int w = distStack.getWidth();

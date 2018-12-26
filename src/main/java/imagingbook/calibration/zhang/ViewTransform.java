@@ -1,5 +1,6 @@
 package imagingbook.calibration.zhang;
 
+import java.io.StringWriter;
 import java.util.Arrays;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
@@ -9,9 +10,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
-import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.lib.math.Matrix;
-
 
 /**
  * Instances of this class represent extrinsic camera (view) parameters.
@@ -24,8 +23,6 @@ public class ViewTransform {
 	
 	private final Rotation rotation;
 	private final double[] translation;
-	
-	
 	
 	// ----------------------------------------------------------------------------------
 	
@@ -125,32 +122,39 @@ public class ViewTransform {
 	// ----------------------------------------------------------------------------------
 	
 	/**
-	 * Moves point X from 3D world coordinates to 3D camera coordinates,
+	 * Moves point XYZ from 3D world coordinates to 3D camera coordinates,
 	 * as specified by the transformations of this view.
-	 * No projection is performed at this point.
-	 * @param XYZw a 3D (world) point
+	 * No projection is involved.
+	 * @param XYZ a 3D (world) point
 	 * @return the given world point mapped to 3D camera coordinates
 	 */
-	protected double[] applyTo(double[] XYZw) {	// 3D vector X assumed
+	protected double[] applyTo(double[] XYZ) {	// 3D vector XYZ assumed
 		double[] XYZc = new double[3];
-		rotation.applyTo(XYZw, XYZc);
+		rotation.applyTo(XYZ, XYZc);
 		for (int i = 0; i < 3; i++) {
 			XYZc[i] = XYZc[i] + translation[i];
 		}
 		return XYZc;
 	}
 	
-	
-	public void print() {
+	public String toString() {
 		RealMatrix R = this.getRotationMatrix();
 		RealVector T = this.getTranslationVector();
-		MathUtil.print("R = ", R);
-		MathUtil.print("T = ", T);
+		StringWriter writer = new StringWriter();
+		writer.append("R = \n");
+		writer.append(Matrix.toString(R.getData()));
+		writer.append("\n");
+		writer.append("T = ");
+		writer.append(Matrix.toString(T.toArray()));
+		return writer.toString();
 	}
-	
 	
 	// ------------------------------------------------------------------
 	
+	/**
+	 * For testing only.
+	 * @param args ignored
+	 */
 	public static void main(String[] args) {
 		double[] w1 = {1.2, -0.5, 0.9, 10, 20, 30};
 		System.out.println("w1 = " + Matrix.toString(w1));

@@ -14,11 +14,8 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
  * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix
  * is calculated from analytic expressions (obtained with MatLab).
  * @author WB
- *
  */
 public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
-
-
 
 	protected NonlinearOptimizerAnalytic(Point2D[] modelPts, Point2D[][] obsPts) {
 		super(modelPts, obsPts);
@@ -34,7 +31,6 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 		return new JacobianFun();
 	}
 
-	
 	private class JacobianFun implements MultivariateMatrixFunction {
 		@Override
 		public double[][] value(double[] params) {
@@ -419,13 +415,14 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 			A0[1][10] = t56 * t281;
 			A0[1][11] = fy * t21 + t56 * t284 + fy * t21 * t85;
 			A0[1][12] = -t246 + t285 - t85 * t247 + t56 * t289;
-			// end matlab code
+			// end of matlab code
 
 			final double[][] J = new double[2][camParLength + viewParLength * M];
 			System.arraycopy(A0[0], 0, J[0], 0, camParLength);
 			System.arraycopy(A0[1], 0, J[1], 0, camParLength);
 			System.arraycopy(A0[0], 7, J[0], camParLength + i * viewParLength, viewParLength);
 			System.arraycopy(A0[1], 7, J[1], camParLength + i * viewParLength, viewParLength);
+//			System.out.println("Jacobian inverse condition number = " + MathUtil.inverseConditionNumber(J));
 			return J;
 		}
 	}

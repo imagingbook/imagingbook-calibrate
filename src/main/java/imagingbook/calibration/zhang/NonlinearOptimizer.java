@@ -1,21 +1,23 @@
 package imagingbook.calibration.zhang;
 
-import ij.ImagePlus;
-import ij.process.FloatProcessor;
-
 import java.awt.geom.Point2D;
 import java.util.Arrays;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
-
+/**
+ * Abstract super-class for non-linear optimizers used for
+ * final, overall optimization of calibration parameters.
+ * The actual optimization is performed by the sub-classes.
+ * @author WB
+ */
 public abstract class NonlinearOptimizer {
 
 	static int maxEvaluations = 1000;
@@ -40,29 +42,25 @@ public abstract class NonlinearOptimizer {
 	}
 
 	/**
-	 * Perform Levenberg-Marquardt non-linear optimization to get better
-	 * estimates of the parameters
-	 * 
-	 * @param cam initial camera parameters
-	 * @param views initial view transforms
-	 * @return the improved camera parameters
+	 * Performs Levenberg-Marquardt non-linear optimization to get better
+	 * estimates of the parameters.
+	 * @param cam the initial camera parameters
+	 * @param views the initial view transforms
 	 */
-	protected Camera optimize(Camera cam, ViewTransform[] views) {
+	protected void optimize(Camera cam, ViewTransform[] views) {
 		this.initCam = cam;
 		this.initViews = views;
 		this.camParLength = cam.getParameterVector().length;
 		this.viewParLength = views[0].getParameters().length;
 
-		LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
 		MultivariateVectorFunction V = makeValueFun();
 		MultivariateMatrixFunction J = makeJacobianFun();
 
 		RealVector start = makeInitialParameters(initCam, initViews);
 		RealVector observed = makeObservedVector();
-		MultivariateJacobianFunction model = 
-				LeastSquaresFactory.model(V, J);
-		//showJacobian(J, start);
-
+		
+		MultivariateJacobianFunction model = LeastSquaresFactory.model(V, J);
+		LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
 		Optimum result = lm.optimize(LeastSquaresFactory.create(
 				model,
 				observed, 
@@ -72,7 +70,6 @@ public abstract class NonlinearOptimizer {
 				maxIterations));
 
 		updateEstimates(result.getPoint());
-		return finalCamera;
 	}
 
 	abstract MultivariateVectorFunction makeValueFun();
@@ -80,8 +77,7 @@ public abstract class NonlinearOptimizer {
 	
 	
 	/**
-	 * Common value function for both types of optimizers.
-	 *
+	 * Common value function for optimizers defined in sub-classes.
 	 */
 	protected class ValueFun implements MultivariateVectorFunction {
 		@Override
@@ -126,9 +122,8 @@ public abstract class NonlinearOptimizer {
 
 
 	/**
-	 * Stack the observed image locations of the calibration pattern points into
-	 * a vector
-	 * 
+	 * Stack the observed image coordinates of the calibration pattern points into
+	 * a vector.
 	 * @return the observed vector
 	 */
 	protected RealVector makeObservedVector()	{
@@ -157,24 +152,20 @@ public abstract class NonlinearOptimizer {
 		}
 	}
 	
+	/**
+	 * Returns the optimized camera parameters.
+	 * @return the optimized camera parameters
+	 */
 	protected Camera getFinalCamera() {
 		return finalCamera;
 	}
 
+	/**
+	 * Returns the optimized view parameters.
+	 * @return the optimized view parameters
+	 */
 	protected ViewTransform[] getFinalViews() {
 		return finalViews;
 	}
 	
-	@SuppressWarnings("unused")
-	private void showJacobian(MultivariateMatrixFunction jacobianFun, RealVector point) {
-		double[][] J = jacobianFun.value(point.toArray());
-		FloatProcessor fp = new FloatProcessor(J[0].length, J.length);
-		for (int i = 0; i < J.length; i++) {
-			for (int j = 0; j < J[i].length; j++) {
-				fp.setf(j, i, (float) J[i][j]); 
-			}
-		}
-		(new ImagePlus("Jacobian", fp)).show();
-	}
-
 }

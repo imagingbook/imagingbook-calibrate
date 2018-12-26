@@ -68,7 +68,8 @@ public class Demo_Zhang_Calibration implements PlugIn {
 		Point2D[] modelPoints = ZhangData.getModelPoints();
 		Camera camReal = ZhangData.getCameraIntrinsics();
 		if (BeVerbose)
-			camReal.print("camReal");
+			System.out.println("Camera intrinsics (real):");
+			System.out.println(camReal.toString());
 		
 //		ViewTransform[] viewsReal = ZhangData.getAllViewTransforms();	
 		Point2D[][] obsPoints 	  = ZhangData.getAllObservedPoints();
@@ -100,13 +101,15 @@ public class Demo_Zhang_Calibration implements PlugIn {
 		
 		// show results ------------------------------------------
 		
-		camFinal.print("camFinal");
+		System.out.println("Camera intrinsics (final):");
+		System.out.println(camFinal.toString());
+		
 		ViewTransform[] finalViews = zcalib.getFinalViews();
 		
 		if (ListCameraViews) {
 			for (int i = 0; i < M; i++) {
-				System.out.println("View " + i);
-				finalViews[i].print();
+				System.out.println("**** View " + i + ": ****");
+				System.out.println(finalViews[i].toString());
 			}
 		}
 		

@@ -11,7 +11,6 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
  * is calculated numerically (i.e., by estimating the first partial derivatives from
  * finite differences).
  * @author WB
- *
  */
 public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	
@@ -28,7 +27,6 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	MultivariateMatrixFunction makeJacobianFun() {
 		return new JacobianFun();
 	}
-	
 
 	private class JacobianFun implements MultivariateMatrixFunction {
 		// THIS VERSION only calculates single blocks of the Jacobian!
@@ -103,6 +101,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        
 //			long endtime = System.nanoTime();
 //			System.out.println("time diff = " + (endtime - starttime) + " ns");
+//	        System.out.println("Jacobian inverse condition number = " + MathUtil.inverseConditionNumber(J));
 	        return J;
 	    }
 		

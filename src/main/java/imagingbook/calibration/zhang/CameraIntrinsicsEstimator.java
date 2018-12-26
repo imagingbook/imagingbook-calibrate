@@ -1,21 +1,28 @@
 package imagingbook.calibration.zhang;
 
-import ij.IJ;
-import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.lib.math.Matrix;
-
 import org.apache.commons.math3.linear.CholeskyDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
+import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.lib.math.Matrix;
+
 /**
- * @author WB
+ * This class defines methods for estimating the intrinsic camera parameters
+ * from multiple homographies. Alternative versions are provided (only one is actually used though).
+ * 
+ * @author W. Burger
  *
  */
-
 public class CameraIntrinsicsEstimator {
 	
-	// Version A (Zhang's original closed form solution)
+
+	/**
+	 * Version 1 (Zhang's original closed form solution).
+	 * Estimates the the intrinsic camera parameters from multiple homographies.
+	 * @param homographies a set of homography matrices
+	 * @return the estimated 3 x 3 intrinsic transformation matrix
+	 */
 	protected RealMatrix getCameraIntrinsicsZhang1(RealMatrix[] homographies) {
 		final int M = homographies.length;
 		int rows = 2 * M;
@@ -52,7 +59,12 @@ public class CameraIntrinsicsEstimator {
 		return A;
 	}
 	
-	// Version B (Zhang's corrected closed form solution)
+	/**
+	 * Version 2 (Zhang's corrected closed form solution).
+	 * Estimates the the intrinsic camera parameters from multiple homographies.
+	 * @param homographies a set of homography matrices
+	 * @return the estimated 3 x 3 intrinsic transformation matrix
+	 */
 	protected RealMatrix getCameraIntrinsicsZhang2(RealMatrix[] homographies) {
 		final int M = homographies.length;
 		int rows = 2 * M;
@@ -87,7 +99,12 @@ public class CameraIntrinsicsEstimator {
 		return A;
 	}
 	
-	// Version C (WB's closed form solution)
+	/**
+	 * Version 3 (WB's closed form solution).
+	 * Estimates the the intrinsic camera parameters from multiple homographies.
+	 * @param homographies a set of homography matrices
+	 * @return the estimated 3 x 3 intrinsic transformation matrix
+	 */
 	protected RealMatrix getCameraIntrinsicsZhang3(RealMatrix[] homographies) {
 		final int M = homographies.length;
 		int rows = 2 * M;
@@ -129,9 +146,15 @@ public class CameraIntrinsicsEstimator {
 		return A;
 	}
 	
-	// Version D (WB, using Cholesky decomposition)
+
+	/**
+	 * Final version by WB (this version is used by default).
+	 * Estimates the the intrinsic camera parameters from multiple homographies
+	 * using a Cholesky decomposition.
+	 * @param homographies a set of homography matrices
+	 * @return the estimated 3 x 3 intrinsic transformation matrix
+	 */
 	protected RealMatrix getCameraIntrinsics(RealMatrix[] homographies) {
-		IJ.log("running getIntrinsics - Cholesky");
 		final int M = homographies.length;
 		int rows = 2 * M;
 		double[][] V = new double[rows][];
@@ -155,7 +178,6 @@ public class CameraIntrinsicsEstimator {
 				{{b[0], b[1], b[3]},
 				 {b[1], b[2], b[4]},
 				 {b[3], b[4], b[5]}});
-		System.out.println("B = " + B.toString());
 		
 		if (B.getEntry(0, 0) < 0 || B.getEntry(1, 1) < 0 || B.getEntry(2, 2) < 0) {	
 			B = B.scalarMultiply(-1);	// make sure B is positive definite 

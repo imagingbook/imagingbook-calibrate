@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.lib.math.Matrix;
 
 
 /**
@@ -15,14 +16,22 @@ import imagingbook.calibration.zhang.util.MathUtil;
  *   Z. Zhang, "A flexible new technique for camera calibration",
  *   IEEE Transactions on Pattern Analysis and Machine Intelligence, 
  *   22(11), pp. 1330-1334, 2000.
- * See also http://research.microsoft.com/en-us/um/people/zhang/Calib/ and
- * http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf
+ * See also 
+ * <a href="http://research.microsoft.com/en-us/um/people/zhang/Calib/">
+ * http://research.microsoft.com/en-us/um/people/zhang/Calib/</a>
+ * and
+ * <a href="http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf">
+ * http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf</a>
  * @author W. Burger
- * @version 2016/05/14
- *
+ * @version 2018/12/27
  */
 public class Calibrator {
 	
+	/**
+	 * Inner class representing a set of parameters for instantiating
+	 * new objects of type of {@link Calibrator}. 
+	 * @author WB
+	 */
 	public static class Parameters {
 		public boolean normalize = true;
 		public boolean assumeZeroSkew = false;
@@ -31,9 +40,6 @@ public class Calibrator {
 		public int lensDistortionKoeffients = 2;
 		public boolean beVerbose = false;
 	}
-	
-//	private double alpha, beta, gamma, cx, cy; 	// camera intrinsics
-//	private RealMatrix A = null;				// camera intrinsics
 	
 	private int M;								// the number of camera views
 	private final Point2D[] modelPts;			// the sequence of 2D points in the planar model
@@ -46,21 +52,29 @@ public class Calibrator {
 	
 	// ------- constructors ------------------------------
 	
+	/**
+	 * The only constructor. 
+	 * @param params a parameter object (default parameters are used if {@code null} is passed)
+	 * @param model a sequence of 2D points specifying the x/y coordinates of 
+	 * 			the planar calibration pattern (assuming zero z-coordinates)
+	 */
 	public Calibrator(Parameters params, Point2D[] model) {
-		this.params = params;
+		this.params = (params != null) ? params : new Parameters();
 		this.modelPts = model;
 		this.imgPntSet = new ArrayList<Point2D[]>();
 	}
 	
-	// attach a new observation (set of image points)
+	/**
+	 * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
+	 * @param pts a sequence of 2D image points
+	 */
 	public void addView(Point2D[] pts) {
 		imgPntSet.add(pts);
 	}
 	
 	/**
-	 * The actual calibration is being done here.
-	 * 
-	 * @return the estimated camera parameters as a {@link Camera} object
+	 * Performs the actual camera calibration based on the provided sequence of views.
+	 * @return the estimated camera intrinsics as a {@link Camera} object
 	 */
 	public Camera calibrate() {
 		M = imgPntSet.size();	// number of views to process
@@ -92,7 +106,8 @@ public class Calibrator {
 		// Step 5: Refine all parameters by non-linear optimization
 		NonlinearOptimizer optimizer = new NonlinearOptimizerAnalytic(modelPts, obsPts);
 //		NonlinearOptimizer optimizer = new NonlinearOptimizerNumeric(modelPts, obsPts);
-		finalCam = optimizer.optimize(improvedCam, initViews);
+		optimizer.optimize(improvedCam, initViews);
+		finalCam = optimizer.getFinalCamera();
 		finalViews = optimizer.getFinalViews();
 
 		return finalCam;
@@ -106,11 +121,19 @@ public class Calibrator {
 		int i = 0;
 		for (RealMatrix H : homographies) {
 			i++;
-			MathUtil.print("Homography " + i, H); 
-			
+			System.out.println("Homography " + i + ":");
+			System.out.println(Matrix.toString(H.getData()));
 		}
 	}
 	
+	/**
+	 * Calculates the squared projection error for a single view, associated
+	 * with a set of observed image points.
+	 * @param cam a camera model (camera intrinsics)
+	 * @param view a view transformation (camera extrinsics)
+	 * @param observed a set of observed image points
+	 * @return the squared projection error (measured in pixel units)
+	 */
     public double getProjectionError(Camera cam, ViewTransform view, Point2D[] observed) {
     	double sqError = 0;
 		for (int j = 0; j < modelPts.length; j++) {
@@ -123,6 +146,14 @@ public class Calibrator {
     	return sqError;
     }
     
+	/**
+	 * Calculates the squared projection error for a sequence of views, associated
+	 * with a sequence of observed image point sets.
+	 * @param cam a camera model (camera intrinsics)
+	 * @param views a sequence of view transformations (camera extrinsics)
+	 * @param observed a sequence of sets of observed image points
+	 * @return the squared projection error (measured in pixel units)
+	 */
     public double getProjectionError(Camera cam, ViewTransform[] views, Point2D[][] observed) {
     	double totalError = 0;
     	for (int i = 0; i < views.length; i++) {
@@ -133,17 +164,36 @@ public class Calibrator {
     
     // ----------------------------------------------------------------------
     
+    /**
+     * Returns the initial camera model (no lens distortion).
+     * @return the initial camera model
+     */
     public Camera getInitialCamera() {
     	return initCam;
     }
+    
+    /**
+     * Returns the final camera model (including lens distortion).
+     * @return the final camera model
+     */
     public Camera getFinalCamera() {
     	return finalCam;
     }
     
+    /**
+     * Returns the sequence of initial camera views (extrinsics, no 
+     * lens distortion).
+     * @return the sequence of initial camera views
+     */
     public ViewTransform[] getInitialViews() {
     	return initViews;
     }
     
+    /**
+     * Returns the sequence of final camera views (extrinsics, including 
+     * lens distortion).
+     * @return the sequence of final camera views
+     */
     public ViewTransform[] getFinalViews() {
     	return finalViews;
     }

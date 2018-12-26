@@ -5,6 +5,7 @@ import java.util.Locale;
 
 import org.apache.commons.math3.complex.Quaternion;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -22,6 +23,7 @@ public class MathUtil {
 		Locale.setDefault(Locale.US);
 	}
 	
+	@Deprecated
 	public static void print(String name, RealMatrix M) {
 		System.out.println(name);
 		for (int r = 0; r < M.getRowDimension(); r++) {
@@ -30,6 +32,7 @@ public class MathUtil {
 		}
 	}
 	
+	@Deprecated
 	public static void print(String name, RealVector v) {
 		System.out.println(name + v.toString());
 	}
@@ -282,6 +285,26 @@ public class MathUtil {
 	}
 	
 	// ---------------------------------------------------------------
+	
+	/**
+	 * Calculates the 'inverse condition number' (RCOND() in Matlab)
+	 * of the given matrix (0,...,1, ideally close to 1).
+	 * @param Ma the matrix
+	 * @return the inverse condition number
+	 */
+	public static double inverseConditionNumber(double[][] Ma) {
+		RealMatrix M = new Array2DRowRealMatrix(Ma);
+		SingularValueDecomposition svd = new SingularValueDecomposition(M);
+		return svd.getInverseConditionNumber();
+	}
+	
+	
+	// ---------------------------------------------------------------
+	
+	/**
+	 * For testing only.
+	 * @param args ignored
+	 */
 	public static void main (String[] args) {
 		//double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}};
 		double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}, {-3, 7, 2}};

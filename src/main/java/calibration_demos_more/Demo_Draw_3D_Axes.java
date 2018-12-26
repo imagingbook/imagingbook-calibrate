@@ -23,25 +23,25 @@ import imagingbook.lib.util.ResourceUtils;
  * @version 2017-05-30
  */
 public class Demo_Draw_3D_Axes implements PlugIn {
-	
+
 	static Class<?> resourceRootClass = ZhangData.class;
 	static String resourceDir = "resources/";
 	static String resourceName = "CalibImageStack.tif";
-	
+
 	static Color BackGroundColor = Color.white;
 	static Color LineColor = Color.magenta;
 	static Color xColor = Color.red;
 	static Color yColor = Color.green;
 	static Color zColor = Color.blue;
-	
+
 	static double axisLength = 5;	
 	static boolean BeVerbose = false;
-	
+
 	static {
 		IjLogStream.redirectSystem();
 		PrintPrecision.set(6);
 	}
-	
+
 	@Override
 	public void run(String arg0) {
 		// create a 3D model:
@@ -50,7 +50,7 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 		double[] p1 = {axisLength, 0.0, 0.0};
 		double[] p2 = {0.0, axisLength, 0.0};
 		double[] p3 = {0.0, 0.0, axisLength};
-		
+
 		// open the test image (stack):
 		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
 		if (testIm == null) {
@@ -58,10 +58,10 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 			return;
 		}
 		testIm.show();
-		
+
 		// get the camera intrinsics (typically by calibration):
 		Camera camera = ZhangData.getCameraIntrinsics();
-		
+
 		// get all view parameters (extrinsics):
 		ViewTransform[] views = ZhangData.getAllViewTransforms();
 		int M = views.length;
@@ -79,7 +79,7 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 		}
 		testIm.updateAndDraw();
 	}
-	
+
 	private void drawProjectedSegment(ImageProcessor ip, Camera cam, ViewTransform V, double[] P1, double[] P2) {
 		double[] u1 = cam.project(V, P1);
 		int u1x = (int) Math.round(u1[0]);
@@ -89,6 +89,6 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 		int u2y = (int) Math.round(u2[1]);
 		ip.drawLine(u1x, u1y, u2x, u2y);
 	}
-	
+
 
 }

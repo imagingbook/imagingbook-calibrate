@@ -34,23 +34,23 @@ import imagingbook.lib.util.ResourceUtils;
  *
  */
 public class Demo_View_Interpolation implements PlugIn {
-	
+
 	static Class<?> resourceRootClass = ZhangData.class;
 	static String resourceDir = "resources/";
 	static String resourceName = "CalibImageStack.tif";
-	
+
 	static int NumberOfInterpolatedFrames = 10;
 	static double PeakHeightZ = -1.5;
-	
+
 	static Color LineColor = Color.black;
 	static Color BackGroundColor = Color.white;
 	static boolean BeVerbose = false;
-	
+
 	static {
 		IjLogStream.redirectSystem();
 		PrintPrecision.set(6);
 	}
-	
+
 	@Override
 	public void run(String arg0) {
 		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
@@ -59,14 +59,14 @@ public class Demo_View_Interpolation implements PlugIn {
 			IJ.error("Could not open calibration images!"); 
 			return;
 		}
-		
+
 		Camera cam = ZhangData.getCameraIntrinsics();
 		Point2D[] modelPoints = ZhangData.getModelPoints();
-		
+
 		int w = testIm.getWidth();
 		int h = testIm.getHeight();
 		int M = testIm.getNSlices();
-		
+
 		ImageStack animation = new ImageStack(w, h);
 
 		for (int a = 0; a < M; a++) {
@@ -80,20 +80,20 @@ public class Demo_View_Interpolation implements PlugIn {
 			Rotation rB = viewB.getRotation();
 			double[] tA = viewA.getTranslation();
 			double[] tB = viewB.getTranslation();
-			
+
 			// interpolation step k for view pair (a,b)
 			for (int k = 0; k < NumberOfInterpolatedFrames; k++) {
 				double alpha = (double) k / NumberOfInterpolatedFrames;
-				
+
 				// interpolate rotation
 				Rotation rk = Lerp(rA, rB, alpha);
-				
+
 				// interpolate translation:
 				double[] tk = Lerp(tA, tB, alpha);
-				
+
 				ViewTransform viewK = new ViewTransform(rk, tk);
 				//viewK.print();
-				
+
 				// Create a new frame for the interpolated view
 				// and project the target model:
 				ImageProcessor frame = new ColorProcessor(w, h);
@@ -106,16 +106,16 @@ public class Demo_View_Interpolation implements PlugIn {
 				animation.addSlice(title, frame);
 			}
 		}
-		
+
 		new ImagePlus("Animation", animation).show();
 	}
-	
+
 	Rotation Lerp(Rotation R0, Rotation R1, double alpha) {
 		Quaternion qa = MathUtil.toQuaternion(R0);
 		Quaternion qb = MathUtil.toQuaternion(R1);
 		return MathUtil.toRotation(Lerp(qa, qb, alpha));
 	}
-	
+
 	/**
 	 * Linear quaternion interpolation (LERP)
 	 * @param Q0
@@ -126,7 +126,7 @@ public class Demo_View_Interpolation implements PlugIn {
 	Quaternion Lerp(Quaternion Q0, Quaternion Q1, double a) {
 		return Quaternion.add(Q0.multiply(1 - a), Q1.multiply(a));
 	}
-	
+
 	/**
 	 * Linear translation interpolation
 	 * @param t0
@@ -143,7 +143,7 @@ public class Demo_View_Interpolation implements PlugIn {
 	}
 
 	// ----------------------------------------------------------------------
-			
+
 	// draw pyramids instead of squares at Z = PeakHeightZ (inch)
 	void projectAndDrawPyramids(ImageProcessor ip, Camera cam, ViewTransform view, Point2D[] modelPoints) {
 		GridPainter painter = new GridPainter(ip);
@@ -157,13 +157,13 @@ public class Demo_View_Interpolation implements PlugIn {
 			}
 			painter.lineCol = LineColor;
 			painter.drawSquare(imageSq);
-			
+
 			// make the 3D pyramid peak:
 			double[] modelPeak3d = new double[3];
 			modelPeak3d[0] = (modelSq[0].getX() + modelSq[2].getX()) / 2;	// X
 			modelPeak3d[1] = (modelSq[0].getY() + modelSq[2].getY()) / 2;	// Y
 			modelPeak3d[2] = PeakHeightZ;	// Z
-			
+
 			// project and draw the pyramid peak:
 			Point2D pk = MathUtil.toPoint2D(cam.project(view, modelPeak3d));
 			painter.drawLine(imageSq[0], pk);

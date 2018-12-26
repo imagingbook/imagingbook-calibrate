@@ -5,19 +5,35 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
 import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.lib.math.Matrix;
 
 
+/**
+ * This class defines methods for estimating the extrinsic camera parameters
+ * from multiple homographies.
+ * 
+ * @author W. Burger
+ *
+ */
 public class ExtrinsicViewEstimator {
 	
 	static boolean beVerbose = false;
 	
 	private final RealMatrix A_inv;
 	
+	/**
+	 * The only constructor.
+	 * @param A the 3 x 3 matrix with intrinsic camera parameters
+	 */
 	protected ExtrinsicViewEstimator(RealMatrix A) {
 		this.A_inv = MatrixUtils.inverse(A);
 	}
 	
-	
+	/**
+	 * Estimates the extrinsic camera parameters for a sequence of homographies.
+	 * @param homographies a set of homographies given as 3 x 3 matrices
+	 * @return the sequence of extrinsic camera parameters (views), one view for each homography
+	 */
 	protected ViewTransform[] getExtrinsics(RealMatrix[] homographies) {
 		final int M = homographies.length;
 		ViewTransform[] views = new ViewTransform[M];
@@ -45,9 +61,9 @@ public class ExtrinsicViewEstimator {
 		RealVector t  = A_inv.operate(h2).mapMultiplyToSelf(lambda);
 		
 		if (beVerbose) {
-			MathUtil.print("r1 = ", r0);
-			MathUtil.print("r2 = ", r1);
-			MathUtil.print("t  = ", t);
+			System.out.println("r1 = " + Matrix.toString(r0.toArray()));
+			System.out.println("r2 = " + Matrix.toString(r1.toArray()));
+			System.out.println("t = " + Matrix.toString(t.toArray()));
 		}
 		
 		RealMatrix R = MatrixUtils.createRealMatrix(3, 3);
@@ -55,7 +71,7 @@ public class ExtrinsicViewEstimator {
 		R.setColumnVector(1, r1);
 		R.setColumnVector(2, r2);
 		if (beVerbose) {
-			MathUtil.print("Rinit = ", R);
+			System.out.println("Rinit = \n" + Matrix.toString(R.getData()));
 		}
 				
 //		// the R matrix is probably not a real rotation matrix.  So find
