@@ -43,8 +43,6 @@ public class Demo_Replace_Camera implements PlugIn {
 		PrintPrecision.set(6);
 	}
 
-
-	@Override
 	public void run(String arg0) {
 		// open the test image (stack):	
 		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);

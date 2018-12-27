@@ -51,7 +51,6 @@ public class Demo_View_Interpolation implements PlugIn {
 		PrintPrecision.set(6);
 	}
 
-	@Override
 	public void run(String arg0) {
 		ImagePlus testIm = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
 

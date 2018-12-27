@@ -80,7 +80,6 @@ public abstract class NonlinearOptimizer {
 	 * Common value function for optimizers defined in sub-classes.
 	 */
 	protected class ValueFun implements MultivariateVectorFunction {
-		@Override
 		public double[] value(double[] params) {
 			final double[] a = Arrays.copyOfRange(params, 0, camParLength);
 			final Camera cam = new Camera(a);

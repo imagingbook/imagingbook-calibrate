@@ -32,7 +32,6 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 	}
 
 	private class JacobianFun implements MultivariateMatrixFunction {
-		@Override
 		public double[][] value(double[] params) {
 			final double[][] J = new double[2 * M * N][];
 			for (int i = 0, k = 0; i < M; i++) {

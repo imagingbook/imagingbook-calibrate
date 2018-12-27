@@ -142,7 +142,6 @@ public class HomographyEstimator {
 	private MultivariateVectorFunction getValueFunction(final Point2D[] X) {
 		//System.out.println("MultivariateVectorFunction getValueFunction");
 		return new MultivariateVectorFunction() {
-			@Override
 			public double[] value(double[] h) { // throws IllegalArgumentException {
 				final double[] Y = new double[X.length * 2];
 				for (int j = 0; j < X.length; j++) {
@@ -159,7 +158,6 @@ public class HomographyEstimator {
 	
 	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] X) {
 		return new MultivariateMatrixFunction() {
-			@Override
 			public double[][] value(double[] h) {
 				final double[][] J = new double[2 * X.length][];
 				for (int i = 0; i < X.length; i++) {

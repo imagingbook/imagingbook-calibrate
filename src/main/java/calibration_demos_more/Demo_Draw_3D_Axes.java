@@ -42,7 +42,6 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 		PrintPrecision.set(6);
 	}
 
-	@Override
 	public void run(String arg0) {
 		// create a 3D model:
 
