@@ -5,6 +5,28 @@
 	<artifactId>imagingbook-calibrate</artifactId>
 	<version>1.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
+	
+	 <!-- project information -->
+	<description>Java/ImageJ implementation of Zhang's camera calibration algorithm</description>
+	<inceptionYear>2015</inceptionYear>
+	<url>http://www.imagingbook.com</url>
+	
+	<developers>
+		<developer>
+			<name>Wilhelm Burger</name>
+			<email>wilbur@ieee.org</email>
+		</developer>
+	</developers>
+	
+	<licenses>
+		<license>
+			<name>BSD 2-Clause Simplified License</name>
+			<url>http://opensource.org/licenses/BSD-2-Clause</url>
+		</license>
+	</licenses>
+	
+	
+	<!-- COMMON to stand-alone projects based on ImageJ and imagingbook libraries  -->
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -12,6 +34,9 @@
 		<imagingbook.version>1.6-SNAPSHOT</imagingbook.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
 
+		<webdir>${project.basedir}/docs</webdir>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
@@ -73,6 +98,15 @@
 					<includes>
 						<include>**/imagingbook/**</include>  <!-- include the library classes only (no plugins) -->
 					</includes>
+					<!-- add more properties to MANIFEST file -->
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Build-Date>${buildDate}</Build-Date>
+						</manifestEntries>
+					</archive>
 				</configuration>
 			</plugin>
 
@@ -122,11 +156,69 @@
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
+					</execution> <!-- end of copy -->
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<!-- Javadoc generation -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
+				<configuration>
+					<!-- Default configuration for all reports -->
+					<reportOutputDirectory>${webdir}</reportOutputDirectory>
+					<destDir>javadoc</destDir>
+					<doctitle>${javadoc-doctitle}</doctitle>
+					<packagesheader>${project.name}</packagesheader>
+					<!-- <header>The ImagingBook HEADER</header> -->
+					<!-- <footer>The ImagingBook FOOTER</footer> -->
+					<!-- <top>The ImagingBook TOP text</top> -->
+					<!-- <bottom>
+	        		<![CDATA[Copyright &#169; {inceptionYear}&#x2013;{currentYear}, 
+	        		<a href="http://www.imagingbook.com" target="new">
+	        		Wilhelm Burger</a>
+	        		<a href="http://opensource.org/licenses/BSD-2-Clause" target="new">
+	        		(BSD 2-Clause Simplified License)</a>]]>
+					</bottom> -->
+					<show>protected</show>
+					<nohelp>true</nohelp>
+					<linksource>true</linksource>
+					<author>false</author>
+					<verbose>true</verbose>
+					<!-- <detectLinks>true</detectLinks> -->
+					<!-- <detectOfflineLinks>true</detectOfflineLinks> -->
+				</configuration>
+			</plugin>
+
+			<plugin>  <!-- generate a separate jar file with source code -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
-			<!-- end of copy -->
+			
 		</plugins>
 	</build>
+	
+	<reporting>
+		<plugins>
+			<plugin>  <!-- to stop Maven complaining about missing version number -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.8.1</version>
+				<reportSets>
+					<reportSet />
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
 
 </project>
