@@ -35,8 +35,6 @@
 		<commons-math3.version>3.6.1</commons-math3.version>
 
 		<webdir>${project.basedir}/docs</webdir>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
@@ -57,20 +55,20 @@
 			<version>${imagej.version}</version> <!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math3</artifactId>
-			<version>${commons-math3.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-common</artifactId>
 			<version>${imagingbook.version}</version>
+		</dependency>
+				<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>${commons-math3.version}</version>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<pluginManagement>
-			<!-- <plugins>
+			<plugins>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
@@ -80,7 +78,7 @@
 						<target>1.8</target>
 					</configuration>
 				</plugin>
-			</plugins> -->
+			</plugins>
 		</pluginManagement>
 
 		<outputDirectory>${project.basedir}/ImageJ/plugins</outputDirectory>
