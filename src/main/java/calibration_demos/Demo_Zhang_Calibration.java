@@ -29,20 +29,21 @@ import imagingbook.lib.util.ResourceUtils;
  * All rendering is done by pixel drawing (no graphic overlays).
  * 
  * @author W. Burger
- * @version 2017-05-30
+ * @version 2018/12/29
  */
 public class Demo_Zhang_Calibration implements PlugIn {
 	
-	static Class<?> resourceRootClass = ZhangData.class;
-	static String resourceDir = "resources/";
-	static String resourceName = "CalibImageStack.tif";
+	private static boolean DEBUG = true;
 	
-	static boolean ShowObservedModelPoints = true;		// draw observed image points into a new stack
-	static boolean ShowProjectedImagePoints = true;		// draw projected image points into the test image stack
-	static boolean ListCameraViews = true;
-	static boolean BeVerbose = false;
+	private static Class<?> resourceRootClass = ZhangData.class;
+	private static String resourceDir = "resources/";
+	private static String resourceName = "CalibImageStack.tif";
 	
-	static Color BackGroundColor = Color.white;
+	private static boolean ShowObservedModelPoints = true;		// draw observed image points into a new stack
+	private static boolean ShowProjectedImagePoints = true;		// draw projected image points into the test image stack
+	private static boolean ListCameraViews = true;
+	
+	private static Color BackGroundColor = Color.white;
 	
 	static {
 		IjLogStream.redirectSystem();
@@ -67,9 +68,10 @@ public class Demo_Zhang_Calibration implements PlugIn {
 		int height = testIm.getHeight();
 		Point2D[] modelPoints = ZhangData.getModelPoints();
 		Camera camReal = ZhangData.getCameraIntrinsics();
-		if (BeVerbose)
-			System.out.println("Camera intrinsics (real):");
+		if (DEBUG) {
+			System.out.println("Camera intrinsics (reference from EasyCalib):");
 			System.out.println(camReal.toString());
+		}
 		
 //		ViewTransform[] viewsReal = ZhangData.getAllViewTransforms();	
 		Point2D[][] obsPoints 	  = ZhangData.getAllObservedPoints();
@@ -80,18 +82,20 @@ public class Demo_Zhang_Calibration implements PlugIn {
 			new ImagePlus("Observed points", stack).show();
 		}
 		
-		// perform calibration ------------------------------------------
+		// Set up calibrator ------------------------------------------
 		
 		Parameters params = new Calibrator.Parameters();
-		params.normalize = true;
-		params.assumeZeroSkew = false;
+		params.normalizePointCoordinates = true;
 		params.lensDistortionKoeffients = 2;
-		params.beVerbose = BeVerbose;
+		params.useNumericJacobian = true;
+		params.debug = DEBUG;
 		
 		Calibrator zcalib = new Calibrator(params, modelPoints);
 		for (int i = 0; i < M; i++) {
 			zcalib.addView(obsPoints[i]);
 		}
+		
+		// Perform calibration ------------------------------------------
 		
 		Camera camFinal = zcalib.calibrate();
 		if (camFinal == null) {
@@ -99,13 +103,14 @@ public class Demo_Zhang_Calibration implements PlugIn {
 			return;
 		}
 		
-		// show results ------------------------------------------
+		// Show results ------------------------------------------
 		
-		System.out.println("Camera intrinsics (final):");
+		System.out.println("Camera intrinsics (final estimate):");
 		System.out.println(camFinal.toString());
 		
 		ViewTransform[] finalViews = zcalib.getFinalViews();
-		
+		System.out.format("Final (squared) projection error: %.3f\n", zcalib.getProjectionError(camFinal, finalViews, obsPoints));
+				
 		if (ListCameraViews) {
 			for (int i = 0; i < M; i++) {
 				System.out.println("**** View " + i + ": ****");

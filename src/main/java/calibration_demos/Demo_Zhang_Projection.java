@@ -22,7 +22,7 @@ import imagingbook.lib.util.ResourceUtils;
  * test images and projects the model points into each view,
  * using the (known) camera and view parameters.
  * All data are part of Zhang's demo data set that comes with the
- * EasyCalib program. No calibration is performed.
+ * EasyCalib program. NO CALIBRATION is performed here!
  * 
  * @author W. Burger
  * @version 2017-05-30

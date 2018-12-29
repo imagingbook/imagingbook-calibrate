@@ -22,23 +22,28 @@ import imagingbook.lib.math.Matrix;
  * and
  * <a href="http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf">
  * http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf</a>
+ * 
  * @author W. Burger
- * @version 2018/12/27
+ * @version 2018/12/29
  */
 public class Calibrator {
 	
 	/**
 	 * Inner class representing a set of parameters for instantiating
 	 * new objects of type of {@link Calibrator}. 
-	 * @author WB
+	 * Parameters can be specified by setting the associated public fields.
 	 */
 	public static class Parameters {
-		public boolean normalize = true;
+		/** Normalize point coordinates for numerical stability in {@link HomographyEstimator}. */
+		public boolean normalizePointCoordinates = true;
+		/** Assume that the camera has no skew (currently not used). */
 		public boolean assumeZeroSkew = false;
-		public int maxEvaluations = 1000;	// for LM-optimizer
-		public int maxIterations = 1000;	// for LM-optimizer
+		/** Use numeric (instead of analytic) calculation of the Jacobian in {@link NonlinearOptimizer}. */
+		public boolean useNumericJacobian = false;
+		/** Number of lens distortion coefficients (2 = simple polynomial model). */
 		public int lensDistortionKoeffients = 2;
-		public boolean beVerbose = false;
+		/** Turn on debugging output. */
+		public boolean debug = false;					
 	}
 	
 	private int M;								// the number of camera views
@@ -85,7 +90,7 @@ public class Calibrator {
 		obsPts = imgPntSet.toArray(new Point2D[0][]);
 		
 		// Step 1: Calculate the homographies for each of the given N views:
-		HomographyEstimator hest = new HomographyEstimator();
+		HomographyEstimator hest = new HomographyEstimator(params.normalizePointCoordinates);
 		RealMatrix[] H_init = hest.estimateHomographies(modelPts, obsPts);
 		
 		// Step 2: Estimate the intrinsic parameters by linear optimization:
@@ -104,8 +109,9 @@ public class Calibrator {
 		Camera improvedCam = new Camera(A_init, distParams);
 		
 		// Step 5: Refine all parameters by non-linear optimization
-		NonlinearOptimizer optimizer = new NonlinearOptimizerAnalytic(modelPts, obsPts);
-//		NonlinearOptimizer optimizer = new NonlinearOptimizerNumeric(modelPts, obsPts);
+		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?
+				new NonlinearOptimizerNumeric(modelPts, obsPts) :
+				new NonlinearOptimizerAnalytic(modelPts, obsPts);
 		optimizer.optimize(improvedCam, initViews);
 		finalCam = optimizer.getFinalCamera();
 		finalViews = optimizer.getFinalViews();

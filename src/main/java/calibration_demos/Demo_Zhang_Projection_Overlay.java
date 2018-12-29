@@ -27,13 +27,13 @@ import imagingbook.lib.util.ResourceUtils;
  * using the calculated intrinsic camera parameters (same for all
  * views) and the extrinsic parameters calculated for each view.
  * All data are part of Zhang's demo data set that comes with the
- * EasyCalib program. No calibration is performed.
+ * EasyCalib program. NO CALIBRATION is performed here!
  * 
  * Graphic elements are drawn as non-destructive vector overlays:
- * Blue circles: observed corner points (used for calibration).
- * Red crosses: projected model points (to validate parameters).
- * - LOOK CLOSELY! 
- * The complete stack with overlay can be saved as a tiff file. 
+ * BLUE circles: observed corner points (used for calibration).
+ * RED markers: projected model points (to validate parameters).
+ * - LOOK CLOSELY / ZOOM IN! 
+ * The complete stack with overlay can be saved as a TIFF file. 
  * 
  * @author W. Burger
  * @version 2017-05-30

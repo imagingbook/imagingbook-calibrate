@@ -25,11 +25,16 @@ import imagingbook.lib.math.Matrix;
  */
 public class HomographyEstimator {
 	
-	static int maxLmEvaluations = 1000;
-	static int maxLmIterations = 1000;
-	static boolean normalize = true;
+	private static int maxLmEvaluations = 1000;
+	private static int maxLmIterations = 1000;
+	
+	private boolean normalizePointCoordinates = true;
 	
 	public HomographyEstimator() {
+	}
+	
+	public HomographyEstimator(boolean normalizePointCoordinates) {
+		this.normalizePointCoordinates = normalizePointCoordinates;
 	}
 	
 	/**
@@ -61,19 +66,20 @@ public class HomographyEstimator {
 	public RealMatrix estimateHomography(Point2D[] ptsA, Point2D[] ptsB) {
 		int n = ptsA.length;
 		
-		RealMatrix Na = (normalize) ? getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
-		RealMatrix Nb = (normalize) ? getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);	
+		RealMatrix Na = (normalizePointCoordinates) ? getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
+		RealMatrix Nb = (normalizePointCoordinates) ? getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);	
 		RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
 
-		for (int j = 0, k = 0; j < ptsA.length; j++, k += 2) {
+		for (int j = 0, r = 0; j < ptsA.length; j++) {
 			final double[] pA = transform(MathUtil.toArray(ptsA[j]), Na);
 			final double[] pB = transform(MathUtil.toArray(ptsB[j]), Nb);
 			final double xA = pA[0];
 			final double yA = pA[1];
 			final double xB = pB[0];
 			final double yB = pB[1];			
-			M.setRow(k + 0, new double[] {xA, yA, 1, 0, 0, 0, -(xA * xB), -(yA * xB), -(xB)});
-			M.setRow(k + 1, new double[] {0, 0, 0, xA, yA, 1, -(xA * yB), -(yA * yB), -(yB)});
+			M.setRow(r + 0, new double[] {xA, yA, 1, 0, 0, 0, -(xA * xB), -(yA * xB), -(xB)});
+			M.setRow(r + 1, new double[] {0, 0, 0, xA, yA, 1, -(xA * yB), -(yA * yB), -(yB)});
+			r = r + 2;
 		}
 
 		// find h, such that M . h = 0:
@@ -124,14 +130,6 @@ public class HomographyEstimator {
 		LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
 		Optimum result = lm.optimize(problem);
 		
-//		Optimum result = lm.optimize(LeastSquaresFactory.create(
-//				LeastSquaresFactory.model(value, jacobian),
-//				MatrixUtils.createRealVector(observed), 
-//				MathUtil.getRowPackedVector(Hinit), 
-//				null,  // ConvergenceChecker
-//				maxLmEvaluations, 
-//				maxLmIterations));
-		
 		RealVector optimum = result.getPoint();
 		RealMatrix Hopt = MathUtil.fromRowPackedVector(optimum, 3, 3);
 //		System.out.println("LM optimizer iterations " + result.getIterations());
@@ -139,10 +137,10 @@ public class HomographyEstimator {
 	}
 	
 	
-	private MultivariateVectorFunction getValueFunction(final Point2D[] X) {
+	private MultivariateVectorFunction getValueFunction(Point2D[] X) {
 		//System.out.println("MultivariateVectorFunction getValueFunction");
 		return new MultivariateVectorFunction() {
-			public double[] value(double[] h) { // throws IllegalArgumentException {
+			public double[] value(double[] h) {
 				final double[] Y = new double[X.length * 2];
 				for (int j = 0; j < X.length; j++) {
 					final double x = X[j].getX();
@@ -156,7 +154,7 @@ public class HomographyEstimator {
 		};
 	}
 	
-	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] X) {
+	protected MultivariateMatrixFunction getJacobianFunction(Point2D[] X) {
 		return new MultivariateMatrixFunction() {
 			public double[][] value(double[] h) {
 				final double[][] J = new double[2 * X.length][];
