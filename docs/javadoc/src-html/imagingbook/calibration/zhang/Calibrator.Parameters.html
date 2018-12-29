@@ -30,183 +30,189 @@
 <span class="sourceLineNo">022</span> * and<a name="line.22"></a>
 <span class="sourceLineNo">023</span> * &lt;a href="http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf"&gt;<a name="line.23"></a>
 <span class="sourceLineNo">024</span> * http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf&lt;/a&gt;<a name="line.24"></a>
-<span class="sourceLineNo">025</span> * @author W. Burger<a name="line.25"></a>
-<span class="sourceLineNo">026</span> * @version 2018/12/27<a name="line.26"></a>
-<span class="sourceLineNo">027</span> */<a name="line.27"></a>
-<span class="sourceLineNo">028</span>public class Calibrator {<a name="line.28"></a>
-<span class="sourceLineNo">029</span>        <a name="line.29"></a>
-<span class="sourceLineNo">030</span>        /**<a name="line.30"></a>
-<span class="sourceLineNo">031</span>         * Inner class representing a set of parameters for instantiating<a name="line.31"></a>
-<span class="sourceLineNo">032</span>         * new objects of type of {@link Calibrator}. <a name="line.32"></a>
-<span class="sourceLineNo">033</span>         * @author WB<a name="line.33"></a>
-<span class="sourceLineNo">034</span>         */<a name="line.34"></a>
-<span class="sourceLineNo">035</span>        public static class Parameters {<a name="line.35"></a>
-<span class="sourceLineNo">036</span>                public boolean normalize = true;<a name="line.36"></a>
-<span class="sourceLineNo">037</span>                public boolean assumeZeroSkew = false;<a name="line.37"></a>
-<span class="sourceLineNo">038</span>                public int maxEvaluations = 1000;       // for LM-optimizer<a name="line.38"></a>
-<span class="sourceLineNo">039</span>                public int maxIterations = 1000;        // for LM-optimizer<a name="line.39"></a>
-<span class="sourceLineNo">040</span>                public int lensDistortionKoeffients = 2;<a name="line.40"></a>
-<span class="sourceLineNo">041</span>                public boolean beVerbose = false;<a name="line.41"></a>
-<span class="sourceLineNo">042</span>        }<a name="line.42"></a>
-<span class="sourceLineNo">043</span>        <a name="line.43"></a>
-<span class="sourceLineNo">044</span>        private int M;                                                          // the number of camera views<a name="line.44"></a>
-<span class="sourceLineNo">045</span>        private final Point2D[] modelPts;                       // the sequence of 2D points in the planar model<a name="line.45"></a>
-<span class="sourceLineNo">046</span>        private final List&lt;Point2D[]&gt; imgPntSet;        // list of vectors containing observed 2D image points for each view<a name="line.46"></a>
-<span class="sourceLineNo">047</span>        <a name="line.47"></a>
-<span class="sourceLineNo">048</span>        private Point2D[][] obsPts = null;<a name="line.48"></a>
-<span class="sourceLineNo">049</span>        private final Parameters params;<a name="line.49"></a>
-<span class="sourceLineNo">050</span>        private Camera initCam, finalCam;<a name="line.50"></a>
-<span class="sourceLineNo">051</span>        private ViewTransform[] initViews, finalViews;<a name="line.51"></a>
+<span class="sourceLineNo">025</span> * <a name="line.25"></a>
+<span class="sourceLineNo">026</span> * @author W. Burger<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * @version 2018/12/29<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>public class Calibrator {<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        <a name="line.30"></a>
+<span class="sourceLineNo">031</span>        /**<a name="line.31"></a>
+<span class="sourceLineNo">032</span>         * Inner class representing a set of parameters for instantiating<a name="line.32"></a>
+<span class="sourceLineNo">033</span>         * new objects of type of {@link Calibrator}. <a name="line.33"></a>
+<span class="sourceLineNo">034</span>         * Parameters can be specified by setting the associated public fields.<a name="line.34"></a>
+<span class="sourceLineNo">035</span>         */<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        public static class Parameters {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                /** Normalize point coordinates for numerical stability in {@link HomographyEstimator}. */<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                public boolean normalizePointCoordinates = true;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                /** Assume that the camera has no skew (currently not used). */<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                public boolean assumeZeroSkew = false;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                /** Use numeric (instead of analytic) calculation of the Jacobian in {@link NonlinearOptimizer}. */<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                public boolean useNumericJacobian = false;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                /** Number of lens distortion coefficients (2 = simple polynomial model). */<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                public int lensDistortionKoeffients = 2;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                /** Turn on debugging output. */<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                public boolean debug = false;                                   <a name="line.46"></a>
+<span class="sourceLineNo">047</span>        }<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        <a name="line.48"></a>
+<span class="sourceLineNo">049</span>        private int M;                                                          // the number of camera views<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        private final Point2D[] modelPts;                       // the sequence of 2D points in the planar model<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        private final List&lt;Point2D[]&gt; imgPntSet;        // list of vectors containing observed 2D image points for each view<a name="line.51"></a>
 <span class="sourceLineNo">052</span>        <a name="line.52"></a>
-<span class="sourceLineNo">053</span>        // ------- constructors ------------------------------<a name="line.53"></a>
-<span class="sourceLineNo">054</span>        <a name="line.54"></a>
-<span class="sourceLineNo">055</span>        /**<a name="line.55"></a>
-<span class="sourceLineNo">056</span>         * The only constructor. <a name="line.56"></a>
-<span class="sourceLineNo">057</span>         * @param params a parameter object (default parameters are used if {@code null} is passed)<a name="line.57"></a>
-<span class="sourceLineNo">058</span>         * @param model a sequence of 2D points specifying the x/y coordinates of <a name="line.58"></a>
-<span class="sourceLineNo">059</span>         *                      the planar calibration pattern (assuming zero z-coordinates)<a name="line.59"></a>
-<span class="sourceLineNo">060</span>         */<a name="line.60"></a>
-<span class="sourceLineNo">061</span>        public Calibrator(Parameters params, Point2D[] model) {<a name="line.61"></a>
-<span class="sourceLineNo">062</span>                this.params = (params != null) ? params : new Parameters();<a name="line.62"></a>
-<span class="sourceLineNo">063</span>                this.modelPts = model;<a name="line.63"></a>
-<span class="sourceLineNo">064</span>                this.imgPntSet = new ArrayList&lt;Point2D[]&gt;();<a name="line.64"></a>
-<span class="sourceLineNo">065</span>        }<a name="line.65"></a>
-<span class="sourceLineNo">066</span>        <a name="line.66"></a>
-<span class="sourceLineNo">067</span>        /**<a name="line.67"></a>
-<span class="sourceLineNo">068</span>         * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.<a name="line.68"></a>
-<span class="sourceLineNo">069</span>         * @param pts a sequence of 2D image points<a name="line.69"></a>
-<span class="sourceLineNo">070</span>         */<a name="line.70"></a>
-<span class="sourceLineNo">071</span>        public void addView(Point2D[] pts) {<a name="line.71"></a>
-<span class="sourceLineNo">072</span>                imgPntSet.add(pts);<a name="line.72"></a>
-<span class="sourceLineNo">073</span>        }<a name="line.73"></a>
-<span class="sourceLineNo">074</span>        <a name="line.74"></a>
-<span class="sourceLineNo">075</span>        /**<a name="line.75"></a>
-<span class="sourceLineNo">076</span>         * Performs the actual camera calibration based on the provided sequence of views.<a name="line.76"></a>
-<span class="sourceLineNo">077</span>         * @return the estimated camera intrinsics as a {@link Camera} object<a name="line.77"></a>
-<span class="sourceLineNo">078</span>         */<a name="line.78"></a>
-<span class="sourceLineNo">079</span>        public Camera calibrate() {<a name="line.79"></a>
-<span class="sourceLineNo">080</span>                M = imgPntSet.size();   // number of views to process<a name="line.80"></a>
-<span class="sourceLineNo">081</span>                if (M &lt; 2) {<a name="line.81"></a>
-<span class="sourceLineNo">082</span>                        throw new IllegalStateException("Calibration: at least two views needed");<a name="line.82"></a>
-<span class="sourceLineNo">083</span>                }<a name="line.83"></a>
-<span class="sourceLineNo">084</span>                <a name="line.84"></a>
-<span class="sourceLineNo">085</span>                obsPts = imgPntSet.toArray(new Point2D[0][]);<a name="line.85"></a>
-<span class="sourceLineNo">086</span>                <a name="line.86"></a>
-<span class="sourceLineNo">087</span>                // Step 1: Calculate the homographies for each of the given N views:<a name="line.87"></a>
-<span class="sourceLineNo">088</span>                HomographyEstimator hest = new HomographyEstimator();<a name="line.88"></a>
-<span class="sourceLineNo">089</span>                RealMatrix[] H_init = hest.estimateHomographies(modelPts, obsPts);<a name="line.89"></a>
-<span class="sourceLineNo">090</span>                <a name="line.90"></a>
-<span class="sourceLineNo">091</span>                // Step 2: Estimate the intrinsic parameters by linear optimization:<a name="line.91"></a>
-<span class="sourceLineNo">092</span>                CameraIntrinsicsEstimator cis = new CameraIntrinsicsEstimator();<a name="line.92"></a>
-<span class="sourceLineNo">093</span>                <a name="line.93"></a>
-<span class="sourceLineNo">094</span>                RealMatrix A_init = cis.getCameraIntrinsics(H_init);<a name="line.94"></a>
-<span class="sourceLineNo">095</span>                initCam = new Camera(A_init, new double[params.lensDistortionKoeffients]);<a name="line.95"></a>
-<span class="sourceLineNo">096</span>                <a name="line.96"></a>
-<span class="sourceLineNo">097</span>                // Step 3: calculate the extrinsic view parameters:<a name="line.97"></a>
-<span class="sourceLineNo">098</span>                ExtrinsicViewEstimator eve = new ExtrinsicViewEstimator(A_init);<a name="line.98"></a>
-<span class="sourceLineNo">099</span>                initViews = eve.getExtrinsics(H_init);<a name="line.99"></a>
-<span class="sourceLineNo">100</span>                <a name="line.100"></a>
-<span class="sourceLineNo">101</span>                // Step 4: Determine the lens distortion from initial estimates:<a name="line.101"></a>
-<span class="sourceLineNo">102</span>                RadialDistortionEstimator rde = new RadialDistortionEstimator();<a name="line.102"></a>
-<span class="sourceLineNo">103</span>                double[] distParams = rde.estimateLensDistortion(initCam, initViews, modelPts, obsPts);<a name="line.103"></a>
-<span class="sourceLineNo">104</span>                Camera improvedCam = new Camera(A_init, distParams);<a name="line.104"></a>
+<span class="sourceLineNo">053</span>        private Point2D[][] obsPts = null;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        private final Parameters params;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        private Camera initCam, finalCam;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        private ViewTransform[] initViews, finalViews;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        <a name="line.57"></a>
+<span class="sourceLineNo">058</span>        // ------- constructors ------------------------------<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        <a name="line.59"></a>
+<span class="sourceLineNo">060</span>        /**<a name="line.60"></a>
+<span class="sourceLineNo">061</span>         * The only constructor. <a name="line.61"></a>
+<span class="sourceLineNo">062</span>         * @param params a parameter object (default parameters are used if {@code null} is passed)<a name="line.62"></a>
+<span class="sourceLineNo">063</span>         * @param model a sequence of 2D points specifying the x/y coordinates of <a name="line.63"></a>
+<span class="sourceLineNo">064</span>         *                      the planar calibration pattern (assuming zero z-coordinates)<a name="line.64"></a>
+<span class="sourceLineNo">065</span>         */<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        public Calibrator(Parameters params, Point2D[] model) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                this.params = (params != null) ? params : new Parameters();<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                this.modelPts = model;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                this.imgPntSet = new ArrayList&lt;Point2D[]&gt;();<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        }<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        <a name="line.71"></a>
+<span class="sourceLineNo">072</span>        /**<a name="line.72"></a>
+<span class="sourceLineNo">073</span>         * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>         * @param pts a sequence of 2D image points<a name="line.74"></a>
+<span class="sourceLineNo">075</span>         */<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        public void addView(Point2D[] pts) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                imgPntSet.add(pts);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        }<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        <a name="line.79"></a>
+<span class="sourceLineNo">080</span>        /**<a name="line.80"></a>
+<span class="sourceLineNo">081</span>         * Performs the actual camera calibration based on the provided sequence of views.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>         * @return the estimated camera intrinsics as a {@link Camera} object<a name="line.82"></a>
+<span class="sourceLineNo">083</span>         */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        public Camera calibrate() {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                M = imgPntSet.size();   // number of views to process<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                if (M &lt; 2) {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        throw new IllegalStateException("Calibration: at least two views needed");<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                <a name="line.89"></a>
+<span class="sourceLineNo">090</span>                obsPts = imgPntSet.toArray(new Point2D[0][]);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                <a name="line.91"></a>
+<span class="sourceLineNo">092</span>                // Step 1: Calculate the homographies for each of the given N views:<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                HomographyEstimator hest = new HomographyEstimator(params.normalizePointCoordinates);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                RealMatrix[] H_init = hest.estimateHomographies(modelPts, obsPts);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                <a name="line.95"></a>
+<span class="sourceLineNo">096</span>                // Step 2: Estimate the intrinsic parameters by linear optimization:<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                CameraIntrinsicsEstimator cis = new CameraIntrinsicsEstimator();<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                <a name="line.98"></a>
+<span class="sourceLineNo">099</span>                RealMatrix A_init = cis.getCameraIntrinsics(H_init);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                initCam = new Camera(A_init, new double[params.lensDistortionKoeffients]);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                <a name="line.101"></a>
+<span class="sourceLineNo">102</span>                // Step 3: calculate the extrinsic view parameters:<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                ExtrinsicViewEstimator eve = new ExtrinsicViewEstimator(A_init);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                initViews = eve.getExtrinsics(H_init);<a name="line.104"></a>
 <span class="sourceLineNo">105</span>                <a name="line.105"></a>
-<span class="sourceLineNo">106</span>                // Step 5: Refine all parameters by non-linear optimization<a name="line.106"></a>
-<span class="sourceLineNo">107</span>                NonlinearOptimizer optimizer = new NonlinearOptimizerAnalytic(modelPts, obsPts);<a name="line.107"></a>
-<span class="sourceLineNo">108</span>//              NonlinearOptimizer optimizer = new NonlinearOptimizerNumeric(modelPts, obsPts);<a name="line.108"></a>
-<span class="sourceLineNo">109</span>                optimizer.optimize(improvedCam, initViews);<a name="line.109"></a>
-<span class="sourceLineNo">110</span>                finalCam = optimizer.getFinalCamera();<a name="line.110"></a>
-<span class="sourceLineNo">111</span>                finalViews = optimizer.getFinalViews();<a name="line.111"></a>
-<span class="sourceLineNo">112</span><a name="line.112"></a>
-<span class="sourceLineNo">113</span>                return finalCam;<a name="line.113"></a>
-<span class="sourceLineNo">114</span>        }<a name="line.114"></a>
-<span class="sourceLineNo">115</span>        <a name="line.115"></a>
-<span class="sourceLineNo">116</span>        <a name="line.116"></a>
-<span class="sourceLineNo">117</span>        //---------------------------------------------------------------------------<a name="line.117"></a>
-<span class="sourceLineNo">118</span>        <a name="line.118"></a>
-<span class="sourceLineNo">119</span>        @SuppressWarnings("unused")<a name="line.119"></a>
-<span class="sourceLineNo">120</span>        private void printHomographies(RealMatrix[] homographies) {<a name="line.120"></a>
-<span class="sourceLineNo">121</span>                int i = 0;<a name="line.121"></a>
-<span class="sourceLineNo">122</span>                for (RealMatrix H : homographies) {<a name="line.122"></a>
-<span class="sourceLineNo">123</span>                        i++;<a name="line.123"></a>
-<span class="sourceLineNo">124</span>                        System.out.println("Homography " + i + ":");<a name="line.124"></a>
-<span class="sourceLineNo">125</span>                        System.out.println(Matrix.toString(H.getData()));<a name="line.125"></a>
-<span class="sourceLineNo">126</span>                }<a name="line.126"></a>
-<span class="sourceLineNo">127</span>        }<a name="line.127"></a>
-<span class="sourceLineNo">128</span>        <a name="line.128"></a>
-<span class="sourceLineNo">129</span>        /**<a name="line.129"></a>
-<span class="sourceLineNo">130</span>         * Calculates the squared projection error for a single view, associated<a name="line.130"></a>
-<span class="sourceLineNo">131</span>         * with a set of observed image points.<a name="line.131"></a>
-<span class="sourceLineNo">132</span>         * @param cam a camera model (camera intrinsics)<a name="line.132"></a>
-<span class="sourceLineNo">133</span>         * @param view a view transformation (camera extrinsics)<a name="line.133"></a>
-<span class="sourceLineNo">134</span>         * @param observed a set of observed image points<a name="line.134"></a>
-<span class="sourceLineNo">135</span>         * @return the squared projection error (measured in pixel units)<a name="line.135"></a>
-<span class="sourceLineNo">136</span>         */<a name="line.136"></a>
-<span class="sourceLineNo">137</span>    public double getProjectionError(Camera cam, ViewTransform view, Point2D[] observed) {<a name="line.137"></a>
-<span class="sourceLineNo">138</span>        double sqError = 0;<a name="line.138"></a>
-<span class="sourceLineNo">139</span>                for (int j = 0; j &lt; modelPts.length; j++) {<a name="line.139"></a>
-<span class="sourceLineNo">140</span>                        double[] uv = cam.project(view, modelPts[j]);<a name="line.140"></a>
-<span class="sourceLineNo">141</span>                        double[] UV = MathUtil.toArray(observed[j]);<a name="line.141"></a>
-<span class="sourceLineNo">142</span>                        double du = uv[0] - UV[0];<a name="line.142"></a>
-<span class="sourceLineNo">143</span>                        double dv = uv[1] - UV[1];<a name="line.143"></a>
-<span class="sourceLineNo">144</span>                        sqError = sqError + du * du + dv * dv;<a name="line.144"></a>
-<span class="sourceLineNo">145</span>                }<a name="line.145"></a>
-<span class="sourceLineNo">146</span>        return sqError;<a name="line.146"></a>
-<span class="sourceLineNo">147</span>    }<a name="line.147"></a>
-<span class="sourceLineNo">148</span>    <a name="line.148"></a>
-<span class="sourceLineNo">149</span>        /**<a name="line.149"></a>
-<span class="sourceLineNo">150</span>         * Calculates the squared projection error for a sequence of views, associated<a name="line.150"></a>
-<span class="sourceLineNo">151</span>         * with a sequence of observed image point sets.<a name="line.151"></a>
-<span class="sourceLineNo">152</span>         * @param cam a camera model (camera intrinsics)<a name="line.152"></a>
-<span class="sourceLineNo">153</span>         * @param views a sequence of view transformations (camera extrinsics)<a name="line.153"></a>
-<span class="sourceLineNo">154</span>         * @param observed a sequence of sets of observed image points<a name="line.154"></a>
-<span class="sourceLineNo">155</span>         * @return the squared projection error (measured in pixel units)<a name="line.155"></a>
-<span class="sourceLineNo">156</span>         */<a name="line.156"></a>
-<span class="sourceLineNo">157</span>    public double getProjectionError(Camera cam, ViewTransform[] views, Point2D[][] observed) {<a name="line.157"></a>
-<span class="sourceLineNo">158</span>        double totalError = 0;<a name="line.158"></a>
-<span class="sourceLineNo">159</span>        for (int i = 0; i &lt; views.length; i++) {<a name="line.159"></a>
-<span class="sourceLineNo">160</span>                totalError = totalError + getProjectionError(cam, views[i], observed[i]);<a name="line.160"></a>
-<span class="sourceLineNo">161</span>        }<a name="line.161"></a>
-<span class="sourceLineNo">162</span>        return totalError;<a name="line.162"></a>
-<span class="sourceLineNo">163</span>    }<a name="line.163"></a>
-<span class="sourceLineNo">164</span>    <a name="line.164"></a>
-<span class="sourceLineNo">165</span>    // ----------------------------------------------------------------------<a name="line.165"></a>
-<span class="sourceLineNo">166</span>    <a name="line.166"></a>
-<span class="sourceLineNo">167</span>    /**<a name="line.167"></a>
-<span class="sourceLineNo">168</span>     * Returns the initial camera model (no lens distortion).<a name="line.168"></a>
-<span class="sourceLineNo">169</span>     * @return the initial camera model<a name="line.169"></a>
-<span class="sourceLineNo">170</span>     */<a name="line.170"></a>
-<span class="sourceLineNo">171</span>    public Camera getInitialCamera() {<a name="line.171"></a>
-<span class="sourceLineNo">172</span>        return initCam;<a name="line.172"></a>
-<span class="sourceLineNo">173</span>    }<a name="line.173"></a>
-<span class="sourceLineNo">174</span>    <a name="line.174"></a>
-<span class="sourceLineNo">175</span>    /**<a name="line.175"></a>
-<span class="sourceLineNo">176</span>     * Returns the final camera model (including lens distortion).<a name="line.176"></a>
-<span class="sourceLineNo">177</span>     * @return the final camera model<a name="line.177"></a>
-<span class="sourceLineNo">178</span>     */<a name="line.178"></a>
-<span class="sourceLineNo">179</span>    public Camera getFinalCamera() {<a name="line.179"></a>
-<span class="sourceLineNo">180</span>        return finalCam;<a name="line.180"></a>
-<span class="sourceLineNo">181</span>    }<a name="line.181"></a>
-<span class="sourceLineNo">182</span>    <a name="line.182"></a>
-<span class="sourceLineNo">183</span>    /**<a name="line.183"></a>
-<span class="sourceLineNo">184</span>     * Returns the sequence of initial camera views (extrinsics, no <a name="line.184"></a>
-<span class="sourceLineNo">185</span>     * lens distortion).<a name="line.185"></a>
-<span class="sourceLineNo">186</span>     * @return the sequence of initial camera views<a name="line.186"></a>
-<span class="sourceLineNo">187</span>     */<a name="line.187"></a>
-<span class="sourceLineNo">188</span>    public ViewTransform[] getInitialViews() {<a name="line.188"></a>
-<span class="sourceLineNo">189</span>        return initViews;<a name="line.189"></a>
-<span class="sourceLineNo">190</span>    }<a name="line.190"></a>
-<span class="sourceLineNo">191</span>    <a name="line.191"></a>
-<span class="sourceLineNo">192</span>    /**<a name="line.192"></a>
-<span class="sourceLineNo">193</span>     * Returns the sequence of final camera views (extrinsics, including <a name="line.193"></a>
-<span class="sourceLineNo">194</span>     * lens distortion).<a name="line.194"></a>
-<span class="sourceLineNo">195</span>     * @return the sequence of final camera views<a name="line.195"></a>
-<span class="sourceLineNo">196</span>     */<a name="line.196"></a>
-<span class="sourceLineNo">197</span>    public ViewTransform[] getFinalViews() {<a name="line.197"></a>
-<span class="sourceLineNo">198</span>        return finalViews;<a name="line.198"></a>
-<span class="sourceLineNo">199</span>    }<a name="line.199"></a>
-<span class="sourceLineNo">200</span>    <a name="line.200"></a>
-<span class="sourceLineNo">201</span>}<a name="line.201"></a>
+<span class="sourceLineNo">106</span>                // Step 4: Determine the lens distortion from initial estimates:<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                RadialDistortionEstimator rde = new RadialDistortionEstimator();<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                double[] distParams = rde.estimateLensDistortion(initCam, initViews, modelPts, obsPts);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                Camera improvedCam = new Camera(A_init, distParams);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                <a name="line.110"></a>
+<span class="sourceLineNo">111</span>                // Step 5: Refine all parameters by non-linear optimization<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                NonlinearOptimizer optimizer = (params.useNumericJacobian) ?<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                                new NonlinearOptimizerNumeric(modelPts, obsPts) :<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                new NonlinearOptimizerAnalytic(modelPts, obsPts);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                optimizer.optimize(improvedCam, initViews);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                finalCam = optimizer.getFinalCamera();<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                finalViews = optimizer.getFinalViews();<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>                return finalCam;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        }<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        <a name="line.121"></a>
+<span class="sourceLineNo">122</span>        <a name="line.122"></a>
+<span class="sourceLineNo">123</span>        //---------------------------------------------------------------------------<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        <a name="line.124"></a>
+<span class="sourceLineNo">125</span>        @SuppressWarnings("unused")<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        private void printHomographies(RealMatrix[] homographies) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                int i = 0;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                for (RealMatrix H : homographies) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                        i++;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                        System.out.println("Homography " + i + ":");<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                        System.out.println(Matrix.toString(H.getData()));<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                }<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        }<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        <a name="line.134"></a>
+<span class="sourceLineNo">135</span>        /**<a name="line.135"></a>
+<span class="sourceLineNo">136</span>         * Calculates the squared projection error for a single view, associated<a name="line.136"></a>
+<span class="sourceLineNo">137</span>         * with a set of observed image points.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>         * @param cam a camera model (camera intrinsics)<a name="line.138"></a>
+<span class="sourceLineNo">139</span>         * @param view a view transformation (camera extrinsics)<a name="line.139"></a>
+<span class="sourceLineNo">140</span>         * @param observed a set of observed image points<a name="line.140"></a>
+<span class="sourceLineNo">141</span>         * @return the squared projection error (measured in pixel units)<a name="line.141"></a>
+<span class="sourceLineNo">142</span>         */<a name="line.142"></a>
+<span class="sourceLineNo">143</span>    public double getProjectionError(Camera cam, ViewTransform view, Point2D[] observed) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        double sqError = 0;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                for (int j = 0; j &lt; modelPts.length; j++) {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                        double[] uv = cam.project(view, modelPts[j]);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        double[] UV = MathUtil.toArray(observed[j]);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        double du = uv[0] - UV[0];<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        double dv = uv[1] - UV[1];<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        sqError = sqError + du * du + dv * dv;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        return sqError;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>    }<a name="line.153"></a>
+<span class="sourceLineNo">154</span>    <a name="line.154"></a>
+<span class="sourceLineNo">155</span>        /**<a name="line.155"></a>
+<span class="sourceLineNo">156</span>         * Calculates the squared projection error for a sequence of views, associated<a name="line.156"></a>
+<span class="sourceLineNo">157</span>         * with a sequence of observed image point sets.<a name="line.157"></a>
+<span class="sourceLineNo">158</span>         * @param cam a camera model (camera intrinsics)<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         * @param views a sequence of view transformations (camera extrinsics)<a name="line.159"></a>
+<span class="sourceLineNo">160</span>         * @param observed a sequence of sets of observed image points<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         * @return the squared projection error (measured in pixel units)<a name="line.161"></a>
+<span class="sourceLineNo">162</span>         */<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    public double getProjectionError(Camera cam, ViewTransform[] views, Point2D[][] observed) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        double totalError = 0;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        for (int i = 0; i &lt; views.length; i++) {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                totalError = totalError + getProjectionError(cam, views[i], observed[i]);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        }<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        return totalError;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>    <a name="line.170"></a>
+<span class="sourceLineNo">171</span>    // ----------------------------------------------------------------------<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    <a name="line.172"></a>
+<span class="sourceLineNo">173</span>    /**<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     * Returns the initial camera model (no lens distortion).<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     * @return the initial camera model<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     */<a name="line.176"></a>
+<span class="sourceLineNo">177</span>    public Camera getInitialCamera() {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        return initCam;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>    }<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    <a name="line.180"></a>
+<span class="sourceLineNo">181</span>    /**<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     * Returns the final camera model (including lens distortion).<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     * @return the final camera model<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     */<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    public Camera getFinalCamera() {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        return finalCam;<a name="line.186"></a>
+<span class="sourceLineNo">187</span>    }<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    <a name="line.188"></a>
+<span class="sourceLineNo">189</span>    /**<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     * Returns the sequence of initial camera views (extrinsics, no <a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * lens distortion).<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * @return the sequence of initial camera views<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     */<a name="line.193"></a>
+<span class="sourceLineNo">194</span>    public ViewTransform[] getInitialViews() {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        return initViews;<a name="line.195"></a>
+<span class="sourceLineNo">196</span>    }<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    <a name="line.197"></a>
+<span class="sourceLineNo">198</span>    /**<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     * Returns the sequence of final camera views (extrinsics, including <a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * lens distortion).<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * @return the sequence of final camera views<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     */<a name="line.202"></a>
+<span class="sourceLineNo">203</span>    public ViewTransform[] getFinalViews() {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        return finalViews;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>    <a name="line.206"></a>
+<span class="sourceLineNo">207</span>}<a name="line.207"></a>
 
 
 
