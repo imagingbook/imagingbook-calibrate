@@ -41,4 +41,9 @@ public class InterCameraMapping extends Mapping {
 		return camA.mapToSensorPlane(xyd);
 	}
 
+	@Override
+	public double[] applyTo(double x, double y) {
+		return this.applyTo(new double[] {x, y});
+	}
+
 }

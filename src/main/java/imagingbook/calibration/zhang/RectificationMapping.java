@@ -42,4 +42,9 @@ public class RectificationMapping extends Mapping {
 		// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
 		return cam.mapToSensorPlane(xyd);
 	}
+	
+	@Override
+	public double[] applyTo(double x, double y) {
+		return this.applyTo(new double[] {x, y});
+	}
 }
