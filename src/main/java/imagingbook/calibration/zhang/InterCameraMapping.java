@@ -19,7 +19,7 @@ public class InterCameraMapping extends Mapping {
 	private final RealMatrix Abi;	// inverse of the intrinsic camera b matrix (2 x 3)
 
 	public InterCameraMapping (Camera camA, Camera camB) {
-		this.isInverseFlag = true;	// maps target -> source
+//		this.isInverseFlag = true;	// maps target -> source
 		this.camA = camA;		// camera A (used to produce the source image)
 		this.camB = camB;		// camera B (determines the geometry the target image)
 		this.Abi = camB.getInverseA();

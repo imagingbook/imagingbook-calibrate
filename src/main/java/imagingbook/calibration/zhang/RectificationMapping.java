@@ -27,7 +27,7 @@ public class RectificationMapping extends Mapping {
 	private final RealMatrix Ai;	// inverse of the intrinsic camera matrix (2 x 3)
 
 	public RectificationMapping (Camera cam) {
-		this.isInverseFlag = true;	// maps target -> source
+//		this.isInverseFlag = true;	// maps target -> source
 		this.cam = cam;
 		this.Ai = cam.getInverseA();
 	}
