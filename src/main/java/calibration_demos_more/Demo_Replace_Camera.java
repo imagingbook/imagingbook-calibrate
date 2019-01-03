@@ -64,7 +64,7 @@ public class Demo_Replace_Camera implements PlugIn {
 		Camera cameraB = new Camera(paramsA);
 
 		// create a special geometric mapping
-		Mapping mapping = new InterCameraMapping(cameraA, cameraB);
+		Mapping mapping = new InterCameraMapping(cameraA, cameraB);	// inverse, maps target to source
 
 		// rectify the images and create a new stack:
 		ImageStack distStack = testIm.getStack();

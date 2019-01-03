@@ -12,10 +12,10 @@ import imagingbook.pub.geometry.mappings.Mapping;
 * an image, given the associated camera parameters.
 * The transformation maps any position {@code x'} in the rectified image
 * to the corresponding position {@code x} in the original (distorted) 
-* image.</p>
+* image. The mapping is implicitly inverted, i.e., maps target
+* to source image coordinates.</p>
 * 
 * <p>Typically usage (by target-to-source-mapping):</p>
-* 
 * <pre>
 * ImageProcessor original = ... ;  // the distorted image
 * ImageProcessor rectified = ... ; // the (new) rectified image
