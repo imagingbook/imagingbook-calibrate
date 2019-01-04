@@ -9,6 +9,7 @@ import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.InterCameraMapping;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjLogStream;
+import imagingbook.lib.image.ImageMapper;
 import imagingbook.lib.interpolation.InterpolationMethod;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
@@ -77,7 +78,9 @@ public class Demo_Replace_Camera implements PlugIn {
 			IJ.showProgress(i, M);
 			ImageProcessor source = distStack.getProcessor(i + 1);
 			ImageProcessor target = source.createProcessor(w, h);
-			mapping.applyTo(source, target, InterpolationMethod.Bicubic);
+			ImageMapper mapper = new ImageMapper(mapping, InterpolationMethod.Bicubic);
+			mapper.map(source, target);
+//			mapping.applyTo(source, target, InterpolationMethod.Bicubic);
 			rectStack.addSlice("frame"+ (i + 1), target);
 		}
 
