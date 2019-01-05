@@ -29,7 +29,7 @@ public class IjUtil {
 	 * @return the resulting image
 	 */
 	public static ImagePlus makeImage(String title, RealMatrix M) {
-		float[][] fdata = Matrix.duplicateToFloat(M.transpose().getData());
+		float[][] fdata = Matrix.toFloat(M.transpose().getData());
 		ImagePlus im = new ImagePlus(title, new FloatProcessor(fdata));
 		im.show();
 		return im;	
