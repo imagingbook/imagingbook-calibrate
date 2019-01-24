@@ -27,8 +27,8 @@ public class RadialDistortionEstimator {
 	 * @return a vector of lens distortion coefficients
 	 */
 	protected double[] estimateLensDistortion(Camera cam, ViewTransform[] views, Point2D[] modelPts, Point2D[][] obsPts) {
-		final int M = views.length;
-		final int N = modelPts.length;
+		final int M = views.length;		// the number of views
+		final int N = modelPts.length;	// the number of model points
 
 		final double uc = cam.getUc();
 		final double vc = cam.getVc();
