@@ -112,7 +112,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.1</version>
+				<!-- <version>3.1.1</version> -->
 				<executions>
 					<execution>
 						<id>copy</id>
@@ -122,41 +122,38 @@
 						</goals>
 						<configuration>
 							<artifactItems>
-
 								<!-- copy ij.jar into ImageJ/ -->
 								<artifactItem>
 									<groupId>net.imagej</groupId>
 									<artifactId>ij</artifactId>
-									<overWrite>false</overWrite>
 									<outputDirectory>${project.basedir}/ImageJ</outputDirectory>
 									<destFileName>ij.jar</destFileName>
 								</artifactItem>
-
-								<!-- copy the current imagingbook-common.jar into ImageJ/jars/ -->
-								<artifactItem>
-									<groupId>com.imagingbook</groupId>
-									<artifactId>imagingbook-common</artifactId>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
-									<destFileName>imagingbook-common.jar</destFileName>
-								</artifactItem>
-
-								<!-- copy apache-commons-math.jar into ImageJ/jars -->
-								<artifactItem>
-									<groupId>org.apache.commons</groupId>
-									<artifactId>commons-math3</artifactId>
-									<overWrite>false</overWrite>
-									<outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
-									<destFileName>commons-math3.jar</destFileName>
-								</artifactItem>
 							</artifactItems>
-
+							<overWriteIfNewer>true</overWriteIfNewer>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
-					</execution> <!-- end of copy -->
+					</execution>
+					
+					<execution>
+						<!-- copy all other dependencies into ImageJ/jars/ -->
+		                <id>copy-dependencies</id>
+		                <phase>package</phase>
+		                <goals>
+		                    <goal>copy-dependencies</goal>
+		                </goals>
+		                <configuration>
+		                	<excludeArtifactIds>ij</excludeArtifactIds>
+		                    <outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
+		                    <overWriteIfNewer>true</overWriteIfNewer>
+		                    <overWriteReleases>false</overWriteReleases>
+		                    <overWriteSnapshots>true</overWriteSnapshots>
+		                </configuration>
+		            </execution>
 				</executions>
 			</plugin>
+			<!-- end of copy -->
 			
 			<plugin>
 				<!-- Javadoc generation -->
