@@ -3,7 +3,8 @@ package imagingbook.calibration.zhang;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.pub.geometry.mappings.Mapping;
+import imagingbook.pub.geometry.basic.Point;
+import imagingbook.pub.geometry.mappings2.Mapping2D;
 
 
 /** 
@@ -13,7 +14,7 @@ import imagingbook.pub.geometry.mappings.Mapping;
  * @author W. Burger
  * @version 2016-06-01
  */
-public class InterCameraMapping extends Mapping {
+public class InterCameraMapping implements Mapping2D {
 	
 	private final Camera camA, camB;
 	private final RealMatrix Abi;	// inverse of the intrinsic camera b matrix (2 x 3)
@@ -26,10 +27,10 @@ public class InterCameraMapping extends Mapping {
 	}
 	
 	@Override
-	public double[] applyTo(double[] uv) {
+	public Point applyTo(Point uv) {
 		// (u,v) is an observed sensor point
 		// apply the inverse camera mapping to get the distorted (x,y) point:
-		double[] xy = Abi.operate(MathUtil.toHomogeneous(uv));
+		double[] xy = Abi.operate(MathUtil.toHomogeneous(uv.toArray()));
 		
 		// remove the lens distortion of camera b:
 		double[] xyu = camB.unwarp(xy);
@@ -38,12 +39,12 @@ public class InterCameraMapping extends Mapping {
 		double[] xyd = camA.warp(xyu);
 		
 		// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
-		return camA.mapToSensorPlane(xyd);
+		return Point.create(camA.mapToSensorPlane(xyd));
 	}
 
-	@Override
-	public double[] applyTo(double x, double y) {
-		return this.applyTo(new double[] {x, y});
-	}
+//	@Override
+//	public double[] applyTo(double x, double y) {
+//		return this.applyTo(new double[] {x, y});
+//	}
 
 }

@@ -13,7 +13,7 @@ import imagingbook.lib.image.ImageMapper;
 import imagingbook.lib.interpolation.InterpolationMethod;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
-import imagingbook.pub.geometry.mappings.Mapping;
+import imagingbook.pub.geometry.mappings2.Mapping2D;
 
 /**
  * This plugin projects opens an image stack containing the 5 Zhang
@@ -52,7 +52,7 @@ public class Demo_Rectification implements PlugIn {
 		Camera camera = ZhangData.getCameraIntrinsics();
 
 		// create a special geometric mapping
-		Mapping mapping = new RectificationMapping(camera);	// inverse, ie., maps target to source
+		Mapping2D mapping = new RectificationMapping(camera);	// inverse, ie., maps target to source
 
 		// rectify the images and create a new stack:
 		ImageStack distStack = testIm.getStack();

@@ -13,7 +13,7 @@ import imagingbook.lib.image.ImageMapper;
 import imagingbook.lib.interpolation.InterpolationMethod;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
-import imagingbook.pub.geometry.mappings.Mapping;
+import imagingbook.pub.geometry.mappings2.Mapping2D;
 
 
 /**
@@ -65,7 +65,7 @@ public class Demo_Replace_Camera implements PlugIn {
 		Camera cameraB = new Camera(paramsA);
 
 		// create a special geometric mapping
-		Mapping mapping = new InterCameraMapping(cameraA, cameraB);	// inverse, maps target to source
+		Mapping2D mapping = new InterCameraMapping(cameraA, cameraB);	// inverse, maps target to source
 
 		// rectify the images and create a new stack:
 		ImageStack distStack = testIm.getStack();

@@ -3,7 +3,8 @@ package imagingbook.calibration.zhang;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.pub.geometry.mappings.Mapping;
+import imagingbook.pub.geometry.basic.Point;
+import imagingbook.pub.geometry.mappings2.Mapping2D;
 
 
 /** 
@@ -22,7 +23,7 @@ import imagingbook.pub.geometry.mappings.Mapping;
 * mapping.applyTo(original, rectified, InterpolationMethod.Bicubic);
 * </pre>
 */
-public class RectificationMapping extends Mapping {
+public class RectificationMapping implements Mapping2D {
 	private final Camera cam;
 	private final RealMatrix Ai;	// inverse of the intrinsic camera matrix (2 x 3)
 
@@ -33,18 +34,18 @@ public class RectificationMapping extends Mapping {
 	}
 
 	@Override
-	public double[] applyTo(double[] uv) {
+	public Point applyTo(Point uv) {
 		// (u,v) is an observed sensor point
 		// apply the inverse camera mapping to get the normalized (x,y) point:
-		double[] xy = Ai.operate(MathUtil.toHomogeneous(uv));
+		double[] xy = Ai.operate(MathUtil.toHomogeneous(uv.toArray()));
 		// apply the camera's radial lens distortion in the normalized plane:
 		double[] xyd = cam.warp(xy);
 		// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
-		return cam.mapToSensorPlane(xyd);
+		return Point.create(cam.mapToSensorPlane(xyd));
 	}
 	
-	@Override
-	public double[] applyTo(double x, double y) {
-		return this.applyTo(new double[] {x, y});
-	}
+//	@Override
+//	public double[] applyTo(double x, double y) {
+//		return this.applyTo(new double[] {x, y});
+//	}
 }
