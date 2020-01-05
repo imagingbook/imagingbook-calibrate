@@ -4,7 +4,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.pub.geometry.basic.Point;
-import imagingbook.pub.geometry.mappings2.Mapping2D;
+import imagingbook.pub.geometry.mappings.Mapping2D;
 
 
 /** 
