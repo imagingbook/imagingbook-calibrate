@@ -30,7 +30,7 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<imagej.version>1.52s</imagej.version> <!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
+		<imagej.version>1.52t</imagej.version> <!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
 		<imagingbook.version>1.7-SNAPSHOT</imagingbook.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
 
