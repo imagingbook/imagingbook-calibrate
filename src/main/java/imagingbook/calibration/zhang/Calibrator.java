@@ -90,7 +90,7 @@ public class Calibrator {
 		obsPts = imgPntSet.toArray(new Point2D[0][]);
 		
 		// Step 1: Calculate the homographies for each of the given N views:
-		HomographyEstimator hest = new HomographyEstimator(params.normalizePointCoordinates);
+		HomographyEstimator hest = new HomographyEstimator(params.normalizePointCoordinates, true);
 		RealMatrix[] H_init = hest.estimateHomographies(modelPts, obsPts);
 		
 		// Step 2: Estimate the intrinsic parameters by linear optimization:
