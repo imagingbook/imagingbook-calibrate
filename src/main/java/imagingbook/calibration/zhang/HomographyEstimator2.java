@@ -29,6 +29,7 @@ import imagingbook.pub.geometry.mappings.linear.ProjectiveMapping2D;
  * 
  * 
  * @author WB
+ * @deprecated
  */
 public class HomographyEstimator2 {
 	
