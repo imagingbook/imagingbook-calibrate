@@ -161,6 +161,8 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.1.1</version>
 				<configuration>
+					<!-- <source>8</source> -->
+					<detectJavaApiLink>false</detectJavaApiLink>
 					<!-- Default configuration for all reports -->
 					<reportOutputDirectory>${webdir}</reportOutputDirectory>
 					<destDir>javadoc</destDir>
