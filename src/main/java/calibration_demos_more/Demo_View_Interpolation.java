@@ -9,6 +9,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
@@ -17,7 +18,6 @@ import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
 
@@ -47,7 +47,7 @@ public class Demo_View_Interpolation implements PlugIn {
 	static boolean BeVerbose = false;
 
 	static {
-		IjLogStream.redirectSystem();
+		LogStream.redirectSystem();
 		PrintPrecision.set(6);
 	}
 

@@ -2,9 +2,9 @@ package calibration_demos;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.testdata.ZhangData;
-import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.util.ResourceUtils;
 
 /**
@@ -20,7 +20,7 @@ import imagingbook.lib.util.ResourceUtils;
 public class Open_Test_Images implements PlugIn {
 	
 	static {
-		IjLogStream.redirectSystem();
+		LogStream.redirectSystem();
 	}
 	
 	static Class<?> resourceRootClass = ZhangData.class;

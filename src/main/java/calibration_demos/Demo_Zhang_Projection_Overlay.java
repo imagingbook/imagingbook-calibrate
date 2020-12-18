@@ -11,11 +11,11 @@ import ij.gui.Line;
 import ij.gui.OvalRoi;
 import ij.gui.Overlay;
 import ij.gui.Roi;
+import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.testdata.ZhangData;
-import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
 
@@ -53,7 +53,7 @@ public class Demo_Zhang_Projection_Overlay implements PlugIn {
 	static boolean BeVerbose = false;
 	
 	static {
-		IjLogStream.redirectSystem();
+		LogStream.redirectSystem();
 		PrintPrecision.set(6);
 	}
 	

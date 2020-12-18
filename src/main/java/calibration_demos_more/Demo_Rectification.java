@@ -3,12 +3,12 @@ package calibration_demos_more;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.RectificationMapping;
 import imagingbook.calibration.zhang.testdata.ZhangData;
-import imagingbook.lib.ij.IjLogStream;
 import imagingbook.lib.image.ImageMapper;
 import imagingbook.lib.interpolation.InterpolationMethod;
 import imagingbook.lib.settings.PrintPrecision;
@@ -33,7 +33,7 @@ public class Demo_Rectification implements PlugIn {
 	static String resourceName = "CalibImageStack.tif";
 
 	static {
-		IjLogStream.redirectSystem();
+		LogStream.redirectSystem();
 		PrintPrecision.set(6);
 	}
 
