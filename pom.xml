@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.imagingbook</groupId>
 	<artifactId>imagingbook-calibrate</artifactId>
-	<version>1.7-SNAPSHOT</version>
+	<version>1.8-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	 <!-- project information -->
@@ -30,8 +30,8 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<imagej.version>1.52t</imagej.version> <!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
-		<imagingbook.version>1.7-SNAPSHOT</imagingbook.version>
+		<imagej.version>1.53g</imagej.version> <!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
+		<imagingbook.version>1.8-SNAPSHOT</imagingbook.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
 
 		<webdir>${project.basedir}/docs</webdir>
