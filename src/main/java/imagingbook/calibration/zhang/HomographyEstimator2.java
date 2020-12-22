@@ -446,7 +446,8 @@ public class HomographyEstimator2 {
 			{
 			Point2D[] pntsC = new Point2D[pntsA.length];
 			for (int i = 0; i < pntsA.length; i++) {	
-				pntsC[i] = (Point2D) mapping.applyTo(Point.create(pntsA[i]));
+				//pntsC[i] = (Point2D) mapping.applyTo(Point.create(pntsA[i]));
+				pntsC[i] = mapping.applyTo(Point.create(pntsA[i])).toPoint2D();
 			}
 		
 			System.out.println("\nPoints mapped:");
