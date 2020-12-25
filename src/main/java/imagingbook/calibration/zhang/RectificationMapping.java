@@ -3,7 +3,8 @@ package imagingbook.calibration.zhang;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.pub.geometry.basic.Point;
+import imagingbook.pub.geometry.basic.Pnt2d;
+import imagingbook.pub.geometry.basic.Pnt2d.PntDouble;
 import imagingbook.pub.geometry.mappings.Mapping2D;
 
 
@@ -34,14 +35,14 @@ public class RectificationMapping implements Mapping2D {
 	}
 
 	@Override
-	public Point applyTo(Point uv) {
+	public Pnt2d applyTo(Pnt2d uv) {
 		// (u,v) is an observed sensor point
 		// apply the inverse camera mapping to get the normalized (x,y) point:
-		double[] xy = Ai.operate(MathUtil.toHomogeneous(uv.toArray()));
+		double[] xy = Ai.operate(MathUtil.toHomogeneous(uv.toDoubleArray()));
 		// apply the camera's radial lens distortion in the normalized plane:
 		double[] xyd = cam.warp(xy);
 		// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
-		return Point.create(cam.mapToSensorPlane(xyd));
+		return PntDouble.from(cam.mapToSensorPlane(xyd));
 	}
 	
 //	@Override

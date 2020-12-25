@@ -3,7 +3,8 @@ package imagingbook.calibration.zhang;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.pub.geometry.basic.Point;
+import imagingbook.pub.geometry.basic.Pnt2d;
+import imagingbook.pub.geometry.basic.Pnt2d.PntDouble;
 import imagingbook.pub.geometry.mappings.Mapping2D;
 
 
@@ -27,10 +28,10 @@ public class InterCameraMapping implements Mapping2D {
 	}
 	
 	@Override
-	public Point applyTo(Point uv) {
+	public Pnt2d applyTo(Pnt2d uv) {
 		// (u,v) is an observed sensor point
 		// apply the inverse camera mapping to get the distorted (x,y) point:
-		double[] xy = Abi.operate(MathUtil.toHomogeneous(uv.toArray()));
+		double[] xy = Abi.operate(MathUtil.toHomogeneous(uv.toDoubleArray()));
 		
 		// remove the lens distortion of camera b:
 		double[] xyu = camB.unwarp(xy);
@@ -39,7 +40,7 @@ public class InterCameraMapping implements Mapping2D {
 		double[] xyd = camA.warp(xyu);
 		
 		// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
-		return Point.create(camA.mapToSensorPlane(xyd));
+		return PntDouble.from(camA.mapToSensorPlane(xyd));
 	}
 
 //	@Override

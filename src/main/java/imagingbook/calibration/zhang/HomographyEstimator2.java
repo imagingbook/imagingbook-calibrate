@@ -17,7 +17,8 @@ import org.apache.commons.math3.linear.RealVector;
 
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.lib.math.Matrix;
-import imagingbook.pub.geometry.basic.Point;
+import imagingbook.pub.geometry.basic.Pnt2d;
+import imagingbook.pub.geometry.basic.Pnt2d.PntDouble;
 import imagingbook.pub.geometry.mappings.linear.ProjectiveMapping2D;
 
 /**
@@ -447,7 +448,7 @@ public class HomographyEstimator2 {
 			Point2D[] pntsC = new Point2D[pntsA.length];
 			for (int i = 0; i < pntsA.length; i++) {	
 				//pntsC[i] = (Point2D) mapping.applyTo(Point.create(pntsA[i]));
-				pntsC[i] = mapping.applyTo(Point.create(pntsA[i])).toPoint2D();
+				pntsC[i] = mapping.applyTo(PntDouble.from(pntsA[i])).toAwtPoint2D();
 			}
 		
 			System.out.println("\nPoints mapped:");
@@ -494,10 +495,10 @@ public class HomographyEstimator2 {
 		}
 	}
 	
-	static Point[] toPointArray(Point2D[] pts2D) {
-		Point[] pts = new Point[pts2D.length];
+	static Pnt2d[] toPointArray(Point2D[] pts2D) {
+		Pnt2d[] pts = new Pnt2d[pts2D.length];
 		for (int i = 0; i < pts2D.length; i++) {
-			pts[i] = Point.create(pts2D[i]);
+			pts[i] = PntDouble.from(pts2D[i]);
 		}
 		return pts;
 	}
