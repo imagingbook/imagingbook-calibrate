@@ -20,7 +20,7 @@ import org.apache.commons.math3.linear.SingularValueDecomposition;
 public class MathUtil {
 	
 	static {
-		Locale.setDefault(Locale.US);
+		Locale.setDefault(Locale.US);	// TODO: should this be here?
 	}
 	
 	@Deprecated
