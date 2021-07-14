@@ -14,8 +14,7 @@ the [**imagingbook-common**](https://github.com/imagingbook/imagingbook-public) 
 ### Stand-Alone Installation ###
 
 * Clone this repository (which includes a complete ImageJ environment).
-* A Java runtime version 1.8 (or higher) is required.
-* Launch ImageJ.
+* Launch ImageJ (requires a Java runtime version 1.8 or higher).
 * Use the `Plugins` menu to run the demo plugins (test images are loaded automatically).
 
 ### Use in an Existing ImageJ Environment ###
