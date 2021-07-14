@@ -22,6 +22,29 @@ the [**imagingbook-common**](https://github.com/imagingbook/imagingbook-public) 
 * Copy all JAR files from `ImageJ/jars`.
 * Copy the plugin `.class` files from `ImageJ/plugins/calibration_demos`.
 
+### Use with Maven
+
+To use the ``imagingbook-calibrate`` library in your Maven project, add the following lines to your ``pom.xml`` file:
+````
+<repositories>
+    <repository>
+	<id>imagingbook-maven-repository</id>
+    	<url>https://raw.github.com/imagingbook/imagingbook-maven-repository/master</url>
+    	<layout>default</layout>
+    </repository>
+</repositories>
+
+<dependencies>
+  <dependency>
+    <groupId>com.imagingbook</groupId>
+    <artifactId>imagingbook-calibrate</artifactId>
+    <version>2.0-SNAPSHOT</version>
+  </dependency>
+  <!-- other dependencies ... -->
+</dependencies>
+````
+The above setup refers to version ``2.0-SNAPSHOT``. Check the [ImagingBook Maven repository](https://github.com/imagingbook/imagingbook-maven-repository/tree/master/com/imagingbook/imagingbook-calibrate) for the most recent release version.
+
 ### Documentation ###
 
 * **[JavaDoc](https://imagingbook.github.io/imagingbook-calibrate/javadoc/index.html)**
