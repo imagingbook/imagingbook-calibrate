@@ -13,12 +13,12 @@
 <span class="sourceLineNo">003</span><a id="line.3">import ij.IJ;</a>
 <span class="sourceLineNo">004</span><a id="line.4">import ij.ImagePlus;</a>
 <span class="sourceLineNo">005</span><a id="line.5">import ij.ImageStack;</a>
-<span class="sourceLineNo">006</span><a id="line.6">import ij.plugin.PlugIn;</a>
-<span class="sourceLineNo">007</span><a id="line.7">import ij.process.ImageProcessor;</a>
-<span class="sourceLineNo">008</span><a id="line.8">import imagingbook.calibration.zhang.Camera;</a>
-<span class="sourceLineNo">009</span><a id="line.9">import imagingbook.calibration.zhang.RectificationMapping;</a>
-<span class="sourceLineNo">010</span><a id="line.10">import imagingbook.calibration.zhang.testdata.ZhangData;</a>
-<span class="sourceLineNo">011</span><a id="line.11">import imagingbook.lib.ij.IjLogStream;</a>
+<span class="sourceLineNo">006</span><a id="line.6">import ij.io.LogStream;</a>
+<span class="sourceLineNo">007</span><a id="line.7">import ij.plugin.PlugIn;</a>
+<span class="sourceLineNo">008</span><a id="line.8">import ij.process.ImageProcessor;</a>
+<span class="sourceLineNo">009</span><a id="line.9">import imagingbook.calibration.zhang.Camera;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import imagingbook.calibration.zhang.RectificationMapping;</a>
+<span class="sourceLineNo">011</span><a id="line.11">import imagingbook.calibration.zhang.testdata.ZhangData;</a>
 <span class="sourceLineNo">012</span><a id="line.12">import imagingbook.lib.image.ImageMapper;</a>
 <span class="sourceLineNo">013</span><a id="line.13">import imagingbook.lib.interpolation.InterpolationMethod;</a>
 <span class="sourceLineNo">014</span><a id="line.14">import imagingbook.lib.settings.PrintPrecision;</a>
@@ -43,7 +43,7 @@
 <span class="sourceLineNo">033</span><a id="line.33">        static String resourceName = "CalibImageStack.tif";</a>
 <span class="sourceLineNo">034</span><a id="line.34"></a>
 <span class="sourceLineNo">035</span><a id="line.35">        static {</a>
-<span class="sourceLineNo">036</span><a id="line.36">                IjLogStream.redirectSystem();</a>
+<span class="sourceLineNo">036</span><a id="line.36">                LogStream.redirectSystem();</a>
 <span class="sourceLineNo">037</span><a id="line.37">                PrintPrecision.set(6);</a>
 <span class="sourceLineNo">038</span><a id="line.38">        }</a>
 <span class="sourceLineNo">039</span><a id="line.39"></a>

@@ -16,16 +16,16 @@
 <span class="sourceLineNo">006</span><a id="line.6">import ij.IJ;</a>
 <span class="sourceLineNo">007</span><a id="line.7">import ij.ImagePlus;</a>
 <span class="sourceLineNo">008</span><a id="line.8">import ij.ImageStack;</a>
-<span class="sourceLineNo">009</span><a id="line.9">import ij.plugin.PlugIn;</a>
-<span class="sourceLineNo">010</span><a id="line.10">import ij.process.ColorProcessor;</a>
-<span class="sourceLineNo">011</span><a id="line.11">import ij.process.ImageProcessor;</a>
-<span class="sourceLineNo">012</span><a id="line.12">import imagingbook.calibration.zhang.Calibrator;</a>
-<span class="sourceLineNo">013</span><a id="line.13">import imagingbook.calibration.zhang.Calibrator.Parameters;</a>
-<span class="sourceLineNo">014</span><a id="line.14">import imagingbook.calibration.zhang.Camera;</a>
-<span class="sourceLineNo">015</span><a id="line.15">import imagingbook.calibration.zhang.ViewTransform;</a>
-<span class="sourceLineNo">016</span><a id="line.16">import imagingbook.calibration.zhang.testdata.ZhangData;</a>
-<span class="sourceLineNo">017</span><a id="line.17">import imagingbook.calibration.zhang.util.GridPainter;</a>
-<span class="sourceLineNo">018</span><a id="line.18">import imagingbook.lib.ij.IjLogStream;</a>
+<span class="sourceLineNo">009</span><a id="line.9">import ij.io.LogStream;</a>
+<span class="sourceLineNo">010</span><a id="line.10">import ij.plugin.PlugIn;</a>
+<span class="sourceLineNo">011</span><a id="line.11">import ij.process.ColorProcessor;</a>
+<span class="sourceLineNo">012</span><a id="line.12">import ij.process.ImageProcessor;</a>
+<span class="sourceLineNo">013</span><a id="line.13">import imagingbook.calibration.zhang.Calibrator;</a>
+<span class="sourceLineNo">014</span><a id="line.14">import imagingbook.calibration.zhang.Calibrator.Parameters;</a>
+<span class="sourceLineNo">015</span><a id="line.15">import imagingbook.calibration.zhang.Camera;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import imagingbook.calibration.zhang.ViewTransform;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import imagingbook.calibration.zhang.testdata.ZhangData;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import imagingbook.calibration.zhang.util.GridPainter;</a>
 <span class="sourceLineNo">019</span><a id="line.19">import imagingbook.lib.settings.PrintPrecision;</a>
 <span class="sourceLineNo">020</span><a id="line.20">import imagingbook.lib.util.ResourceUtils;</a>
 <span class="sourceLineNo">021</span><a id="line.21"></a>
@@ -56,7 +56,7 @@
 <span class="sourceLineNo">046</span><a id="line.46">        private static Color BackGroundColor = Color.white;</a>
 <span class="sourceLineNo">047</span><a id="line.47">        </a>
 <span class="sourceLineNo">048</span><a id="line.48">        static {</a>
-<span class="sourceLineNo">049</span><a id="line.49">                IjLogStream.redirectSystem();</a>
+<span class="sourceLineNo">049</span><a id="line.49">                LogStream.redirectSystem();</a>
 <span class="sourceLineNo">050</span><a id="line.50">                PrintPrecision.set(6);</a>
 <span class="sourceLineNo">051</span><a id="line.51">        }</a>
 <span class="sourceLineNo">052</span><a id="line.52">        </a>

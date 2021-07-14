@@ -21,11 +21,11 @@
 <span class="sourceLineNo">011</span><a id="line.11">import ij.gui.OvalRoi;</a>
 <span class="sourceLineNo">012</span><a id="line.12">import ij.gui.Overlay;</a>
 <span class="sourceLineNo">013</span><a id="line.13">import ij.gui.Roi;</a>
-<span class="sourceLineNo">014</span><a id="line.14">import ij.plugin.PlugIn;</a>
-<span class="sourceLineNo">015</span><a id="line.15">import imagingbook.calibration.zhang.Camera;</a>
-<span class="sourceLineNo">016</span><a id="line.16">import imagingbook.calibration.zhang.ViewTransform;</a>
-<span class="sourceLineNo">017</span><a id="line.17">import imagingbook.calibration.zhang.testdata.ZhangData;</a>
-<span class="sourceLineNo">018</span><a id="line.18">import imagingbook.lib.ij.IjLogStream;</a>
+<span class="sourceLineNo">014</span><a id="line.14">import ij.io.LogStream;</a>
+<span class="sourceLineNo">015</span><a id="line.15">import ij.plugin.PlugIn;</a>
+<span class="sourceLineNo">016</span><a id="line.16">import imagingbook.calibration.zhang.Camera;</a>
+<span class="sourceLineNo">017</span><a id="line.17">import imagingbook.calibration.zhang.ViewTransform;</a>
+<span class="sourceLineNo">018</span><a id="line.18">import imagingbook.calibration.zhang.testdata.ZhangData;</a>
 <span class="sourceLineNo">019</span><a id="line.19">import imagingbook.lib.settings.PrintPrecision;</a>
 <span class="sourceLineNo">020</span><a id="line.20">import imagingbook.lib.util.ResourceUtils;</a>
 <span class="sourceLineNo">021</span><a id="line.21"></a>
@@ -63,7 +63,7 @@
 <span class="sourceLineNo">053</span><a id="line.53">        static boolean BeVerbose = false;</a>
 <span class="sourceLineNo">054</span><a id="line.54">        </a>
 <span class="sourceLineNo">055</span><a id="line.55">        static {</a>
-<span class="sourceLineNo">056</span><a id="line.56">                IjLogStream.redirectSystem();</a>
+<span class="sourceLineNo">056</span><a id="line.56">                LogStream.redirectSystem();</a>
 <span class="sourceLineNo">057</span><a id="line.57">                PrintPrecision.set(6);</a>
 <span class="sourceLineNo">058</span><a id="line.58">        }</a>
 <span class="sourceLineNo">059</span><a id="line.59">        </a>
