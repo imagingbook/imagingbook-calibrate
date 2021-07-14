@@ -67,6 +67,8 @@
 	</dependencies>
 
 	<build>
+		<outputDirectory>${project.basedir}/ImageJ/plugins</outputDirectory>
+	
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -109,9 +111,26 @@
 			</plugins>
 		</pluginManagement>
 
-		<outputDirectory>${project.basedir}/ImageJ/plugins</outputDirectory>
-
+		
 		<plugins>
+			<!-- empty the ImageJ/jars/ directory at clean -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${project.basedir}/ImageJ/jars</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+		
 			<!-- we rename the target jar and place it in another subdir -->
 			<!-- http://stackoverflow.com/questions/6689511/maven-how-to-place-the-output-jar-into-another-folder -->
 			<plugin>
@@ -179,6 +198,27 @@
 		                    <overWriteSnapshots>true</overWriteSnapshots>
 		                </configuration>
 		            </execution>
+		            
+		            <execution>
+		            	<!-- copy the newly installed target jar to ImageJ/jars -->
+			            <id>copy-installed</id>
+			            <phase>install</phase>
+			            <goals>
+			              <goal>copy</goal>
+			            </goals>
+			            <configuration>
+			              <artifactItems>
+			                <artifactItem>
+			                  <groupId>${project.groupId}</groupId>
+			                  <artifactId>${project.artifactId}</artifactId>
+			                  <version>${project.version}</version>
+			                  <type>${project.packaging}</type>
+			                </artifactItem>
+			              </artifactItems>
+			              <outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
+			            </configuration>
+			         </execution>
+			         
 				</executions>
 			</plugin>
 			<!-- end of copy -->
