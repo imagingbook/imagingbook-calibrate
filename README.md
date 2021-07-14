@@ -43,7 +43,7 @@ To use the ``imagingbook-calibrate`` library in your Maven project, add the foll
   <!-- other dependencies ... -->
 </dependencies>
 ````
-The above setup refers to version ``2.0-SNAPSHOT``. Check the [ImagingBook Maven repository](https://github.com/imagingbook/imagingbook-maven-repository/tree/master/com/imagingbook/) for the most recent release version.
+The above setup refers to version ``2.0-SNAPSHOT``. Check the [ImagingBook Maven repository](https://github.com/imagingbook/imagingbook-maven-repository/tree/master/com/imagingbook/) for the most recent version.
 
 ### Documentation ###
 
