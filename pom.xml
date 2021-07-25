@@ -128,6 +128,8 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.1.1</version>
 				<configuration>
+					<!-- https://medium.com/@kankvish/fixing-issue-the-environment-variable-java-home-is-not-correctly-set-b5f0b66a84d0 -->
+                    <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
 					<!-- <source>8</source> -->
 					<detectJavaApiLink>false</detectJavaApiLink>
 					<!-- Default configuration for all reports -->
