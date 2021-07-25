@@ -35,6 +35,7 @@
 
 	<properties>
 	 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	 	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
        	<maven.compiler.source>1.8</maven.compiler.source>
        	<maven.compiler.target>1.8</maven.compiler.target>
 		<java.version>1.8</java.version>
@@ -43,8 +44,6 @@
 		<commons-math3.version>3.6.1</commons-math3.version>
 
 		<webdir>${project.basedir}/docs</webdir>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 	
 	<repositories>
@@ -78,6 +77,86 @@
 			<version>${imagingbook.version}</version>
 		</dependency>
 	</dependencies>
+	
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+				
+				<!-- Ignore/Execute plugin execution (https://stackoverflow.com/a/8752807) -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<!-- copy-dependency plugin -->
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>copy-dependencies</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+				
+			</plugins>
+		</pluginManagement>
+		
+		<plugins>
+			<plugin>
+				<!-- Javadoc generation -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<!-- <source>8</source> -->
+					<detectJavaApiLink>false</detectJavaApiLink>
+					<!-- Default configuration for all reports -->
+					<reportOutputDirectory>${webdir}</reportOutputDirectory>
+					<destDir>javadoc</destDir>
+					<doctitle>${javadoc-doctitle}</doctitle>
+					<packagesheader>${project.name}</packagesheader>
+					<!-- <header>The ImagingBook HEADER</header> -->
+					<!-- <footer>The ImagingBook FOOTER</footer> -->
+					<!-- <top>The ImagingBook TOP text</top> -->
+					<!-- <bottom>
+	        		<![CDATA[Copyright &#169; {inceptionYear}&#x2013;{currentYear}, 
+	        		<a href="http://www.imagingbook.com" target="new">
+	        		Wilhelm Burger</a>
+	        		<a href="http://opensource.org/licenses/BSD-2-Clause" target="new">
+	        		(BSD 2-Clause Simplified License)</a>]]>
+					</bottom> -->
+					<show>protected</show>
+					<nohelp>true</nohelp>
+					<linksource>true</linksource>
+					<author>false</author>
+					<verbose>true</verbose>
+					<!-- <detectLinks>true</detectLinks> -->
+					<!-- <detectOfflineLinks>true</detectOfflineLinks> -->
+					<additionalOptions>--frames</additionalOptions> <!-- by default, javadoc does not generate HTML with frames any more! -->
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 
 	
