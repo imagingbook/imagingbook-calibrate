@@ -72,6 +72,11 @@
 			<artifactId>ij</artifactId>
 			<version>${imagej.version}</version> <!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
 		</dependency>
+		<dependency>
+			<groupId>com.imagingbook</groupId>
+			<artifactId>imagingbook-common</artifactId>
+			<version>${imagingbook.version}</version>
+		</dependency>
 	</dependencies>
 
 
