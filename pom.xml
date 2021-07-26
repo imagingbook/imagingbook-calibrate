@@ -1,51 +1,52 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.imagingbook</groupId>
 	<artifactId>imagingbook-calibrate</artifactId>
 	<version>2.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	
+
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
 		<module>imagingbook-calibrate-plugins</module>
 	</modules>
-	
-	 <!-- project information -->
+
+	<!-- project information -->
 	<description>Java/ImageJ implementation of Zhang's camera calibration algorithm</description>
 	<inceptionYear>2015</inceptionYear>
 	<url>http://www.imagingbook.com</url>
-	
+
 	<developers>
 		<developer>
 			<name>Wilhelm Burger</name>
 			<email>wilbur@ieee.org</email>
 		</developer>
 	</developers>
-	
+
 	<licenses>
 		<license>
 			<name>BSD 2-Clause Simplified License</name>
 			<url>http://opensource.org/licenses/BSD-2-Clause</url>
 		</license>
 	</licenses>
-	
-	
-	<!-- COMMON to stand-alone projects based on ImageJ and imagingbook libraries  -->
+
+
+	<!-- COMMON to stand-alone projects based on ImageJ and imagingbook libraries -->
 
 	<properties>
-	 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	 	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-       	<maven.compiler.source>1.8</maven.compiler.source>
-       	<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<java.version>1.8</java.version>
-		<imagej.version>1.53j</imagej.version> <!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
+		<imagej.version>1.53j</imagej.version> 			<!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
 		<imagingbook.version>2.0-SNAPSHOT</imagingbook.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
-
-		<webdir>${project.basedir}/docs</webdir>
+		<rootdir>${project.basedir}</rootdir>		<!-- modified by poms in sub-modules! -->
 	</properties>
-	
+
 	<repositories>
 		<repository>
 			<id>imagingbook-maven-repository</id>
@@ -54,7 +55,7 @@
 			<layout>default</layout>
 		</repository>
 	</repositories>
-	
+
 	<distributionManagement>
 		<repository>
 			<id>imagingbook-maven-repository</id>     <!-- used by 'mvn deploy' -->
@@ -64,7 +65,7 @@
 			<layout>default</layout>
 		</repository>
 	</distributionManagement>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>net.imagej</groupId>
@@ -77,7 +78,7 @@
 			<version>${imagingbook.version}</version>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -90,7 +91,7 @@
 						<target>${java.version}</target>
 					</configuration>
 				</plugin>
-				
+
 				<!-- Ignore/Execute plugin execution (https://stackoverflow.com/a/8752807) -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -117,10 +118,10 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
-				
+
 			</plugins>
 		</pluginManagement>
-		
+
 		<plugins>
 			<plugin>
 				<!-- Javadoc generation -->
@@ -129,24 +130,21 @@
 				<version>3.1.1</version>
 				<configuration>
 					<!-- https://medium.com/@kankvish/fixing-issue-the-environment-variable-java-home-is-not-correctly-set-b5f0b66a84d0 -->
-                    <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+					<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
 					<!-- <source>8</source> -->
 					<detectJavaApiLink>false</detectJavaApiLink>
 					<!-- Default configuration for all reports -->
-					<reportOutputDirectory>${webdir}</reportOutputDirectory>
-					<destDir>javadoc</destDir>
+					<reportOutputDirectory>${rootdir}/docs</reportOutputDirectory>
+					<destDir>javadoc/${project.name}</destDir>
 					<doctitle>${javadoc-doctitle}</doctitle>
 					<packagesheader>${project.name}</packagesheader>
 					<!-- <header>The ImagingBook HEADER</header> -->
 					<!-- <footer>The ImagingBook FOOTER</footer> -->
 					<!-- <top>The ImagingBook TOP text</top> -->
-					<!-- <bottom>
-	        		<![CDATA[Copyright &#169; {inceptionYear}&#x2013;{currentYear}, 
-	        		<a href="http://www.imagingbook.com" target="new">
-	        		Wilhelm Burger</a>
-	        		<a href="http://opensource.org/licenses/BSD-2-Clause" target="new">
-	        		(BSD 2-Clause Simplified License)</a>]]>
-					</bottom> -->
+					<!-- <bottom> <![CDATA[Copyright &#169; {inceptionYear}&#x2013;{currentYear}, 
+						<a href="http://www.imagingbook.com" target="new"> Wilhelm Burger</a> <a 
+						href="http://opensource.org/licenses/BSD-2-Clause" target="new"> (BSD 2-Clause 
+						Simplified License)</a>]]> </bottom> -->
 					<show>protected</show>
 					<nohelp>true</nohelp>
 					<linksource>true</linksource>
@@ -160,8 +158,6 @@
 		</plugins>
 	</build>
 
-
-	
 	<reporting>
 		<plugins>
 			<plugin>  <!-- to stop Maven complaining about missing version number -->
