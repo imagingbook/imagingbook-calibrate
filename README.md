@@ -1,7 +1,5 @@
 # Java/ImageJ implementation of Zhang's camera calibration algorithm #
 
-## NOTE: This repo is currently under revision/restructuring, descriptions are not up-to-date!
-
 This is a Java implementation of Zhang's camera calibration algorithm. 
 It implements the geometric part only, i.e., does not include interest point detection and point correspondence calculations.
 For details see this extensive [**report**](https://www.researchgate.net/publication/303233579_Zhang%27s_Camera_Calibration_Algorithm_In-Depth_Tutorial_and_Implementation).
