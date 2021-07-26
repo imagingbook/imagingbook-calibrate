@@ -27,8 +27,8 @@ This project consists of two sub-projects (Maven modules):
 
 ### Use in an Existing ImageJ Environment ###
 
-* Copy all JAR files from `ImageJ/jars`.
-* Copy the plugin `.class` files from `ImageJ/plugins/calibration_demos`.
+* Copy all JAR files from `imagingbook-calibrate-plugins/ImageJ/jars`.
+* Copy the plugin `.class` files from `imagingbook-calibrate-plugins/ImageJ/plugins`.
 
 ### Use with Maven
 
