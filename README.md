@@ -49,6 +49,6 @@ The above setup refers to version ``2.0-SNAPSHOT``. Check the [ImagingBook Maven
 
 ### Documentation ###
 
-* **[JavaDoc](https://imagingbook.github.io/imagingbook-calibrate/javadoc/index.html)**
-* **[Report](https://www.researchgate.net/publication/303233579_Zhang%27s_Camera_Calibration_Algorithm_In-Depth_Tutorial_and_Implementation)**
+* **JavaDoc: [library](https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook-calibrate-lib/index.html), [plugins](https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook-calibrate-plugins/index.html)**
+* **Report: [Zhang's Camera Calibration Algorithm: In-Depth Tutorial and Implementation](https://www.researchgate.net/publication/303233579_Zhang%27s_Camera_Calibration_Algorithm_In-Depth_Tutorial_and_Implementation)**
 
