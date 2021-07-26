@@ -15,8 +15,9 @@ the [**imagingbook-common**](https://github.com/imagingbook/imagingbook-public) 
 [**Apache Commons Math**](http://commons.apache.org/proper/commons-math/).
 
 This project consists of two sub-projects (Maven modules):
-* `imagingbook-calibrate-lib`: The calibration library.
-* `imagingbook-calibrate-plugins`: A collection of ImageJ demo plugins (within a complete ImageJ setup).
+* `imagingbook-calibrate-lib`: the calibration library,
+* `imagingbook-calibrate-data`: a small set of calibration test data,
+* `imagingbook-calibrate-plugins`: various ImageJ demo plugins (embedded in a complete ImageJ setup).
 
 ### Stand-Alone Installation ###
 
@@ -32,7 +33,8 @@ This project consists of two sub-projects (Maven modules):
 
 ### Use with Maven
 
-To use the ``imagingbook-calibrate-lib`` library in your Maven project, add the following lines to your ``pom.xml`` file:
+To use the ``imagingbook-calibrate-lib`` library and ``imagingbook-calibrate-data`` resources in your Maven project, 
+add the following lines to your ``pom.xml`` file:
 ````
 <repositories>
     <repository>
@@ -46,6 +48,11 @@ To use the ``imagingbook-calibrate-lib`` library in your Maven project, add the 
   <dependency>
     <groupId>com.imagingbook</groupId>
     <artifactId>imagingbook-calibrate-lib</artifactId>
+    <version>2.0-SNAPSHOT</version>
+  </dependency>
+  <dependency>
+    <groupId>com.imagingbook</groupId>
+    <artifactId>imagingbook-calibrate-data</artifactId>
     <version>2.0-SNAPSHOT</version>
   </dependency>
   <!-- other dependencies ... -->
