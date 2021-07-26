@@ -44,9 +44,31 @@
 				</configuration>
 			</plugin>
 
+			<!-- we rename the target jar and place it in another subdir -->
+			<!-- http://stackoverflow.com/questions/6689511/maven-how-to-place-the-output-jar-into-another-folder -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<!-- <outputDirectory>${project.build.directory}/ImageJ/jars</outputDirectory> -->
+					<!-- <finalName>${project.name}_XXX_${project.version}</finalName> -->
+					<includes>
+						<include>**/imagingbook/**</include>  <!-- include the library classes only (no plugins) -->
+					</includes>
+					<!-- add more properties to MANIFEST file -->
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Build-Date>${buildDate}</Build-Date>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
 
-			<!-- make a local copy of the current ij.jar for development, see 
-				https://maven.apache.org/plugins/maven-dependency-plugin/examples/copying-artifacts.html -->
+			<!-- make a local copy of the current ij.jar for development, see https://maven.apache.org/plugins/maven-dependency-plugin/examples/copying-artifacts.html -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -91,7 +113,7 @@
 					</execution>
 
 					<execution>
-						<!-- copy the newly installed target jar to ImageJ/jars (could this be a problem?) -->
+						<!-- copy the newly installed target jar to ImageJ/jars -->
 						<id>copy-installed</id>
 						<phase>install</phase>
 						<goals>

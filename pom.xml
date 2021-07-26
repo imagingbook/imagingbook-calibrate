@@ -44,7 +44,10 @@
 		<imagej.version>1.53j</imagej.version> 			<!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
 		<imagingbook.version>2.0-SNAPSHOT</imagingbook.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
-		<rootdir>${project.basedir}</rootdir>		<!-- modified by poms in sub-modules! -->
+		
+		<imagingbook.deploydir>imagingbook-maven-repository</imagingbook.deploydir>
+		<calibrate.rootdir>${project.basedir}</calibrate.rootdir>		<!-- modified by poms in sub-modules! -->
+		<calibrate.deploydir>${calibrate.rootdir}/../${imagingbook.deploydir}</calibrate.deploydir>
 	</properties>
 
 	<repositories>
@@ -55,16 +58,6 @@
 			<layout>default</layout>
 		</repository>
 	</repositories>
-
-	<distributionManagement>
-		<repository>
-			<id>imagingbook-maven-repository</id>     <!-- used by 'mvn deploy' -->
-			<name>Imagingbook Maven Repository</name>
-			<!-- <url>file:///${imagingbook.rootdir}/../../imagingbook-maven-repository</url> -->
-			<url>file:///${project.basedir}/../imagingbook-maven-repository</url>
-			<layout>default</layout>
-		</repository>
-	</distributionManagement>
 
 	<dependencies>
 		<dependency>
@@ -123,6 +116,21 @@
 		</pluginManagement>
 
 		<plugins>
+		
+			<plugin>  <!-- generate a separate jar file with source code -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
 			<plugin>
 				<!-- Javadoc generation -->
 				<groupId>org.apache.maven.plugins</groupId>
@@ -157,6 +165,19 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<distributionManagement>
+		<repository>
+			<id>imagingbook-maven-repository</id>     <!-- used by 'mvn deploy' -->
+			<name>Imagingbook Maven Repository</name>
+			<!-- <url>file:///${imagingbook.rootdir}/../../imagingbook-maven-repository</url> -->
+			<!-- <url>file:///${project.basedir}/../imagingbook-maven-repository</url> -->
+			<!-- <url>file:///${rootdir}/../imagingbook-maven-repository</url> -->
+			<!-- <url>file:///D:/GITHUB/IMAGINGBOOK/imagingbook-parent/imagingbook-maven-repository</url> --> <!-- works! -->
+			<url>file:${calibrate.deploydir}</url>
+			<layout>default</layout>
+		</repository>
+	</distributionManagement>
 
 	<reporting>
 		<plugins>

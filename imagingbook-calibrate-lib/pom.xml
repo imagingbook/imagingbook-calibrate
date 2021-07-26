@@ -12,7 +12,7 @@
 	
 	<properties>
 		<!-- all JavaDoc output goes to the parent's docs directory -->
-		<rootdir>${project.parent.basedir}</rootdir>
+		<calibrate.rootdir>${project.basedir}/..</calibrate.rootdir>
 	</properties>
 
 	<dependencies>
