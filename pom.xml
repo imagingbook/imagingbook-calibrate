@@ -11,6 +11,7 @@
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
 		<module>imagingbook-calibrate-plugins</module>
+		<module>imagingbook-calibrate-data</module>
 	</modules>
 
 	<!-- project information -->
@@ -44,7 +45,7 @@
 		<imagej.version>1.53j</imagej.version> 			<!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
 		<imagingbook.version>2.0-SNAPSHOT</imagingbook.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
-		
+
 		<imagingbook.deploydir>imagingbook-maven-repository</imagingbook.deploydir>
 		<calibrate.rootdir>${project.basedir}</calibrate.rootdir>		<!-- modified by poms in sub-modules! -->
 		<calibrate.deploydir>${calibrate.rootdir}/../${imagingbook.deploydir}</calibrate.deploydir>
@@ -116,7 +117,7 @@
 		</pluginManagement>
 
 		<plugins>
-		
+
 			<plugin>  <!-- generate a separate jar file with source code -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -130,7 +131,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<!-- Javadoc generation -->
 				<groupId>org.apache.maven.plugins</groupId>
@@ -165,7 +166,7 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<distributionManagement>
 		<repository>
 			<id>imagingbook-maven-repository</id>     <!-- used by 'mvn deploy' -->
