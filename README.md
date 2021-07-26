@@ -32,7 +32,7 @@ This project consists of two sub-projects (Maven modules):
 
 ### Use with Maven
 
-To use the ``imagingbook-calibrate`` library in your Maven project, add the following lines to your ``pom.xml`` file:
+To use the ``imagingbook-calibrate-lib`` library in your Maven project, add the following lines to your ``pom.xml`` file:
 ````
 <repositories>
     <repository>
@@ -45,16 +45,16 @@ To use the ``imagingbook-calibrate`` library in your Maven project, add the foll
 <dependencies>
   <dependency>
     <groupId>com.imagingbook</groupId>
-    <artifactId>imagingbook-calibrate</artifactId>
+    <artifactId>imagingbook-calibrate-lib</artifactId>
     <version>2.0-SNAPSHOT</version>
   </dependency>
   <!-- other dependencies ... -->
 </dependencies>
 ````
-The above setup refers to version ``2.0-SNAPSHOT``. Check the [ImagingBook Maven repository](https://github.com/imagingbook/imagingbook-maven-repository/tree/master/com/imagingbook/) for the most recent version.
+The above setup refers to version ``2.0-SNAPSHOT``. Check the [ImagingBook Maven Repository](https://github.com/imagingbook/imagingbook-maven-repository/tree/master/com/imagingbook/) for the most recent version.
 
 ### Documentation ###
 
-* **JavaDoc: [library](https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook-calibrate-lib/index.html?overview-summary.html), [plugins](https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook-calibrate-plugins/index.html?overview-summary.html)**
+* **JavaDoc: [imagingbook-calibrate-lib](https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook-calibrate-lib/index.html?overview-summary.html), [imagingbook-calibrate-plugins](https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook-calibrate-plugins/index.html?overview-summary.html)**
 * **Report: [Zhang's Camera Calibration Algorithm: In-Depth Tutorial and Implementation](https://www.researchgate.net/publication/303233579_Zhang%27s_Camera_Calibration_Algorithm_In-Depth_Tutorial_and_Implementation)**
 
