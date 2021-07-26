@@ -1,14 +1,10 @@
 package calibration_demos;
 
-import java.nio.file.Path;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.testdata.ZhangData;
-import imagingbook.lib.ij.IjUtils;
-import imagingbook.lib.util.ResourceLocation;
 import imagingbook.lib.util.ResourceUtils;
 
 /**
@@ -18,10 +14,10 @@ import imagingbook.lib.util.ResourceUtils;
  * mechanism.
  * 
  * @author W. Burger
- * @version 2021-07-26
+ * @version 2017-05-30
  *
  */
-public class Open_Test_Images implements PlugIn {
+public class Open_Test_Images_OLD implements PlugIn {
 	
 	static {
 		LogStream.redirectSystem();
@@ -32,27 +28,18 @@ public class Open_Test_Images implements PlugIn {
 	static String resourceName = "CalibImageStack.tif";
 
 	public void run(String arg0) {
-		
-		ResourceLocation loc = new imagingbook.calibration.zhang.testdata.resources.Resources();	
-		if(loc.isInsideJAR())
-			IJ.log("Loading resource from JAR file: " + resourceName);
+		if(ResourceUtils.isInsideJar(resourceRootClass))
+			IJ.log("Loading resource from JAR file");
 		else
-			IJ.log("Loading resource from file system: " + resourceName);
+			IJ.log("Loading resource from file system");
 		
-		Path p = loc.getResourcePath(resourceName);
-		if (p == null) {
-			IJ.error("Resource not found!");
-		}
-		
-		IJ.log("\nPath to " + resourceName + ": " + p);
-		
-		ImagePlus im = IjUtils.openImage(p);
+		ImagePlus im = ResourceUtils.openImageFromResource(resourceRootClass, resourceDir, resourceName);
 		
 		if (im != null) {
 			im.show();
 		}
 		else {
-			IJ.error("Could not open image!");
+			IJ.error("Could not load resource!");
 		}
 	}
 	
