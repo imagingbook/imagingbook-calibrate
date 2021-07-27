@@ -2,8 +2,11 @@ package calibration_demos;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -34,10 +37,10 @@ public class Open_Test_Images implements PlugIn {
 	
 //	static Class<?> resourceRootClass = ZhangData.class;
 //	static String resourceDir = "resources/";
-	//static String resourceName = "CalibImageStack.tif";
+	static String resourceName = "CalibImageStack.tif";
 	//static String resourceName = "marked1.png";
 	//static String resourceName = "CalibIm1.jpg";
-	static String resourceName = "data1.txt";
+	//static String resourceName = "data1.txt";
 
 	public void run(String args) {
 		
@@ -47,21 +50,37 @@ public class Open_Test_Images implements PlugIn {
 			IJ.log("Resources in JAR file: " + loc.getPath());
 		else
 			IJ.log("Resources in regular file: " + loc.getPath());
-	
 		
-		for (Resource res : loc.getResources()) {
+		URI rootURI = loc.getURI();
+		Path rootPath = loc.getPath();
+		
+		IJ.log("getURI()           = " + rootURI);
+		IJ.log("getPath()          = " + rootPath);
+		IJ.log("Paths.get(rootURI) = " + Paths.get(rootURI));
+
+		IJ.log("");
+
+		Resource[] resources1 = loc.getResources();
+		IJ.log("Resources found (1): " + resources1.length);
+		for (Resource res : resources1) {
 			IJ.log("   " + res.getName() + " | " + res.getURL());
 		}
 		
-		Path p = loc.getPath(resourceName);
-		if (p == null) {
-			IJ.error("Resource not found!");
+		Path[] paths2 = loc.getResourcePaths();
+		IJ.log("Resources found (2): " + paths2.length);
+		for (Path p : paths2) {
+			IJ.log("   " + p);
 		}
 		
-		IJ.log("\nPath to " + resourceName + ": " + p);
+//		Path p = loc.getPath(resourceName);
+//		if (p == null) {
+//			IJ.error("Resource not found!");
+//		}
 		
-		InputStream strm = loc.getResourceAsStream(resourceName);
-		IJ.log("\nStream to " + resourceName + ": " + strm);
+//		IJ.log("\nPath to " + resourceName + ": " + p);
+		
+//		InputStream strm = loc.getResourceAsStream(resourceName);
+//		IJ.log("\nStream to " + resourceName + ": " + strm);
 		
 		//ImagePlus im = IjUtils.openImage(p);	// does not work if in JAR
 		//ImagePlus im = openTiffFromStream(strm, resourceName);	// works
@@ -75,7 +94,8 @@ public class Open_Test_Images implements PlugIn {
 		IJ.log("\nOpening Path " + path);
 		//im = new Opener().openURL(url.toString());
 		//im = new Opener().openImage(url.toString());
-		im = res.openAsImage();
+		
+		im = res.openAsImage(); // uses URL
 		
 		if (im != null) {
 			im.show();
