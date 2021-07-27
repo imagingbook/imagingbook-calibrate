@@ -1,5 +1,6 @@
 package calibration_demos;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -60,15 +61,21 @@ public class Open_Test_Images implements PlugIn {
 
 		IJ.log("");
 
-		Resource[] resources1 = loc.getResources();
-		IJ.log("Resources found (1): " + resources1.length);
-		for (Resource res : resources1) {
-			IJ.log("   " + res.getName() + " | " + res.getURL());
-		}
+//		Resource[] resources1 = loc.getResources();
+//		IJ.log("Resources found (1): " + resources1.length);
+//		for (Resource res : resources1) {
+//			IJ.log("   " + res.getName() + " | " + res.getURL());
+//		}
 		
-		Path[] paths2 = loc.getResourcePaths();
-		IJ.log("Resources found (2): " + paths2.length);
-		for (Path p : paths2) {
+//		Path[] paths2 = loc.getResourcePaths();
+//		IJ.log("Resources found (2): " + paths2.length);
+//		for (Path p : paths2) {
+//			IJ.log("   " + p);
+//		}
+		
+		String[] names = loc.getResourceNames();
+		IJ.log("Resources found (names): " + names.length);
+		for (String p : names) {
 			IJ.log("   " + p);
 		}
 		
@@ -88,14 +95,16 @@ public class Open_Test_Images implements PlugIn {
 		ImagePlus im = null;
 
 		Resource res = loc.getResource(resourceName);
-		URL url = res.getURL();
-		Path path = res.getPath();
-		IJ.log("\nOpening URL " + url);
-		IJ.log("\nOpening Path " + path);
+//		URL url = res.getURL();
+//		Path path = res.getPath();
+//		IJ.log("\nOpening URL " + url);
+//		IJ.log("\nOpening Path " + path);
 		//im = new Opener().openURL(url.toString());
 		//im = new Opener().openImage(url.toString());
 		
 		im = res.openAsImage(); // uses URL
+		
+
 		
 		if (im != null) {
 			im.show();
@@ -103,6 +112,7 @@ public class Open_Test_Images implements PlugIn {
 		else {
 			IJ.error("Could not open image " + resourceName);
 		}
+
 	}
 	
 	
