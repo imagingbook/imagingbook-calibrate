@@ -1,15 +1,20 @@
 package calibration_demos;
 
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Path;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.io.LogStream;
+import ij.io.Opener;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.testdata.ZhangData;
 import imagingbook.lib.ij.IjUtils;
-import imagingbook.lib.util.ResourceLocation;
 import imagingbook.lib.util.ResourceUtils;
+import imagingbook.lib.util.resource.ResourceLocation;
+import imagingbook.lib.util.resource.ResourceLocation.Resource;
 
 /**
  * Opens Zhang's standard calibration images as a stack of RGB images. 
@@ -27,33 +32,63 @@ public class Open_Test_Images implements PlugIn {
 		LogStream.redirectSystem();
 	}
 	
-	static Class<?> resourceRootClass = ZhangData.class;
-	static String resourceDir = "resources/";
-	static String resourceName = "CalibImageStack.tif";
+//	static Class<?> resourceRootClass = ZhangData.class;
+//	static String resourceDir = "resources/";
+	//static String resourceName = "CalibImageStack.tif";
+	//static String resourceName = "marked1.png";
+	//static String resourceName = "CalibIm1.jpg";
+	static String resourceName = "data1.txt";
 
-	public void run(String arg0) {
+	public void run(String args) {
 		
-		ResourceLocation loc = new imagingbook.calibration.zhang.testdata.resources.Resources();	
-		if(loc.isInsideJAR())
-			IJ.log("Loading resource from JAR file: " + resourceName);
+		ResourceLocation loc = new imagingbook.calibration.zhang.testdata.resources.Resources();
+		
+		if(loc.insideJAR())
+			IJ.log("Resources in JAR file: " + loc.getPath());
 		else
-			IJ.log("Loading resource from file system: " + resourceName);
+			IJ.log("Resources in regular file: " + loc.getPath());
+	
 		
-		Path p = loc.getResourcePath(resourceName);
+		for (Resource res : loc.getResources()) {
+			IJ.log("   " + res.getName() + " | " + res.getURL());
+		}
+		
+		Path p = loc.getPath(resourceName);
 		if (p == null) {
 			IJ.error("Resource not found!");
 		}
 		
 		IJ.log("\nPath to " + resourceName + ": " + p);
 		
-		ImagePlus im = IjUtils.openImage(p);
+		InputStream strm = loc.getResourceAsStream(resourceName);
+		IJ.log("\nStream to " + resourceName + ": " + strm);
+		
+		//ImagePlus im = IjUtils.openImage(p);	// does not work if in JAR
+		//ImagePlus im = openTiffFromStream(strm, resourceName);	// works
+		
+		ImagePlus im = null;
+
+		Resource res = loc.getResource(resourceName);
+		URL url = res.getURL();
+		Path path = res.getPath();
+		IJ.log("\nOpening URL " + url);
+		IJ.log("\nOpening Path " + path);
+		//im = new Opener().openURL(url.toString());
+		//im = new Opener().openImage(url.toString());
+		im = res.openAsImage();
 		
 		if (im != null) {
 			im.show();
 		}
 		else {
-			IJ.error("Could not open image!");
+			IJ.error("Could not open image " + resourceName);
 		}
 	}
+	
+	
+//	private ImagePlus openTiffFromStream(InputStream is, String name) {
+//		IJ.log("opening TIFF from stream ...");
+//		return new Opener().openTiff(is, name);
+//	}
 	
 }

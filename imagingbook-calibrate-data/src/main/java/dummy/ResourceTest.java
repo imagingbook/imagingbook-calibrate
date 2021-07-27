@@ -4,13 +4,13 @@ import java.nio.file.Path;
 
 import ij.ImagePlus;
 import imagingbook.lib.ij.IjUtils;
-import imagingbook.lib.util.ResourceLocation;
+import imagingbook.lib.util.resource.ResourceLocation;
 
 public class ResourceTest {
 
 	public static void main(String[] args) {
 		ResourceLocation loc = new imagingbook.calibration.zhang.testdata.resources.Resources();
-		System.out.println("Inside JAR: " + loc.isInsideJAR());
+		System.out.println("Inside JAR: " + loc.insideJAR());
 
 		String[] names = loc.getResourceNames();
 		for (String nam : names) {
@@ -18,7 +18,7 @@ public class ResourceTest {
 		}
 		
 		String nam = "CalibImageStack.tif";
-		Path p = loc.getResourcePath(nam);
+		Path p = loc.getPath(nam);
 		System.out.println("\nPath to " + nam + ": " + p);
 		
 		ImagePlus im = IjUtils.openImage(p);
