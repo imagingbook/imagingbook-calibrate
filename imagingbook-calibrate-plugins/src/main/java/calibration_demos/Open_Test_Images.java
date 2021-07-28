@@ -52,7 +52,7 @@ public class Open_Test_Images implements PlugIn {
 		else
 			IJ.log("Resources in regular file: " + loc.getPath());
 		
-		URI rootURI = loc.getURI();
+		URI rootURI = loc.getUri();
 		Path rootPath = loc.getPath();
 		
 		IJ.log("getURI()           = " + rootURI);
@@ -106,7 +106,7 @@ public class Open_Test_Images implements PlugIn {
 		} catch (MalformedURLException e) {	}
 		
 		//im = new Opener().openURL(url.toString());
-		im = new Opener().openImage(res.getURI().toString());
+		im = new Opener().openImage(res.getUri().toString());
 		
 		//im = res.openAsImage(); // uses URL
 		
@@ -120,7 +120,7 @@ public class Open_Test_Images implements PlugIn {
 		}
 		
 		IJ.log("---------------------------------");
-		IJ.log("res.getURI()  = " + res.getURI());
+		IJ.log("res.getURI()  = " + res.getUri());
 //		IJ.log("res.getURL()  = " + res.getURL());
 		IJ.log("res.getPath() = " + res.getPath());
 //		try {
