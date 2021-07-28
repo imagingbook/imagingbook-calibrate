@@ -8,7 +8,7 @@ import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.RectificationMapping;
-import imagingbook.calibration.zhang.testdata.ZhangData;
+import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.lib.image.ImageMapper;
 import imagingbook.lib.interpolation.InterpolationMethod;
 import imagingbook.lib.settings.PrintPrecision;

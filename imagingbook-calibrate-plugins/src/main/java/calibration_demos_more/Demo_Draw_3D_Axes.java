@@ -10,7 +10,7 @@ import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
-import imagingbook.calibration.zhang.testdata.ZhangData;
+import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.lib.settings.PrintPrecision;
 import imagingbook.lib.util.ResourceUtils;
 

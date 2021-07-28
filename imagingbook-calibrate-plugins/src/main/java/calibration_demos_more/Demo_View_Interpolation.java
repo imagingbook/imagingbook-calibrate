@@ -15,7 +15,7 @@ import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
-import imagingbook.calibration.zhang.testdata.ZhangData;
+import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.lib.settings.PrintPrecision;

@@ -45,6 +45,7 @@
 		<imagej.version>1.53j</imagej.version> 			<!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
 		<imagingbook.version>2.0-SNAPSHOT</imagingbook.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
+		<junit.version>4.13.1</junit.version>
 
 		<imagingbook.deploydir>imagingbook-maven-repository</imagingbook.deploydir>
 		<calibrate.rootdir>${project.basedir}</calibrate.rootdir>		<!-- modified by poms in sub-modules! -->
@@ -71,6 +72,14 @@
 			<artifactId>imagingbook-common</artifactId>
 			<version>${imagingbook.version}</version>
 		</dependency>
+		
+		<dependency>
+      		<groupId>junit</groupId>
+      		<artifactId>junit</artifactId>
+      		<version>${junit.version}</version>
+      		<scope>test</scope>
+    	</dependency>
+    	
 	</dependencies>
 
 	<build>

@@ -14,7 +14,7 @@ import ij.ImagePlus;
 import ij.io.LogStream;
 import ij.io.Opener;
 import ij.plugin.PlugIn;
-import imagingbook.calibration.zhang.testdata.ZhangData;
+import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.lib.ij.IjUtils;
 import imagingbook.lib.util.ResourceUtils;
 import imagingbook.lib.util.resource.ResourceLocation;
@@ -45,7 +45,7 @@ public class Open_Test_Images implements PlugIn {
 
 	public void run(String args) {
 		
-		ResourceLocation loc = new imagingbook.calibration.zhang.testdata.resources.Resources();
+		ResourceLocation loc = new imagingbook.calibration.zhang.data.files.RLOC();
 		
 		if(loc.insideJAR())
 			IJ.log("Resources in JAR file: " + loc.getPath());
