@@ -1,28 +1,28 @@
 package dummy;
 
-import java.nio.file.Path;
-
 import ij.ImagePlus;
-import imagingbook.lib.ij.IjUtils;
 import imagingbook.lib.util.resource.ResourceLocation;
+import imagingbook.lib.util.resource.ResourceLocation.Resource;
 
 public class ResourceTest {
 
 	public static void main(String[] args) {
 		ResourceLocation loc = new imagingbook.calibration.zhang.testdata.resources.Resources();
 		System.out.println("Inside JAR: " + loc.insideJAR());
+		System.out.println("root dir = " + loc.getURI());
 
 		String[] names = loc.getResourceNames();
 		for (String nam : names) {
 			System.out.println(nam);
 		}
 		
-		String nam = "CalibImageStack.tif";
-		Path p = loc.getPath(nam);
-		System.out.println("\nPath to " + nam + ": " + p);
+		String nam = names[0]; // "CalibImageStack.tif";
+		Resource res = loc.getResource(nam);
+		System.out.println("\nResource name = " + res.getName());
+		System.out.println("Resource URI = " + res.getURI());
 		
-		ImagePlus im = IjUtils.openImage(p);
-		System.out.println("\nOpened image: " + im);
+		ImagePlus im = loc.getResource(nam).openAsImage();
+		System.out.println("Opened image: " + im);
 		im.close();
 	}
 

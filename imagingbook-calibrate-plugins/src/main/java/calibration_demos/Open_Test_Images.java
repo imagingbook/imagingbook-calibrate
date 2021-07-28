@@ -95,14 +95,20 @@ public class Open_Test_Images implements PlugIn {
 		ImagePlus im = null;
 
 		Resource res = loc.getResource(resourceName);
-//		URL url = res.getURL();
-//		Path path = res.getPath();
-//		IJ.log("\nOpening URL " + url);
-//		IJ.log("\nOpening Path " + path);
-		//im = new Opener().openURL(url.toString());
-		//im = new Opener().openImage(url.toString());
+		IJ.log("\nOpening image: " + res.getName());
+		IJ.log("Is in JAR: " + loc.insideJAR());
 		
-		im = res.openAsImage(); // uses URL
+		Path path = res.getPath();
+		IJ.log("Path = " + path + " (" + path.getClass() + ")");
+		IJ.log("Path.toUri() = " + path.toUri());
+		try {
+			IJ.log("Path.toUri().toURL() = " + path.toUri().toURL());
+		} catch (MalformedURLException e) {	}
+		
+		//im = new Opener().openURL(url.toString());
+		im = new Opener().openImage(res.getURI().toString());
+		
+		//im = res.openAsImage(); // uses URL
 		
 
 		
@@ -112,7 +118,16 @@ public class Open_Test_Images implements PlugIn {
 		else {
 			IJ.error("Could not open image " + resourceName);
 		}
+		
+		IJ.log("---------------------------------");
+		IJ.log("res.getURI()  = " + res.getURI());
+//		IJ.log("res.getURL()  = " + res.getURL());
+		IJ.log("res.getPath() = " + res.getPath());
+//		try {
+//			IJ.log("res.getURL().toURI() = " + res.getURL().toURI());
+//		} catch (URISyntaxException e) {}
 
+		IJ.log("res.getStream() = " + res.getStream());
 	}
 	
 	
