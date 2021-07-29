@@ -61,6 +61,6 @@ See also [this demo repository](https://github.com/imagingbook/imagingbook-maven
 
 ### Documentation ###
 
-* **JavaDoc: [imagingbook-calibrate-lib](https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook-calibrate-lib/index.html?overview-summary.html), [imagingbook-calibrate-plugins](https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook-calibrate-plugins/index.html?overview-summary.html)**
+* **JavaDoc: [imagingbook-calibrate](https://imagingbook.github.io/imagingbook-calibrate/javadoc/index.html?overview-summary.html)**
 * **Report: [Zhang's Camera Calibration Algorithm: In-Depth Tutorial and Implementation](https://www.researchgate.net/publication/303233579_Zhang%27s_Camera_Calibration_Algorithm_In-Depth_Tutorial_and_Implementation)**
 
