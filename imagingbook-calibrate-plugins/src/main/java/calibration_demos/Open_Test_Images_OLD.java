@@ -4,7 +4,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
-import imagingbook.calibration.zhang.data.ZhangData;
+import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.lib.util.ResourceUtils;
 
 /**

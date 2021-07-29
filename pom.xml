@@ -142,18 +142,21 @@
 			</plugin>
 
 			<plugin>
-				<!-- Javadoc generation -->
+				<!-- Javadoc generation; use goal javadoc:aggregate to build a combined/linked JavaDoc output 
+					(see https://maven.apache.org/plugins/maven-javadoc-plugin/examples/aggregate.html) -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.3.0</version>
 				<configuration>
 					<!-- https://medium.com/@kankvish/fixing-issue-the-environment-variable-java-home-is-not-correctly-set-b5f0b66a84d0 -->
 					<javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
 					<!-- <source>8</source> -->
 					<detectJavaApiLink>false</detectJavaApiLink>
 					<!-- Default configuration for all reports -->
-					<reportOutputDirectory>${rootdir}/docs</reportOutputDirectory>
-					<destDir>javadoc/${project.name}</destDir>
+					<!-- <reportOutputDirectory>${calibrate.rootdir}/docs</reportOutputDirectory> -->
+					<reportOutputDirectory>${project.basedir}/docs</reportOutputDirectory>
+					<!-- <destDir>javadoc/${project.name}</destDir> -->
+					<destDir>javadoc</destDir>
 					<doctitle>${javadoc-doctitle}</doctitle>
 					<packagesheader>${project.name}</packagesheader>
 					<!-- <header>The ImagingBook HEADER</header> -->
@@ -170,6 +173,7 @@
 					<verbose>true</verbose>
 					<!-- <detectLinks>true</detectLinks> -->
 					<!-- <detectOfflineLinks>true</detectOfflineLinks> -->
+					<excludePackageNames>*.DATA</excludePackageNames> <!-- hide classes in resource folders -->
 					<additionalOptions>--frames</additionalOptions> <!-- by default, javadoc does not generate HTML with frames any more! -->
 				</configuration>
 			</plugin>

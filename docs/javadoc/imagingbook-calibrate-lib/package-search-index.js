@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"imagingbook.calibration.zhang"},{"l":"imagingbook.calibration.zhang.testdata"},{"l":"imagingbook.calibration.zhang.util"}]
