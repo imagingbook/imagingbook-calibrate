@@ -42,7 +42,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<java.version>1.8</java.version>
-		<imagej.version>1.53j</imagej.version> 			<!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
+		<imagej.version>1.53j</imagej.version> 	<!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
 		<imagingbook.version>2.0-SNAPSHOT</imagingbook.version>
 		<commons-math3.version>3.6.1</commons-math3.version>
 		<junit.version>4.13.1</junit.version>
@@ -71,15 +71,13 @@
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-common</artifactId>
 			<version>${imagingbook.version}</version>
-		</dependency>
-		
+		</dependency>	
 		<dependency>
       		<groupId>junit</groupId>
       		<artifactId>junit</artifactId>
       		<version>${junit.version}</version>
       		<scope>test</scope>
-    	</dependency>
-    	
+    	</dependency>	
 	</dependencies>
 
 	<build>
@@ -126,7 +124,6 @@
 		</pluginManagement>
 
 		<plugins>
-
 			<plugin>  <!-- generate a separate jar file with source code -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
