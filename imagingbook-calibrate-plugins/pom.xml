@@ -95,8 +95,8 @@
 						</configuration>
 					</execution>
 
-					<execution>
-						<!-- copy the newly installed target jar to ImageJ/jars (could this be a problem?) -->
+					<!-- copy the newly installed target jar to ImageJ/jars (could this be a problem?) -->
+					<!-- <execution>		
 						<id>copy-installed</id>
 						<phase>install</phase>
 						<goals>
@@ -113,7 +113,7 @@
 							</artifactItems>
 							<outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
 						</configuration>
-					</execution>
+					</execution> -->
 
 				</executions>
 			</plugin>
