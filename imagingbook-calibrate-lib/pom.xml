@@ -3,17 +3,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
+	<artifactId>imagingbook-calibrate-lib</artifactId>
+	
 	<parent>
 		<groupId>com.imagingbook</groupId>
 		<artifactId>imagingbook-calibrate</artifactId>
 		<version>2.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>imagingbook-calibrate-lib</artifactId>
-	
-	<properties>
-		<!-- all JavaDoc output goes to the parent's docs directory -->
-		<calibrate.rootdir>${project.basedir}/..</calibrate.rootdir>
-	</properties>
 
 	<dependencies>
 		<dependency>

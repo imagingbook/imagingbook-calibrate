@@ -30,7 +30,8 @@
 	</modules>
 	
 	<properties>
-		<calibrate.rootdir>${project.basedir}</calibrate.rootdir>		<!-- modified by poms in sub-modules! -->
+		<!-- <calibrate.rootdir>${project.basedir}</calibrate.rootdir> -->		<!-- modified by poms in sub-modules! -->
+		<calibrate.rootdir>${maven.multiModuleProjectDirectory}</calibrate.rootdir>
 		<calibrate.deploydir>${calibrate.rootdir}/../${imagingbook.deploydir}</calibrate.deploydir>
 	</properties>
 
