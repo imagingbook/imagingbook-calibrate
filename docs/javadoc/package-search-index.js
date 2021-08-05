@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"calibration_demos"},{"l":"calibration_demos_more"},{"l":"imagingbook.calibration.data.zhang"},{"l":"imagingbook.calibration.zhang"},{"l":"imagingbook.calibration.zhang.util"}]
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"calibration_demos"},{"l":"calibration_demos_more"},{"l":"imagingbook.calibration.data.zhang"},{"l":"imagingbook.calibration.data.zhang.DATA"},{"l":"imagingbook.calibration.zhang"},{"l":"imagingbook.calibration.zhang.util"}]

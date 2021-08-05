@@ -14,7 +14,7 @@ import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.lib.settings.PrintPrecision;
-import imagingbook.lib.util.ResourceUtils;
+import imagingbook.lib.util.resource.ResourceUtils;
 
 
 /**

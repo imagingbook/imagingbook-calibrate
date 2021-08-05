@@ -19,7 +19,7 @@ import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.lib.settings.PrintPrecision;
-import imagingbook.lib.util.ResourceUtils;
+import imagingbook.lib.util.resource.ResourceUtils;
 
 /**
  * This plugin performs interpolation of views, given a sequence

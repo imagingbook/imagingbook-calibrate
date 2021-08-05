@@ -5,7 +5,7 @@ import ij.ImagePlus;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.data.zhang.ZhangData;
-import imagingbook.lib.util.ResourceUtils;
+import imagingbook.lib.util.resource.ResourceUtils;
 
 /**
  * Opens Zhang's standard calibration images as a stack of RGB images. 

@@ -16,8 +16,8 @@ import ij.io.Opener;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.lib.ij.IjUtils;
-import imagingbook.lib.util.ResourceUtils;
 import imagingbook.lib.util.resource.ResourceLocation;
+import imagingbook.lib.util.resource.ResourceUtils;
 import imagingbook.lib.util.resource.ResourceLocation.Resource;
 
 /**
