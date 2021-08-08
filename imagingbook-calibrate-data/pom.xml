@@ -12,6 +12,10 @@
 		<version>2.0-SNAPSHOT</version>
 	</parent>
 	
+	<properties>
+		<imagingbook.rootdir>${project.basedir}/../..</imagingbook.rootdir>
+	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.imagingbook</groupId>
