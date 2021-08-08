@@ -13,7 +13,7 @@
 	</parent>
 	
 	<properties>
-		<imagingbook.rootdir>${project.basedir}/../..</imagingbook.rootdir>
+		<imagingbook.rootdir>${root-nest1}</imagingbook.rootdir>
 	</properties>
 	
 	<dependencies>
@@ -23,5 +23,5 @@
 			<version>2.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
-
+	
 </project>
