@@ -482,7 +482,7 @@ public class HomographyEstimator2 {
 			double sumDist2 = 0;
 			double maxDist2 = Double.NEGATIVE_INFINITY;
 			for (int i = 0; i < pntsA.length; i++) {
-				Point2D a = pntsA[i];
+				//Point2D a = pntsA[i];
 				Point2D b = pntsB[i];
 				Point2D c = pntsC[i];
 				double dist2 = b.distanceSq(c);
