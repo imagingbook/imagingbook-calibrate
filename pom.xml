@@ -14,14 +14,6 @@
 		<version>2.0-SNAPSHOT</version>
 		<relativePath />	
 	</parent>
-	
-	<repositories>
-		<repository>
-			<id>imagingbook-maven-repository</id>
-			<name>imagingbook-maven-repository on GitHub</name>
-			<url>https://raw.github.com/imagingbook/imagingbook-maven-repository/master</url>
-		</repository>
-	</repositories>
 
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
@@ -30,43 +22,24 @@
 	</modules>
 	
 	<properties>
-		<!-- <calibrate.rootdir>${project.basedir}</calibrate.rootdir> -->		<!-- modified by poms in sub-modules! -->
-		<calibrate.rootdir>${maven.multiModuleProjectDirectory}</calibrate.rootdir>
-		<calibrate.deploydir>${calibrate.rootdir}/../${imagingbook.deploydir}</calibrate.deploydir>
+		<!-- <calibrate.rootdir>${maven.multiModuleProjectDirectory}</calibrate.rootdir> -->
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
-			<!-- <version>${imagej.version}</version> --> <!-- see https://mvnrepository.com/artifact/net.imagej/ij -->
-		</dependency>
-		
+		</dependency>		
 		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-common</artifactId>
 			<version>${imagingbook.version}</version>
-		</dependency>
-		
+		</dependency>	
 		<dependency>
       		<groupId>junit</groupId>
       		<artifactId>junit</artifactId>
       		<scope>test</scope>
     	</dependency>
-    	
 	</dependencies>
-
-	<distributionManagement>
-		<repository>
-			<id>imagingbook-maven-repository</id>     <!-- used by 'mvn deploy' -->
-			<!-- <name>Imagingbook Maven Repository</name> -->
-			<!-- <url>file:///${imagingbook.rootdir}/../../imagingbook-maven-repository</url> -->
-			<!-- <url>file:///${project.basedir}/../imagingbook-maven-repository</url> -->
-			<!-- <url>file:///${rootdir}/../imagingbook-maven-repository</url> -->
-			<!-- <url>file:///D:/GITHUB/IMAGINGBOOK/imagingbook-parent/imagingbook-maven-repository</url> --> <!-- works! -->
-			<url>file:${calibrate.deploydir}</url>
-			<layout>default</layout>
-		</repository>
-	</distributionManagement>
 
 </project>

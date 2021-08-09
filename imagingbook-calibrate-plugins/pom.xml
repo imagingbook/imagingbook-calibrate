@@ -18,7 +18,7 @@
 	</parent>
 	
 	<properties>
-		<imagingbook.rootdir>${project.basedir}${file.separator}..${file.separator}..</imagingbook.rootdir>
+		<imagingbook.rootdir>${directory-up-2}</imagingbook.rootdir>
 	</properties>
 
 	<dependencies>
