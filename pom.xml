@@ -26,20 +26,23 @@
 	</properties>
 
 	<dependencies>
+	
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
-		</dependency>		
+		</dependency>
+				
 		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-common</artifactId>
-			<version>${imagingbook.version}</version>
-		</dependency>	
+		</dependency>
+			
 		<dependency>
       		<groupId>junit</groupId>
       		<artifactId>junit</artifactId>
       		<scope>test</scope>
     	</dependency>
+    	
 	</dependencies>
 
 </project>

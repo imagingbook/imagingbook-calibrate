@@ -3,6 +3,5 @@
   <target name="main">
     <echo level="info">**** imagingbook.rootdir = D:\GITHUB\IMAGINGBOOK\imagingbook-super\imagingbook-calibrate\..</echo>
     <echo level="info">**** imagingbook.ijplugins = false</echo>
-    <echo level="info">**** outputDirectory = ${outputDirectory}</echo>
   </target>
 </project>
