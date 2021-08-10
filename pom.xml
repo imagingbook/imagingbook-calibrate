@@ -22,7 +22,7 @@
 	</modules>
 	
 	<properties>
-		<!-- <calibrate.rootdir>${maven.multiModuleProjectDirectory}</calibrate.rootdir> -->
+		<!-- none -->
 	</properties>
 
 	<dependencies>
