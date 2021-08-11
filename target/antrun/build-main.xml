@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="maven-antrun-" default="main">
-  <target name="main">
-    <echo level="info">**** imagingbook.rootdir = D:\GITHUB\IMAGINGBOOK\imagingbook-super\imagingbook-calibrate\..</echo>
-    <echo level="info">**** imagingbook.ijplugins = false</echo>
-  </target>
-</project>
