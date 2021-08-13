@@ -38,7 +38,6 @@ add the following lines to your ``pom.xml`` file:
     <repository>
 	<id>imagingbook-maven-repository</id>
     	<url>https://raw.github.com/imagingbook/imagingbook-maven-repository/master</url>
-    	<layout>default</layout>
     </repository>
 </repositories>
 
