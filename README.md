@@ -45,17 +45,17 @@ add the following lines to your ``pom.xml`` file:
   <dependency>
     <groupId>com.imagingbook</groupId>
     <artifactId>imagingbook-calibrate-lib</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>3.0</version>
   </dependency>
   <dependency>
     <groupId>com.imagingbook</groupId>
     <artifactId>imagingbook-calibrate-data</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>3.0</version>
   </dependency>
   <!-- other dependencies ... -->
 </dependencies>
 ````
-The above setup refers to version ``2.0-SNAPSHOT``, check the [ImagingBook Maven Repository](https://github.com/imagingbook/imagingbook-maven-repository/tree/master/com/imagingbook/) for the most recent version.
+The above setup refers to version `3.0`, check the [ImagingBook Maven Repository](https://github.com/imagingbook/imagingbook-maven-repository/tree/master/com/imagingbook/) for the most recent version.
 See also [this demo repository](https://github.com/imagingbook/imagingbook-maven-demo-project) for how to set up a simple ImageJ project with Maven.
 
 ### Documentation ###
