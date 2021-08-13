@@ -21,7 +21,7 @@ This project consists of two sub-projects (Maven modules):
 
 * Clone this repository.
 * Enter `imagingbook-calibrate-plugins`.
-* Launch ImageJ (requires a Java runtime version 1.8 or higher).
+* Start ImageJ by double-clicking `ImageJ.exe` (Win) or launching `ij.jar` (Mac). This requires an installed Java runtime version 1.8 or higher.
 * In ImageJ, use the `Plugins` menu to run the demo plugins (test images are loaded automatically).
 
 ### Use in an Existing ImageJ Environment ###
