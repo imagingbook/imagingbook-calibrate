@@ -56,7 +56,7 @@ add the following lines to your ``pom.xml`` file:
 </dependencies>
 ````
 The above setup refers to version `3.0`, check the [ImagingBook Maven Repository](https://github.com/imagingbook/imagingbook-maven-repository/tree/master/com/imagingbook/) for the most recent version.
-See also [this demo repository](https://github.com/imagingbook/imagingbook-maven-demo-project) for how to set up a simple ImageJ project with Maven.
+See also [this demo project](https://github.com/imagingbook/imagingbook-maven-demo-project) for how to set up a simple ImageJ project with Maven.
 
 ### Documentation ###
 
