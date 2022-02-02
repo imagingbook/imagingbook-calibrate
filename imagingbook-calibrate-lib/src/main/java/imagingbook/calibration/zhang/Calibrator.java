@@ -8,7 +8,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.lib.math.Matrix;
-import imagingbook.lib.util.SimpleParameters;
+import imagingbook.lib.util.ParameterBundle;
 
 
 /**
@@ -34,7 +34,7 @@ public class Calibrator {
 	 * new objects of type of {@link Calibrator}. 
 	 * Parameters can be specified by setting the associated public fields.
 	 */
-	public static class Parameters implements SimpleParameters {
+	public static class Parameters implements ParameterBundle {
 		/** Normalize point coordinates for numerical stability in {@link HomographyEstimator}. */
 		public boolean normalizePointCoordinates = true;
 		/** Assume that the camera has no skew (currently not used). */
