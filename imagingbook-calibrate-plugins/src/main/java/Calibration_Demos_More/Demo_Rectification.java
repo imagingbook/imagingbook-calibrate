@@ -65,7 +65,7 @@ public class Demo_Rectification implements PlugIn {
 			IJ.showProgress(i, M);
 			ImageProcessor source = distStack.getProcessor(i + 1);
 			ImageProcessor target = source.createProcessor(w, h);
-			ImageMapper mapper = new ImageMapper(mapping, InterpolationMethod.Bicubic);
+			ImageMapper mapper = new ImageMapper(mapping, null, InterpolationMethod.Bicubic);
 			mapper.map(source, target);
 //			mapping.applyTo(source, target, InterpolationMethod.Bicubic);
 			rectStack.addSlice("frame"+ (i + 1), target);
