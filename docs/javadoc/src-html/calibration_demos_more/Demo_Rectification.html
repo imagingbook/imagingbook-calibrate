@@ -75,7 +75,7 @@
 <span class="sourceLineNo">065</span><a id="line.65">                        IJ.showProgress(i, M);</a>
 <span class="sourceLineNo">066</span><a id="line.66">                        ImageProcessor source = distStack.getProcessor(i + 1);</a>
 <span class="sourceLineNo">067</span><a id="line.67">                        ImageProcessor target = source.createProcessor(w, h);</a>
-<span class="sourceLineNo">068</span><a id="line.68">                        ImageMapper mapper = new ImageMapper(mapping, InterpolationMethod.Bicubic);</a>
+<span class="sourceLineNo">068</span><a id="line.68">                        ImageMapper mapper = new ImageMapper(mapping, null, InterpolationMethod.Bicubic);</a>
 <span class="sourceLineNo">069</span><a id="line.69">                        mapper.map(source, target);</a>
 <span class="sourceLineNo">070</span><a id="line.70">//                      mapping.applyTo(source, target, InterpolationMethod.Bicubic);</a>
 <span class="sourceLineNo">071</span><a id="line.71">                        rectStack.addSlice("frame"+ (i + 1), target);</a>
