@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.imagingbook</groupId>
 		<artifactId>imagingbook-parent-pom</artifactId>
-		<version>4.0-SNAPSHOT</version>
+		<version>4.0A-SNAPSHOT</version>
 		<relativePath />	
 	</parent>
 
@@ -25,12 +25,12 @@
 		<!-- none -->
 	</properties>
 	
-	<repositories>
+	<!-- <repositories>
 		<repository>
 			<id>imagingbook-maven-repository</id>
 			<url>https://raw.github.com/imagingbook/imagingbook-maven-repository/master</url>
 		</repository>
-	</repositories>
+	</repositories> -->
 
 	<dependencies>
 	
