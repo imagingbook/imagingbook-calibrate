@@ -9,12 +9,13 @@ import ij.ImageStack;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
+import imagingbook.calibration.data.zhang.CalibrationImage;
 import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.util.GridPainter;
+import imagingbook.core.resource.ImageResource;
 import imagingbook.lib.settings.PrintPrecision;
-import imagingbook.lib.util.resource.ResourceLocation;
 
 
 /**
@@ -25,13 +26,11 @@ import imagingbook.lib.util.resource.ResourceLocation;
  * EasyCalib program. NO CALIBRATION is performed here!
  * 
  * @author W. Burger
- * @version 2021-08-22
+ * @version 2022/04/14
  */
 public class Demo_Zhang_Projection implements PlugIn {
 	
-	static Class<?> resourceRootClass = ZhangData.class;
-	static String resourceDir = "resources/";
-	static String resourceName = "CalibImageStack.tif";
+	static ImageResource resource = CalibrationImage.CalibImageStack_tif;
 	
 	static Color BackGroundColor = Color.white;
 	static Color LineColor = Color.magenta;
@@ -45,8 +44,7 @@ public class Demo_Zhang_Projection implements PlugIn {
 
 	public void run(String arg0) {
 		// open the test image (stack):
-		ResourceLocation loc = new imagingbook.calibration.data.zhang.DATA.RLOC();
-		ImagePlus testIm = loc.getResource(resourceName).openAsImage();
+		ImagePlus testIm = resource.getImage();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;

@@ -8,11 +8,12 @@ import ij.ImageStack;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
+import imagingbook.calibration.data.zhang.CalibrationImage;
 import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
+import imagingbook.core.resource.ImageResource;
 import imagingbook.lib.settings.PrintPrecision;
-import imagingbook.lib.util.resource.ResourceLocation;
 
 
 /**
@@ -23,10 +24,8 @@ import imagingbook.lib.util.resource.ResourceLocation;
  * @version 2021-08-22
  */
 public class Demo_Draw_3D_Axes implements PlugIn {
-
-	static Class<?> resourceRootClass = ZhangData.class;
-	static String resourceDir = "resources/";
-	static String resourceName = "CalibImageStack.tif";
+	
+	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
 
 	static Color BackGroundColor = Color.white;
 	static Color LineColor = Color.magenta;
@@ -51,8 +50,7 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 		double[] p3 = {0.0, 0.0, axisLength};
 
 		// open the test image (stack):
-		ResourceLocation loc = new imagingbook.calibration.data.zhang.DATA.RLOC();
-		ImagePlus testIm = loc.getResource(resourceName).openAsImage();
+		ImagePlus testIm = resource.getImage();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;

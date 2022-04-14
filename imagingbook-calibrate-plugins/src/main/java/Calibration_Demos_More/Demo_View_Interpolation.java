@@ -13,13 +13,14 @@ import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import imagingbook.calibration.data.zhang.CalibrationImage;
 import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.core.resource.ImageResource;
 import imagingbook.lib.settings.PrintPrecision;
-import imagingbook.lib.util.resource.ResourceLocation;
 
 /**
  * This plugin performs interpolation of views, given a sequence
@@ -35,9 +36,7 @@ import imagingbook.lib.util.resource.ResourceLocation;
  */
 public class Demo_View_Interpolation implements PlugIn {
 
-	static Class<?> resourceRootClass = ZhangData.class;
-	static String resourceDir = "resources/";
-	static String resourceName = "CalibImageStack.tif";
+	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
 
 	static int NumberOfInterpolatedFrames = 10;
 	static double PeakHeightZ = -1.5;
@@ -52,8 +51,7 @@ public class Demo_View_Interpolation implements PlugIn {
 	}
 
 	public void run(String arg0) {
-		ResourceLocation loc = new imagingbook.calibration.data.zhang.DATA.RLOC();
-		ImagePlus testIm = loc.getResource(resourceName).openAsImage();
+		ImagePlus testIm = resource.getImage();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;

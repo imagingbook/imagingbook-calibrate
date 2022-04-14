@@ -13,11 +13,12 @@ import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
+import imagingbook.calibration.data.zhang.CalibrationImage;
 import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
+import imagingbook.core.resource.ImageResource;
 import imagingbook.lib.settings.PrintPrecision;
-import imagingbook.lib.util.resource.ResourceLocation;
 
 
 /**
@@ -36,13 +37,11 @@ import imagingbook.lib.util.resource.ResourceLocation;
  * The complete stack with overlay can be saved as a TIFF file. 
  * 
  * @author W. Burger
- * @version 2021-08-22
+ * @version 2022/04/14
  */
 public class Demo_Zhang_Projection_Overlay implements PlugIn {
 	
-	static Class<?> resourceRootClass = ZhangData.class;
-	static String resourceDir = "resources/";
-	static String resourceName = "CalibImageStack.tif";
+	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
 	
 	static double CircleRadius = 1.0;
 	static double CrossRadius  = 2.0;
@@ -58,8 +57,7 @@ public class Demo_Zhang_Projection_Overlay implements PlugIn {
 	}
 	
 	public void run(String arg0) {
-		ResourceLocation loc = new imagingbook.calibration.data.zhang.DATA.RLOC();
-		ImagePlus testIm = loc.getResource(resourceName).openAsImage();
+		ImagePlus testIm = resource.getImage();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;

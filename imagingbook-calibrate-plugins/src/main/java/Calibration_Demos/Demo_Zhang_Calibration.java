@@ -10,14 +10,15 @@ import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import imagingbook.calibration.data.zhang.CalibrationImage;
 import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.calibration.zhang.Calibrator;
 import imagingbook.calibration.zhang.Calibrator.Parameters;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.util.GridPainter;
+import imagingbook.core.resource.ImageResource;
 import imagingbook.lib.settings.PrintPrecision;
-import imagingbook.lib.util.resource.ResourceLocation;
 
 /**
  * This plugin performs Zhang's camera calibration on the
@@ -29,13 +30,12 @@ import imagingbook.lib.util.resource.ResourceLocation;
  * All rendering is done by pixel drawing (no graphic overlays).
  * 
  * @author W. Burger
- * @version 2021-08-22
+ * @version 2022/04/14
  */
 public class Demo_Zhang_Calibration implements PlugIn {
 	
 	private static boolean DEBUG = true;
-	
-	private static String resourceName = "CalibImageStack.tif";
+	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
 	
 	private static boolean ShowObservedModelPoints = true;		// draw observed image points into a new stack
 	private static boolean ShowProjectedImagePoints = true;		// draw projected image points into the test image stack
@@ -49,8 +49,7 @@ public class Demo_Zhang_Calibration implements PlugIn {
 	}
 	
 	public void run(String arg0) {
-		ResourceLocation loc = new imagingbook.calibration.data.zhang.DATA.RLOC();
-		ImagePlus testIm = loc.getResource(resourceName).openAsImage();
+		ImagePlus testIm = resource.getImage();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;

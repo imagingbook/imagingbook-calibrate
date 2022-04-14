@@ -4,8 +4,8 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
-import imagingbook.lib.util.resource.ResourceLocation;
-import imagingbook.lib.util.resource.ResourceLocation.Resource;
+import imagingbook.calibration.data.zhang.CalibrationImage;
+import imagingbook.core.resource.ImageResource;
 
 /**
  * Opens Zhang's standard calibration images as a stack of RGB images. 
@@ -23,28 +23,26 @@ public class Open_Test_Images implements PlugIn {
 		LogStream.redirectSystem();
 	}
 	
-	static String resourceName = "CalibImageStack.tif";
+	static ImageResource resource = CalibrationImage.CalibImageStack_tif;
 
 	public void run(String args) {
 		
-		ResourceLocation loc = new imagingbook.calibration.data.zhang.DATA.RLOC();
-		if(loc.insideJAR())
-			IJ.log("Resources from JAR file: " + loc.getPath());
-		else
-			IJ.log("Resources from regular file: " + loc.getPath());
-		
-		Resource res = loc.getResource(resourceName);
-		if (res == null) {
-			IJ.error("Could not find resource " + resourceName);
+		if (resource == null) {
+			IJ.error("Could not find resource " + resource);
 			return;
 		}
 		
-		ImagePlus im = res.openAsImage();
+		if(resource.isInsideJar())
+			IJ.log("Resources from JAR file: " + resource.getURL());
+		else
+			IJ.log("Resources from regular file: " + resource.getURL());
+		
+		ImagePlus im = resource.getImage();
 		if (im != null) {
 			im.show();
 		}
 		else {
-			IJ.error("Could not open image " + resourceName);
+			IJ.error("Could not open image " + resource);
 		}
 	}
 	

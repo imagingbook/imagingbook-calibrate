@@ -6,13 +6,14 @@ import ij.ImageStack;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
+import imagingbook.calibration.data.zhang.CalibrationImage;
 import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.InterCameraMapping;
+import imagingbook.core.resource.ImageResource;
 import imagingbook.lib.image.ImageMapper;
 import imagingbook.lib.interpolation.InterpolationMethod;
 import imagingbook.lib.settings.PrintPrecision;
-import imagingbook.lib.util.resource.ResourceLocation;
 import imagingbook.pub.geometry.mappings.Mapping2D;
 
 
@@ -28,9 +29,7 @@ import imagingbook.pub.geometry.mappings.Mapping2D;
  */
 public class Demo_Replace_Camera implements PlugIn {
 
-	static Class<?> resourceRootClass = ZhangData.class;
-	static String resourceDir = "resources/";
-	static String resourceName = "CalibImageStack.tif";
+	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
 
 	// modified lens distortion coefficients:
 	static double k1 = -0.1;
@@ -46,8 +45,7 @@ public class Demo_Replace_Camera implements PlugIn {
 
 	public void run(String arg0) {
 		// open the test image (stack):	
-		ResourceLocation loc = new imagingbook.calibration.data.zhang.DATA.RLOC();
-		ImagePlus testIm = loc.getResource(resourceName).openAsImage();
+		ImagePlus testIm = resource.getImage();
 
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
