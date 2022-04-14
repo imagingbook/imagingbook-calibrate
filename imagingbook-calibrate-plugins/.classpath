@@ -10,7 +10,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="ImageJ/plugins" path="src/main/java">
+	<classpathentry including="**/*.java" kind="src" output="ImageJ/plugins" path="src/main/java">
 		<attributes>
 			<attribute name="optional" value="true"/>
 			<attribute name="maven.pomderived" value="true"/>
