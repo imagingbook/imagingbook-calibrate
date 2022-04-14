@@ -42,6 +42,7 @@
 		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-common</artifactId>
+			<version>4.0A-SNAPSHOT</version>
 		</dependency>
 			
 		<dependency>
