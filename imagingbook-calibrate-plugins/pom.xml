@@ -4,11 +4,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<!-- Note: The artifact ID has the last hyphen replaced by an underscore 
-	to be compatible with the standard naming scheme for ImageJ plugins 
+	<!-- Note: Name contains underscores such that the output JAR 
+	is compatible with the standard naming scheme for ImageJ plugins 
 	(see https://imagej.nih.gov/ij/plugins/jar-demo.html). -->
-	
-	<artifactId>imagingbook-calibrate_plugins</artifactId>
+	<artifactId>imagingbook_calibrate_plugins</artifactId>
 	<packaging>jar</packaging>
 	
 	<parent>
@@ -109,8 +108,8 @@
 						</configuration>
 					</execution>
 					
-					<execution>
-						<!-- copy all imagingbook plugins into ImageJ/plugins/ -->
+					<!-- copy all imagingbook plugins into ImageJ/plugins/ -->
+					<!-- <execution>
 						<id>copy-imagingbook-dependencies</id>
 						<phase>package</phase>
 						<goals>
@@ -124,10 +123,10 @@
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
-					</execution>
+					</execution> -->
 					
-					<execution>
-						<!-- copy only imagingbook-common into ImageJ/jars/ -->
+					<!-- copy only imagingbook-common into ImageJ/jars/ -->
+					<!-- <execution>	
 						<id>copy-imagingbook-common</id>
 						<phase>package</phase>
 						<goals>
@@ -141,7 +140,7 @@
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
-					</execution>
+					</execution> -->
 
 					<execution>
 						<!-- copy all other dependencies into ImageJ/jars/ -->
@@ -151,7 +150,8 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<excludeGroupIds>com.imagingbook,net.imagej</excludeGroupIds>
+							<excludeGroupIds>net.imagej</excludeGroupIds>
+							<!-- <excludeGroupIds>com.imagingbook,net.imagej</excludeGroupIds> -->
 							<excludeArtifactIds>ij</excludeArtifactIds>
 							<outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory>
 							<overWriteIfNewer>true</overWriteIfNewer>
@@ -159,15 +159,6 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
-					
-					<!-- copy the newly installed target jar to ImageJ/jars (could this
-						be a problem?) -->
-					<!-- <execution> <id>copy-installed</id> <phase>install</phase> <goals> 
-						<goal>copy</goal> </goals> <configuration> <artifactItems> <artifactItem> 
-						<groupId>${project.groupId}</groupId> <artifactId>${project.artifactId}</artifactId> 
-						<version>${project.version}</version> <type>${project.packaging}</type> </artifactItem> 
-						</artifactItems> <outputDirectory>${project.basedir}/ImageJ/jars</outputDirectory> 
-						</configuration> </execution> -->
 
 				</executions>
 			</plugin>
