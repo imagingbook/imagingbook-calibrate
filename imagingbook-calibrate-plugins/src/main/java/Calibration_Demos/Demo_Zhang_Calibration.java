@@ -18,7 +18,7 @@ import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.core.resource.ImageResource;
-import imagingbook.lib.settings.PrintPrecision;
+import imagingbook.lib.math.PrintPrecision;
 
 /**
  * This plugin performs Zhang's camera calibration on the

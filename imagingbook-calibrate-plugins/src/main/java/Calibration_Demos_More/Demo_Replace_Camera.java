@@ -13,7 +13,7 @@ import imagingbook.calibration.zhang.InterCameraMapping;
 import imagingbook.core.resource.ImageResource;
 import imagingbook.lib.image.ImageMapper;
 import imagingbook.lib.interpolation.InterpolationMethod;
-import imagingbook.lib.settings.PrintPrecision;
+import imagingbook.lib.math.PrintPrecision;
 import imagingbook.pub.geometry.mappings.Mapping2D;
 
 
