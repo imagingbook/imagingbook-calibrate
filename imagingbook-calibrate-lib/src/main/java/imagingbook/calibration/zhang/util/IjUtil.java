@@ -9,7 +9,7 @@ import ij.gui.Plot;
 import ij.gui.PlotWindow;
 import ij.process.FloatProcessor;
 import imagingbook.calibration.zhang.Camera;
-import imagingbook.lib.math.Matrix;
+import imagingbook.common.math.Matrix;
 
 
 /**

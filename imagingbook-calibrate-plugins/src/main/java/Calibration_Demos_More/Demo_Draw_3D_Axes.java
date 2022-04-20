@@ -12,8 +12,8 @@ import imagingbook.calibration.data.zhang.CalibrationImage;
 import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
+import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
-import imagingbook.lib.math.PrintPrecision;
 
 
 /**

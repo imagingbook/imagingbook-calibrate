@@ -7,8 +7,8 @@ import java.util.List;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.lib.math.Matrix;
-import imagingbook.lib.util.ParameterBundle;
+import imagingbook.common.math.Matrix;
+import imagingbook.common.util.ParameterBundle;
 
 
 /**

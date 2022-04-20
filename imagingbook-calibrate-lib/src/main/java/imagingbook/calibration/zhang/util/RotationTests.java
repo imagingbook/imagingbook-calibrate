@@ -1,18 +1,18 @@
 package imagingbook.calibration.zhang.util;
 
-import static imagingbook.lib.math.Arithmetic.isZero;
-import static imagingbook.lib.math.Matrix.add;
-import static imagingbook.lib.math.Matrix.idMatrix;
-import static imagingbook.lib.math.Matrix.multiply;
-import static imagingbook.lib.math.Matrix.normL2;
-import static imagingbook.lib.math.Matrix.zeroVector;
+import static imagingbook.common.math.Arithmetic.isZero;
+import static imagingbook.common.math.Matrix.add;
+import static imagingbook.common.math.Matrix.idMatrix;
+import static imagingbook.common.math.Matrix.multiply;
+import static imagingbook.common.math.Matrix.normL2;
+import static imagingbook.common.math.Matrix.zeroVector;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
-import imagingbook.lib.math.Matrix;
-import imagingbook.lib.math.PrintPrecision;
+import imagingbook.common.math.Matrix;
+import imagingbook.common.math.PrintPrecision;
 
 public class RotationTests {
 

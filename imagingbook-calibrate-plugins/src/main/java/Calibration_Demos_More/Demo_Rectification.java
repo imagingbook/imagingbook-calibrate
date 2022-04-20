@@ -10,11 +10,11 @@ import imagingbook.calibration.data.zhang.CalibrationImage;
 import imagingbook.calibration.data.zhang.ZhangData;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.RectificationMapping;
+import imagingbook.common.geometry.mappings.Mapping2D;
+import imagingbook.common.image.ImageMapper;
+import imagingbook.common.interpolation.InterpolationMethod;
+import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
-import imagingbook.lib.image.ImageMapper;
-import imagingbook.lib.interpolation.InterpolationMethod;
-import imagingbook.lib.math.PrintPrecision;
-import imagingbook.pub.geometry.mappings.Mapping2D;
 
 /**
  * This plugin opens an image stack containing the 5 Zhang

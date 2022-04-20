@@ -3,9 +3,9 @@ package imagingbook.calibration.zhang;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.pub.geometry.basic.Pnt2d;
-import imagingbook.pub.geometry.basic.Pnt2d.PntDouble;
-import imagingbook.pub.geometry.mappings.Mapping2D;
+import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.Pnt2d.PntDouble;
+import imagingbook.common.geometry.mappings.Mapping2D;
 
 
 /** 

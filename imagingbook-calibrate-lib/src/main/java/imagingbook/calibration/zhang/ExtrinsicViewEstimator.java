@@ -5,7 +5,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
 import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.lib.math.Matrix;
+import imagingbook.common.math.Matrix;
 
 
 /**

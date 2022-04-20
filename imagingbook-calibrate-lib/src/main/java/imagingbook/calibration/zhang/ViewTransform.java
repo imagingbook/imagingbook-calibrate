@@ -10,7 +10,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
-import imagingbook.lib.math.Matrix;
+import imagingbook.common.math.Matrix;
 
 /**
  * Instances of this class represent extrinsic camera (view) parameters.
