@@ -30,6 +30,12 @@
 			<artifactId>imagingbook-calibrate-lib</artifactId>
 			<version>4.0A-SNAPSHOT</version>
 		</dependency>
+		
+		<dependency>
+      		<groupId>junit</groupId>
+      		<artifactId>junit</artifactId>
+      		<scope>test</scope>
+    	</dependency>
 	</dependencies>
 	
 </project>
