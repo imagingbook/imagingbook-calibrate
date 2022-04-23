@@ -3,15 +3,18 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>com.imagingbook</groupId>
 	<artifactId>imagingbook-calibrate</artifactId>
+	<version>4.0.0</version>
 	<packaging>pom</packaging>
 	
-	<parent>
+	<!-- <parent>
 		<groupId>com.imagingbook</groupId>
 		<artifactId>imagingbook-parent-pom</artifactId>
-		<version>4.0A-SNAPSHOT</version>
+		<version>4.0.0</version>
 		<relativePath />	
-	</parent>
+	</parent> -->
 
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
@@ -19,42 +22,19 @@
 		<module>imagingbook-calibrate-data</module>
 	</modules>
 	
-	<properties>
-		<!-- none -->
-	</properties>
-	
-	<!-- <repositories>
-		<repository>
-			<id>imagingbook-maven-repository</id>
-			<url>https://raw.github.com/imagingbook/imagingbook-maven-repository/master</url>
-		</repository>
-	</repositories> -->
-
-	<dependencies>
-	
-		<!-- <dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij</artifactId>
-		</dependency> -->
+	<build>
+		<plugins>
+			<!-- do not deploy this artifact -->
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-deploy-plugin</artifactId>
+			  <version>3.0.0-M2</version>
+			  <configuration>
+			    <skip>true</skip>
+			  </configuration>
+			</plugin>
+		</plugins>
 		
-		<!-- <dependency>
-			<groupId>com.imagingbook</groupId>
-			<artifactId>imagingbook-core</artifactId>
-			<version>4.0A-SNAPSHOT</version>
-		</dependency> -->
-				
-		<dependency>
-			<groupId>com.imagingbook</groupId>
-			<artifactId>imagingbook-common</artifactId>
-			<version>4.0A-SNAPSHOT</version>
-		</dependency>
-			
-		<!-- <dependency>
-      		<groupId>junit</groupId>
-      		<artifactId>junit</artifactId>
-      		<scope>test</scope>
-    	</dependency> -->
-    	
-	</dependencies>
+	</build>
 
 </project>

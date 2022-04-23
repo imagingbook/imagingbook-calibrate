@@ -9,8 +9,10 @@
 	
 	<parent>
 		<groupId>com.imagingbook</groupId>
-		<artifactId>imagingbook-calibrate</artifactId>
-		<version>4.0A-SNAPSHOT</version>
+		<!-- <artifactId>imagingbook-calibrate</artifactId> -->
+		<artifactId>imagingbook-parent-pom</artifactId>
+		<version>4.0.0</version>
+		<relativePath />
 	</parent>
 	
 	<properties>
@@ -18,10 +20,18 @@
 	</properties>
 
 	<dependencies>
+	
 		<dependency>
+			<groupId>com.imagingbook</groupId>
+			<artifactId>imagingbook-common</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		
+		<!-- <dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
-		</dependency>
+		</dependency> -->
+		
 	</dependencies>
 
 </project>
