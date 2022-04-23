@@ -6,20 +6,13 @@
 	
 	<groupId>com.imagingbook</groupId>
 	<artifactId>imagingbook-calibrate</artifactId>
-	<version>4.0.0</version>
+	<version>3.2.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	
-	<!-- <parent>
-		<groupId>com.imagingbook</groupId>
-		<artifactId>imagingbook-parent-pom</artifactId>
-		<version>4.0.0</version>
-		<relativePath />	
-	</parent> -->
-
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
 		<module>imagingbook-calibrate-plugins</module>
-		<module>imagingbook-calibrate-data</module>
+		<!-- <module>imagingbook-calibrate-data</module> -->
 	</modules>
 	
 	<build>

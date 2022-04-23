@@ -5,6 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	
 	<artifactId>imagingbook-calibrate-lib</artifactId>
+	<version>3.2.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<parent>
@@ -16,7 +17,9 @@
 	</parent>
 	
 	<properties>
-		<imagingbook.rootdir>${directory-up-2}</imagingbook.rootdir>
+		<!-- <imagingbook.rootdir>${directory-up-2}</imagingbook.rootdir> -->
+		<imagingbook.rootdir>${project.basedir}</imagingbook.rootdir>
+		<maven.javadoc.skip>false</maven.javadoc.skip>
 	</properties>
 
 	<dependencies>
@@ -27,11 +30,46 @@
 			<version>4.0.0</version>
 		</dependency>
 		
-		<!-- <dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math3</artifactId>
-		</dependency> -->
+		<dependency>
+      		<groupId>junit</groupId>
+      		<artifactId>junit</artifactId>
+      		<scope>test</scope>
+    	</dependency>
 		
 	</dependencies>
+	
+	<profiles>	<!-- https://stackoverflow.com/questions/15886209/maven-is-not-working-in-java-8-when-javadoc-tags-are-incomplete -->
+	    <profile>
+	        <id>disable-java8-doclint</id>
+	        <activation>
+	            <jdk>[1.8,)</jdk>
+	        </activation>
+	        <properties>
+	            <additionalparam>-Xdoclint:none</additionalparam>
+	        </properties>
+	    </profile>
+	</profiles>
+	
+	<build>
+		<plugins>
+				<!-- do not deploy this artifact -->
+				<plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-deploy-plugin</artifactId>
+				  <version>3.0.0-M2</version>
+				  <configuration>
+				    <skip>true</skip>
+				  </configuration>
+				</plugin>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<excludeResources>true</excludeResources>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
