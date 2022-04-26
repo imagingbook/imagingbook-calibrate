@@ -8,13 +8,12 @@
 	is compatible with the standard naming scheme for ImageJ plugins 
 	(see https://imagej.nih.gov/ij/plugins/jar-demo.html). -->
 	<artifactId>imagingbook_calibrate_plugins</artifactId>
-	<version>3.2.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
 	<parent>
 		<groupId>com.imagingbook</groupId>
 		<artifactId>imagingbook-plugins-pom</artifactId>
-		<version>4.0.0</version>
+		<version>4.0.1-SNAPSHOT</version>
 		<relativePath />
 	</parent>
 	
@@ -27,7 +26,7 @@
 		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-calibrate-lib</artifactId>
-			<version>3.2.0-SNAPSHOT</version>
+			<version>4.0.1-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
