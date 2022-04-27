@@ -19,6 +19,7 @@
 	
 	<properties>
 		<imagingbook.rootdir>${directory-up-2}</imagingbook.rootdir>
+		<maven.javadoc.skip>false</maven.javadoc.skip>
 	</properties>
 
 	<dependencies>
