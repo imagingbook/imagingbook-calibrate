@@ -333,7 +333,7 @@ public class HomographyEstimator {
 		return new Point2D.Double(xb[0], xb[1]);
 	}
 	
-	static Random rand = new Random();
+	static Random rand = new Random(17);
 	
 	private static Point2D mapPointWithNoise(RealMatrix H, Point2D p, double noise) {
 		double[] xa = {p.getX(), p.getY()};
@@ -345,6 +345,7 @@ public class HomographyEstimator {
 	
 	/**
 	 * Used for testing only.
+	 * TODO: convert to JUnit tests!
 	 * @param args ignored
 	 */
 	public static void main(String[] args) {
