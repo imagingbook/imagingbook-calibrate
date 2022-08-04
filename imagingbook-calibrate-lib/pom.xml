@@ -9,14 +9,12 @@
 	
 	<parent>
 		<groupId>com.imagingbook</groupId>
-		<!-- <artifactId>imagingbook-calibrate</artifactId> -->
 		<artifactId>imagingbook-parent-pom</artifactId>
-		<version>5.0.0</version>
+		<version>5.0.1-SNAPSHOT</version>
 		<relativePath />
 	</parent>
 	
 	<properties>
-		<!-- <imagingbook.rootdir>${directory-up-2}</imagingbook.rootdir> -->
 		<imagingbook.rootdir>${project.basedir}</imagingbook.rootdir>
 		<maven.javadoc.skip>false</maven.javadoc.skip>
 	</properties>
@@ -26,7 +24,7 @@
 		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-common</artifactId>
-			<version>5.0.0</version>
+			<version>5.0.1-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
@@ -55,7 +53,7 @@
 				<plugin>
 				  <groupId>org.apache.maven.plugins</groupId>
 				  <artifactId>maven-deploy-plugin</artifactId>
-				  <version>3.0.0-M2</version>
+				  <!-- <version>3.0.0-M2</version> -->
 				  <configuration>
 				    <skip>true</skip>
 				  </configuration>
