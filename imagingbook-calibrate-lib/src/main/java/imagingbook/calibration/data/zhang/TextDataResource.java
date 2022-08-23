@@ -13,16 +13,21 @@ public enum TextDataResource implements NamedResource {
 		Data4_txt("data4.txt"),
 		Data5_txt("data5.txt");
 
-	private final static String BASEDIR = "DATA/";
-	private final String relPath;
+	private final static String BASEDIR = "DATA";
+	private final String filename;
 	
-	private TextDataResource(String relPath) {
-		this.relPath = BASEDIR + relPath;
+	private TextDataResource(String filename) {
+		this.filename = filename;
+	}
+
+	@Override
+	public String getFileName() {
+		return filename;
 	}
 	
 	@Override
-	public String getRelativePath() {
-		return relPath;
+	public String getRelativeDirectory() {
+		return BASEDIR;
 	}
 	
 	public static void main(String[] args) {

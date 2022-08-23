@@ -15,17 +15,23 @@ public enum CalibrationImage implements ImageResource {
 		marked5_png("marked5.png"),
 		CalibImageStack_tif("CalibImageStack.tif");
 
-	private final static String BASEDIR = "DATA/";
-	private final String relPath;
+	private final static String BASEDIR = "DATA";
+	private final String filename;
 	
-	private CalibrationImage(String relPath) {
-		this.relPath = BASEDIR + relPath;
+	CalibrationImage(String filename) {
+		this.filename = filename;
 	}
 	
 	@Override
-	public String getRelativePath() {
-		return relPath;
+	public String getFileName() {
+		return filename;
 	}
+	
+	@Override
+	public String getRelativeDirectory() {
+		return BASEDIR;
+	}
+	
 	
 	public static void main(String[] args) {
 		for (ImageResource ir : CalibrationImage.values()) {
