@@ -9,6 +9,17 @@
 	<version>5.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>
+		Calibration software supplementing 
+		W. Burger, "Zhang's Camera Calibration Algorithm: In-Depth Tutorial and Implementation",
+		Technical Report HGB16-05, University of Applied Sciences Upper Austria,
+		School of Informatics, Communications and Media, Dept. of Digital Media, Hagenberg,
+		Austria, May 2016 (revised April 2020). http://dx.doi.org/10.13140/RG.2.1.1166.1688/1
+	</description>
+	<inceptionYear>2015</inceptionYear>
+	<url>https://imagingbook.com</url>
+	
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
 		<module>imagingbook-calibrate-plugins</module>
