@@ -12,7 +12,7 @@ import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.RectificationMapping;
 import imagingbook.common.geometry.mappings.Mapping2D;
 import imagingbook.common.image.ImageMapper;
-import imagingbook.common.interpolation.PixelInterpolator.InterpolationMethod;
+import imagingbook.common.image.interpolation.InterpolationMethod;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
 
