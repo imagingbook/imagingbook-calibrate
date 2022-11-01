@@ -29,11 +29,5 @@ public enum TextDataResource implements NamedResource {
 	public String getRelativeDirectory() {
 		return BASEDIR;
 	}
-	
-	public static void main(String[] args) {
-		for (NamedResource nr : TextDataResource.values()) {
-			System.out.println(nr.getURL());
-		}
-	}
 
 }
