@@ -33,10 +33,10 @@ public enum CalibrationImage implements ImageResource {
 	}
 	
 	
-	public static void main(String[] args) {
-		for (ImageResource ir : CalibrationImage.values()) {
-			System.out.println(ir.getImage().toString());
-		}
-	}
+//	public static void main(String[] args) {
+//		for (ImageResource ir : CalibrationImage.values()) {
+//			System.out.println(ir.getImage().toString());
+//		}
+//	}
 
 }
