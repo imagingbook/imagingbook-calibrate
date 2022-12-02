@@ -30,6 +30,7 @@ This project consists of two sub-projects (Maven modules):
 
 ### Documentation ###
 
-* **JavaDoc: [imagingbook-calibrate](https://imagingbook.github.io/imagingbook-calibrate/imagingbook-calibrate-lib/javadoc/index.html)**
+* **Library API (JavaDoc): [imagingbook-calibrate-lib](https://imagingbook.github.io/imagingbook-calibrate/imagingbook-calibrate-lib/javadoc/index.html)**
+* **Plugins (JavaDoc): [imagingbook-calibrate-plugins](https://imagingbook.github.io/imagingbook-calibrate/imagingbook-calibrate-plugins/javadoc/index.html)**
 * **Report: [Zhang's Camera Calibration Algorithm: In-Depth Tutorial and Implementation](https://www.researchgate.net/publication/303233579_Zhang%27s_Camera_Calibration_Algorithm_In-Depth_Tutorial_and_Implementation)**
 
