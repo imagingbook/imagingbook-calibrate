@@ -4,10 +4,17 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<groupId>com.imagingbook</groupId>
+	<!--<groupId>com.imagingbook</groupId>-->
 	<artifactId>imagingbook-calibrate</artifactId>
-	<version>6.0.0</version>
+	<!--<version>6.0.0</version>-->
 	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>com.imagingbook</groupId>
+		<artifactId>imagingbook-public</artifactId>
+		<version>6.0.0</version>
+		<relativePath />
+	</parent>
 	
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>
@@ -23,22 +30,30 @@
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
 		<module>imagingbook-calibrate-plugins</module>
-		<!-- <module>imagingbook-calibrate-data</module> -->
 	</modules>
 	
 	<build>
 		<plugins>
 			<!-- do not deploy this artifact -->
-			<plugin>
+			<!--<plugin>
 			  <groupId>org.apache.maven.plugins</groupId>
 			  <artifactId>maven-deploy-plugin</artifactId>
-			  <version>3.0.0-M2</version>
 			  <configuration>
 			    <skip>true</skip>
 			  </configuration>
+			</plugin>-->
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<links>
+						<link>https://javadoc.io/doc/com.imagingbook/imagingbook-common/6.0.0</link>
+						<link>https://javadoc.io/doc/net.imagej/ij/1.53v</link>
+					</links>
+				</configuration>
 			</plugin>
 		</plugins>
-		
 	</build>
 
 </project>
