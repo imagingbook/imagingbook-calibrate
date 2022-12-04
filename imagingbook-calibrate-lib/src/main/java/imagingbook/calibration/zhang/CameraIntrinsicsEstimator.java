@@ -149,7 +149,7 @@ public class CameraIntrinsicsEstimator {
 
 	/**
 	 * Final version by WB (this version is used by default).
-	 * Estimates the the intrinsic camera parameters from multiple homographies
+	 * Estimates the intrinsic camera parameters from multiple homographies
 	 * using a Cholesky decomposition.
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix

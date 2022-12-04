@@ -74,11 +74,6 @@ public class ViewTransform {
 		double angle = axis.getNorm();
 		//return new Rotation(axis, angle);
 		return new Rotation(axis, angle, RotationConvention.VECTOR_OPERATOR);
-		 
-	}
-		
-	protected int getParameterLength() {
-		return 6;
 	}
 	
 	protected double[] getParameters() {
@@ -150,18 +145,14 @@ public class ViewTransform {
 	}
 	
 	// ------------------------------------------------------------------
-	
-	/**
-	 * For testing only.
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
+
+/*	public static void main(String[] args) {
 		double[] w1 = {1.2, -0.5, 0.9, 10, 20, 30};
 		System.out.println("w1 = " + Matrix.toString(w1));
 		ViewTransform view = new ViewTransform(w1);
 		double[] w2 = view.getParameters();
 		System.out.println("w2 = " + Matrix.toString(w2));
-	}
+	}*/
 
 	
 }

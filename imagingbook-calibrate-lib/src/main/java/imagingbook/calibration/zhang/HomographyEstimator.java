@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
@@ -24,9 +25,9 @@ import imagingbook.common.math.Matrix;
  * @author WB
  */
 public class HomographyEstimator {
-	
-	private static int MaxLmEvaluations = 1000;
-	private static int MaxLmIterations = 1000;
+
+	public static int MaxLmEvaluations = 1000;
+	public static int MaxLmIterations = 1000;
 	
 	private final boolean normalizePointCoordinates;
 	private final boolean doNonlinearRefinement;
@@ -48,6 +49,7 @@ public class HomographyEstimator {
 	 * Estimates the homographies between a fixed set of 2D model points and
 	 * multiple observations (image point sets).
 	 * The correspondence between the points is assumed to be known.
+	 *
 	 * @param modelPts a sequence of 2D points on the model (calibration target)
 	 * @param obsPoints a sequence 2D image point sets (one set per view).
 	 * @return the sequence of estimated homographies (3 x 3 matrices), one for each view
@@ -191,100 +193,7 @@ public class HomographyEstimator {
 		};
 	}
 
-/*
-	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] X) {
-		return new MultivariateMatrixFunction() {
-			@Override
-			public double[][] value(double[] h) {
-				final double[][] J = new double[2 * X.length][9];
-				for (int i = 0; i < X.length; i++) {
-					final double x = X[i].getX();
-					final double y = X[i].getY();
-					
-					final double w  = h[6] * x + h[7] * y + h[8];
-					final double w2 = w * w;
-					
-					final double sx = h[0] * x + h[1] * y + h[2];		
-					J[2 * i + 0][0] = x / w;
-					J[2 * i + 0][1] = y / w;
-					J[2 * i + 0][2] = 1.0 / w;
-					J[2 * i + 0][3] = 0;
-					J[2 * i + 0][4] = 0;
-					J[2 * i + 0][5] = 0;
-					J[2 * i + 0][6] = -sx * x / w2;
-					J[2 * i + 0][7] = -sx * y / w2;
-					J[2 * i + 0][8] = -sx / w2;
-					
-					final double sy = h[3] * x + h[4] * y + h[5];
-					J[2 * i + 1][0] = 0;
-					J[2 * i + 1][1] = 0;
-					J[2 * i + 1][2] = 0;
-					J[2 * i + 1][3] = x / w;
-					J[2 * i + 1][4] = y / w;
-					J[2 * i + 1][5] = 1.0 / w;
-					J[2 * i + 1][6] = -sy * x / w2;
-					J[2 * i + 1][7] = -sy * y / w2;
-					J[2 * i + 1][8] = -sy / w2;
-				}
-				return J;
-			}
-		};
-	}
-*/
-	
-/*
- 	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] X) {
-		return new MultivariateMatrixFunction() {
-			// See Multi-View Geometry in Computer Vision, eq 4.21, p129
-			@Override
-			public double[][] value(double[] h) {
-				final double[][] J = new double[2 * X.length][9];
-				for (int i = 0; i < X.length; i++) {
-					final double x = X[i].getX();
-					final double y = X[i].getY();
-
-					final double t2 = x * h[6];
-					final double t3 = y * h[7];
-					final double t4 = h[8] + t2 + t3;
-					final double t5 = 1.0 / t4;
-					final double t6 = x * h[0];
-					final double t7 = y * h[1];
-					final double t8 = h[2] + t6 + t7;
-					final double t9 = 1.0 / (t4 * t4);
-					final double t10 = x * t5;
-					final double t11 = y * t5;
-					final double t12 = x * h[3];
-					final double t13 = y * h[4];
-					final double t14 = h[5] + t12 + t13;
-					
-					J[2 * i + 0][0] = t10;
-					J[2 * i + 0][1] = t11;
-					J[2 * i + 0][2] = t5;
-//					J[2 * i + 0][3] = 0;
-//					J[2 * i + 0][4] = 0;
-//					J[2 * i + 0][5] = 0;
-					J[2 * i + 0][6] = -x * t8 * t9;
-					J[2 * i + 0][7] = -y * t8 * t9;
-					J[2 * i + 0][8] = -t8 * t9;
-					
-//					J[2 * i + 1][0] = 0;
-//					J[2 * i + 1][1] = 0;
-//					J[2 * i + 1][2] = 0;
-					J[2 * i + 1][3] = t10;
-					J[2 * i + 1][4] = t11;
-					J[2 * i + 1][5] = t5;
-					J[2 * i + 1][6] = -x * t9 * t14;
-					J[2 * i + 1][7] = -y * t9 * t14;
-					J[2 * i + 1][8] = -t9 * t14;
-				}
-				return J;
-			}
-		};
-	}
- */
-	
-	
-	private static double[] transform(double[] p, RealMatrix M3x3) {
+	static double[] transform(double[] p, RealMatrix M3x3) {
 		if (p.length != 2) {
 			throw new IllegalArgumentException("transform(): vector p must be of length 2 but is " + p.length);
 		}
@@ -321,103 +230,102 @@ public class HomographyEstimator {
 		
 		return matrixA;
 	}
-	
 
-	// TESTING --------------------------------------------------------
+	// TESTING (moved to JUnit test) --------------------------------------------------------
 	
-	static double NOISE = 0.1;
+	// static double NOISE = 0.1;
 	
-	private static Point2D mapPoint(RealMatrix H, Point2D p) {
-		double[] xa = {p.getX(), p.getY()};
-		double[] xb = transform(xa, H);
-		return new Point2D.Double(xb[0], xb[1]);
-	}
+	// private static Point2D mapPoint(RealMatrix H, Point2D p) {
+	// 	double[] xa = {p.getX(), p.getY()};
+	// 	double[] xb = transform(xa, H);
+	// 	return new Point2D.Double(xb[0], xb[1]);
+	// }
 	
-	static Random rand = new Random(17);
+	// static Random rand = new Random(17);
 	
-	private static Point2D mapPointWithNoise(RealMatrix H, Point2D p, double noise) {
-		double[] xa = {p.getX(), p.getY()};
-		double[] xb = transform(xa, H);
-		double xn = noise * rand.nextGaussian();
-		double yn = noise * rand.nextGaussian();
-		return new Point2D.Double(xb[0] + xn, xb[1] + yn);
-	}
+	// private static Point2D mapPointWithNoise(RealMatrix H, Point2D p, double noise) {
+	// 	double[] xa = {p.getX(), p.getY()};
+	// 	double[] xb = transform(xa, H);
+	// 	double xn = noise * rand.nextGaussian();
+	// 	double yn = noise * rand.nextGaussian();
+	// 	return new Point2D.Double(xb[0] + xn, xb[1] + yn);
+	// }
 	
-	/**
-	 * Used for testing only.
-	 * TODO: convert to JUnit tests!
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-		RealMatrix Hreal = MatrixUtils.createRealMatrix(new double[][]
-				{{3, 2, -1},
-				{5, 0, 2},
-				{4, 4, 9}});
-
-		System.out.println("H (real) = ");
-		System.out.println(Matrix.toString(Hreal.scalarMultiply(1/Hreal.getEntry(2, 2)).getData()));
-//		System.out.println(Matrix.toString(Hreal.getData()));
-		
-		List<Point2D> pntlistA = new ArrayList<Point2D>();
-		pntlistA.add(new Point2D.Double(10, 7));
-		pntlistA.add(new Point2D.Double(3, -1));
-		pntlistA.add(new Point2D.Double(5, 5));
-		pntlistA.add(new Point2D.Double(-6, 13));
-		pntlistA.add(new Point2D.Double(0, 1));
-		pntlistA.add(new Point2D.Double(2, 3));
-		
-		List<Point2D> pntlistB = new ArrayList<Point2D>();
-		for (Point2D a : pntlistA) {
-			pntlistB.add(mapPointWithNoise(Hreal, a, NOISE));
-		}
-		
-		Point2D[] pntsA = pntlistA.toArray(new Point2D[0]);
-		Point2D[] pntsB = pntlistB.toArray(new Point2D[0]);
-		
-		
-		System.out.println("\nPoint correspondences:");
-		for (int i = 0; i < pntsA.length; i++) {
-			Point2D a = pntsA[i];
-			Point2D b = pntsB[i];
-			System.out.format("(%.3f, %.3f) -> (%.3f, %.3f)\n", a.getX(), a.getY(), b.getX(), b.getY());
-		}
-		System.out.println();
-		
-		System.out.println("\n*************** WITHOUT NONLINEAR REFINEMENT *****************");
-		runTest(new HomographyEstimator(true, false), pntsA, pntsB);
-		
-		System.out.println("\n*************** WITH NONLINEAR REFINEMENT *****************");
-		runTest(new HomographyEstimator(true, true), pntsA, pntsB);
-	
-	}
-	
-	static void runTest(HomographyEstimator he,Point2D[] pntsA, Point2D[] pntsB) {
-		RealMatrix Hest = he.estimateHomography(pntsA, pntsB);
-		
-		System.out.println("H (estim.) = "); 
-		System.out.println(Matrix.toString(Hest.getData()));
-		
-		Point2D[] pntsC = new Point2D[pntsA.length];
-		for (int i = 0; i < pntsA.length; i++) {
-			
-			pntsC[i] = mapPoint(Hest, pntsA[i]);
-		}
-		
-		System.out.println("\nPoints mapped:");
-		double sumDist2 = 0;
-		double maxDist2 = Double.NEGATIVE_INFINITY;
-		for (int i = 0; i < pntsA.length; i++) {
-			Point2D a = pntsA[i];
-			Point2D b = pntsB[i];
-			Point2D c = pntsC[i];
-			double dist2 = b.distanceSq(c);
-			sumDist2 += dist2;
-			maxDist2 = Math.max(maxDist2, dist2);
-			System.out.format("(%.3f, %.3f) -> (%.3f, %.3f) d=%.4f\n", a.getX(), a.getY(), c.getX(), c.getY(), dist2);
-		}
-		System.out.format("\nTotal error = %.2f\n", Math.sqrt(sumDist2));
-		System.out.format("Max. dist = %.2f\n", Math.sqrt(maxDist2));	
-		
-	}
+// 	/**
+// 	 * Used for testing only.
+// 	 * TODO: convert to JUnit tests!
+// 	 * @param args ignored
+// 	 */
+// 	public static void main(String[] args) {
+// 		PrintPrecision.set(6);
+// 		RealMatrix Hreal = MatrixUtils.createRealMatrix(new double[][]
+// 				{{3, 2, -1},
+// 				{5, 0, 2},
+// 				{4, 4, 9}});
+//
+// 		System.out.println("H (real) = ");
+// 		System.out.println(Matrix.toString(Hreal.scalarMultiply(1/Hreal.getEntry(2, 2)).getData()));
+// //		System.out.println(Matrix.toString(Hreal.getData()));
+//
+// 		List<Point2D> pntlistA = new ArrayList<Point2D>();
+// 		pntlistA.add(new Point2D.Double(10, 7));
+// 		pntlistA.add(new Point2D.Double(3, -1));
+// 		pntlistA.add(new Point2D.Double(5, 5));
+// 		pntlistA.add(new Point2D.Double(-6, 13));
+// 		pntlistA.add(new Point2D.Double(0, 1));
+// 		pntlistA.add(new Point2D.Double(2, 3));
+//
+// 		List<Point2D> pntlistB = new ArrayList<Point2D>();
+// 		for (Point2D a : pntlistA) {
+// 			pntlistB.add(mapPointWithNoise(Hreal, a, NOISE));
+// 		}
+//
+// 		Point2D[] pntsA = pntlistA.toArray(new Point2D[0]);
+// 		Point2D[] pntsB = pntlistB.toArray(new Point2D[0]);
+//
+//
+// 		System.out.println("\nPoint correspondences:");
+// 		for (int i = 0; i < pntsA.length; i++) {
+// 			Point2D a = pntsA[i];
+// 			Point2D b = pntsB[i];
+// 			System.out.format("(%.3f, %.3f) -> (%.3f, %.3f)\n", a.getX(), a.getY(), b.getX(), b.getY());
+// 		}
+// 		System.out.println();
+//
+// 		System.out.println("\n*************** WITHOUT NONLINEAR REFINEMENT *****************");
+// 		runTest(new HomographyEstimator(true, false), pntsA, pntsB);
+//
+// 		System.out.println("\n*************** WITH NONLINEAR REFINEMENT *****************");
+// 		runTest(new HomographyEstimator(true, true), pntsA, pntsB);
+// 	}
+//
+// 	static void runTest(HomographyEstimator he,Point2D[] pntsA, Point2D[] pntsB) {
+// 		RealMatrix Hest = he.estimateHomography(pntsA, pntsB);
+//
+// 		System.out.println("H (estim.) = ");
+// 		System.out.println(Matrix.toString(Hest.getData()));
+//
+// 		Point2D[] pntsC = new Point2D[pntsA.length];
+// 		for (int i = 0; i < pntsA.length; i++) {
+//
+// 			pntsC[i] = mapPoint(Hest, pntsA[i]);
+// 		}
+//
+// 		System.out.println("\nPoints mapped:");
+// 		double sumDist2 = 0;
+// 		double maxDist2 = Double.NEGATIVE_INFINITY;
+// 		for (int i = 0; i < pntsA.length; i++) {
+// 			Point2D a = pntsA[i];
+// 			Point2D b = pntsB[i];
+// 			Point2D c = pntsC[i];
+// 			double dist2 = b.distanceSq(c);
+// 			sumDist2 += dist2;
+// 			maxDist2 = Math.max(maxDist2, dist2);
+// 			System.out.format("(%.3f, %.3f) -> (%.3f, %.3f) d=%.4f\n", a.getX(), a.getY(), c.getX(), c.getY(), dist2);
+// 		}
+// 		System.out.format("\nTotal error = %.2f\n", Math.sqrt(sumDist2));
+// 		System.out.format("Max. dist = %.2f\n", Math.sqrt(maxDist2));
+//
+// 	}
 
 }

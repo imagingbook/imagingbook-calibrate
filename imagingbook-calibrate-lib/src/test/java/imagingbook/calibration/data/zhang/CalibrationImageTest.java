@@ -12,7 +12,6 @@ public class CalibrationImageTest {
 	public void test1() {
 		for (ImageResource ir : CalibrationImage.values()) {
 			assertNotNull("could not open ipage for resource " + ir.toString(), ir.getImage());
-//			System.out.println(ir.getImage().toString());
 		}
 	}
 

@@ -185,33 +185,6 @@ public class MathUtil {
 		return cvec;
 	}
 	
-//	/**  
-//	 * implements a left (pre-) matrix-vector multiplication:  A . x -> y
-//	 * Matrix A is of size (m,n), column vector x is of length n.
-//	 * The result y is a vector of length m.
-//	 * non-destructive
-//	 */
-//	public static double[] multiply(final double[][] A, final double[] x) {
-//		double[] y = new double[A.length];
-//		multiplyD(A, x, y);
-//		return y;
-//	}
-	
-//	// destructive
-//	public static void multiplyD(final double[][] A, final double[] x, double[] y) {
-//		final int m = A.length;
-//		final int n = A[0].length;
-//		if (x.length != n || y.length != m) 
-//			throw new IllegalArgumentException("incompatible matrix-vector dimensions");
-//		for (int i = 0; i < m; i++) {
-//			double s = 0;
-//			for (int j = 0; j < n; j++) {
-//				s = s + A[i][j] * x[j];
-//			}
-//			y[i] = s;
-//		}
-//	}
-	
 	public static String getInfo(double[][] A) {
 		return String.format("Matrix: rows=%d, columns=%d", A.length, A[0].length);
 	}
@@ -249,31 +222,6 @@ public class MathUtil {
 		return (sum2 - (sum * sum) / n) / n;
 	}
 	
-	
-	// Conversions between Double[] and double[]
-	
-//	// We want to pass a 'Deque' instance, thus not just 'List' parameter!
-//	public static double[] toArray(Collection<Double> c) {
-//		double[] model = new double[c.size()];
-//		int i = 0;
-//		for (Double x : c) {
-//			System.out.format("Param %d = %.6f\n", i, x);
-//			if (x != null) {
-//				model[i] = x.doubleValue();
-//				i++;
-//			}
-//		}
-//		return model;
-//	}
-	
-//	public static Deque<Double> toList(double[] a) {
-//		Deque<Double> A = new ArrayDeque<Double>(a.length);
-//		for (int i = 0; i < a.length; i++) {
-//			A.add(a[i]);
-//		}
-//		return A;
-//	}
-	
 	// ---------------------------------------------------------------
 	
 	public static Quaternion toQuaternion(Rotation r) {
@@ -297,8 +245,7 @@ public class MathUtil {
 		SingularValueDecomposition svd = new SingularValueDecomposition(M);
 		return svd.getInverseConditionNumber();
 	}
-	
-	
+
 	// ---------------------------------------------------------------
 	
 	/**

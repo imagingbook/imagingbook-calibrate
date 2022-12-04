@@ -152,7 +152,7 @@ public class Camera {
 	}
 	
 	// not used in this form, just for symmetry
-	private double warp(double r) {
+	public double warp(double r) {
 		return r * (1 + D(r));
 	}
 	
@@ -358,67 +358,63 @@ public class Camera {
 	}
 	
 	//---------------------------------------------------------------------
-	
-	/**
-	 * Used for testing only.
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-		ViewTransform view = new ViewTransform();
-		
-		System.out.println("Camera 1:");
-		Camera camera1 = new Camera (
-				832.5, 832.53, 0.204494, 	// alpha, beta, gamma, 
-				303.959, 206.585,			// c_x, c_y
-				-0.228601, 0.190353);		// k0, k1
-		System.out.format("k0=%.4f, k1=%.4f\n", camera1.getK()[0], camera1.getK()[1]);
-		double[] XYZ1 = {40, 70, 800};
-		double[] uv1 = camera1.project(view, XYZ1);
-		System.out.print(Matrix.toString(XYZ1) + " -> ");
-		System.out.format("u=%.4f, u=%.4f\n", uv1[0], uv1[1]);
-		
-		double r = 0.95;
-		double rr = camera1.warp(r);
-		System.out.format("radial distortion: r=%.4f -> rr=%.4f\n", r, rr);
-		r = camera1.unwarp(rr);
-		System.out.format("inv. radial distortion: rr=%.4f -> r=%.4f\n", rr, r);
-		
-		System.out.println();
-		
-		// distorted camera
-		System.out.println("Camera 2:");
-		RealMatrix A = MatrixUtils.createRealMatrix(new double[][] {
-				{832.5, 0.204494, 303.959},
-				{  0.0, 832.53, 206.585},
-				{  0.0,   0.0,     1.0}});
-		Camera camera2 = new Camera(A, new double[] {-0.2, 0.190353});
-		System.out.format("k0=%.4f, k1=%.4f\n", camera2.getK()[0], camera2.getK()[1]);
-		
-		double[] XYZ2 = {40, 70, 800};
-		double[] uv2 = camera2.project(view, XYZ2);
-		System.out.print(Matrix.toString(XYZ2) + " -> ");
-		System.out.format("u=%.4f, u=%.4f\n", uv2[0], uv2[1]);
-		
-		r = 0.95;
-		rr = camera2.warp(r);
-		System.out.format("radial distortion: r=%.4f -> rr=%.4f\n", r, rr);
-		r = camera2.unwarp(rr);
-		System.out.format("inv. radial distortion: rr=%.4f -> r=%.4f\n", rr, r);
-		
-		System.out.println("\nTesting radial lens distortion:");
-		double[] xy2 = {0.3, -0.7};
-		System.out.format("original x=%.4f, y=%.4f\n", xy2[0], xy2[1]);
-		double[] xy2d = camera2.warp(xy2);
-		System.out.format("distorted x=%.4f, y=%.4f\n", xy2d[0], xy2d[1]);
-		double[] xy2u = camera2.unwarp(xy2d);
-		System.out.format("undistorted x=%.4f, y=%.4f\n", xy2u[0], xy2u[1]);
-		
-		System.out.println("\nTesting only radial lens distortion fun:");
-		double ra = 0.10;
-		double rb = camera2.warp(ra);
-		double rc = camera2.unwarp(rb);
-		System.out.format("ra=%.4f, rb=%.4f, rc=%.4f\n", ra, rb, rc);
-	}
+
+//	public static void main(String[] args) {
+//		ViewTransform view = new ViewTransform();
+//
+//		System.out.println("Camera 1:");
+//		Camera camera1 = new Camera (
+//				832.5, 832.53, 0.204494, 	// alpha, beta, gamma,
+//				303.959, 206.585,			// c_x, c_y
+//				-0.228601, 0.190353);		// k0, k1
+//		System.out.format("k0=%.4f, k1=%.4f\n", camera1.getK()[0], camera1.getK()[1]);
+//		double[] XYZ1 = {40, 70, 800};
+//		double[] uv1 = camera1.project(view, XYZ1);
+//		System.out.print(Matrix.toString(XYZ1) + " -> ");
+//		System.out.format("u=%.4f, u=%.4f\n", uv1[0], uv1[1]);
+//
+//		double r = 0.95;
+//		double rr = camera1.warp(r);
+//		System.out.format("radial distortion: r=%.4f -> rr=%.4f\n", r, rr);
+//		r = camera1.unwarp(rr);
+//		System.out.format("inv. radial distortion: rr=%.4f -> r=%.4f\n", rr, r);
+//
+//		System.out.println();
+//
+//		// distorted camera
+//		System.out.println("Camera 2:");
+//		RealMatrix A = MatrixUtils.createRealMatrix(new double[][] {
+//				{832.5, 0.204494, 303.959},
+//				{  0.0, 832.53, 206.585},
+//				{  0.0,   0.0,     1.0}});
+//		Camera camera2 = new Camera(A, new double[] {-0.2, 0.190353});
+//		System.out.format("k0=%.4f, k1=%.4f\n", camera2.getK()[0], camera2.getK()[1]);
+//
+//		double[] XYZ2 = {40, 70, 800};
+//		double[] uv2 = camera2.project(view, XYZ2);
+//		System.out.print(Matrix.toString(XYZ2) + " -> ");
+//		System.out.format("u=%.4f, u=%.4f\n", uv2[0], uv2[1]);
+//
+//		r = 0.95;
+//		rr = camera2.warp(r);
+//		System.out.format("radial distortion: r=%.4f -> rr=%.4f\n", r, rr);
+//		r = camera2.unwarp(rr);
+//		System.out.format("inv. radial distortion: rr=%.4f -> r=%.4f\n", rr, r);
+//
+//		System.out.println("\nTesting radial lens distortion:");
+//		double[] xy2 = {0.3, -0.7};
+//		System.out.format("original x=%.4f, y=%.4f\n", xy2[0], xy2[1]);
+//		double[] xy2d = camera2.warp(xy2);
+//		System.out.format("distorted x=%.4f, y=%.4f\n", xy2d[0], xy2d[1]);
+//		double[] xy2u = camera2.unwarp(xy2d);
+//		System.out.format("undistorted x=%.4f, y=%.4f\n", xy2u[0], xy2u[1]);
+//
+//		System.out.println("\nTesting only radial lens distortion fun:");
+//		double ra = 0.10;
+//		double rb = camera2.warp(ra);
+//		double rc = camera2.unwarp(rb);
+//		System.out.format("ra=%.4f, rb=%.4f, rc=%.4f\n", ra, rb, rc);
+//	}
 	
 }
 
