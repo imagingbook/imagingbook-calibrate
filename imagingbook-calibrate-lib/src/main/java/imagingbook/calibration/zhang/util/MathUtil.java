@@ -3,6 +3,8 @@ package imagingbook.calibration.zhang.util;
 import java.awt.geom.Point2D;
 import java.util.Locale;
 
+import imagingbook.common.math.Matrix;
+import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math3.complex.Quaternion;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -151,21 +153,25 @@ public class MathUtil {
 //	}
 	
 	
-	/**               
-	 * Finds a nontrivial solution (x) to the homogeneous linear system M . x = 0
-	 * by singular-value decomposition. If M has more rows than columns, the
+	/**
+	 * Finds a nontrivial solution (x) to the homogeneous linear system A . x = 0
+	 * by singular-value decomposition. If A has more rows than columns, the
 	 * system of equations is overdetermined. In this case the returned solution
-	 * minimizes the residual ||M . x|| in the least-squares sense.
-	 * 
+	 * minimizes the residual ||A . x|| in the least-squares sense.
+	 *
 	 * @param A	the original matrix.
 	 * @return the solution vector x.
 	 */
 	public static RealVector solveHomogeneousSystem(RealMatrix A) {
+		// TODO: needs to be validated!!
 		SingularValueDecomposition svd = new SingularValueDecomposition(A);
 		RealMatrix V = svd.getV();
-		RealVector x = V.getColumnVector(V.getColumnDimension() - 1);
-		return x;
+		// RealVector x = V.getColumnVector(V.getColumnDimension() - 1);
+		// return x;
+		int minIdx = Matrix.idxMin(svd.getSingularValues());
+		return V.getColumnVector(minIdx);
 	}
+
 	
 	public static double[] toHomogeneous(double[] cvec) {
 		double[] hvec = new double[cvec.length + 1];
