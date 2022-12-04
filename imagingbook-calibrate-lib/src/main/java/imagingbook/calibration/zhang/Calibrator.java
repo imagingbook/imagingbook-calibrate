@@ -34,7 +34,7 @@ public class Calibrator {
 	 * new objects of type of {@link Calibrator}. 
 	 * Parameters can be specified by setting the associated public fields.
 	 */
-	public static class Parameters implements ParameterBundle {
+	public static class Parameters implements ParameterBundle<Calibrator> {
 		/** Normalize point coordinates for numerical stability in {@link HomographyEstimator}. */
 		public boolean normalizePointCoordinates = true;
 		/** Assume that the camera has no skew (currently not used). */
@@ -67,7 +67,7 @@ public class Calibrator {
 	public Calibrator(Parameters params, Point2D[] model) {
 		this.params = (params != null) ? params : new Parameters();
 		this.modelPts = model;
-		this.imgPntSet = new ArrayList<Point2D[]>();
+		this.imgPntSet = new ArrayList<>();
 	}
 	
 	/**

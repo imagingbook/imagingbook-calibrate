@@ -349,15 +349,11 @@ public class Camera {
 	}
 	
 	// -------------------------------------------------------------------
-	
-	@Deprecated
-	public void print(String title) {
-		System.out.println(this.toString());
-	}
-	
+
 	@Override
 	public String toString() {
-		return String.format("alpha=%.4f, beta=%.4f, gamma=%.4f, uc=%.4f, vc=%.4f, K=%s",
+		return String.format("%s[alpha=%.4f, beta=%.4f, gamma=%.4f, uc=%.4f, vc=%.4f, K=%s]",
+				this.getClass().getSimpleName(),
 				getAlpha(), getBeta(), getGamma(), getUc(), getVc(), Matrix.toString(getK()));
 	}
 	
