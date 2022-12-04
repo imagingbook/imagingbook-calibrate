@@ -48,6 +48,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
+					<doctitle>Implementation of Zhang's Camera Calibration</doctitle>
+					<header><![CDATA[<br><font face="verdana"><B>]]>${project.artifactId} ${project.version}<![CDATA[</B></font>]]></header>
 					<links>
 						<link>https://javadoc.io/doc/com.imagingbook/imagingbook-common/6.0.0</link>
 						<!--<link>https://javadoc.io/doc/net.imagej/ij/1.53v</link>-->
