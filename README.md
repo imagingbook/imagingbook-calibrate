@@ -9,7 +9,7 @@ For details see this extensive [**report**](https://www.researchgate.net/publica
 This software is part of the [imagingbook project](https://imagingbook.com).
 It is built with Maven and depends on 
 [**ImageJ**](https://imagej.nih.gov/ij/), 
-the [**imagingbook-common**](https://github.com/imagingbook/imagingbook-public) library and
+the [**imagingbook**](https://github.com/imagingbook/imagingbook-public) library and
 [**Apache Commons Math**](http://commons.apache.org/proper/commons-math/).
 
 This project consists of two sub-projects (Maven modules):
