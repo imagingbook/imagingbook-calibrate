@@ -16,321 +16,274 @@
 <span class="source-line-no">003</span><span id="line-3">import java.awt.geom.Point2D;</span>
 <span class="source-line-no">004</span><span id="line-4">import java.util.Locale;</span>
 <span class="source-line-no">005</span><span id="line-5"></span>
-<span class="source-line-no">006</span><span id="line-6">import org.apache.commons.math3.complex.Quaternion;</span>
-<span class="source-line-no">007</span><span id="line-7">import org.apache.commons.math3.geometry.euclidean.threed.Rotation;</span>
-<span class="source-line-no">008</span><span id="line-8">import org.apache.commons.math3.linear.Array2DRowRealMatrix;</span>
-<span class="source-line-no">009</span><span id="line-9">import org.apache.commons.math3.linear.LUDecomposition;</span>
-<span class="source-line-no">010</span><span id="line-10">import org.apache.commons.math3.linear.MatrixUtils;</span>
-<span class="source-line-no">011</span><span id="line-11">import org.apache.commons.math3.linear.RealMatrix;</span>
-<span class="source-line-no">012</span><span id="line-12">import org.apache.commons.math3.linear.RealVector;</span>
-<span class="source-line-no">013</span><span id="line-13">import org.apache.commons.math3.linear.SingularValueDecomposition;</span>
-<span class="source-line-no">014</span><span id="line-14"></span>
-<span class="source-line-no">015</span><span id="line-15">/**</span>
-<span class="source-line-no">016</span><span id="line-16"> * Utility math methods used for camera calibration.</span>
-<span class="source-line-no">017</span><span id="line-17"> * @author WB</span>
-<span class="source-line-no">018</span><span id="line-18"> *</span>
-<span class="source-line-no">019</span><span id="line-19"> */</span>
-<span class="source-line-no">020</span><span id="line-20">public class MathUtil {</span>
-<span class="source-line-no">021</span><span id="line-21">        </span>
-<span class="source-line-no">022</span><span id="line-22">        static {</span>
-<span class="source-line-no">023</span><span id="line-23">                Locale.setDefault(Locale.US);   // TODO: should this be here?</span>
-<span class="source-line-no">024</span><span id="line-24">        }</span>
-<span class="source-line-no">025</span><span id="line-25">        </span>
-<span class="source-line-no">026</span><span id="line-26">        @Deprecated</span>
-<span class="source-line-no">027</span><span id="line-27">        public static void print(String name, RealMatrix M) {</span>
-<span class="source-line-no">028</span><span id="line-28">                System.out.println(name);</span>
-<span class="source-line-no">029</span><span id="line-29">                for (int r = 0; r &lt; M.getRowDimension(); r++) {</span>
-<span class="source-line-no">030</span><span id="line-30">                        RealVector row = M.getRowVector(r);</span>
-<span class="source-line-no">031</span><span id="line-31">                        System.out.println("  " + r + " " + row.toString());</span>
-<span class="source-line-no">032</span><span id="line-32">                }</span>
-<span class="source-line-no">033</span><span id="line-33">        }</span>
-<span class="source-line-no">034</span><span id="line-34">        </span>
-<span class="source-line-no">035</span><span id="line-35">        @Deprecated</span>
-<span class="source-line-no">036</span><span id="line-36">        public static void print(String name, RealVector v) {</span>
-<span class="source-line-no">037</span><span id="line-37">                System.out.println(name + v.toString());</span>
-<span class="source-line-no">038</span><span id="line-38">        }</span>
-<span class="source-line-no">039</span><span id="line-39">        </span>
-<span class="source-line-no">040</span><span id="line-40">        // -------------------------------------------------------</span>
+<span class="source-line-no">006</span><span id="line-6">import imagingbook.common.math.Matrix;</span>
+<span class="source-line-no">007</span><span id="line-7">import imagingbook.common.math.PrintPrecision;</span>
+<span class="source-line-no">008</span><span id="line-8">import org.apache.commons.math3.complex.Quaternion;</span>
+<span class="source-line-no">009</span><span id="line-9">import org.apache.commons.math3.geometry.euclidean.threed.Rotation;</span>
+<span class="source-line-no">010</span><span id="line-10">import org.apache.commons.math3.linear.Array2DRowRealMatrix;</span>
+<span class="source-line-no">011</span><span id="line-11">import org.apache.commons.math3.linear.LUDecomposition;</span>
+<span class="source-line-no">012</span><span id="line-12">import org.apache.commons.math3.linear.MatrixUtils;</span>
+<span class="source-line-no">013</span><span id="line-13">import org.apache.commons.math3.linear.RealMatrix;</span>
+<span class="source-line-no">014</span><span id="line-14">import org.apache.commons.math3.linear.RealVector;</span>
+<span class="source-line-no">015</span><span id="line-15">import org.apache.commons.math3.linear.SingularValueDecomposition;</span>
+<span class="source-line-no">016</span><span id="line-16"></span>
+<span class="source-line-no">017</span><span id="line-17">/**</span>
+<span class="source-line-no">018</span><span id="line-18"> * Utility math methods used for camera calibration.</span>
+<span class="source-line-no">019</span><span id="line-19"> * @author WB</span>
+<span class="source-line-no">020</span><span id="line-20"> *</span>
+<span class="source-line-no">021</span><span id="line-21"> */</span>
+<span class="source-line-no">022</span><span id="line-22">public class MathUtil {</span>
+<span class="source-line-no">023</span><span id="line-23">        </span>
+<span class="source-line-no">024</span><span id="line-24">        static {</span>
+<span class="source-line-no">025</span><span id="line-25">                Locale.setDefault(Locale.US);   // TODO: should this be here?</span>
+<span class="source-line-no">026</span><span id="line-26">        }</span>
+<span class="source-line-no">027</span><span id="line-27">        </span>
+<span class="source-line-no">028</span><span id="line-28">        @Deprecated</span>
+<span class="source-line-no">029</span><span id="line-29">        public static void print(String name, RealMatrix M) {</span>
+<span class="source-line-no">030</span><span id="line-30">                System.out.println(name);</span>
+<span class="source-line-no">031</span><span id="line-31">                for (int r = 0; r &lt; M.getRowDimension(); r++) {</span>
+<span class="source-line-no">032</span><span id="line-32">                        RealVector row = M.getRowVector(r);</span>
+<span class="source-line-no">033</span><span id="line-33">                        System.out.println("  " + r + " " + row.toString());</span>
+<span class="source-line-no">034</span><span id="line-34">                }</span>
+<span class="source-line-no">035</span><span id="line-35">        }</span>
+<span class="source-line-no">036</span><span id="line-36">        </span>
+<span class="source-line-no">037</span><span id="line-37">        @Deprecated</span>
+<span class="source-line-no">038</span><span id="line-38">        public static void print(String name, RealVector v) {</span>
+<span class="source-line-no">039</span><span id="line-39">                System.out.println(name + v.toString());</span>
+<span class="source-line-no">040</span><span id="line-40">        }</span>
 <span class="source-line-no">041</span><span id="line-41">        </span>
-<span class="source-line-no">042</span><span id="line-42">        public static double[] toArray(Point2D p) {</span>
-<span class="source-line-no">043</span><span id="line-43">                return new double[] {p.getX(), p.getY()};</span>
-<span class="source-line-no">044</span><span id="line-44">        }</span>
-<span class="source-line-no">045</span><span id="line-45">        </span>
-<span class="source-line-no">046</span><span id="line-46">        public static Point2D.Double toPoint2D(double[] xy) {</span>
-<span class="source-line-no">047</span><span id="line-47">                return new Point2D.Double(xy[0], xy[1]);</span>
-<span class="source-line-no">048</span><span id="line-48">        }</span>
-<span class="source-line-no">049</span><span id="line-49">        </span>
-<span class="source-line-no">050</span><span id="line-50">        public static RealVector toRealVector(Point2D p) {</span>
-<span class="source-line-no">051</span><span id="line-51">                return toRealVector(p, false);</span>
-<span class="source-line-no">052</span><span id="line-52">        }</span>
-<span class="source-line-no">053</span><span id="line-53">        </span>
-<span class="source-line-no">054</span><span id="line-54">        public static RealVector toRealVector(Point2D p, boolean makeHomogeneous) {</span>
-<span class="source-line-no">055</span><span id="line-55">                if ( makeHomogeneous) {</span>
-<span class="source-line-no">056</span><span id="line-56">                        return MatrixUtils.createRealVector(new double[] {p.getX(), p.getY(), 1});</span>
-<span class="source-line-no">057</span><span id="line-57">                }</span>
-<span class="source-line-no">058</span><span id="line-58">                else {</span>
-<span class="source-line-no">059</span><span id="line-59">                        return MatrixUtils.createRealVector(toArray(p));</span>
-<span class="source-line-no">060</span><span id="line-60">                }</span>
-<span class="source-line-no">061</span><span id="line-61">        }</span>
-<span class="source-line-no">062</span><span id="line-62">        </span>
-<span class="source-line-no">063</span><span id="line-63">        public static RealVector[] getColumnVectors(RealMatrix M) {</span>
-<span class="source-line-no">064</span><span id="line-64">                final int ncols = M.getColumnDimension();</span>
-<span class="source-line-no">065</span><span id="line-65">                RealVector[] colVecs = new  RealVector[ncols];</span>
-<span class="source-line-no">066</span><span id="line-66">                for (int col = 0; col &lt; ncols; col++) {</span>
-<span class="source-line-no">067</span><span id="line-67">                        colVecs[col] = M.getColumnVector(col);</span>
-<span class="source-line-no">068</span><span id="line-68">                }</span>
-<span class="source-line-no">069</span><span id="line-69">                return colVecs;</span>
-<span class="source-line-no">070</span><span id="line-70">        }</span>
-<span class="source-line-no">071</span><span id="line-71">        </span>
-<span class="source-line-no">072</span><span id="line-72">        public static RealVector crossProduct3x3(RealVector A, RealVector B) {</span>
-<span class="source-line-no">073</span><span id="line-73">                final double[] a = A.toArray();</span>
-<span class="source-line-no">074</span><span id="line-74">                final double[] b = B.toArray();</span>
-<span class="source-line-no">075</span><span id="line-75">                final double[] c = {</span>
-<span class="source-line-no">076</span><span id="line-76">                                a[1] * b[2] - b[1] * a[2],</span>
-<span class="source-line-no">077</span><span id="line-77">                                a[2] * b[0] - b[2] * a[0],</span>
-<span class="source-line-no">078</span><span id="line-78">                                a[0] * b[1] - b[0] * a[1]</span>
-<span class="source-line-no">079</span><span id="line-79">                };</span>
-<span class="source-line-no">080</span><span id="line-80">                return MatrixUtils.createRealVector(c);</span>
-<span class="source-line-no">081</span><span id="line-81">        }</span>
-<span class="source-line-no">082</span><span id="line-82">        </span>
-<span class="source-line-no">083</span><span id="line-83">        public static double det(RealMatrix M) {</span>
-<span class="source-line-no">084</span><span id="line-84">                return new LUDecomposition(M).getDeterminant();</span>
-<span class="source-line-no">085</span><span id="line-85">        }</span>
-<span class="source-line-no">086</span><span id="line-86">        </span>
-<span class="source-line-no">087</span><span id="line-87">        public static RealVector getRowPackedVector(RealMatrix A) {</span>
-<span class="source-line-no">088</span><span id="line-88">                double[][] AA = A.getData();</span>
-<span class="source-line-no">089</span><span id="line-89">                double[] V = new double[AA.length * AA[0].length];</span>
-<span class="source-line-no">090</span><span id="line-90">                int k = 0;</span>
-<span class="source-line-no">091</span><span id="line-91">                for (int i = 0; i &lt; AA.length; i++) {</span>
-<span class="source-line-no">092</span><span id="line-92">                        for (int j = 0; j &lt; AA[0].length; j++) {</span>
-<span class="source-line-no">093</span><span id="line-93">                                V[k++] = AA[i][j];</span>
-<span class="source-line-no">094</span><span id="line-94">                        }</span>
-<span class="source-line-no">095</span><span id="line-95">                }</span>
-<span class="source-line-no">096</span><span id="line-96">                return MatrixUtils.createRealVector(V);</span>
-<span class="source-line-no">097</span><span id="line-97">        }</span>
-<span class="source-line-no">098</span><span id="line-98">        </span>
-<span class="source-line-no">099</span><span id="line-99">        public static RealMatrix fromRowPackedVector(RealVector V, int rows, int columns) {</span>
-<span class="source-line-no">100</span><span id="line-100">                double[][] AA = new double[rows][columns];</span>
-<span class="source-line-no">101</span><span id="line-101">                double[] data = V.toArray();</span>
-<span class="source-line-no">102</span><span id="line-102">                int k = 0;</span>
-<span class="source-line-no">103</span><span id="line-103">                for (int i = 0; i &lt; rows; i++) {</span>
-<span class="source-line-no">104</span><span id="line-104">                        for (int j = 0; j &lt; columns; j++) {</span>
-<span class="source-line-no">105</span><span id="line-105">                                AA[i][j] = data[k++];</span>
-<span class="source-line-no">106</span><span id="line-106">                        }</span>
-<span class="source-line-no">107</span><span id="line-107">                }</span>
-<span class="source-line-no">108</span><span id="line-108">                return MatrixUtils.createRealMatrix(AA);</span>
-<span class="source-line-no">109</span><span id="line-109">        }</span>
-<span class="source-line-no">110</span><span id="line-110"></span>
-<span class="source-line-no">111</span><span id="line-111"></span>
-<span class="source-line-no">112</span><span id="line-112">//      /**               </span>
-<span class="source-line-no">113</span><span id="line-113">//       * Finds a nontrivial solution (x) to the homogeneous linear system M . x = 0.</span>
-<span class="source-line-no">114</span><span id="line-114">//       * @param M     </span>
-<span class="source-line-no">115</span><span id="line-115">//       * @param fromRight</span>
-<span class="source-line-no">116</span><span id="line-116">//       * @return</span>
-<span class="source-line-no">117</span><span id="line-117">//       */</span>
-<span class="source-line-no">118</span><span id="line-118">//      @Deprecated     // use the simpler version below</span>
-<span class="source-line-no">119</span><span id="line-119">//      public static RealVector solveHomogeneousSystemOLD(RealMatrix M, boolean fromRight) {</span>
-<span class="source-line-no">120</span><span id="line-120">//              SingularValueDecomposition svd = new SingularValueDecomposition(M);</span>
-<span class="source-line-no">121</span><span id="line-121">//              RealMatrix U = svd.getU();</span>
-<span class="source-line-no">122</span><span id="line-122">//              RealMatrix V = svd.getV();</span>
-<span class="source-line-no">123</span><span id="line-123">//              </span>
-<span class="source-line-no">124</span><span id="line-124">//              // dimensions of the original (decomposed) matrix;</span>
-<span class="source-line-no">125</span><span id="line-125">//              int svdnumRows = U.getRowDimension();</span>
-<span class="source-line-no">126</span><span id="line-126">//              int svdnumCols = V.getColumnDimension();</span>
-<span class="source-line-no">127</span><span id="line-127">//              double[] s = svd.getSingularValues();</span>
-<span class="source-line-no">128</span><span id="line-128">//              </span>
-<span class="source-line-no">129</span><span id="line-129">//              RealMatrix A = fromRight ? svd.getVT() /*V is transposed!*/ : svd.getU();</span>
-<span class="source-line-no">130</span><span id="line-130">//                    </span>
-<span class="source-line-no">131</span><span id="line-131">//              // find the row/column index of the smallest singular value (diagonal)</span>
-<span class="source-line-no">132</span><span id="line-132">//              int minIndex = -1;</span>
-<span class="source-line-no">133</span><span id="line-133">//              if (fromRight &amp;&amp; svdnumCols &gt; svdnumRows)</span>
-<span class="source-line-no">134</span><span id="line-134">//                      minIndex = svdnumCols - 1;</span>
-<span class="source-line-no">135</span><span id="line-135">//              else if (!fromRight &amp;&amp; svdnumCols &lt; svdnumRows)</span>
-<span class="source-line-no">136</span><span id="line-136">//                      minIndex = svdnumRows - 1;</span>
-<span class="source-line-no">137</span><span id="line-137">//              else {</span>
-<span class="source-line-no">138</span><span id="line-138">//                      // find the index of the smallest singular value</span>
-<span class="source-line-no">139</span><span id="line-139">//                      double minValue = Double.MAX_VALUE;</span>
-<span class="source-line-no">140</span><span id="line-140">//                      for (int i = 0; i &lt; s.length; i++) {</span>
-<span class="source-line-no">141</span><span id="line-141">//                              if (s[i] &lt; minValue) {</span>
-<span class="source-line-no">142</span><span id="line-142">//                                      minValue = s[i];</span>
-<span class="source-line-no">143</span><span id="line-143">//                                      minIndex = i;</span>
-<span class="source-line-no">144</span><span id="line-144">//                              }</span>
-<span class="source-line-no">145</span><span id="line-145">//                      }</span>
-<span class="source-line-no">146</span><span id="line-146">//              }</span>
-<span class="source-line-no">147</span><span id="line-147">//              //System.out.println("nullspace: smallestIndex = " + minIndex);</span>
-<span class="source-line-no">148</span><span id="line-148">//              </span>
-<span class="source-line-no">149</span><span id="line-149">//              RealVector nullVec = fromRight ? A.getRowVector(minIndex) : A.getColumnVector(minIndex);</span>
-<span class="source-line-no">150</span><span id="line-150">//              return nullVec;</span>
-<span class="source-line-no">151</span><span id="line-151">//      }</span>
-<span class="source-line-no">152</span><span id="line-152">        </span>
-<span class="source-line-no">153</span><span id="line-153">        </span>
-<span class="source-line-no">154</span><span id="line-154">        /**               </span>
-<span class="source-line-no">155</span><span id="line-155">         * Finds a nontrivial solution (x) to the homogeneous linear system M . x = 0</span>
-<span class="source-line-no">156</span><span id="line-156">         * by singular-value decomposition. If M has more rows than columns, the</span>
-<span class="source-line-no">157</span><span id="line-157">         * system of equations is overdetermined. In this case the returned solution</span>
-<span class="source-line-no">158</span><span id="line-158">         * minimizes the residual ||M . x|| in the least-squares sense.</span>
-<span class="source-line-no">159</span><span id="line-159">         * </span>
-<span class="source-line-no">160</span><span id="line-160">         * @param A     the original matrix.</span>
-<span class="source-line-no">161</span><span id="line-161">         * @return the solution vector x.</span>
-<span class="source-line-no">162</span><span id="line-162">         */</span>
-<span class="source-line-no">163</span><span id="line-163">        public static RealVector solveHomogeneousSystem(RealMatrix A) {</span>
-<span class="source-line-no">164</span><span id="line-164">                SingularValueDecomposition svd = new SingularValueDecomposition(A);</span>
-<span class="source-line-no">165</span><span id="line-165">                RealMatrix V = svd.getV();</span>
-<span class="source-line-no">166</span><span id="line-166">                RealVector x = V.getColumnVector(V.getColumnDimension() - 1);</span>
-<span class="source-line-no">167</span><span id="line-167">                return x;</span>
-<span class="source-line-no">168</span><span id="line-168">        }</span>
-<span class="source-line-no">169</span><span id="line-169">        </span>
-<span class="source-line-no">170</span><span id="line-170">        public static double[] toHomogeneous(double[] cvec) {</span>
-<span class="source-line-no">171</span><span id="line-171">                double[] hvec = new double[cvec.length + 1];</span>
-<span class="source-line-no">172</span><span id="line-172">                for (int i = 0; i &lt; cvec.length; i++) {</span>
-<span class="source-line-no">173</span><span id="line-173">                        hvec[i] = cvec[i];</span>
-<span class="source-line-no">174</span><span id="line-174">                        hvec[hvec.length - 1] = 1;</span>
-<span class="source-line-no">175</span><span id="line-175">                }</span>
-<span class="source-line-no">176</span><span id="line-176">                return hvec;</span>
-<span class="source-line-no">177</span><span id="line-177">        }</span>
-<span class="source-line-no">178</span><span id="line-178">        </span>
-<span class="source-line-no">179</span><span id="line-179">        public static double[] toCartesian(double[] hvec) {</span>
-<span class="source-line-no">180</span><span id="line-180">                double[] cvec = new double[hvec.length - 1];</span>
-<span class="source-line-no">181</span><span id="line-181">                final double s = 1 / hvec[hvec.length - 1];     // TODO: check for zero factor</span>
-<span class="source-line-no">182</span><span id="line-182">                for (int i = 0; i &lt; hvec.length - 1; i++) {</span>
-<span class="source-line-no">183</span><span id="line-183">                        cvec[i] = s * hvec[i];</span>
-<span class="source-line-no">184</span><span id="line-184">                }</span>
-<span class="source-line-no">185</span><span id="line-185">                return cvec;</span>
-<span class="source-line-no">186</span><span id="line-186">        }</span>
-<span class="source-line-no">187</span><span id="line-187">        </span>
-<span class="source-line-no">188</span><span id="line-188">//      /**  </span>
-<span class="source-line-no">189</span><span id="line-189">//       * implements a left (pre-) matrix-vector multiplication:  A . x -&gt; y</span>
-<span class="source-line-no">190</span><span id="line-190">//       * Matrix A is of size (m,n), column vector x is of length n.</span>
-<span class="source-line-no">191</span><span id="line-191">//       * The result y is a vector of length m.</span>
-<span class="source-line-no">192</span><span id="line-192">//       * non-destructive</span>
-<span class="source-line-no">193</span><span id="line-193">//       */</span>
-<span class="source-line-no">194</span><span id="line-194">//      public static double[] multiply(final double[][] A, final double[] x) {</span>
-<span class="source-line-no">195</span><span id="line-195">//              double[] y = new double[A.length];</span>
-<span class="source-line-no">196</span><span id="line-196">//              multiplyD(A, x, y);</span>
-<span class="source-line-no">197</span><span id="line-197">//              return y;</span>
-<span class="source-line-no">198</span><span id="line-198">//      }</span>
-<span class="source-line-no">199</span><span id="line-199">        </span>
-<span class="source-line-no">200</span><span id="line-200">//      // destructive</span>
-<span class="source-line-no">201</span><span id="line-201">//      public static void multiplyD(final double[][] A, final double[] x, double[] y) {</span>
-<span class="source-line-no">202</span><span id="line-202">//              final int m = A.length;</span>
-<span class="source-line-no">203</span><span id="line-203">//              final int n = A[0].length;</span>
-<span class="source-line-no">204</span><span id="line-204">//              if (x.length != n || y.length != m) </span>
-<span class="source-line-no">205</span><span id="line-205">//                      throw new IllegalArgumentException("incompatible matrix-vector dimensions");</span>
-<span class="source-line-no">206</span><span id="line-206">//              for (int i = 0; i &lt; m; i++) {</span>
-<span class="source-line-no">207</span><span id="line-207">//                      double s = 0;</span>
-<span class="source-line-no">208</span><span id="line-208">//                      for (int j = 0; j &lt; n; j++) {</span>
-<span class="source-line-no">209</span><span id="line-209">//                              s = s + A[i][j] * x[j];</span>
-<span class="source-line-no">210</span><span id="line-210">//                      }</span>
-<span class="source-line-no">211</span><span id="line-211">//                      y[i] = s;</span>
-<span class="source-line-no">212</span><span id="line-212">//              }</span>
-<span class="source-line-no">213</span><span id="line-213">//      }</span>
-<span class="source-line-no">214</span><span id="line-214">        </span>
-<span class="source-line-no">215</span><span id="line-215">        public static String getInfo(double[][] A) {</span>
-<span class="source-line-no">216</span><span id="line-216">                return String.format("Matrix: rows=%d, columns=%d", A.length, A[0].length);</span>
-<span class="source-line-no">217</span><span id="line-217">        }</span>
-<span class="source-line-no">218</span><span id="line-218">        </span>
-<span class="source-line-no">219</span><span id="line-219">        public static String getInfo(double[] x) {</span>
-<span class="source-line-no">220</span><span id="line-220">                return String.format("Vector: dimension=%d", x.length);</span>
-<span class="source-line-no">221</span><span id="line-221">        }</span>
-<span class="source-line-no">222</span><span id="line-222">        </span>
-<span class="source-line-no">223</span><span id="line-223">        public static double mean(double[] x) {</span>
-<span class="source-line-no">224</span><span id="line-224">                final int n = x.length;</span>
-<span class="source-line-no">225</span><span id="line-225">                if (n == 0) </span>
-<span class="source-line-no">226</span><span id="line-226">                        return 0;</span>
-<span class="source-line-no">227</span><span id="line-227">                double sum = 0;</span>
-<span class="source-line-no">228</span><span id="line-228">                for (int i = 0; i &lt; x.length; i++) {</span>
-<span class="source-line-no">229</span><span id="line-229">                        sum = sum + x[i];</span>
-<span class="source-line-no">230</span><span id="line-230">                }</span>
-<span class="source-line-no">231</span><span id="line-231">                return sum / n;</span>
-<span class="source-line-no">232</span><span id="line-232">        }</span>
-<span class="source-line-no">233</span><span id="line-233">        </span>
-<span class="source-line-no">234</span><span id="line-234">        /**</span>
-<span class="source-line-no">235</span><span id="line-235">         * </span>
-<span class="source-line-no">236</span><span id="line-236">         * @param x a sequence of real values </span>
-<span class="source-line-no">237</span><span id="line-237">         * @return the variance of the values in x (sigma^2)</span>
-<span class="source-line-no">238</span><span id="line-238">         */</span>
-<span class="source-line-no">239</span><span id="line-239">        public static double variance(double[] x) {</span>
-<span class="source-line-no">240</span><span id="line-240">                final int n = x.length;</span>
-<span class="source-line-no">241</span><span id="line-241">                if (n == 0) </span>
-<span class="source-line-no">242</span><span id="line-242">                        return 0;</span>
-<span class="source-line-no">243</span><span id="line-243">                double sum = 0;</span>
-<span class="source-line-no">244</span><span id="line-244">                double sum2 = 0;</span>
-<span class="source-line-no">245</span><span id="line-245">                for (int i = 0; i &lt; x.length; i++) {</span>
-<span class="source-line-no">246</span><span id="line-246">                        sum = sum + x[i];</span>
-<span class="source-line-no">247</span><span id="line-247">                        sum2 = sum2 + x[i] * x[i];</span>
-<span class="source-line-no">248</span><span id="line-248">                }</span>
-<span class="source-line-no">249</span><span id="line-249">                return (sum2 - (sum * sum) / n) / n;</span>
-<span class="source-line-no">250</span><span id="line-250">        }</span>
-<span class="source-line-no">251</span><span id="line-251">        </span>
-<span class="source-line-no">252</span><span id="line-252">        </span>
-<span class="source-line-no">253</span><span id="line-253">        // Conversions between Double[] and double[]</span>
-<span class="source-line-no">254</span><span id="line-254">        </span>
-<span class="source-line-no">255</span><span id="line-255">//      // We want to pass a 'Deque' instance, thus not just 'List' parameter!</span>
-<span class="source-line-no">256</span><span id="line-256">//      public static double[] toArray(Collection&lt;Double&gt; c) {</span>
-<span class="source-line-no">257</span><span id="line-257">//              double[] model = new double[c.size()];</span>
-<span class="source-line-no">258</span><span id="line-258">//              int i = 0;</span>
-<span class="source-line-no">259</span><span id="line-259">//              for (Double x : c) {</span>
-<span class="source-line-no">260</span><span id="line-260">//                      System.out.format("Param %d = %.6f\n", i, x);</span>
-<span class="source-line-no">261</span><span id="line-261">//                      if (x != null) {</span>
-<span class="source-line-no">262</span><span id="line-262">//                              model[i] = x.doubleValue();</span>
-<span class="source-line-no">263</span><span id="line-263">//                              i++;</span>
-<span class="source-line-no">264</span><span id="line-264">//                      }</span>
-<span class="source-line-no">265</span><span id="line-265">//              }</span>
-<span class="source-line-no">266</span><span id="line-266">//              return model;</span>
-<span class="source-line-no">267</span><span id="line-267">//      }</span>
-<span class="source-line-no">268</span><span id="line-268">        </span>
-<span class="source-line-no">269</span><span id="line-269">//      public static Deque&lt;Double&gt; toList(double[] a) {</span>
-<span class="source-line-no">270</span><span id="line-270">//              Deque&lt;Double&gt; A = new ArrayDeque&lt;Double&gt;(a.length);</span>
-<span class="source-line-no">271</span><span id="line-271">//              for (int i = 0; i &lt; a.length; i++) {</span>
-<span class="source-line-no">272</span><span id="line-272">//                      A.add(a[i]);</span>
-<span class="source-line-no">273</span><span id="line-273">//              }</span>
-<span class="source-line-no">274</span><span id="line-274">//              return A;</span>
-<span class="source-line-no">275</span><span id="line-275">//      }</span>
-<span class="source-line-no">276</span><span id="line-276">        </span>
-<span class="source-line-no">277</span><span id="line-277">        // ---------------------------------------------------------------</span>
-<span class="source-line-no">278</span><span id="line-278">        </span>
-<span class="source-line-no">279</span><span id="line-279">        public static Quaternion toQuaternion(Rotation r) {</span>
-<span class="source-line-no">280</span><span id="line-280">                return new Quaternion(r.getQ0(), r.getQ1(), r.getQ2(), r.getQ3());</span>
-<span class="source-line-no">281</span><span id="line-281">        }</span>
-<span class="source-line-no">282</span><span id="line-282">        </span>
-<span class="source-line-no">283</span><span id="line-283">        public static Rotation toRotation(Quaternion q) {</span>
-<span class="source-line-no">284</span><span id="line-284">                return new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true);</span>
-<span class="source-line-no">285</span><span id="line-285">        }</span>
-<span class="source-line-no">286</span><span id="line-286">        </span>
-<span class="source-line-no">287</span><span id="line-287">        // ---------------------------------------------------------------</span>
-<span class="source-line-no">288</span><span id="line-288">        </span>
-<span class="source-line-no">289</span><span id="line-289">        /**</span>
-<span class="source-line-no">290</span><span id="line-290">         * Calculates the 'inverse condition number' (RCOND() in Matlab)</span>
-<span class="source-line-no">291</span><span id="line-291">         * of the given matrix (0,...,1, ideally close to 1).</span>
-<span class="source-line-no">292</span><span id="line-292">         * @param Ma the matrix</span>
-<span class="source-line-no">293</span><span id="line-293">         * @return the inverse condition number</span>
-<span class="source-line-no">294</span><span id="line-294">         */</span>
-<span class="source-line-no">295</span><span id="line-295">        public static double inverseConditionNumber(double[][] Ma) {</span>
-<span class="source-line-no">296</span><span id="line-296">                RealMatrix M = new Array2DRowRealMatrix(Ma);</span>
-<span class="source-line-no">297</span><span id="line-297">                SingularValueDecomposition svd = new SingularValueDecomposition(M);</span>
-<span class="source-line-no">298</span><span id="line-298">                return svd.getInverseConditionNumber();</span>
-<span class="source-line-no">299</span><span id="line-299">        }</span>
-<span class="source-line-no">300</span><span id="line-300">        </span>
-<span class="source-line-no">301</span><span id="line-301">        </span>
-<span class="source-line-no">302</span><span id="line-302">        // ---------------------------------------------------------------</span>
-<span class="source-line-no">303</span><span id="line-303">        </span>
-<span class="source-line-no">304</span><span id="line-304">        /**</span>
-<span class="source-line-no">305</span><span id="line-305">         * For testing only.</span>
-<span class="source-line-no">306</span><span id="line-306">         * @param args ignored</span>
-<span class="source-line-no">307</span><span id="line-307">         */</span>
-<span class="source-line-no">308</span><span id="line-308">        public static void main (String[] args) {</span>
-<span class="source-line-no">309</span><span id="line-309">                //double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}};</span>
-<span class="source-line-no">310</span><span id="line-310">                double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}, {-3, 7, 2}};</span>
-<span class="source-line-no">311</span><span id="line-311">                {</span>
-<span class="source-line-no">312</span><span id="line-312">                        RealMatrix AM = MatrixUtils.createRealMatrix(A);</span>
-<span class="source-line-no">313</span><span id="line-313">                        RealVector x = solveHomogeneousSystem(AM);</span>
-<span class="source-line-no">314</span><span id="line-314">                        System.out.println("Solution x = " + x.toString());</span>
-<span class="source-line-no">315</span><span id="line-315">                }</span>
-<span class="source-line-no">316</span><span id="line-316">                // Solution x = {0.649964237; -0.7338780288; 0.1974070146}</span>
-<span class="source-line-no">317</span><span id="line-317">        }</span>
-<span class="source-line-no">318</span><span id="line-318">        </span>
-<span class="source-line-no">319</span><span id="line-319"></span>
-<span class="source-line-no">320</span><span id="line-320">}</span>
+<span class="source-line-no">042</span><span id="line-42">        // -------------------------------------------------------</span>
+<span class="source-line-no">043</span><span id="line-43">        </span>
+<span class="source-line-no">044</span><span id="line-44">        public static double[] toArray(Point2D p) {</span>
+<span class="source-line-no">045</span><span id="line-45">                return new double[] {p.getX(), p.getY()};</span>
+<span class="source-line-no">046</span><span id="line-46">        }</span>
+<span class="source-line-no">047</span><span id="line-47">        </span>
+<span class="source-line-no">048</span><span id="line-48">        public static Point2D.Double toPoint2D(double[] xy) {</span>
+<span class="source-line-no">049</span><span id="line-49">                return new Point2D.Double(xy[0], xy[1]);</span>
+<span class="source-line-no">050</span><span id="line-50">        }</span>
+<span class="source-line-no">051</span><span id="line-51">        </span>
+<span class="source-line-no">052</span><span id="line-52">        public static RealVector toRealVector(Point2D p) {</span>
+<span class="source-line-no">053</span><span id="line-53">                return toRealVector(p, false);</span>
+<span class="source-line-no">054</span><span id="line-54">        }</span>
+<span class="source-line-no">055</span><span id="line-55">        </span>
+<span class="source-line-no">056</span><span id="line-56">        public static RealVector toRealVector(Point2D p, boolean makeHomogeneous) {</span>
+<span class="source-line-no">057</span><span id="line-57">                if ( makeHomogeneous) {</span>
+<span class="source-line-no">058</span><span id="line-58">                        return MatrixUtils.createRealVector(new double[] {p.getX(), p.getY(), 1});</span>
+<span class="source-line-no">059</span><span id="line-59">                }</span>
+<span class="source-line-no">060</span><span id="line-60">                else {</span>
+<span class="source-line-no">061</span><span id="line-61">                        return MatrixUtils.createRealVector(toArray(p));</span>
+<span class="source-line-no">062</span><span id="line-62">                }</span>
+<span class="source-line-no">063</span><span id="line-63">        }</span>
+<span class="source-line-no">064</span><span id="line-64">        </span>
+<span class="source-line-no">065</span><span id="line-65">        public static RealVector[] getColumnVectors(RealMatrix M) {</span>
+<span class="source-line-no">066</span><span id="line-66">                final int ncols = M.getColumnDimension();</span>
+<span class="source-line-no">067</span><span id="line-67">                RealVector[] colVecs = new  RealVector[ncols];</span>
+<span class="source-line-no">068</span><span id="line-68">                for (int col = 0; col &lt; ncols; col++) {</span>
+<span class="source-line-no">069</span><span id="line-69">                        colVecs[col] = M.getColumnVector(col);</span>
+<span class="source-line-no">070</span><span id="line-70">                }</span>
+<span class="source-line-no">071</span><span id="line-71">                return colVecs;</span>
+<span class="source-line-no">072</span><span id="line-72">        }</span>
+<span class="source-line-no">073</span><span id="line-73">        </span>
+<span class="source-line-no">074</span><span id="line-74">        public static RealVector crossProduct3x3(RealVector A, RealVector B) {</span>
+<span class="source-line-no">075</span><span id="line-75">                final double[] a = A.toArray();</span>
+<span class="source-line-no">076</span><span id="line-76">                final double[] b = B.toArray();</span>
+<span class="source-line-no">077</span><span id="line-77">                final double[] c = {</span>
+<span class="source-line-no">078</span><span id="line-78">                                a[1] * b[2] - b[1] * a[2],</span>
+<span class="source-line-no">079</span><span id="line-79">                                a[2] * b[0] - b[2] * a[0],</span>
+<span class="source-line-no">080</span><span id="line-80">                                a[0] * b[1] - b[0] * a[1]</span>
+<span class="source-line-no">081</span><span id="line-81">                };</span>
+<span class="source-line-no">082</span><span id="line-82">                return MatrixUtils.createRealVector(c);</span>
+<span class="source-line-no">083</span><span id="line-83">        }</span>
+<span class="source-line-no">084</span><span id="line-84">        </span>
+<span class="source-line-no">085</span><span id="line-85">        public static double det(RealMatrix M) {</span>
+<span class="source-line-no">086</span><span id="line-86">                return new LUDecomposition(M).getDeterminant();</span>
+<span class="source-line-no">087</span><span id="line-87">        }</span>
+<span class="source-line-no">088</span><span id="line-88">        </span>
+<span class="source-line-no">089</span><span id="line-89">        public static RealVector getRowPackedVector(RealMatrix A) {</span>
+<span class="source-line-no">090</span><span id="line-90">                double[][] AA = A.getData();</span>
+<span class="source-line-no">091</span><span id="line-91">                double[] V = new double[AA.length * AA[0].length];</span>
+<span class="source-line-no">092</span><span id="line-92">                int k = 0;</span>
+<span class="source-line-no">093</span><span id="line-93">                for (int i = 0; i &lt; AA.length; i++) {</span>
+<span class="source-line-no">094</span><span id="line-94">                        for (int j = 0; j &lt; AA[0].length; j++) {</span>
+<span class="source-line-no">095</span><span id="line-95">                                V[k++] = AA[i][j];</span>
+<span class="source-line-no">096</span><span id="line-96">                        }</span>
+<span class="source-line-no">097</span><span id="line-97">                }</span>
+<span class="source-line-no">098</span><span id="line-98">                return MatrixUtils.createRealVector(V);</span>
+<span class="source-line-no">099</span><span id="line-99">        }</span>
+<span class="source-line-no">100</span><span id="line-100">        </span>
+<span class="source-line-no">101</span><span id="line-101">        public static RealMatrix fromRowPackedVector(RealVector V, int rows, int columns) {</span>
+<span class="source-line-no">102</span><span id="line-102">                double[][] AA = new double[rows][columns];</span>
+<span class="source-line-no">103</span><span id="line-103">                double[] data = V.toArray();</span>
+<span class="source-line-no">104</span><span id="line-104">                int k = 0;</span>
+<span class="source-line-no">105</span><span id="line-105">                for (int i = 0; i &lt; rows; i++) {</span>
+<span class="source-line-no">106</span><span id="line-106">                        for (int j = 0; j &lt; columns; j++) {</span>
+<span class="source-line-no">107</span><span id="line-107">                                AA[i][j] = data[k++];</span>
+<span class="source-line-no">108</span><span id="line-108">                        }</span>
+<span class="source-line-no">109</span><span id="line-109">                }</span>
+<span class="source-line-no">110</span><span id="line-110">                return MatrixUtils.createRealMatrix(AA);</span>
+<span class="source-line-no">111</span><span id="line-111">        }</span>
+<span class="source-line-no">112</span><span id="line-112"></span>
+<span class="source-line-no">113</span><span id="line-113"></span>
+<span class="source-line-no">114</span><span id="line-114">//      /**               </span>
+<span class="source-line-no">115</span><span id="line-115">//       * Finds a nontrivial solution (x) to the homogeneous linear system M . x = 0.</span>
+<span class="source-line-no">116</span><span id="line-116">//       * @param M     </span>
+<span class="source-line-no">117</span><span id="line-117">//       * @param fromRight</span>
+<span class="source-line-no">118</span><span id="line-118">//       * @return</span>
+<span class="source-line-no">119</span><span id="line-119">//       */</span>
+<span class="source-line-no">120</span><span id="line-120">//      @Deprecated     // use the simpler version below</span>
+<span class="source-line-no">121</span><span id="line-121">//      public static RealVector solveHomogeneousSystemOLD(RealMatrix M, boolean fromRight) {</span>
+<span class="source-line-no">122</span><span id="line-122">//              SingularValueDecomposition svd = new SingularValueDecomposition(M);</span>
+<span class="source-line-no">123</span><span id="line-123">//              RealMatrix U = svd.getU();</span>
+<span class="source-line-no">124</span><span id="line-124">//              RealMatrix V = svd.getV();</span>
+<span class="source-line-no">125</span><span id="line-125">//              </span>
+<span class="source-line-no">126</span><span id="line-126">//              // dimensions of the original (decomposed) matrix;</span>
+<span class="source-line-no">127</span><span id="line-127">//              int svdnumRows = U.getRowDimension();</span>
+<span class="source-line-no">128</span><span id="line-128">//              int svdnumCols = V.getColumnDimension();</span>
+<span class="source-line-no">129</span><span id="line-129">//              double[] s = svd.getSingularValues();</span>
+<span class="source-line-no">130</span><span id="line-130">//              </span>
+<span class="source-line-no">131</span><span id="line-131">//              RealMatrix A = fromRight ? svd.getVT() /*V is transposed!*/ : svd.getU();</span>
+<span class="source-line-no">132</span><span id="line-132">//                    </span>
+<span class="source-line-no">133</span><span id="line-133">//              // find the row/column index of the smallest singular value (diagonal)</span>
+<span class="source-line-no">134</span><span id="line-134">//              int minIndex = -1;</span>
+<span class="source-line-no">135</span><span id="line-135">//              if (fromRight &amp;&amp; svdnumCols &gt; svdnumRows)</span>
+<span class="source-line-no">136</span><span id="line-136">//                      minIndex = svdnumCols - 1;</span>
+<span class="source-line-no">137</span><span id="line-137">//              else if (!fromRight &amp;&amp; svdnumCols &lt; svdnumRows)</span>
+<span class="source-line-no">138</span><span id="line-138">//                      minIndex = svdnumRows - 1;</span>
+<span class="source-line-no">139</span><span id="line-139">//              else {</span>
+<span class="source-line-no">140</span><span id="line-140">//                      // find the index of the smallest singular value</span>
+<span class="source-line-no">141</span><span id="line-141">//                      double minValue = Double.MAX_VALUE;</span>
+<span class="source-line-no">142</span><span id="line-142">//                      for (int i = 0; i &lt; s.length; i++) {</span>
+<span class="source-line-no">143</span><span id="line-143">//                              if (s[i] &lt; minValue) {</span>
+<span class="source-line-no">144</span><span id="line-144">//                                      minValue = s[i];</span>
+<span class="source-line-no">145</span><span id="line-145">//                                      minIndex = i;</span>
+<span class="source-line-no">146</span><span id="line-146">//                              }</span>
+<span class="source-line-no">147</span><span id="line-147">//                      }</span>
+<span class="source-line-no">148</span><span id="line-148">//              }</span>
+<span class="source-line-no">149</span><span id="line-149">//              //System.out.println("nullspace: smallestIndex = " + minIndex);</span>
+<span class="source-line-no">150</span><span id="line-150">//              </span>
+<span class="source-line-no">151</span><span id="line-151">//              RealVector nullVec = fromRight ? A.getRowVector(minIndex) : A.getColumnVector(minIndex);</span>
+<span class="source-line-no">152</span><span id="line-152">//              return nullVec;</span>
+<span class="source-line-no">153</span><span id="line-153">//      }</span>
+<span class="source-line-no">154</span><span id="line-154">        </span>
+<span class="source-line-no">155</span><span id="line-155">        </span>
+<span class="source-line-no">156</span><span id="line-156">        /**</span>
+<span class="source-line-no">157</span><span id="line-157">         * Finds a nontrivial solution (x) to the homogeneous linear system A . x = 0</span>
+<span class="source-line-no">158</span><span id="line-158">         * by singular-value decomposition. If A has more rows than columns, the</span>
+<span class="source-line-no">159</span><span id="line-159">         * system of equations is overdetermined. In this case the returned solution</span>
+<span class="source-line-no">160</span><span id="line-160">         * minimizes the residual ||A . x|| in the least-squares sense.</span>
+<span class="source-line-no">161</span><span id="line-161">         *</span>
+<span class="source-line-no">162</span><span id="line-162">         * @param A     the original matrix.</span>
+<span class="source-line-no">163</span><span id="line-163">         * @return the solution vector x.</span>
+<span class="source-line-no">164</span><span id="line-164">         */</span>
+<span class="source-line-no">165</span><span id="line-165">        public static RealVector solveHomogeneousSystem(RealMatrix A) {</span>
+<span class="source-line-no">166</span><span id="line-166">                // TODO: needs to be validated!!</span>
+<span class="source-line-no">167</span><span id="line-167">                SingularValueDecomposition svd = new SingularValueDecomposition(A);</span>
+<span class="source-line-no">168</span><span id="line-168">                RealMatrix V = svd.getV();</span>
+<span class="source-line-no">169</span><span id="line-169">                // RealVector x = V.getColumnVector(V.getColumnDimension() - 1);</span>
+<span class="source-line-no">170</span><span id="line-170">                // return x;</span>
+<span class="source-line-no">171</span><span id="line-171">                int minIdx = Matrix.idxMin(svd.getSingularValues());</span>
+<span class="source-line-no">172</span><span id="line-172">                return V.getColumnVector(minIdx);</span>
+<span class="source-line-no">173</span><span id="line-173">        }</span>
+<span class="source-line-no">174</span><span id="line-174"></span>
+<span class="source-line-no">175</span><span id="line-175">        </span>
+<span class="source-line-no">176</span><span id="line-176">        public static double[] toHomogeneous(double[] cvec) {</span>
+<span class="source-line-no">177</span><span id="line-177">                double[] hvec = new double[cvec.length + 1];</span>
+<span class="source-line-no">178</span><span id="line-178">                for (int i = 0; i &lt; cvec.length; i++) {</span>
+<span class="source-line-no">179</span><span id="line-179">                        hvec[i] = cvec[i];</span>
+<span class="source-line-no">180</span><span id="line-180">                        hvec[hvec.length - 1] = 1;</span>
+<span class="source-line-no">181</span><span id="line-181">                }</span>
+<span class="source-line-no">182</span><span id="line-182">                return hvec;</span>
+<span class="source-line-no">183</span><span id="line-183">        }</span>
+<span class="source-line-no">184</span><span id="line-184">        </span>
+<span class="source-line-no">185</span><span id="line-185">        public static double[] toCartesian(double[] hvec) {</span>
+<span class="source-line-no">186</span><span id="line-186">                double[] cvec = new double[hvec.length - 1];</span>
+<span class="source-line-no">187</span><span id="line-187">                final double s = 1 / hvec[hvec.length - 1];     // TODO: check for zero factor</span>
+<span class="source-line-no">188</span><span id="line-188">                for (int i = 0; i &lt; hvec.length - 1; i++) {</span>
+<span class="source-line-no">189</span><span id="line-189">                        cvec[i] = s * hvec[i];</span>
+<span class="source-line-no">190</span><span id="line-190">                }</span>
+<span class="source-line-no">191</span><span id="line-191">                return cvec;</span>
+<span class="source-line-no">192</span><span id="line-192">        }</span>
+<span class="source-line-no">193</span><span id="line-193">        </span>
+<span class="source-line-no">194</span><span id="line-194">        public static String getInfo(double[][] A) {</span>
+<span class="source-line-no">195</span><span id="line-195">                return String.format("Matrix: rows=%d, columns=%d", A.length, A[0].length);</span>
+<span class="source-line-no">196</span><span id="line-196">        }</span>
+<span class="source-line-no">197</span><span id="line-197">        </span>
+<span class="source-line-no">198</span><span id="line-198">        public static String getInfo(double[] x) {</span>
+<span class="source-line-no">199</span><span id="line-199">                return String.format("Vector: dimension=%d", x.length);</span>
+<span class="source-line-no">200</span><span id="line-200">        }</span>
+<span class="source-line-no">201</span><span id="line-201">        </span>
+<span class="source-line-no">202</span><span id="line-202">        public static double mean(double[] x) {</span>
+<span class="source-line-no">203</span><span id="line-203">                final int n = x.length;</span>
+<span class="source-line-no">204</span><span id="line-204">                if (n == 0) </span>
+<span class="source-line-no">205</span><span id="line-205">                        return 0;</span>
+<span class="source-line-no">206</span><span id="line-206">                double sum = 0;</span>
+<span class="source-line-no">207</span><span id="line-207">                for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="source-line-no">208</span><span id="line-208">                        sum = sum + x[i];</span>
+<span class="source-line-no">209</span><span id="line-209">                }</span>
+<span class="source-line-no">210</span><span id="line-210">                return sum / n;</span>
+<span class="source-line-no">211</span><span id="line-211">        }</span>
+<span class="source-line-no">212</span><span id="line-212">        </span>
+<span class="source-line-no">213</span><span id="line-213">        /**</span>
+<span class="source-line-no">214</span><span id="line-214">         * </span>
+<span class="source-line-no">215</span><span id="line-215">         * @param x a sequence of real values </span>
+<span class="source-line-no">216</span><span id="line-216">         * @return the variance of the values in x (sigma^2)</span>
+<span class="source-line-no">217</span><span id="line-217">         */</span>
+<span class="source-line-no">218</span><span id="line-218">        public static double variance(double[] x) {</span>
+<span class="source-line-no">219</span><span id="line-219">                final int n = x.length;</span>
+<span class="source-line-no">220</span><span id="line-220">                if (n == 0) </span>
+<span class="source-line-no">221</span><span id="line-221">                        return 0;</span>
+<span class="source-line-no">222</span><span id="line-222">                double sum = 0;</span>
+<span class="source-line-no">223</span><span id="line-223">                double sum2 = 0;</span>
+<span class="source-line-no">224</span><span id="line-224">                for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="source-line-no">225</span><span id="line-225">                        sum = sum + x[i];</span>
+<span class="source-line-no">226</span><span id="line-226">                        sum2 = sum2 + x[i] * x[i];</span>
+<span class="source-line-no">227</span><span id="line-227">                }</span>
+<span class="source-line-no">228</span><span id="line-228">                return (sum2 - (sum * sum) / n) / n;</span>
+<span class="source-line-no">229</span><span id="line-229">        }</span>
+<span class="source-line-no">230</span><span id="line-230">        </span>
+<span class="source-line-no">231</span><span id="line-231">        // ---------------------------------------------------------------</span>
+<span class="source-line-no">232</span><span id="line-232">        </span>
+<span class="source-line-no">233</span><span id="line-233">        public static Quaternion toQuaternion(Rotation r) {</span>
+<span class="source-line-no">234</span><span id="line-234">                return new Quaternion(r.getQ0(), r.getQ1(), r.getQ2(), r.getQ3());</span>
+<span class="source-line-no">235</span><span id="line-235">        }</span>
+<span class="source-line-no">236</span><span id="line-236">        </span>
+<span class="source-line-no">237</span><span id="line-237">        public static Rotation toRotation(Quaternion q) {</span>
+<span class="source-line-no">238</span><span id="line-238">                return new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true);</span>
+<span class="source-line-no">239</span><span id="line-239">        }</span>
+<span class="source-line-no">240</span><span id="line-240">        </span>
+<span class="source-line-no">241</span><span id="line-241">        // ---------------------------------------------------------------</span>
+<span class="source-line-no">242</span><span id="line-242">        </span>
+<span class="source-line-no">243</span><span id="line-243">        /**</span>
+<span class="source-line-no">244</span><span id="line-244">         * Calculates the 'inverse condition number' (RCOND() in Matlab)</span>
+<span class="source-line-no">245</span><span id="line-245">         * of the given matrix (0,...,1, ideally close to 1).</span>
+<span class="source-line-no">246</span><span id="line-246">         * @param Ma the matrix</span>
+<span class="source-line-no">247</span><span id="line-247">         * @return the inverse condition number</span>
+<span class="source-line-no">248</span><span id="line-248">         */</span>
+<span class="source-line-no">249</span><span id="line-249">        public static double inverseConditionNumber(double[][] Ma) {</span>
+<span class="source-line-no">250</span><span id="line-250">                RealMatrix M = new Array2DRowRealMatrix(Ma);</span>
+<span class="source-line-no">251</span><span id="line-251">                SingularValueDecomposition svd = new SingularValueDecomposition(M);</span>
+<span class="source-line-no">252</span><span id="line-252">                return svd.getInverseConditionNumber();</span>
+<span class="source-line-no">253</span><span id="line-253">        }</span>
+<span class="source-line-no">254</span><span id="line-254"></span>
+<span class="source-line-no">255</span><span id="line-255">        // ---------------------------------------------------------------</span>
+<span class="source-line-no">256</span><span id="line-256">        </span>
+<span class="source-line-no">257</span><span id="line-257">        /**</span>
+<span class="source-line-no">258</span><span id="line-258">         * For testing only.</span>
+<span class="source-line-no">259</span><span id="line-259">         * @param args ignored</span>
+<span class="source-line-no">260</span><span id="line-260">         */</span>
+<span class="source-line-no">261</span><span id="line-261">        public static void main (String[] args) {</span>
+<span class="source-line-no">262</span><span id="line-262">                //double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}};</span>
+<span class="source-line-no">263</span><span id="line-263">                double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}, {-3, 7, 2}};</span>
+<span class="source-line-no">264</span><span id="line-264">                {</span>
+<span class="source-line-no">265</span><span id="line-265">                        RealMatrix AM = MatrixUtils.createRealMatrix(A);</span>
+<span class="source-line-no">266</span><span id="line-266">                        RealVector x = solveHomogeneousSystem(AM);</span>
+<span class="source-line-no">267</span><span id="line-267">                        System.out.println("Solution x = " + x.toString());</span>
+<span class="source-line-no">268</span><span id="line-268">                }</span>
+<span class="source-line-no">269</span><span id="line-269">                // Solution x = {0.649964237; -0.7338780288; 0.1974070146}</span>
+<span class="source-line-no">270</span><span id="line-270">        }</span>
+<span class="source-line-no">271</span><span id="line-271">        </span>
+<span class="source-line-no">272</span><span id="line-272"></span>
+<span class="source-line-no">273</span><span id="line-273">}</span>
 
 
 

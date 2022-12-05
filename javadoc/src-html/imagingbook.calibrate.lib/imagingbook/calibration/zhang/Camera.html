@@ -165,7 +165,7 @@
 <span class="source-line-no">152</span><span id="line-152">        }</span>
 <span class="source-line-no">153</span><span id="line-153">        </span>
 <span class="source-line-no">154</span><span id="line-154">        // not used in this form, just for symmetry</span>
-<span class="source-line-no">155</span><span id="line-155">        private double warp(double r) {</span>
+<span class="source-line-no">155</span><span id="line-155">        public double warp(double r) {</span>
 <span class="source-line-no">156</span><span id="line-156">                return r * (1 + D(r));</span>
 <span class="source-line-no">157</span><span id="line-157">        }</span>
 <span class="source-line-no">158</span><span id="line-158">        </span>
@@ -371,72 +371,68 @@
 <span class="source-line-no">358</span><span id="line-358">        }</span>
 <span class="source-line-no">359</span><span id="line-359">        </span>
 <span class="source-line-no">360</span><span id="line-360">        //---------------------------------------------------------------------</span>
-<span class="source-line-no">361</span><span id="line-361">        </span>
-<span class="source-line-no">362</span><span id="line-362">        /**</span>
-<span class="source-line-no">363</span><span id="line-363">         * Used for testing only.</span>
-<span class="source-line-no">364</span><span id="line-364">         * @param args ignored</span>
-<span class="source-line-no">365</span><span id="line-365">         */</span>
-<span class="source-line-no">366</span><span id="line-366">        public static void main(String[] args) {</span>
-<span class="source-line-no">367</span><span id="line-367">                ViewTransform view = new ViewTransform();</span>
-<span class="source-line-no">368</span><span id="line-368">                </span>
-<span class="source-line-no">369</span><span id="line-369">                System.out.println("Camera 1:");</span>
-<span class="source-line-no">370</span><span id="line-370">                Camera camera1 = new Camera (</span>
-<span class="source-line-no">371</span><span id="line-371">                                832.5, 832.53, 0.204494,        // alpha, beta, gamma, </span>
-<span class="source-line-no">372</span><span id="line-372">                                303.959, 206.585,                       // c_x, c_y</span>
-<span class="source-line-no">373</span><span id="line-373">                                -0.228601, 0.190353);           // k0, k1</span>
-<span class="source-line-no">374</span><span id="line-374">                System.out.format("k0=%.4f, k1=%.4f\n", camera1.getK()[0], camera1.getK()[1]);</span>
-<span class="source-line-no">375</span><span id="line-375">                double[] XYZ1 = {40, 70, 800};</span>
-<span class="source-line-no">376</span><span id="line-376">                double[] uv1 = camera1.project(view, XYZ1);</span>
-<span class="source-line-no">377</span><span id="line-377">                System.out.print(Matrix.toString(XYZ1) + " -&gt; ");</span>
-<span class="source-line-no">378</span><span id="line-378">                System.out.format("u=%.4f, u=%.4f\n", uv1[0], uv1[1]);</span>
-<span class="source-line-no">379</span><span id="line-379">                </span>
-<span class="source-line-no">380</span><span id="line-380">                double r = 0.95;</span>
-<span class="source-line-no">381</span><span id="line-381">                double rr = camera1.warp(r);</span>
-<span class="source-line-no">382</span><span id="line-382">                System.out.format("radial distortion: r=%.4f -&gt; rr=%.4f\n", r, rr);</span>
-<span class="source-line-no">383</span><span id="line-383">                r = camera1.unwarp(rr);</span>
-<span class="source-line-no">384</span><span id="line-384">                System.out.format("inv. radial distortion: rr=%.4f -&gt; r=%.4f\n", rr, r);</span>
-<span class="source-line-no">385</span><span id="line-385">                </span>
-<span class="source-line-no">386</span><span id="line-386">                System.out.println();</span>
-<span class="source-line-no">387</span><span id="line-387">                </span>
-<span class="source-line-no">388</span><span id="line-388">                // distorted camera</span>
-<span class="source-line-no">389</span><span id="line-389">                System.out.println("Camera 2:");</span>
-<span class="source-line-no">390</span><span id="line-390">                RealMatrix A = MatrixUtils.createRealMatrix(new double[][] {</span>
-<span class="source-line-no">391</span><span id="line-391">                                {832.5, 0.204494, 303.959},</span>
-<span class="source-line-no">392</span><span id="line-392">                                {  0.0, 832.53, 206.585},</span>
-<span class="source-line-no">393</span><span id="line-393">                                {  0.0,   0.0,     1.0}});</span>
-<span class="source-line-no">394</span><span id="line-394">                Camera camera2 = new Camera(A, new double[] {-0.2, 0.190353});</span>
-<span class="source-line-no">395</span><span id="line-395">                System.out.format("k0=%.4f, k1=%.4f\n", camera2.getK()[0], camera2.getK()[1]);</span>
-<span class="source-line-no">396</span><span id="line-396">                </span>
-<span class="source-line-no">397</span><span id="line-397">                double[] XYZ2 = {40, 70, 800};</span>
-<span class="source-line-no">398</span><span id="line-398">                double[] uv2 = camera2.project(view, XYZ2);</span>
-<span class="source-line-no">399</span><span id="line-399">                System.out.print(Matrix.toString(XYZ2) + " -&gt; ");</span>
-<span class="source-line-no">400</span><span id="line-400">                System.out.format("u=%.4f, u=%.4f\n", uv2[0], uv2[1]);</span>
-<span class="source-line-no">401</span><span id="line-401">                </span>
-<span class="source-line-no">402</span><span id="line-402">                r = 0.95;</span>
-<span class="source-line-no">403</span><span id="line-403">                rr = camera2.warp(r);</span>
-<span class="source-line-no">404</span><span id="line-404">                System.out.format("radial distortion: r=%.4f -&gt; rr=%.4f\n", r, rr);</span>
-<span class="source-line-no">405</span><span id="line-405">                r = camera2.unwarp(rr);</span>
-<span class="source-line-no">406</span><span id="line-406">                System.out.format("inv. radial distortion: rr=%.4f -&gt; r=%.4f\n", rr, r);</span>
-<span class="source-line-no">407</span><span id="line-407">                </span>
-<span class="source-line-no">408</span><span id="line-408">                System.out.println("\nTesting radial lens distortion:");</span>
-<span class="source-line-no">409</span><span id="line-409">                double[] xy2 = {0.3, -0.7};</span>
-<span class="source-line-no">410</span><span id="line-410">                System.out.format("original x=%.4f, y=%.4f\n", xy2[0], xy2[1]);</span>
-<span class="source-line-no">411</span><span id="line-411">                double[] xy2d = camera2.warp(xy2);</span>
-<span class="source-line-no">412</span><span id="line-412">                System.out.format("distorted x=%.4f, y=%.4f\n", xy2d[0], xy2d[1]);</span>
-<span class="source-line-no">413</span><span id="line-413">                double[] xy2u = camera2.unwarp(xy2d);</span>
-<span class="source-line-no">414</span><span id="line-414">                System.out.format("undistorted x=%.4f, y=%.4f\n", xy2u[0], xy2u[1]);</span>
-<span class="source-line-no">415</span><span id="line-415">                </span>
-<span class="source-line-no">416</span><span id="line-416">                System.out.println("\nTesting only radial lens distortion fun:");</span>
-<span class="source-line-no">417</span><span id="line-417">                double ra = 0.10;</span>
-<span class="source-line-no">418</span><span id="line-418">                double rb = camera2.warp(ra);</span>
-<span class="source-line-no">419</span><span id="line-419">                double rc = camera2.unwarp(rb);</span>
-<span class="source-line-no">420</span><span id="line-420">                System.out.format("ra=%.4f, rb=%.4f, rc=%.4f\n", ra, rb, rc);</span>
-<span class="source-line-no">421</span><span id="line-421">        }</span>
-<span class="source-line-no">422</span><span id="line-422">        </span>
-<span class="source-line-no">423</span><span id="line-423">}</span>
-<span class="source-line-no">424</span><span id="line-424"></span>
-<span class="source-line-no">425</span><span id="line-425"></span>
-<span class="source-line-no">426</span><span id="line-426"></span>
+<span class="source-line-no">361</span><span id="line-361"></span>
+<span class="source-line-no">362</span><span id="line-362">//      public static void main(String[] args) {</span>
+<span class="source-line-no">363</span><span id="line-363">//              ViewTransform view = new ViewTransform();</span>
+<span class="source-line-no">364</span><span id="line-364">//</span>
+<span class="source-line-no">365</span><span id="line-365">//              System.out.println("Camera 1:");</span>
+<span class="source-line-no">366</span><span id="line-366">//              Camera camera1 = new Camera (</span>
+<span class="source-line-no">367</span><span id="line-367">//                              832.5, 832.53, 0.204494,        // alpha, beta, gamma,</span>
+<span class="source-line-no">368</span><span id="line-368">//                              303.959, 206.585,                       // c_x, c_y</span>
+<span class="source-line-no">369</span><span id="line-369">//                              -0.228601, 0.190353);           // k0, k1</span>
+<span class="source-line-no">370</span><span id="line-370">//              System.out.format("k0=%.4f, k1=%.4f\n", camera1.getK()[0], camera1.getK()[1]);</span>
+<span class="source-line-no">371</span><span id="line-371">//              double[] XYZ1 = {40, 70, 800};</span>
+<span class="source-line-no">372</span><span id="line-372">//              double[] uv1 = camera1.project(view, XYZ1);</span>
+<span class="source-line-no">373</span><span id="line-373">//              System.out.print(Matrix.toString(XYZ1) + " -&gt; ");</span>
+<span class="source-line-no">374</span><span id="line-374">//              System.out.format("u=%.4f, u=%.4f\n", uv1[0], uv1[1]);</span>
+<span class="source-line-no">375</span><span id="line-375">//</span>
+<span class="source-line-no">376</span><span id="line-376">//              double r = 0.95;</span>
+<span class="source-line-no">377</span><span id="line-377">//              double rr = camera1.warp(r);</span>
+<span class="source-line-no">378</span><span id="line-378">//              System.out.format("radial distortion: r=%.4f -&gt; rr=%.4f\n", r, rr);</span>
+<span class="source-line-no">379</span><span id="line-379">//              r = camera1.unwarp(rr);</span>
+<span class="source-line-no">380</span><span id="line-380">//              System.out.format("inv. radial distortion: rr=%.4f -&gt; r=%.4f\n", rr, r);</span>
+<span class="source-line-no">381</span><span id="line-381">//</span>
+<span class="source-line-no">382</span><span id="line-382">//              System.out.println();</span>
+<span class="source-line-no">383</span><span id="line-383">//</span>
+<span class="source-line-no">384</span><span id="line-384">//              // distorted camera</span>
+<span class="source-line-no">385</span><span id="line-385">//              System.out.println("Camera 2:");</span>
+<span class="source-line-no">386</span><span id="line-386">//              RealMatrix A = MatrixUtils.createRealMatrix(new double[][] {</span>
+<span class="source-line-no">387</span><span id="line-387">//                              {832.5, 0.204494, 303.959},</span>
+<span class="source-line-no">388</span><span id="line-388">//                              {  0.0, 832.53, 206.585},</span>
+<span class="source-line-no">389</span><span id="line-389">//                              {  0.0,   0.0,     1.0}});</span>
+<span class="source-line-no">390</span><span id="line-390">//              Camera camera2 = new Camera(A, new double[] {-0.2, 0.190353});</span>
+<span class="source-line-no">391</span><span id="line-391">//              System.out.format("k0=%.4f, k1=%.4f\n", camera2.getK()[0], camera2.getK()[1]);</span>
+<span class="source-line-no">392</span><span id="line-392">//</span>
+<span class="source-line-no">393</span><span id="line-393">//              double[] XYZ2 = {40, 70, 800};</span>
+<span class="source-line-no">394</span><span id="line-394">//              double[] uv2 = camera2.project(view, XYZ2);</span>
+<span class="source-line-no">395</span><span id="line-395">//              System.out.print(Matrix.toString(XYZ2) + " -&gt; ");</span>
+<span class="source-line-no">396</span><span id="line-396">//              System.out.format("u=%.4f, u=%.4f\n", uv2[0], uv2[1]);</span>
+<span class="source-line-no">397</span><span id="line-397">//</span>
+<span class="source-line-no">398</span><span id="line-398">//              r = 0.95;</span>
+<span class="source-line-no">399</span><span id="line-399">//              rr = camera2.warp(r);</span>
+<span class="source-line-no">400</span><span id="line-400">//              System.out.format("radial distortion: r=%.4f -&gt; rr=%.4f\n", r, rr);</span>
+<span class="source-line-no">401</span><span id="line-401">//              r = camera2.unwarp(rr);</span>
+<span class="source-line-no">402</span><span id="line-402">//              System.out.format("inv. radial distortion: rr=%.4f -&gt; r=%.4f\n", rr, r);</span>
+<span class="source-line-no">403</span><span id="line-403">//</span>
+<span class="source-line-no">404</span><span id="line-404">//              System.out.println("\nTesting radial lens distortion:");</span>
+<span class="source-line-no">405</span><span id="line-405">//              double[] xy2 = {0.3, -0.7};</span>
+<span class="source-line-no">406</span><span id="line-406">//              System.out.format("original x=%.4f, y=%.4f\n", xy2[0], xy2[1]);</span>
+<span class="source-line-no">407</span><span id="line-407">//              double[] xy2d = camera2.warp(xy2);</span>
+<span class="source-line-no">408</span><span id="line-408">//              System.out.format("distorted x=%.4f, y=%.4f\n", xy2d[0], xy2d[1]);</span>
+<span class="source-line-no">409</span><span id="line-409">//              double[] xy2u = camera2.unwarp(xy2d);</span>
+<span class="source-line-no">410</span><span id="line-410">//              System.out.format("undistorted x=%.4f, y=%.4f\n", xy2u[0], xy2u[1]);</span>
+<span class="source-line-no">411</span><span id="line-411">//</span>
+<span class="source-line-no">412</span><span id="line-412">//              System.out.println("\nTesting only radial lens distortion fun:");</span>
+<span class="source-line-no">413</span><span id="line-413">//              double ra = 0.10;</span>
+<span class="source-line-no">414</span><span id="line-414">//              double rb = camera2.warp(ra);</span>
+<span class="source-line-no">415</span><span id="line-415">//              double rc = camera2.unwarp(rb);</span>
+<span class="source-line-no">416</span><span id="line-416">//              System.out.format("ra=%.4f, rb=%.4f, rc=%.4f\n", ra, rb, rc);</span>
+<span class="source-line-no">417</span><span id="line-417">//      }</span>
+<span class="source-line-no">418</span><span id="line-418">        </span>
+<span class="source-line-no">419</span><span id="line-419">}</span>
+<span class="source-line-no">420</span><span id="line-420"></span>
+<span class="source-line-no">421</span><span id="line-421"></span>
+<span class="source-line-no">422</span><span id="line-422"></span>
 
 
 
