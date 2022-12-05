@@ -27,38 +27,50 @@
 	</description>
 	<inceptionYear>2015</inceptionYear>
 	<url>https://imagingbook.com</url>
+
+	<licenses>
+		<license>
+			<name>BSD 2-Clause "Simplified" License</name>
+			<url>http://opensource.org/licenses/BSD-2-Clause</url>
+		</license>
+	</licenses>
+
+	<scm>
+		<connection>scm:git:git://github.com/imagingbook/imagingbook-calibrate.git</connection>
+		<developerConnection>scm:git:ssh://github.com:imagingbook/imagingbook-calibrate.git.git</developerConnection>
+		<url>http://github.com/imagingbook/imagingbook-calibrate.git/tree/master</url>
+	</scm>
 	
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
 		<module>imagingbook-calibrate-plugins</module>
 	</modules>
-	
-	<build>
-		<plugins>
-			<!-- do not deploy this artifact -->
-			<!--<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-deploy-plugin</artifactId>
-			  <configuration>
-			    <skip>true</skip>
-			  </configuration>
-			</plugin>-->
 
+	<properties>
+		<imagingbook.doctitle>Implementation of Zhang's Camera Calibration</imagingbook.doctitle>
+		<imagingbook.bottom>
+			<![CDATA[Copyright &#169; {inceptionYear}&#x2013;{currentYear},
+			<a href="https://imagingbook.com" target="new">Wilhelm Burger</a>
+			<a href="http://opensource.org/licenses/BSD-2-Clause" target="new">
+			(BSD 2-Clause Simplified License)</a>.]]>
+			Build Date: ${maven.build.timestamp}
+		</imagingbook.bottom>
+	</properties>
+	
+	<!--<build>
+		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
-					<doctitle>Implementation of Zhang's Camera Calibration</doctitle>
-					<header><![CDATA[<br><font face="verdana"><B>]]>${project.artifactId} ${project.version}<![CDATA[</B></font>]]></header>
 					<links>
 						<link>https://javadoc.io/doc/com.imagingbook/imagingbook-common/6.0.0</link>
-						<!--<link>https://javadoc.io/doc/net.imagej/ij/1.53v</link>-->
 						<link>${imagej.apilink}</link>
 						<link>${commons-math3.apilink}</link>
 					</links>
 				</configuration>
 			</plugin>
 		</plugins>
-	</build>
+	</build>-->
 
 </project>
