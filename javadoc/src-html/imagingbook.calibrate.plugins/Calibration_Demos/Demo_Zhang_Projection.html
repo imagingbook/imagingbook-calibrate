@@ -43,7 +43,7 @@
 <span class="source-line-no">030</span><span id="line-30"> */</span>
 <span class="source-line-no">031</span><span id="line-31">public class Demo_Zhang_Projection implements PlugIn {</span>
 <span class="source-line-no">032</span><span id="line-32">        </span>
-<span class="source-line-no">033</span><span id="line-33">        static ImageResource resource = CalibrationImage.CalibImageStack_tif;</span>
+<span class="source-line-no">033</span><span id="line-33">        static ImageResource resource = CalibrationImage.CalibImageStack;</span>
 <span class="source-line-no">034</span><span id="line-34">        </span>
 <span class="source-line-no">035</span><span id="line-35">        static Color BackGroundColor = Color.white;</span>
 <span class="source-line-no">036</span><span id="line-36">        static Color LineColor = Color.magenta;</span>
@@ -57,7 +57,7 @@
 <span class="source-line-no">044</span><span id="line-44"></span>
 <span class="source-line-no">045</span><span id="line-45">        public void run(String arg0) {</span>
 <span class="source-line-no">046</span><span id="line-46">                // open the test image (stack):</span>
-<span class="source-line-no">047</span><span id="line-47">                ImagePlus testIm = resource.getImage();</span>
+<span class="source-line-no">047</span><span id="line-47">                ImagePlus testIm = resource.getImagePlus();</span>
 <span class="source-line-no">048</span><span id="line-48">                if (testIm == null) {</span>
 <span class="source-line-no">049</span><span id="line-49">                        IJ.error("Could not open calibration images!");</span>
 <span class="source-line-no">050</span><span id="line-50">                        return;</span>

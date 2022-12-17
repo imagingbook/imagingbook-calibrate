@@ -49,7 +49,7 @@
 <span class="source-line-no">036</span><span id="line-36"> */</span>
 <span class="source-line-no">037</span><span id="line-37">public class Demo_View_Interpolation implements PlugIn {</span>
 <span class="source-line-no">038</span><span id="line-38"></span>
-<span class="source-line-no">039</span><span id="line-39">        private static ImageResource resource = CalibrationImage.CalibImageStack_tif;   // = "CalibImageStack.tif"</span>
+<span class="source-line-no">039</span><span id="line-39">        private static ImageResource resource = CalibrationImage.CalibImageStack;       // = "CalibImageStack.tif"</span>
 <span class="source-line-no">040</span><span id="line-40"></span>
 <span class="source-line-no">041</span><span id="line-41">        static int NumberOfInterpolatedFrames = 10;</span>
 <span class="source-line-no">042</span><span id="line-42">        static double PeakHeightZ = -1.5;</span>
@@ -64,7 +64,7 @@
 <span class="source-line-no">051</span><span id="line-51">        }</span>
 <span class="source-line-no">052</span><span id="line-52"></span>
 <span class="source-line-no">053</span><span id="line-53">        public void run(String arg0) {</span>
-<span class="source-line-no">054</span><span id="line-54">                ImagePlus testIm = resource.getImage();</span>
+<span class="source-line-no">054</span><span id="line-54">                ImagePlus testIm = resource.getImagePlus();</span>
 <span class="source-line-no">055</span><span id="line-55">                if (testIm == null) {</span>
 <span class="source-line-no">056</span><span id="line-56">                        IJ.error("Could not open calibration images!"); </span>
 <span class="source-line-no">057</span><span id="line-57">                        return;</span>

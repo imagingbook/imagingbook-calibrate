@@ -38,7 +38,7 @@
 <span class="source-line-no">025</span><span id="line-25"> */</span>
 <span class="source-line-no">026</span><span id="line-26">public class Demo_Draw_3D_Axes implements PlugIn {</span>
 <span class="source-line-no">027</span><span id="line-27">        </span>
-<span class="source-line-no">028</span><span id="line-28">        private static ImageResource resource = CalibrationImage.CalibImageStack_tif;   // = "CalibImageStack.tif"</span>
+<span class="source-line-no">028</span><span id="line-28">        private static ImageResource resource = CalibrationImage.CalibImageStack;       // = "CalibImageStack.tif"</span>
 <span class="source-line-no">029</span><span id="line-29"></span>
 <span class="source-line-no">030</span><span id="line-30">        static Color BackGroundColor = Color.white;</span>
 <span class="source-line-no">031</span><span id="line-31">        static Color LineColor = Color.magenta;</span>
@@ -63,7 +63,7 @@
 <span class="source-line-no">050</span><span id="line-50">                double[] p3 = {0.0, 0.0, axisLength};</span>
 <span class="source-line-no">051</span><span id="line-51"></span>
 <span class="source-line-no">052</span><span id="line-52">                // open the test image (stack):</span>
-<span class="source-line-no">053</span><span id="line-53">                ImagePlus testIm = resource.getImage();</span>
+<span class="source-line-no">053</span><span id="line-53">                ImagePlus testIm = resource.getImagePlus();</span>
 <span class="source-line-no">054</span><span id="line-54">                if (testIm == null) {</span>
 <span class="source-line-no">055</span><span id="line-55">                        IJ.error("Could not open calibration images!");</span>
 <span class="source-line-no">056</span><span id="line-56">                        return;</span>

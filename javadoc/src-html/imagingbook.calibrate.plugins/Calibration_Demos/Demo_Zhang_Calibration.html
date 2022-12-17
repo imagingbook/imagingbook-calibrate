@@ -48,7 +48,7 @@
 <span class="source-line-no">035</span><span id="line-35">public class Demo_Zhang_Calibration implements PlugIn {</span>
 <span class="source-line-no">036</span><span id="line-36">        </span>
 <span class="source-line-no">037</span><span id="line-37">        private static boolean DEBUG = true;</span>
-<span class="source-line-no">038</span><span id="line-38">        private static ImageResource resource = CalibrationImage.CalibImageStack_tif;   // = "CalibImageStack.tif"</span>
+<span class="source-line-no">038</span><span id="line-38">        private static ImageResource resource = CalibrationImage.CalibImageStack;       // = "CalibImageStack.tif"</span>
 <span class="source-line-no">039</span><span id="line-39">        </span>
 <span class="source-line-no">040</span><span id="line-40">        private static boolean ShowObservedModelPoints = true;          // draw observed image points into a new stack</span>
 <span class="source-line-no">041</span><span id="line-41">        private static boolean ShowProjectedImagePoints = true;         // draw projected image points into the test image stack</span>
@@ -62,7 +62,7 @@
 <span class="source-line-no">049</span><span id="line-49">        }</span>
 <span class="source-line-no">050</span><span id="line-50">        </span>
 <span class="source-line-no">051</span><span id="line-51">        public void run(String arg0) {</span>
-<span class="source-line-no">052</span><span id="line-52">                ImagePlus testIm = resource.getImage();</span>
+<span class="source-line-no">052</span><span id="line-52">                ImagePlus testIm = resource.getImagePlus();</span>
 <span class="source-line-no">053</span><span id="line-53">                if (testIm == null) {</span>
 <span class="source-line-no">054</span><span id="line-54">                        IJ.error("Could not open calibration images!"); </span>
 <span class="source-line-no">055</span><span id="line-55">                        return;</span>
@@ -169,7 +169,7 @@
 <span class="source-line-no">156</span><span id="line-156">                        painter.drawSquares(imagePoints[i]);</span>
 <span class="source-line-no">157</span><span id="line-157">                }</span>
 <span class="source-line-no">158</span><span id="line-158">        }</span>
-<span class="source-line-no">159</span><span id="line-159">        </span>
+<span class="source-line-no">159</span><span id="line-159"></span>
 <span class="source-line-no">160</span><span id="line-160">}</span>
 
 
