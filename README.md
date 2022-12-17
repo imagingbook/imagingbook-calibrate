@@ -18,7 +18,7 @@ This project consists of two sub-projects (Maven modules):
 
 ### Stand-Alone Installation ###
 
-* Clone this repository.
+* Download the [**latest release of this repository**](https://github.com/imagingbook/imagingbook-calibrate/releases/latest).
 * Enter `imagingbook-calibrate-plugins`.
 * Start ImageJ by double-clicking `ImageJ.exe` (Win) or launching `ij.jar` (Mac). This requires an installed Java runtime version 1.8 or higher.
 * In ImageJ, use the `Plugins` menu to run the demo plugins (test images are loaded automatically).
