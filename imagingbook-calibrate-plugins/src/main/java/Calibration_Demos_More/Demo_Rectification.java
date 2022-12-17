@@ -29,7 +29,7 @@ public class Demo_Rectification implements PlugIn {
 
 	static boolean BeVerbose = false;
 
-	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
+	private static ImageResource resource = CalibrationImage.CalibImageStack;	// = "CalibImageStack.tif"
 
 	static {
 		LogStream.redirectSystem();
@@ -38,7 +38,7 @@ public class Demo_Rectification implements PlugIn {
 
 	public void run(String arg0) {
 		// open the test image (stack):
-		ImagePlus testIm = resource.getImage();
+		ImagePlus testIm = resource.getImagePlus();
 
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");

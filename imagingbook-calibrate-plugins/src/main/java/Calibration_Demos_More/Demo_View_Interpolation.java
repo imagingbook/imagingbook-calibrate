@@ -36,7 +36,7 @@ import imagingbook.core.resource.ImageResource;
  */
 public class Demo_View_Interpolation implements PlugIn {
 
-	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
+	private static ImageResource resource = CalibrationImage.CalibImageStack;	// = "CalibImageStack.tif"
 
 	static int NumberOfInterpolatedFrames = 10;
 	static double PeakHeightZ = -1.5;
@@ -51,7 +51,7 @@ public class Demo_View_Interpolation implements PlugIn {
 	}
 
 	public void run(String arg0) {
-		ImagePlus testIm = resource.getImage();
+		ImagePlus testIm = resource.getImagePlus();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;

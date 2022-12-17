@@ -30,7 +30,7 @@ import imagingbook.core.resource.ImageResource;
  */
 public class Demo_Zhang_Projection implements PlugIn {
 	
-	static ImageResource resource = CalibrationImage.CalibImageStack_tif;
+	static ImageResource resource = CalibrationImage.CalibImageStack;
 	
 	static Color BackGroundColor = Color.white;
 	static Color LineColor = Color.magenta;
@@ -44,7 +44,7 @@ public class Demo_Zhang_Projection implements PlugIn {
 
 	public void run(String arg0) {
 		// open the test image (stack):
-		ImagePlus testIm = resource.getImage();
+		ImagePlus testIm = resource.getImagePlus();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;

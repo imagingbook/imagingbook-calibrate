@@ -25,7 +25,7 @@ import imagingbook.core.resource.ImageResource;
  */
 public class Demo_Draw_3D_Axes implements PlugIn {
 	
-	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
+	private static ImageResource resource = CalibrationImage.CalibImageStack;	// = "CalibImageStack.tif"
 
 	static Color BackGroundColor = Color.white;
 	static Color LineColor = Color.magenta;
@@ -50,7 +50,7 @@ public class Demo_Draw_3D_Axes implements PlugIn {
 		double[] p3 = {0.0, 0.0, axisLength};
 
 		// open the test image (stack):
-		ImagePlus testIm = resource.getImage();
+		ImagePlus testIm = resource.getImagePlus();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;

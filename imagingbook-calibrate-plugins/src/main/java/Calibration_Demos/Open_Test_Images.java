@@ -23,7 +23,7 @@ public class Open_Test_Images implements PlugIn {
 		LogStream.redirectSystem();
 	}
 	
-	static ImageResource resource = CalibrationImage.CalibImageStack_tif;
+	static ImageResource resource = CalibrationImage.CalibImageStack;
 
 	public void run(String args) {
 		
@@ -37,7 +37,7 @@ public class Open_Test_Images implements PlugIn {
 		else
 			IJ.log("Resources from regular file: " + resource.getURL());
 		
-		ImagePlus im = resource.getImage();
+		ImagePlus im = resource.getImagePlus();
 		if (im != null) {
 			im.show();
 		}

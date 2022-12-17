@@ -41,7 +41,7 @@ import imagingbook.core.resource.ImageResource;
  */
 public class Demo_Zhang_Projection_Overlay implements PlugIn {
 	
-	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
+	private static ImageResource resource = CalibrationImage.CalibImageStack;	// = "CalibImageStack.tif"
 	
 	static double CircleRadius = 1.0;
 	static double CrossRadius  = 2.0;
@@ -57,7 +57,7 @@ public class Demo_Zhang_Projection_Overlay implements PlugIn {
 	}
 	
 	public void run(String arg0) {
-		ImagePlus testIm = resource.getImage();
+		ImagePlus testIm = resource.getImagePlus();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;

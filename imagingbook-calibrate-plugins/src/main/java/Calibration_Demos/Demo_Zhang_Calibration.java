@@ -35,7 +35,7 @@ import imagingbook.core.resource.ImageResource;
 public class Demo_Zhang_Calibration implements PlugIn {
 	
 	private static boolean DEBUG = true;
-	private static ImageResource resource = CalibrationImage.CalibImageStack_tif;	// = "CalibImageStack.tif"
+	private static ImageResource resource = CalibrationImage.CalibImageStack;	// = "CalibImageStack.tif"
 	
 	private static boolean ShowObservedModelPoints = true;		// draw observed image points into a new stack
 	private static boolean ShowProjectedImagePoints = true;		// draw projected image points into the test image stack
@@ -49,7 +49,7 @@ public class Demo_Zhang_Calibration implements PlugIn {
 	}
 	
 	public void run(String arg0) {
-		ImagePlus testIm = resource.getImage();
+		ImagePlus testIm = resource.getImagePlus();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!"); 
 			return;
@@ -156,5 +156,5 @@ public class Demo_Zhang_Calibration implements PlugIn {
 			painter.drawSquares(imagePoints[i]);
 		}
 	}
-	
+
 }

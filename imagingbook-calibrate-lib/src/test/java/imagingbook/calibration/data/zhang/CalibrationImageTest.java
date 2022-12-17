@@ -10,8 +10,10 @@ public class CalibrationImageTest {
 
 	@Test
 	public void test1() {
-		for (ImageResource ir : CalibrationImage.values()) {
-			assertNotNull("could not open ipage for resource " + ir.toString(), ir.getImagePlus());
+		for (CalibrationImage ir : CalibrationImage.values()) {
+			// System.out.println(ir.getAbsolutePath());
+			assertNotNull("could not find resource " + ir, ir.getURL());
+			assertNotNull("could not open image for resource " + ir, ir.getImagePlus());
 		}
 	}
 

@@ -36,4 +36,9 @@ public enum CalibrationImage implements ImageResource {
 		return BASEDIR;
 	}
 
+
+	String getAbsolutePath() {
+		return this.getClass().getResource("") + "/" + getRelativeDirectory() + "/" + getFileName();
+	}
+
 }
