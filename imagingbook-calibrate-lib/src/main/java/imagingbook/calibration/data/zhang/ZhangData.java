@@ -9,8 +9,8 @@ import java.awt.geom.Point2D;
 
 /**
  * Supplies all numeric data for Zhang's demo calibration test suite.
- * @author WB
  *
+ * @author WB
  */
 public abstract class ZhangData {
 	

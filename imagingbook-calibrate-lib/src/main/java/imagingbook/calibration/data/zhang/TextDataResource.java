@@ -3,7 +3,7 @@ package imagingbook.calibration.data.zhang;
 import imagingbook.core.resource.NamedResource;
 
 public enum TextDataResource implements NamedResource {
-		CalibrationResultZhangWithDistortion_txt("Calibration-result-zhang-withdistortion.txt"),
+		CalibrationResultZhangWithDistortion_txt("calibration-result-zhang-withdistortion.txt"),
 		Model_txt("Model.txt"),
 		AllCalibrationResultsEasyCalib_txt("all-calibration-results-EasyCalib.txt"),
 		AllCalibrationResults_txt("all-calibration-results.txt"),
@@ -13,7 +13,6 @@ public enum TextDataResource implements NamedResource {
 		Data4_txt("data4.txt"),
 		Data5_txt("data5.txt");
 
-	private final static String BASEDIR = "DATA";
 	private final String filename;
 	
 	private TextDataResource(String filename) {
@@ -23,11 +22,6 @@ public enum TextDataResource implements NamedResource {
 	@Override
 	public String getFileName() {
 		return filename;
-	}
-	
-	@Override
-	public String getRelativeDirectory() {
-		return BASEDIR;
 	}
 
 }

@@ -15,7 +15,7 @@ public enum CalibrationImage implements ImageResource {
 	marked4,
 	marked5;
 
-	private final static String BASEDIR = "DATA";
+	// private final static String BASEDIR = "DATA";
 	private final String filename;
 
 	CalibrationImage() {
@@ -31,10 +31,10 @@ public enum CalibrationImage implements ImageResource {
 		return (this.filename != null) ? this.filename : this.autoName();
 	}
 	
-	@Override
-	public String getRelativeDirectory() {
-		return BASEDIR;
-	}
+	// @Override
+	// public String getRelativeDirectory() {
+	// 	return BASEDIR;
+	// }
 
 
 	String getAbsolutePath() {
