@@ -21,7 +21,7 @@ public class MathUtilTest {
     // TODO: check more examples!
 
     @Test
-    public void test1() {
+    public void testHomogeneousSystem1() {
         // Lay, Linear Algebra (5ed), p. 44 (works)
         // n = 3, r = 2: exact solution
         double[][] A = {
@@ -37,7 +37,7 @@ public class MathUtilTest {
     }
 
     @Test
-    public void test2() {
+    public void testHomogeneousSystem2() {
         // n = 3, r = 2: exact solution
         double[][] A = {
                 {1, 3, -2},
@@ -53,7 +53,7 @@ public class MathUtilTest {
     }
 
     @Test
-    public void test3() {
+    public void testHomogeneousSystem3() {
         // n = 4, r = 3: least squares solution
         double[][] A = {
                 {1, -1, -1, 3},
@@ -82,7 +82,7 @@ public class MathUtilTest {
     // }
 
     @Test
-    public void test6() {
+    public void testHomogeneousSystem6() {
         // n = 4, r = 3: Mathematica Nullspace example
         double[][] A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
 
