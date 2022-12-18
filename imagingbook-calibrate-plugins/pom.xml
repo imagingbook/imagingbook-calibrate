@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>com.imagingbook</groupId>
 		<artifactId>imagingbook-calibrate</artifactId>
-		<version>7.0.0</version>
+		<version>7.0.1-SNAPSHOT</version>
 	</parent>
 	
 	<properties>
@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-calibrate-lib</artifactId>
-			<version>7.0.0</version>
+			<version>7.0.1-SNAPSHOT</version>
 		</dependency>
 
 	</dependencies>
