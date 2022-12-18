@@ -2,20 +2,21 @@ package Calibration_Demos;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.Line;
-import ij.gui.OvalRoi;
 import ij.gui.Overlay;
-import ij.gui.Roi;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
-import imagingbook.calibration.zhang.data.CalibrationImage;
-import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
+import imagingbook.calibration.zhang.data.CalibrationImage;
+import imagingbook.calibration.zhang.data.ZhangData;
+import imagingbook.common.ij.overlay.ColoredStroke;
+import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
 
-import java.awt.Color;
+import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,14 +43,7 @@ public class Demo_Zhang_Projection_Overlay implements PlugIn {
 	static Color CircleColor = Color.blue;
 	static Color CrossColor = Color.red;
 	static double StrokeWidth  = 0.25;
-	
-	static boolean BeVerbose = false;
-	
-	static {
-		LogStream.redirectSystem();
-		PrintPrecision.set(6);
-	}
-	
+
 	public void run(String arg0) {
 		ImagePlus testIm = resource.getImagePlus();
 		if (testIm == null) {
@@ -58,15 +52,16 @@ public class Demo_Zhang_Projection_Overlay implements PlugIn {
 		}
 		
 		int M = testIm.getNSlices();
-		Overlay oly = new Overlay();
-		
+		ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
+
 		// plot the observed image points as circles:
+		ola.setStroke(new ColoredStroke(StrokeWidth, CircleColor));
 		Point2D[][] obsPoints = ZhangData.getAllObservedPoints();
 		for (int i = 0; i < obsPoints.length; i++) {
 			int sliceNo = i + 1;
-			for (Roi roi : makeCircleRois(obsPoints[i], CircleColor)) {
-				roi.setPosition(sliceNo);	// associate overly with this slice (important)
-				oly.add(roi);
+			ola.setStackPosition(sliceNo);	// associate overly with this slice (important)
+			for (Shape s : makeCircleRois(obsPoints[i])) {	// , CircleColor
+				ola.addShape(s);
 			}
 		}
 		
@@ -74,54 +69,51 @@ public class Demo_Zhang_Projection_Overlay implements PlugIn {
 		Point2D[] modelPoints = ZhangData.getModelPoints();
 		Camera camReal = ZhangData.getCameraIntrinsics();
 		ViewTransform[] viewsReal = ZhangData.getAllViewTransforms();
-		
+		ola.setStroke(new ColoredStroke(StrokeWidth, CrossColor));
 		for (int i = 0; i < M; i++) {
 			int sliceNo = i + 1;
+			ola.setStackPosition(sliceNo);
 			Point2D[] projPnts = camReal.project(viewsReal[i], modelPoints);
-			for (Roi roi : makeCrossRois(projPnts, CrossColor)) {
-				roi.setPosition(sliceNo);	// associate overly with this slice (important)
-				oly.add(roi);
+			for (Shape s : makeCrossRois(projPnts)) {	// CrossColor
+				ola.addShape(s);
 			}
 		}
 		
-		testIm.setOverlay(oly);
+		testIm.setOverlay(ola.getOverlay());
 		testIm.show();	
 	}
 
 	// ----------------------------------------------------------------------
 	
-	List<Roi> makeCrossRois(Point2D[] pnts, Color lineCol) {
+	List<Shape> makeCrossRois(Point2D[] pnts) {  // Color lineCol, StrokeWidth
 		final double r = CrossRadius;
 		final double ofs = 0.5;	// pixel offset (elements to be placed at pixel centers)
-		List<Roi> rois = new ArrayList<Roi>();
+		List<Shape> shapes = new ArrayList<>(pnts.length);
 		for (int j = 0; j < pnts.length; j++) {
 			double x = pnts[j].getX();
 			double y = pnts[j].getY();
-			Line linX = new Line(x - r + ofs, y + ofs, x + r + ofs, y + ofs);
-			Line linY = new Line(x + ofs, y - r + ofs, x + ofs, y + r + ofs);
-			linX.setStrokeColor(lineCol);
-			linY.setStrokeColor(lineCol);
-			linX.setStrokeWidth(StrokeWidth);
-			linY.setStrokeWidth(StrokeWidth);
-			rois.add(linX);
-			rois.add(linY);
+			Path2D path = new Path2D.Double();
+			path.moveTo(x - r, y);
+			path.lineTo(x + r, y);
+			path.moveTo(x, y - r);
+			path.lineTo(x, y + r);
+			shapes.add(path);
 		}
-		return rois;
+		return shapes;
 	}
 	
-	List<Roi> makeCircleRois(Point2D[] pnts, Color lineCol) {
+	List<Shape> makeCircleRois(Point2D[] pnts) {	// , Color lineCol
 		final double r = CircleRadius;
 		final double ofs = 0.5;	// pixel offset (elements to be placed at pixel centers)
-		List<Roi> rois = new ArrayList<Roi>();
+		List<Shape> shapes = new ArrayList<>(pnts.length);
 		for (int j = 0; j < pnts.length; j++) {
 			double x = pnts[j].getX();
 			double y = pnts[j].getY();
-			OvalRoi circle = new OvalRoi(x - r + ofs, y - r + ofs, 2 * r, 2 * r) ;
-			circle.setStrokeColor(lineCol);
-			circle.setStrokeWidth(StrokeWidth);
-			rois.add(circle);
+			// OvalRoi circle = new OvalRoi(x - r + ofs, y - r + ofs, 2 * r, 2 * r) ;
+			Shape circle = new Ellipse2D.Double(x - r, y - r, 2 * r, 2 * r);
+			shapes.add(circle);
 		}
-		return rois;
+		return shapes;
 	}
 	
 }
