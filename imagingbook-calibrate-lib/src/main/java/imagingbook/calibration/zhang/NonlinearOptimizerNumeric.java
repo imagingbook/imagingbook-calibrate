@@ -1,18 +1,17 @@
 package imagingbook.calibration.zhang;
 
-import java.awt.geom.Point2D;
-import java.util.Arrays;
-
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 
+import java.awt.geom.Point2D;
+import java.util.Arrays;
+
 /**
- * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix
- * is calculated numerically (i.e., by estimating the first partial derivatives from
- * finite differences). The advantage is that the calculation of the Jacobian is 
- * independent of the calibration model, while performance and runtime are similar to
- * the analytic version (see {@link NonlinearOptimizerAnalytic}).
- * 
+ * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix is calculated numerically
+ * (i.e., by estimating the first partial derivatives from finite differences). The advantage is that the calculation of
+ * the Jacobian is independent of the calibration model, while performance and runtime are similar to the analytic
+ * version (see {@link NonlinearOptimizerAnalytic}).
+ *
  * @author WB
  */
 public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
@@ -32,13 +31,11 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	}
 
 	private class JacobianFun implements MultivariateMatrixFunction {
-		
+
 		/**
-		 * Calculates a "stacked" Jacobian matrix with 2MN rows and K = 7 + 6M
-		 * columns (for M views with N points each, K parameters). For example, 
-		 * with M = 5 views and N = 256 points each, J is of size 2560 × 37.
-		 * Each pair of rows in the Jacobian corresponds to one point.
-		 * THIS VERSION only calculates single blocks of the Jacobian!
+		 * Calculates a "stacked" Jacobian matrix with 2MN rows and K = 7 + 6M columns (for M views with N points each,
+		 * K parameters). For example, with M = 5 views and N = 256 points each, J is of size 2560 × 37. Each pair of
+		 * rows in the Jacobian corresponds to one point. THIS VERSION only calculates single blocks of the Jacobian!
 		 */
 		@Override
 	    public double[][] value(double[] params) {
@@ -179,9 +176,10 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	    }
 
 	}
-	
+
 	/**
 	 * Returns a positive delta value adapted to the magnitude of the parameter x
+	 *
 	 * @param x
 	 * @return
 	 */

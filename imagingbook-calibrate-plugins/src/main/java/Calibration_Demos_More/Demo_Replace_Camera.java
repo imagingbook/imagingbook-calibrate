@@ -18,12 +18,10 @@ import imagingbook.core.resource.ImageResource;
 
 
 /**
- * This plugin opens an image stack containing the 5 Zhang
- * test images (assumed to be taken with camera A) and re-renders 
- * the images by mapping them to a new camera B. In this example,
- * only the lens distortion coefficients are modified but in
- * principle all intrinsic parameters of camera B could be changed.
- * 
+ * This plugin opens an image stack containing the 5 Zhang test images (assumed to be taken with camera A) and
+ * re-renders the images by mapping them to a new camera B. In this example, only the lens distortion coefficients are
+ * modified but in principle all intrinsic parameters of camera B could be changed.
+ *
  * @author W. Burger
  * @version 2021-08-22
  */

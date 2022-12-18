@@ -1,10 +1,9 @@
 package imagingbook.calibration.data.zhang;
 
-import static org.junit.Assert.assertNotNull;
-
+import imagingbook.core.resource.NamedResource;
 import org.junit.Test;
 
-import imagingbook.core.resource.NamedResource;
+import static org.junit.Assert.assertNotNull;
 
 public class TextDataResourceTest {
 

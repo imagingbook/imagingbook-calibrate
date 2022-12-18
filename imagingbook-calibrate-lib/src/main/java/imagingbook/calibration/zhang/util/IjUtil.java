@@ -1,29 +1,27 @@
 package imagingbook.calibration.zhang.util;
 
-import java.awt.Color;
-
-import org.apache.commons.math3.linear.RealMatrix;
-
 import ij.ImagePlus;
 import ij.gui.Plot;
 import ij.gui.PlotWindow;
 import ij.process.FloatProcessor;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.common.math.Matrix;
+import org.apache.commons.math3.linear.RealMatrix;
+
+import java.awt.Color;
 
 
 /**
- * This class defines ImageJ-related utility methods used for camera
- * calibration.
- * @author WB
+ * This class defines ImageJ-related utility methods used for camera calibration.
  *
+ * @author WB
  */
 public class IjUtil {
-	
+
 	/**
-	 * Creates a float-type image of the supplied matrix.
-	 * Matrix rows/columns correspond to image rows/columns.
-	 * Typical usage: makeImage("my matrix", M).show()
+	 * Creates a float-type image of the supplied matrix. Matrix rows/columns correspond to image rows/columns. Typical
+	 * usage: makeImage("my matrix", M).show()
+	 *
 	 * @param title the image title
 	 * @param M the matrix to be displayed
 	 * @return the resulting image
@@ -32,7 +30,7 @@ public class IjUtil {
 		float[][] fdata = Matrix.toFloat(M.transpose().getData());
 		ImagePlus im = new ImagePlus(title, new FloatProcessor(fdata));
 		im.show();
-		return im;	
+		return im;
 	}
 	
 	// -------------------------------------------------------------------

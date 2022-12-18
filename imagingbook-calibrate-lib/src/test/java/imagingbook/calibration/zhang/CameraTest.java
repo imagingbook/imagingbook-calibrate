@@ -8,14 +8,14 @@
  */
 package imagingbook.calibration.zhang;
 
-import imagingbook.common.math.Matrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.junit.Test;
 
 import java.util.Locale;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class CameraTest {
 

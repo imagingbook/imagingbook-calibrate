@@ -1,24 +1,22 @@
 package imagingbook.calibration.zhang;
 
+import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
+import org.apache.commons.math3.analysis.MultivariateVectorFunction;
+
+import java.awt.geom.Point2D;
+
 import static java.lang.Math.cos;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 
-import java.awt.geom.Point2D;
-
-import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-
 
 /**
- * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix
- * is calculated from analytic expressions (obtained with MatLab).
- * 
- * Part of this implementation is based on code from OpenIMAJ by J. Hare:
- *     Copyright (c) 2011, The University of Southampton and the individual contributors.
- *     All rights reserved (see https://github.com/openimaj/openimaj/).
- * 
+ * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix is calculated from analytic
+ * expressions (obtained with MatLab). Part of this implementation is based on code from OpenIMAJ by J. Hare: Copyright
+ * (c) 2011, The University of Southampton and the individual contributors. All rights reserved (see
+ * https://github.com/openimaj/openimaj/).
+ *
  * @author WB
  */
 public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
@@ -39,10 +37,9 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 
 	private class JacobianFun implements MultivariateMatrixFunction {
 		/**
-		 * Calculates a "stacked" Jacobian matrix with 2MN rows and K = 7 + 6M
-		 * columns (for M views with N points each, K parameters). For example, 
-		 * with M = 5 views and N = 256 points each, J is of size 2560 × 37.
-		 * Each pair of rows in the Jacobian corresponds to one point.
+		 * Calculates a "stacked" Jacobian matrix with 2MN rows and K = 7 + 6M columns (for M views with N points each,
+		 * K parameters). For example, with M = 5 views and N = 256 points each, J is of size 2560 × 37. Each pair of
+		 * rows in the Jacobian corresponds to one point.
 		 */
 		@Override
 		public double[][] value(double[] params) {
@@ -63,9 +60,8 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 		}
 
 		/**
-		 * Calculates the sub-Jacobian for view 'i' / model point 'j' with the current 
-		 * parameter vector 'params' .
-		 * 
+		 * Calculates the sub-Jacobian for view 'i' / model point 'j' with the current parameter vector 'params' .
+		 *
 		 * @param i the point index (= 0,...,M)
 		 * @param j the view index (= 0,...,N)
 		 * @param params the current parameters (of length K)

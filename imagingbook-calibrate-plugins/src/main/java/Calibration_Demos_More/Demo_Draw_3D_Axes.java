@@ -1,7 +1,5 @@
 package Calibration_Demos_More;
 
-import java.awt.Color;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -15,11 +13,12 @@ import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
 
+import java.awt.Color;
+
 
 /**
- * This plugin draws the projected X/Y/Z coordinate axes
- * for each of the given camera views.
- * 
+ * This plugin draws the projected X/Y/Z coordinate axes for each of the given camera views.
+ *
  * @author W. Burger
  * @version 2021-08-22
  */

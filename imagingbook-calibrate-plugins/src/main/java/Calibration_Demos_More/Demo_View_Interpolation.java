@@ -1,11 +1,5 @@
 package Calibration_Demos_More;
 
-import java.awt.Color;
-import java.awt.geom.Point2D;
-
-import org.apache.commons.math3.complex.Quaternion;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -21,18 +15,20 @@ import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
+import org.apache.commons.math3.complex.Quaternion;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+
+import java.awt.Color;
+import java.awt.geom.Point2D;
 
 /**
- * This plugin performs interpolation of views, given a sequence
- * of key views.
- * Translations (3D camera positions) are interpolated linearly.
- * Pairs of rotations are interpolated by linear mixture
- * of the corresponding quaternion representations (see
+ * This plugin performs interpolation of views, given a sequence of key views. Translations (3D camera positions) are
+ * interpolated linearly. Pairs of rotations are interpolated by linear mixture of the corresponding quaternion
+ * representations (see
  * http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/#How_do_I_interpolate_between_2_quaternions__).
  *
  * @author W. Burger
  * @version 2021-08-22
- *
  */
 public class Demo_View_Interpolation implements PlugIn {
 

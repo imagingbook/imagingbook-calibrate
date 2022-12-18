@@ -17,11 +17,9 @@ import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
 
 /**
- * This plugin opens an image stack containing the 5 Zhang
- * test images and removes the lens distortion based on the calibrated 
- * camera parameters. The resulting (rectified) frames are shown
- * in a new image stack.
- * 
+ * This plugin opens an image stack containing the 5 Zhang test images and removes the lens distortion based on the
+ * calibrated camera parameters. The resulting (rectified) frames are shown in a new image stack.
+ *
  * @author W. Burger
  * @version 2021-08-22
  */

@@ -1,8 +1,5 @@
 package Calibration_Demos;
 
-import java.awt.Color;
-import java.awt.geom.Point2D;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -20,15 +17,15 @@ import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
 
+import java.awt.Color;
+import java.awt.geom.Point2D;
+
 /**
- * This plugin performs Zhang's camera calibration on the
- * pre-calculated point data for the N given target views.
- * Based on the estimated intrinsic and extrinsic (view)
- * parameters, the corner points of the 3D target model are
- * then projected onto the corresponding calibration images
- * (a stack).
- * All rendering is done by pixel drawing (no graphic overlays).
- * 
+ * This plugin performs Zhang's camera calibration on the pre-calculated point data for the N given target views. Based
+ * on the estimated intrinsic and extrinsic (view) parameters, the corner points of the 3D target model are then
+ * projected onto the corresponding calibration images (a stack). All rendering is done by pixel drawing (no graphic
+ * overlays).
+ *
  * @author W. Burger
  * @version 2022/04/14
  */
@@ -127,11 +124,11 @@ public class Demo_Zhang_Calibration implements PlugIn {
 	}
 	
 	// --------------------------------------------------------------------
-	
+
 	/**
-	 * Draws the array of image points to a given (possibly empty) stack image.
-	 * The image points are assumed to be the corners of the standard
-	 * calibration model, i.e., 4 consecutive points form a projected square.
+	 * Draws the array of image points to a given (possibly empty) stack image. The image points are assumed to be the
+	 * corners of the standard calibration model, i.e., 4 consecutive points form a projected square.
+	 *
 	 * @param stack a stack with M images (views)
 	 * @param imagePoints a sequence of 2D point sets, one for each view
 	 */

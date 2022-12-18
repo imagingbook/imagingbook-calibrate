@@ -1,7 +1,7 @@
 package imagingbook.calibration.zhang;
 
-import java.awt.geom.Point2D;
-
+import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math3.analysis.solvers.UnivariateDifferentiableSolver;
@@ -9,32 +9,35 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
-import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.common.math.Matrix;
+import java.awt.geom.Point2D;
 
 
 /**
  * A camera model with parameters as specified in Zhang's paper.
+ *
  * @author WB
  */
 public class Camera {
 	
 	/**  
 	 * The camera's inner transformation matrix:
+	 * <pre>
 	 * | alpha  gamma  uc |
 	 * |     0   beta  vc |
+	 * </pre>
 	 */
-	private final double[][] A;	// 2 x 3
-	private final double[] K;	// the vector of lens distortion coefficients
+	private final double[][] A;		// 2 x 3
+	private final double[] K;		// the vector of lens distortion coefficients
 		
 	// for the standard Zhang camera
 	public Camera(double alpha, double beta, double gamma, double uc, double vc, double k0, double k1) {
 		this.A = makeA(alpha, beta, gamma, uc, vc);
 		this.K = new double[] {k0, k1};
 	}
-	
+
 	/**
-	 * Creates a standard camera from a vector of intrinsic parameters 
+	 * Creates a standard camera from a vector of intrinsic parameters
+	 *
 	 * @param s a vector of intrinsic camera parameters (alpha, beta, gamma, uc, vc, k0, k1).
 	 */
 	public Camera (double[] s) {
@@ -42,10 +45,10 @@ public class Camera {
 		this.A = makeA(s[0], s[1], s[2], s[3], s[4]);
 		this.K = new double[] {s[5], s[6]};
 	}
-		
+
 	/**
-	 * Creates a standard camera from a transformation matrix and a vector
-	 * of lens distortion coefficients.
+	 * Creates a standard camera from a transformation matrix and a vector of lens distortion coefficients.
+	 *
 	 * @param A the (min.) 2 x 3 matrix holding the intrinsic camera parameters
 	 * @param K the radial distortion coefficients k0, k1, ... (may be {@code null})
 	 */
@@ -53,9 +56,10 @@ public class Camera {
 		this.K = (K == null) ? new double[0] : K.clone();
 		this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 	}
-	
+
 	/**
 	 * Creates a simple pinhole camera (with no distortion whatsoever).
+	 *
 	 * @param f the camera's focal length (in pixel units).
 	 * @param uc the x-position of the optical axis intersecting the image plane (in pixel units)
 	 * @param vc the y-position of the optical axis intersecting the image plane (in pixel units)
@@ -74,9 +78,11 @@ public class Camera {
 	}
 	
 	// P is assumed to be a X/Y point in the Z = 0 plane
+
 	/**
-	 * Projects the X/Y world point (in the Z = 0 plane)
-	 * to image coordinates under the given camera view (extrinsic transformation parameters).
+	 * Projects the X/Y world point (in the Z = 0 plane) to image coordinates under the given camera view (extrinsic
+	 * transformation parameters).
+	 *
 	 * @param view the extrinsic transformation parameters
 	 * @param P a single X/Y world point (with Z = 0)
 	 * @return the projected 2D image coordinates
@@ -85,10 +91,11 @@ public class Camera {
 		double[] XY0 = new double[] {P.getX(), P.getY(), 0}; 
 		return this.project(view, XY0);
 	}
-	
+
 	/**
-	 * Projects the X/Y world points (all in the Z = 0 plane)
-	 * to image coordinates under the given camera view (extrinsic transformation parameters).
+	 * Projects the X/Y world points (all in the Z = 0 plane) to image coordinates under the given camera view
+	 * (extrinsic transformation parameters).
+	 *
 	 * @param view the extrinsic transformation parameters
 	 * @param PP a set of X/Y world points (with Z = 0)
 	 * @return the projected 2D image coordinates
@@ -101,11 +108,10 @@ public class Camera {
 		}
 		return imagePoints;
 	}
-	
+
 	/**
-	 * Projects the given 3D point onto the sensor plane of this camera
-	 * for the provided extrinsic view parameters.
-	 * 
+	 * Projects the given 3D point onto the sensor plane of this camera for the provided extrinsic view parameters.
+	 *
 	 * @param view the extrinsic camera (view) parameters
 	 * @param XYZ a point in 3D world coordinates
 	 * @return the 2D sensor coordinates of the projected point
@@ -119,13 +125,12 @@ public class Camera {
 		double[] uv = mapToSensorPlane(xyd);
 		return uv;
 	}
-	
-	
+
+
 	/**
-	 * Projects the given 3D point to ideal projection coordinates
-	 * for the provided extrinsic view parameters. The world point is
-	 * specified as a 2D coordinate in the Z = 0 plane.
-	 * 
+	 * Projects the given 3D point to ideal projection coordinates for the provided extrinsic view parameters. The world
+	 * point is specified as a 2D coordinate in the Z = 0 plane.
+	 *
 	 * @param view the extrinsic camera (view) parameters
 	 * @param P a point in 3D world coordinates (Z = 0)
 	 * @return the 2D ideal projection
@@ -134,11 +139,10 @@ public class Camera {
 		double[] XY0 = {P.getX(), P.getY(), 0};
 		return projectNormalized(view, XY0);
 	}
-	
+
 	/**
-	 * Projects the given 3D point to ideal projection coordinates
-	 * for the provided extrinsic view parameters.
-	 * 
+	 * Projects the given 3D point to ideal projection coordinates for the provided extrinsic view parameters.
+	 *
 	 * @param view the extrinsic camera (view) parameters
 	 * @param XYZ a point in 3D world coordinates
 	 * @return the 2D ideal projection
@@ -155,9 +159,10 @@ public class Camera {
 	public double warp(double r) {
 		return r * (1 + D(r));
 	}
-	
+
 	/**
 	 * Applies radial distortion to a point in the ideal 2D projection.
+	 *
 	 * @param xy a 2D point in the ideal projection
 	 * @return the lens-distorted position in the ideal projection
 	 */
@@ -168,14 +173,13 @@ public class Camera {
 		double d = (1 + D(r));
 		return new double[] {d * x, d * y};
 	}
-	
+
 	/**
-	 * Inverse radial distortion function. Finds the original
-	 * (undistorted) radius r from the distorted radius R, both
-	 * measured from the center = (0,0) of the ideal projection.
-	 * Finds r as the root of the polynomial
-	 * p(r) = - R + r + k0 * r^3 + k1 * r^5,
+	 * Inverse radial distortion function. Finds the original (undistorted) radius r from the distorted radius R, both
+	 * measured from the center = (0,0) of the ideal projection. Finds r as the root of the polynomial
+	 * <pre>p(r) = - R + r + k0 * r^3 + k1 * r^5,</pre>
 	 * where R is constant, by using a Newton-Raphson solver.
+	 *
 	 * @param R the distorted radius
 	 * @return the undistorted radius
 	 */
@@ -191,9 +195,10 @@ public class Camera {
 //		System.out.format("** solver iterations = %d\n", solver.getEvaluations());
 		return r;
 	}
-	
+
 	/**
 	 * Applies inverse radial distortion to a given point in the ideal image plane.
+	 *
 	 * @param xyd a distorted 2D point in the ideal image plane
 	 * @return the undistorted point
 	 */
@@ -205,12 +210,14 @@ public class Camera {
 		final double s = r / R;
 		return new double[] {s * xd, s * yd};
 	}
-	
+
 
 	/**
-	 * Radial distortion function, to be applied in the form r' = r * (1 + D(r))
-	 * to points in the ideal projection plane.
-	 * Distortion coefficients k0, k1 are a property of the enclosing {@link Camera}.
+	 * Radial distortion function, to be applied in the form
+	 * <pre>r' = r * (1 + D(r))</pre>
+	 * to points in the ideal projection plane. Distortion coefficients k0, k1 are a property of the enclosing
+	 * {@link Camera}.
+	 *
 	 * @param r the original radius of a point in the ideal projection plane
 	 * @return the pos/neg deviation for the given radius
 	 */
@@ -220,11 +227,11 @@ public class Camera {
 		final double r2 = r * r;
 		return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
 	}
-	
-	
+
+
 	/**
-	 * Maps from the ideal projection plane to sensor coordinates,
-	 * using the camera's intrinsic parameters.
+	 * Maps from the ideal projection plane to sensor coordinates, using the camera's intrinsic parameters.
+	 *
 	 * @param xyd a 2D point on the ideal projection plane
 	 * @return the resulting 2D sensor coordinate
 	 */
@@ -237,10 +244,10 @@ public class Camera {
 	}
 	
 	// -------------------------------------------------------------------
-	
+
 	/**
-	 * Returns the camera's inner parameters as a vector 
-	 * (alpha, beta, gamma, uc, vc, k0, k1).
+	 * Returns the camera's inner parameters as a vector (alpha, beta, gamma, uc, vc, k0, k1).
+	 *
 	 * @return the camera's inner parameters
 	 */
 	public double[] getParameterVector() {
@@ -250,6 +257,7 @@ public class Camera {
 
 	/**
 	 * Returns the camera's alpha value.
+	 *
 	 * @return alpha
 	 */
 	public double getAlpha() {
@@ -258,6 +266,7 @@ public class Camera {
 
 	/**
 	 * Returns the camera's beta value.
+	 *
 	 * @return beta
 	 */
 	public double getBeta() {
@@ -266,6 +275,7 @@ public class Camera {
 
 	/**
 	 * Returns the camera's gamma value.
+	 *
 	 * @return gamma
 	 */
 	public double getGamma() {
@@ -274,6 +284,7 @@ public class Camera {
 
 	/**
 	 * Returns the camera's uc value.
+	 *
 	 * @return uc
 	 */
 	public double getUc() {
@@ -282,6 +293,7 @@ public class Camera {
 
 	/**
 	 * Returns the camera's vc value.
+	 *
 	 * @return vc
 	 */
 	public double getVc() {
@@ -290,32 +302,31 @@ public class Camera {
 
 	/**
 	 * Returns the camera's lens distortion coefficients.
+	 *
 	 * @return the vector of lens distortion coefficients
 	 */
 	public double[] getK() {
 		return K;
 	}
-	
+
 	/**
 	 * Returns a copy of the camera's inner transformation matrix with contents
-	 * <pre> 
+	 * <pre>
 	 *    alpha  gamma  uc
-	 *        0   beta  vc 
+	 *        0   beta  vc
 	 * </pre>
-	 * 
+	 *
 	 * @return the camara's inner transformation matrix (2 x 3)
 	 */
 	public RealMatrix getA() {
 		return MatrixUtils.createRealMatrix(A);
 	}
-	
-	
+
+
 	/**
-	 * Returns the inverse of the camera intrinsic matrix A
-	 * as a 3x3 matrix (without the last row {0,0,1}).
-	 * This version uses closed form matrix inversion.
-	 * Used for rectifying images (i.e., removing lens distortion).
-	 * 
+	 * Returns the inverse of the camera intrinsic matrix A as a 3x3 matrix (without the last row {0,0,1}). This version
+	 * uses closed form matrix inversion. Used for rectifying images (i.e., removing lens distortion).
+	 *
 	 * @return the inverse of the camera intrinsic matrix A
 	 */
 	public RealMatrix getInverseA() {
@@ -329,9 +340,10 @@ public class Camera {
 			{0,         1.0/beta,            -vc/beta}};
 		return MatrixUtils.createRealMatrix(Ai);
 	}
-	
+
 	/**
 	 * Returns the homography for the given view as a 3 x 3 matrix.
+	 *
 	 * @param view the extrinsic view parameters
 	 * @return the homography matrix
 	 */

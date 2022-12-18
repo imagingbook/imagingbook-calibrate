@@ -1,8 +1,6 @@
 package imagingbook.calibration.zhang;
 
-import java.io.StringWriter;
-import java.util.Arrays;
-
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -10,12 +8,13 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
-import imagingbook.common.math.Matrix;
+import java.io.StringWriter;
+import java.util.Arrays;
 
 /**
  * Instances of this class represent extrinsic camera (view) parameters.
- * @author WB
  *
+ * @author WB
  */
 public class ViewTransform {
 	
@@ -115,11 +114,11 @@ public class ViewTransform {
 	}
 	
 	// ----------------------------------------------------------------------------------
-	
+
 	/**
-	 * Moves point XYZ from 3D world coordinates to 3D camera coordinates,
-	 * as specified by the transformations of this view.
-	 * No projection is involved.
+	 * Moves point XYZ from 3D world coordinates to 3D camera coordinates, as specified by the transformations of this
+	 * view. No projection is involved.
+	 *
 	 * @param XYZ a 3D (world) point
 	 * @return the given world point mapped to 3D camera coordinates
 	 */

@@ -9,14 +9,13 @@
 package imagingbook.calibration.zhang.util;
 
 import imagingbook.common.math.Matrix;
-import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class MathUtilTest {
     // TODO: check more examples!

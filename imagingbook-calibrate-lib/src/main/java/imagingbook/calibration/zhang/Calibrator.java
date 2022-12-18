@@ -1,14 +1,13 @@
 package imagingbook.calibration.zhang;
 
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.math3.linear.RealMatrix;
-
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.util.ParameterBundle;
+import org.apache.commons.math3.linear.RealMatrix;
+
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -28,10 +27,9 @@ import imagingbook.common.util.ParameterBundle;
  * @version 2018/12/29
  */
 public class Calibrator {
-	
+
 	/**
-	 * Inner class representing a set of parameters for instantiating
-	 * new objects of type of {@link Calibrator}. 
+	 * Inner class representing a set of parameters for instantiating new objects of type of {@link Calibrator}.
 	 * Parameters can be specified by setting the associated public fields.
 	 */
 	public static class Parameters implements ParameterBundle<Calibrator> {
@@ -57,29 +55,32 @@ public class Calibrator {
 	private ViewTransform[] initViews, finalViews;
 	
 	// ------- constructors ------------------------------
-	
+
 	/**
-	 * The only constructor. 
+	 * The only constructor.
+	 *
 	 * @param params a parameter object (default parameters are used if {@code null} is passed)
-	 * @param model a sequence of 2D points specifying the x/y coordinates of 
-	 * 			the planar calibration pattern (assuming zero z-coordinates)
+	 * @param model a sequence of 2D points specifying the x/y coordinates of the planar calibration pattern (assuming
+	 * zero z-coordinates)
 	 */
 	public Calibrator(Parameters params, Point2D[] model) {
 		this.params = (params != null) ? params : new Parameters();
 		this.modelPts = model;
 		this.imgPntSet = new ArrayList<>();
 	}
-	
+
 	/**
 	 * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
+	 *
 	 * @param pts a sequence of 2D image points
 	 */
 	public void addView(Point2D[] pts) {
 		imgPntSet.add(pts);
 	}
-	
+
 	/**
 	 * Performs the actual camera calibration based on the provided sequence of views.
+	 *
 	 * @return the estimated camera intrinsics as a {@link Camera} object
 	 */
 	public Camera calibrate() {
@@ -132,10 +133,10 @@ public class Calibrator {
 			System.out.println(Matrix.toString(H.getData()));
 		}
 	}
-	
+
 	/**
-	 * Calculates the squared projection error for a single view, associated
-	 * with a set of observed image points.
+	 * Calculates the squared projection error for a single view, associated with a set of observed image points.
+	 *
 	 * @param cam a camera model (camera intrinsics)
 	 * @param view a view transformation (camera extrinsics)
 	 * @param observed a set of observed image points
@@ -152,10 +153,11 @@ public class Calibrator {
 		}
     	return sqError;
     }
-    
+
 	/**
-	 * Calculates the squared projection error for a sequence of views, associated
-	 * with a sequence of observed image point sets.
+	 * Calculates the squared projection error for a sequence of views, associated with a sequence of observed image
+	 * point sets.
+	 *
 	 * @param cam a camera model (camera intrinsics)
 	 * @param views a sequence of view transformations (camera extrinsics)
 	 * @param observed a sequence of sets of observed image points
@@ -170,37 +172,39 @@ public class Calibrator {
     }
     
     // ----------------------------------------------------------------------
-    
-    /**
-     * Returns the initial camera model (no lens distortion).
-     * @return the initial camera model
-     */
+
+	/**
+	 * Returns the initial camera model (no lens distortion).
+	 *
+	 * @return the initial camera model
+	 */
     public Camera getInitialCamera() {
     	return initCam;
     }
-    
-    /**
-     * Returns the final camera model (including lens distortion).
-     * @return the final camera model
-     */
+
+	/**
+	 * Returns the final camera model (including lens distortion).
+	 *
+	 * @return the final camera model
+	 */
     public Camera getFinalCamera() {
     	return finalCam;
     }
-    
-    /**
-     * Returns the sequence of initial camera views (extrinsics, no 
-     * lens distortion).
-     * @return the sequence of initial camera views
-     */
+
+	/**
+	 * Returns the sequence of initial camera views (extrinsics, no lens distortion).
+	 *
+	 * @return the sequence of initial camera views
+	 */
     public ViewTransform[] getInitialViews() {
     	return initViews;
     }
-    
-    /**
-     * Returns the sequence of final camera views (extrinsics, including 
-     * lens distortion).
-     * @return the sequence of final camera views
-     */
+
+	/**
+	 * Returns the sequence of final camera views (extrinsics, including lens distortion).
+	 *
+	 * @return the sequence of final camera views
+	 */
     public ViewTransform[] getFinalViews() {
     	return finalViews;
     }

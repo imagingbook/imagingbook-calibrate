@@ -1,25 +1,24 @@
 package imagingbook.calibration.zhang;
 
+import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math3.linear.CholeskyDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.common.math.Matrix;
-
 /**
- * This class defines methods for estimating the intrinsic camera parameters
- * from multiple homographies. Alternative versions are provided (only one is actually used though).
- * 
- * @author W. Burger
+ * This class defines methods for estimating the intrinsic camera parameters from multiple homographies. Alternative
+ * versions are provided (only one is actually used though).
  *
+ * @author W. Burger
  */
 public class CameraIntrinsicsEstimator {
-	
+
 
 	/**
-	 * Version 1 (Zhang's original closed form solution).
-	 * Estimates the the intrinsic camera parameters from multiple homographies.
+	 * Version 1 (Zhang's original closed form solution). Estimates the the intrinsic camera parameters from multiple
+	 * homographies.
+	 *
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */
@@ -58,10 +57,11 @@ public class CameraIntrinsicsEstimator {
 
 		return A;
 	}
-	
+
 	/**
-	 * Version 2 (Zhang's corrected closed form solution).
-	 * Estimates the the intrinsic camera parameters from multiple homographies.
+	 * Version 2 (Zhang's corrected closed form solution). Estimates the the intrinsic camera parameters from multiple
+	 * homographies.
+	 *
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */
@@ -98,10 +98,10 @@ public class CameraIntrinsicsEstimator {
 
 		return A;
 	}
-	
+
 	/**
-	 * Version 3 (WB's closed form solution).
-	 * Estimates the the intrinsic camera parameters from multiple homographies.
+	 * Version 3 (WB's closed form solution). Estimates the the intrinsic camera parameters from multiple homographies.
+	 *
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */
@@ -145,12 +145,12 @@ public class CameraIntrinsicsEstimator {
 
 		return A;
 	}
-	
+
 
 	/**
-	 * Final version by WB (this version is used by default).
-	 * Estimates the intrinsic camera parameters from multiple homographies
-	 * using a Cholesky decomposition.
+	 * Final version by WB (this version is used by default). Estimates the intrinsic camera parameters from multiple
+	 * homographies using a Cholesky decomposition.
+	 *
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */

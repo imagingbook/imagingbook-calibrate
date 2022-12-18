@@ -1,10 +1,5 @@
 package Calibration_Demos;
 
-import java.awt.Color;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.List;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
@@ -20,22 +15,21 @@ import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
 
+import java.awt.Color;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
- * This plugin projects opens an image stack containing the 5 Zhang
- * test images, then outlines the positions of the observed image 
- * points and finally projects the points of the calibration model
- * using the calculated intrinsic camera parameters (same for all
- * views) and the extrinsic parameters calculated for each view.
- * All data are part of Zhang's demo data set that comes with the
- * EasyCalib program. NO CALIBRATION is performed here!
- * 
- * Graphic elements are drawn as non-destructive vector overlays:
- * BLUE circles: observed corner points (used for calibration).
- * RED markers: projected model points (to validate parameters).
- * - LOOK CLOSELY / ZOOM IN! 
- * The complete stack with overlay can be saved as a TIFF file. 
- * 
+ * This plugin projects opens an image stack containing the 5 Zhang test images, then outlines the positions of the
+ * observed image points and finally projects the points of the calibration model using the calculated intrinsic camera
+ * parameters (same for all views) and the extrinsic parameters calculated for each view. All data are part of Zhang's
+ * demo data set that comes with the EasyCalib program. NO CALIBRATION is performed here!
+ * Graphic elements are drawn as non-destructive vector overlays: BLUE circles: observed corner points (used for
+ * calibration). RED markers: projected model points (to validate parameters). - LOOK CLOSELY / ZOOM IN! The complete
+ * stack with overlay can be saved as a TIFF file.
+ *
  * @author W. Burger
  * @version 2022/04/14
  */

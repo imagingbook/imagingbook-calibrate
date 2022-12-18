@@ -1,8 +1,5 @@
 package imagingbook.calibration.zhang;
 
-import java.awt.geom.Point2D;
-import java.util.Arrays;
-
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
@@ -12,10 +9,13 @@ import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunctio
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
+import java.awt.geom.Point2D;
+import java.util.Arrays;
+
 /**
- * Abstract super-class for non-linear optimizers used for
- * final, overall optimization of calibration parameters.
- * The actual optimization is performed by the sub-classes.
+ * Abstract super-class for non-linear optimizers used for final, overall optimization of calibration parameters. The
+ * actual optimization is performed by the sub-classes.
+ *
  * @author WB
  */
 public abstract class NonlinearOptimizer {
@@ -25,10 +25,10 @@ public abstract class NonlinearOptimizer {
 
 	protected final Point2D[] modelPts;
 	protected final Point2D[][] obsPts;
-	protected final int M;		// number of views
-	protected final int N; 		// number of model points
-	protected int camParLength;		// number of camera parameters (7)
-	protected int viewParLength; 	// number of view parameters (6)
+	protected final int M;        // number of views
+	protected final int N;        // number of model points
+	protected int camParLength;        // number of camera parameters (7)
+	protected int viewParLength;    // number of view parameters (6)
 
 	private Camera initCam = null;
 	private Camera finalCamera = null;
@@ -43,8 +43,8 @@ public abstract class NonlinearOptimizer {
 	}
 
 	/**
-	 * Performs Levenberg-Marquardt non-linear optimization to get better
-	 * estimates of the parameters.
+	 * Performs Levenberg-Marquardt non-linear optimization to get better estimates of the parameters.
+	 *
 	 * @param initCam the initial camera parameters
 	 * @param initViews the initial view transforms
 	 */
@@ -59,45 +59,47 @@ public abstract class NonlinearOptimizer {
 
 		RealVector start = makeInitialParameters();
 		RealVector observed = makeObservedVector();
-		
+
 		MultivariateJacobianFunction model = LeastSquaresFactory.model(V, J);
 		LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
 		Optimum result = lm.optimize(LeastSquaresFactory.create(
 				model,
-				observed, 
-				start, 
-				null, 
-				maxEvaluations, 
+				observed,
+				start,
+				null,
+				maxEvaluations,
 				maxIterations));
-		
+
 //		System.out.println(NonlinearOptimizer.class.getSimpleName() + "; iterations = " + result.getIterations());
 		updateEstimates(result.getPoint());
 	}
 
 	/**
 	 * To be implemented by subclasses.
+	 *
 	 * @return a vector value function
 	 */
 	abstract MultivariateVectorFunction makeValueFun();
-	
+
 	/**
 	 * To be implemented by subclasses.
+	 *
 	 * @return a Jacobian function
 	 */
 	abstract MultivariateMatrixFunction makeJacobianFun();
-	
-	
+
+
 	/**
 	 * Common value function for optimizers defined in sub-classes.
 	 */
 	protected class ValueFun implements MultivariateVectorFunction {
-		
+
 		@Override
 		public double[] value(double[] params) {
 			final double[] a = Arrays.copyOfRange(params, 0, camParLength);
 			final Camera cam = new Camera(a);
 			final double[] Y = new double[2 * M * N];
-			int c = 0; 
+			int c = 0;
 			for (int m = 0; m < M; m++) {
 				int q = camParLength + m * viewParLength;
 				double[] w = Arrays.copyOfRange(params, q, q + viewParLength);
@@ -134,11 +136,11 @@ public abstract class NonlinearOptimizer {
 
 
 	/**
-	 * Stack the observed image coordinates of the calibration pattern points into
-	 * a vector.
+	 * Stack the observed image coordinates of the calibration pattern points into a vector.
+	 *
 	 * @return the observed vector
 	 */
-	protected RealVector makeObservedVector()	{
+	protected RealVector makeObservedVector() {
 		double[] obs = new double[M * N * 2];
 		for (int i = 0, k = 0; i < M; i++) {
 			for (int j = 0; j < N; j++, k++) {
@@ -147,7 +149,7 @@ public abstract class NonlinearOptimizer {
 			}
 		}
 		// obs = [u_{0,0}, v_{0,0}, u_{0,1}, v_{0,1}, ..., u_{M-1,N-1}, v_{M-1,N-1}]
-		return new ArrayRealVector(obs); 
+		return new ArrayRealVector(obs);
 	}
 
 	private void updateEstimates(RealVector parameters) {
@@ -163,9 +165,10 @@ public abstract class NonlinearOptimizer {
 			start = start + w.length;
 		}
 	}
-	
+
 	/**
 	 * Returns the optimized camera parameters.
+	 *
 	 * @return the optimized camera parameters
 	 */
 	protected Camera getFinalCamera() {
@@ -174,10 +177,11 @@ public abstract class NonlinearOptimizer {
 
 	/**
 	 * Returns the optimized view parameters.
+	 *
 	 * @return the optimized view parameters
 	 */
 	protected ViewTransform[] getFinalViews() {
 		return finalViews;
 	}
-	
+
 }

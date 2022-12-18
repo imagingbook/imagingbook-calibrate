@@ -1,10 +1,8 @@
 package imagingbook.calibration.data.zhang;
 
-import static org.junit.Assert.assertNotNull;
-
 import org.junit.Test;
 
-import imagingbook.core.resource.ImageResource;
+import static org.junit.Assert.assertNotNull;
 
 public class CalibrationImageTest {
 

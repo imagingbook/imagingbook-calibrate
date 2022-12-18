@@ -1,7 +1,5 @@
 package imagingbook.calibration.zhang;
 
-import java.awt.geom.Point2D;
-
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -9,17 +7,19 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
+import java.awt.geom.Point2D;
+
 
 /**
  * This class defines methods for estimating the radial lens distortion parameters
- * 
- * @author W. Burger
  *
+ * @author W. Burger
  */
 public class RadialDistortionEstimator {
-	
+
 	/**
 	 * Estimates the lens distortion from multiple views, starting from an initial (linear) camera model.
+	 *
 	 * @param cam the initial (linear) camera model
 	 * @param views a sequence of extrinsic view transformations
 	 * @param modelPts the set of 2D model points (on the planar calibration target)

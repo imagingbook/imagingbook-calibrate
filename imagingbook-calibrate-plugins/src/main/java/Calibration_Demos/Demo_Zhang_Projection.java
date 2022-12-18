@@ -1,8 +1,5 @@
 package Calibration_Demos;
 
-import java.awt.Color;
-import java.awt.geom.Point2D;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -17,14 +14,15 @@ import imagingbook.calibration.zhang.util.GridPainter;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
 
+import java.awt.Color;
+import java.awt.geom.Point2D;
+
 
 /**
- * This plugin projects opens an image stack containing the 5 Zhang
- * test images and projects the model points into each view,
- * using the (known) camera and view parameters.
- * All data are part of Zhang's demo data set that comes with the
+ * This plugin projects opens an image stack containing the 5 Zhang test images and projects the model points into each
+ * view, using the (known) camera and view parameters. All data are part of Zhang's demo data set that comes with the
  * EasyCalib program. NO CALIBRATION is performed here!
- * 
+ *
  * @author W. Burger
  * @version 2022/04/14
  */

@@ -1,10 +1,6 @@
 package imagingbook.calibration.zhang.util;
 
-import java.awt.geom.Point2D;
-import java.util.Locale;
-
 import imagingbook.common.math.Matrix;
-import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math3.complex.Quaternion;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -14,10 +10,13 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 
+import java.awt.geom.Point2D;
+import java.util.Locale;
+
 /**
  * Utility math methods used for camera calibration.
- * @author WB
  *
+ * @author WB
  */
 public class MathUtil {
 	
@@ -254,20 +253,18 @@ public class MathUtil {
 
 	// ---------------------------------------------------------------
 	
-	/**
-	 * For testing only.
-	 * @param args ignored
-	 */
-	public static void main (String[] args) {
-		//double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}};
-		double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}, {-3, 7, 2}};
-		{
-			RealMatrix AM = MatrixUtils.createRealMatrix(A);
-			RealVector x = solveHomogeneousSystem(AM);
-			System.out.println("Solution x = " + x.toString());
-		}
-		// Solution x = {0.649964237; -0.7338780288; 0.1974070146}
-	}
-	
-
+	// /**
+	//  * For testing only.
+	//  * @param args ignored
+	//  */
+	// public static void main (String[] args) {
+	// 	//double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}};
+	// 	double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}, {-3, 7, 2}};
+	// 	{
+	// 		RealMatrix AM = MatrixUtils.createRealMatrix(A);
+	// 		RealVector x = solveHomogeneousSystem(AM);
+	// 		System.out.println("Solution x = " + x.toString());
+	// 	}
+	// 	// Solution x = {0.649964237; -0.7338780288; 0.1974070146}
+	// }
 }

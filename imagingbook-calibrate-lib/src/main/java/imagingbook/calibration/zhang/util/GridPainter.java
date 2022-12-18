@@ -7,7 +7,8 @@ import java.awt.geom.Point2D;
 
 /**
  * Helper class for drawing projections of the calibration target.
- * @author W. Burger
+ *
+ * @author WB
  *
  */
 public class GridPainter {

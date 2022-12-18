@@ -8,7 +8,6 @@
  */
 package imagingbook.calibration.zhang;
 
-import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -19,7 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class HomographyEstimatorTest {
 

@@ -1,18 +1,17 @@
 package imagingbook.calibration.zhang.util;
 
+import imagingbook.common.math.Matrix;
+import imagingbook.common.math.PrintPrecision;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+
 import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Matrix.add;
 import static imagingbook.common.math.Matrix.idMatrix;
 import static imagingbook.common.math.Matrix.multiply;
 import static imagingbook.common.math.Matrix.normL2;
 import static imagingbook.common.math.Matrix.zeroVector;
-
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-
-import imagingbook.common.math.Matrix;
-import imagingbook.common.math.PrintPrecision;
 
 public class RotationTests {
 
@@ -50,7 +49,7 @@ public class RotationTests {
 		System.out.println();
 	}
 	
-	static double[] makeRodriguesVector(double[] axis, double theta) {
+	private static double[] makeRodriguesVector(double[] axis, double theta) {
 		double s = normL2(axis);
 		return multiply(theta / s, axis);
 	}
@@ -62,7 +61,7 @@ public class RotationTests {
 	 * @param rv Rodrigues rotation vector
 	 * @return
 	 */
-	static double[][] toRotationMatrix1(double[] rv) {
+	private static double[][] toRotationMatrix1(double[] rv) {
 		double theta = normL2(rv);
 		double rx = rv[0] / theta;
 		double ry = rv[1] / theta;
@@ -89,7 +88,7 @@ public class RotationTests {
 	 * @param rv
 	 * @return
 	 */
-	static double[][] toRotationMatrix2(double[] rv) {
+	private static double[][] toRotationMatrix2(double[] rv) {
 		double angle = normL2(rv);
 		Vector3D axis = new Vector3D(rv);
 		Rotation rotation = new Rotation(axis, angle, RotationConvention.VECTOR_OPERATOR);
@@ -101,13 +100,13 @@ public class RotationTests {
 	// ++++++++++++++   Rotation matrix --> Rodrigues vector +++++++++++++++++++
 	
 	/**
-	 * from "`Vector Representation of Rotations"', Carlo Tomasi
+	 * from "Vector Representation of Rotations", Carlo Tomasi
 	 * https://www.cs.duke.edu/courses/fall13/compsci527/notes/rodrigues.pdf
 	 * Matlab code: http://www.cs.duke.edu/courses/fall13/compsci527/notes/rodrigues.m
 	 * @param R
 	 * @return
 	 */
-	static double[] toRodriguesVector1(double[][] R) {
+	private static double[] toRodriguesVector1(double[][] R) {
 //		final double eps = EPSILON_DOUBLE;
 		
 		double[] p = {
@@ -184,21 +183,17 @@ public class RotationTests {
 	}
 	
 	// http://math.stackexchange.com/questions/83874/efficient-and-accurate-numerical-implementation-of-the-inverse-rodrigues-rotatio
-	
-	
 	/**
 	 * Correct!
 	 * @param R
 	 * @return
 	 */
-	static double[] toRodriguesVector2(double[][] R) {
+	private static double[] toRodriguesVector2(double[][] R) {
 		Rotation rot = new Rotation(R, 0.01);
 		double angle = rot.getAngle();
 		Vector3D axis = rot.getAxis( RotationConvention.VECTOR_OPERATOR);	
 		double[] rv = axis.scalarMultiply(angle/axis.getNorm()).toArray();
 		return rv;
 	}
-	
-
 
 }
