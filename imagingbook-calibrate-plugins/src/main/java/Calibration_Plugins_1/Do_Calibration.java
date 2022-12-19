@@ -1,25 +1,18 @@
-package Calibration_Demos;
+package Calibration_Plugins_1;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.gui.GenericDialog;
-import ij.io.LogStream;
 import ij.plugin.PlugIn;
-import ij.process.ColorProcessor;
-import ij.process.ImageProcessor;
-import imagingbook.calibration.zhang.data.CalibrationImage;
-import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.calibration.zhang.Calibrator;
 import imagingbook.calibration.zhang.Calibrator.Parameters;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
-import imagingbook.calibration.zhang.util.GridPainter;
+import imagingbook.calibration.zhang.data.CalibrationImage;
+import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.color.sets.BasicAwtColor;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
-import imagingbook.common.math.PrintPrecision;
-import imagingbook.common.util.TextUtils;
 import imagingbook.core.resource.ImageResource;
 
 import java.awt.Shape;
@@ -29,17 +22,19 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import static imagingbook.common.ij.DialogUtils.splitLines;
+
 /**
- * This plugin performs Zhang's camera calibration on the pre-calculated corner point data for the M given target views. Based
- * on the estimated intrinsic and extrinsic (view) parameters, the corner points of the 3D target model are then
+ * This plugin performs Zhang's camera calibration on the pre-calculated corner point data for the M given target views.
+ * Based on the estimated intrinsic and extrinsic (view) parameters, the corner points of the 3D target model are then
  * projected onto the corresponding calibration images (a stack). All rendering is done by pixel drawing (no graphic
  * overlays).
  *
  * @author W. Burger
  * @version 2022/04/14
  */
-public class Do_Zhang_Calibration implements PlugIn {
-	private static boolean DEBUG = true;
+public class Do_Calibration implements PlugIn {
+
 	private static ImageResource resource = CalibrationImage.CalibImageStack;
 
 	private static boolean ListCameraIntrinsics = true;
@@ -81,7 +76,7 @@ public class Do_Zhang_Calibration implements PlugIn {
 		params.normalizePointCoordinates = true;
 		params.lensDistortionKoeffients = 2;
 		params.useNumericJacobian = true;
-		params.debug = DEBUG;
+		params.debug = false;
 
 		Calibrator zcalib = new Calibrator(params, modelPoints);
 		for (int i = 0; i < M; i++) {
@@ -180,7 +175,7 @@ public class Do_Zhang_Calibration implements PlugIn {
 	private boolean runDialog() {
 		GenericDialog gd = new GenericDialog(this.getClass().getSimpleName());
 		gd.setInsets(0, 0, 0);
-		gd.addMessage(TextUtils.splitLines(40,
+		gd.addMessage(splitLines(40,
 				"This plugin performs calibration on the supplied test images.",
 				"Note that pre-calculated image corner coordinates are used, i.e.,",
 				"no corner detection is performed."));

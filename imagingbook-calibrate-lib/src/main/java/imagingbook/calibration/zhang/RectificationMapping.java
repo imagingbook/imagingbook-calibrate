@@ -6,13 +6,12 @@ import imagingbook.common.geometry.basic.Pnt2d.PntDouble;
 import imagingbook.common.geometry.mappings.Mapping2D;
 import org.apache.commons.math3.linear.RealMatrix;
 
-
 /**
  * <p>
- * This class represents a special geometric mapping for  rectifying (i.e., removing the lens distortion from) an
- * image, given the associated camera parameters. The
- * transformation maps any position {@code x'} in the rectified image to the corresponding position {@code x} in the
- * original (distorted) image. The mapping is implicitly inverted, i.e., maps target to source image coordinates.
+ * This class represents a special geometric mapping for  rectifying (i.e., removing the lens distortion from) an image,
+ * given the associated camera parameters. The transformation maps any position {@code x'} in the rectified image to the
+ * corresponding position {@code x} in the original (distorted) image. The mapping is implicitly inverted, i.e., maps
+ * target to source image coordinates.
  * </p>
  * <p>
  * Typically usage (by target-to-source-mapping):
@@ -43,9 +42,5 @@ public class RectificationMapping implements Mapping2D {
 		// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
 		return PntDouble.from(cam.mapToSensorPlane(xyd));
 	}
-	
-//	@Override
-//	public double[] applyTo(double x, double y) {
-//		return this.applyTo(new double[] {x, y});
-//	}
+
 }

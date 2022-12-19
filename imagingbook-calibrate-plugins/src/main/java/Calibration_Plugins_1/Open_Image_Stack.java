@@ -1,4 +1,4 @@
-package Calibration_Demos;
+package Calibration_Plugins_1;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -13,7 +13,7 @@ import imagingbook.core.resource.ImageResource;
  * @author WB
  * @version 2021/08/22
  */
-public class Open_Test_Image_Stack implements PlugIn {
+public class Open_Image_Stack implements PlugIn {
 	
 	static ImageResource resource = CalibrationImage.CalibImageStack;
 
@@ -24,10 +24,10 @@ public class Open_Test_Image_Stack implements PlugIn {
 			return;
 		}
 		
-		if (resource.isInsideJar())
-			IJ.log("Loading resources from JAR file: " + resource.getURL());
-		else
-			IJ.log("Loading resources from regular file: " + resource.getURL());
+		// if (resource.isInsideJar())
+		// 	IJ.log("Loading resources from JAR file: " + resource.getURL());
+		// else
+		// 	IJ.log("Loading resources from regular file: " + resource.getURL());
 		
 		ImagePlus im = resource.getImagePlus();
 		if (im != null) {

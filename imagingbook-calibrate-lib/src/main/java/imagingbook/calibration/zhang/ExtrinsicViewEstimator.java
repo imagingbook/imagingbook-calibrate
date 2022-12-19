@@ -14,8 +14,7 @@ import org.apache.commons.math3.linear.RealVector;
  */
 public class ExtrinsicViewEstimator {
 
-	static boolean beVerbose = false;
-
+	private static boolean beVerbose = false;
 	private final RealMatrix A_inv;
 
 	/**
@@ -73,15 +72,8 @@ public class ExtrinsicViewEstimator {
 			System.out.println("Rinit = \n" + Matrix.toString(R.getData()));
 		}
 
-//		// the R matrix is probably not a real rotation matrix.  So find
-//		// the closest real rotation matrix
-//		RealMatrix R = MathUtil.approximateRotationMatrix(R);	// not needed, View takes care of this
-
-		// assemble the complete view transformation [R|T]:
-//		RealMatrix RT = MatrixUtils.createRealMatrix(3, 4);
-//		RT.setSubMatrix(R.getData(), 0, 0);
-//		RT.setColumnVector(3, t);
-
+		// the R matrix is probably not a real rotation matrix.  So find
+		// the closest real rotation matrix (ViewTransform takes care of this):
 		ViewTransform view = new ViewTransform(R, t);
 		return view;
 	}

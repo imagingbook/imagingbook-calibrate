@@ -13,7 +13,7 @@ import java.awt.geom.Point2D;
 /**
  * This class defines methods for estimating the radial lens distortion parameters
  *
- * @author W. Burger
+ * @author WB
  */
 public class RadialDistortionEstimator {
 

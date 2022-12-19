@@ -1,4 +1,4 @@
-package Calibration_Demos;
+package Calibration_Plugins_1;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -11,15 +11,16 @@ import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.color.sets.BasicAwtColor;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
-import imagingbook.common.util.TextUtils;
 import imagingbook.core.resource.ImageResource;
 
-import java.awt.*;
+import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+
+import static imagingbook.common.ij.DialogUtils.splitLines;
 
 
 /**
@@ -37,10 +38,10 @@ import java.util.List;
  * @author WB
  * @version 2022/12/19
  */
-public class Check_Zhang_Data_Projection implements PlugIn {
+public class Validate_EasyCalib_Data implements PlugIn {
 	
 	private static ImageResource resource = CalibrationImage.CalibImageStack;
-	private static BasicAwtColor ReferenceSquaresColor = BasicAwtColor.Red;
+	private static BasicAwtColor ProjectedModelColor = BasicAwtColor.Red;
 	private static BasicAwtColor CornerMarkColor = BasicAwtColor.Blue;
 	private static double CornerMarkRadius = 2.0;
 	private static double StrokeWidth  = 0.5;
@@ -70,7 +71,7 @@ public class Check_Zhang_Data_Projection implements PlugIn {
 		}
 
 		// project and draw the model's reference squares:
-		ola.setStroke(new ColoredStroke(StrokeWidth, ReferenceSquaresColor.getColor()));
+		ola.setStroke(new ColoredStroke(StrokeWidth, ProjectedModelColor.getColor()));
 		for (int i = 0; i < M; i++) {
 			int sliceNo = i + 1;
 			ola.setStackPosition(sliceNo);
@@ -132,13 +133,13 @@ public class Check_Zhang_Data_Projection implements PlugIn {
 	private boolean runDialog() {
 		GenericDialog gd = new GenericDialog(this.getClass().getSimpleName());
 		gd.setInsets(0, 0, 0);
-		gd.addMessage(TextUtils.splitLines(40,
-				"This plugin only displays the \n 5 sample view images, marks",
+		gd.addMessage(splitLines(40,
+				"This plugin only displays the 5 sample view images, marks",
 				"the (given) image corner points and projects the model's",
 				"squares using the given view and camera parameters. No",
 				"calibration is performed!"));
 
-		gd.addEnumChoice("Reference squares color", ReferenceSquaresColor);
+		gd.addEnumChoice("Reference squares color", ProjectedModelColor);
 		gd.addEnumChoice("Corner mark color", CornerMarkColor);
 		gd.addNumericField("Corner mark radius", CornerMarkRadius, 1);
 
@@ -146,7 +147,7 @@ public class Check_Zhang_Data_Projection implements PlugIn {
 		if (gd.wasCanceled())
 			return false;
 
-		ReferenceSquaresColor = gd.getNextEnumChoice(BasicAwtColor.class);
+		ProjectedModelColor = gd.getNextEnumChoice(BasicAwtColor.class);
 		CornerMarkColor = gd.getNextEnumChoice(BasicAwtColor.class);
 		CornerMarkRadius = gd.getNextNumber();
 		return true;

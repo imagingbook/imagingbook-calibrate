@@ -19,7 +19,6 @@ import java.util.Arrays;
 public class ViewTransform {
 	
 	private static final double OrthogonalityThreshold = 0.01;
-	
 	private final Rotation rotation;
 	private final double[] translation;
 	
@@ -51,14 +50,6 @@ public class ViewTransform {
 	
 	public ViewTransform(RealMatrix R, RealVector t) {	// R is of size 3 x 3 , t of size 3 x 1
 		this(new Rotation(R.getData(), OrthogonalityThreshold), t.toArray());
-//		if (R.getRowDimension() != 3 || R.getColumnDimension() != 3) {
-//			throw new IllegalArgumentException("Rotation matrix must be 3 x 3");
-//		}
-//		if (t.getDimension() != 3) {
-//			throw new IllegalArgumentException("Translation vector must be of dimension 3");
-//		}
-//		rotation = new Rotation(R.getData(), OrthogonalityThreshold);
-//		translation = t.toArray();
 	}
 	
 	public ViewTransform(double[] w) {
@@ -142,16 +133,5 @@ public class ViewTransform {
 		writer.append(Matrix.toString(T.toArray()));
 		return writer.toString();
 	}
-	
-	// ------------------------------------------------------------------
 
-/*	public static void main(String[] args) {
-		double[] w1 = {1.2, -0.5, 0.9, 10, 20, 30};
-		System.out.println("w1 = " + Matrix.toString(w1));
-		ViewTransform view = new ViewTransform(w1);
-		double[] w2 = view.getParameters();
-		System.out.println("w2 = " + Matrix.toString(w2));
-	}*/
-
-	
 }

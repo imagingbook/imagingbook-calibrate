@@ -1,9 +1,9 @@
-package Calibration_Demos_More;
+package Calibration_Plugins_2;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.io.LogStream;
+import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.data.CalibrationImage;
@@ -13,8 +13,11 @@ import imagingbook.calibration.zhang.InterCameraMapping;
 import imagingbook.common.geometry.mappings.Mapping2D;
 import imagingbook.common.image.ImageMapper;
 import imagingbook.common.image.interpolation.InterpolationMethod;
-import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
+
+import java.util.Locale;
+
+import static imagingbook.common.ij.DialogUtils.splitLines;
 
 
 /**
@@ -25,21 +28,13 @@ import imagingbook.core.resource.ImageResource;
  * @author W. Burger
  * @version 2021-08-22
  */
-public class Demo_Replace_Camera implements PlugIn {
+public class Replace_Camera_Demo implements PlugIn {
 
-	private static ImageResource resource = CalibrationImage.CalibImageStack;	// = "CalibImageStack.tif"
+	private static ImageResource resource = CalibrationImage.CalibImageStack;
 
 	// modified lens distortion coefficients:
-	static double k1 = -0.1;
-	static double k2 =  2.0;
-
-	static boolean BeVerbose = false;
-
-	//static final String TestImgName = "CalibImageStack.tif";
-	static {
-		LogStream.redirectSystem();
-		PrintPrecision.set(6);
-	}
+	private static double k1 = -0.1;
+	private static double k2 =  2.0;
 
 	public void run(String arg0) {
 		// open the test image (stack):	
@@ -50,16 +45,22 @@ public class Demo_Replace_Camera implements PlugIn {
 			return;
 		}
 		testIm.show();
-		String title = testIm.getShortTitle();
 
 		// get the camera intrinsics (typically by calibration):
 		Camera cameraA = ZhangData.getCameraIntrinsics();
 
-		double[] paramsA = cameraA.getParameterVector();
-		paramsA[5] = k1;
-		paramsA[6] = k2;
+		double[] cameraParameters = cameraA.getParameterVector();
+		k1 = cameraParameters[5];
+		k2 = cameraParameters[6];
 
-		Camera cameraB = new Camera(paramsA);
+		if (!runDialog()) {
+			return;
+		}
+
+		cameraParameters[5] = k1;	// change only radial distortion parameters
+		cameraParameters[6] = k2;
+
+		Camera cameraB = new Camera(cameraParameters);
 
 		// create a special geometric mapping
 		Mapping2D mapping = new InterCameraMapping(cameraA, cameraB);	// inverse, maps target to source
@@ -81,7 +82,30 @@ public class Demo_Replace_Camera implements PlugIn {
 			rectStack.addSlice("frame"+ (i + 1), target);
 		}
 
-		new ImagePlus(title+"-modfied", rectStack).show();
+		new ImagePlus(testIm.getShortTitle() + " (modfied)", rectStack).show();
+	}
+
+	// -------------------------------------------------------------------------
+
+	private boolean runDialog() {
+		GenericDialog gd = new GenericDialog(this.getClass().getSimpleName());
+		gd.setInsets(0, 0, 0);
+		gd.addMessage(splitLines(60,
+				"This plugin transforms the stack of test images by replacing",
+				"the original camera by a new camera with different parameters.",
+				"Only the radial distortion parameters (κ1, κ2) are changed.",
+				"For example, try κ1 = -0.1, κ2 = 2.0."));
+
+		gd.addNumericField("Rad. distortion param. κ1", k1, 3);
+		gd.addNumericField("Rad. distortion param. κ2", k2, 3);
+
+		gd.showDialog();
+		if (gd.wasCanceled())
+			return false;
+
+		k1 = gd.getNextNumber();
+		k2 = gd.getNextNumber();
+		return true;
 	}
 
 }

@@ -42,9 +42,4 @@ public class InterCameraMapping implements Mapping2D {
 		return PntDouble.from(camA.mapToSensorPlane(xyd));
 	}
 
-//	@Override
-//	public double[] applyTo(double x, double y) {
-//		return this.applyTo(new double[] {x, y});
-//	}
-
 }

@@ -10,10 +10,9 @@ import org.apache.commons.math3.linear.RealMatrix;
  * This class defines methods for estimating the intrinsic camera parameters from multiple homographies. Alternative
  * versions are provided (only one is actually used though).
  *
- * @author W. Burger
+ * @author WB
  */
 public class CameraIntrinsicsEstimator {
-
 
 	/**
 	 * Version 1 (Zhang's original closed form solution). Estimates the the intrinsic camera parameters from multiple

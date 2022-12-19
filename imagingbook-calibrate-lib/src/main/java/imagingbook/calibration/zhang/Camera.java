@@ -211,7 +211,6 @@ public class Camera {
 		return new double[] {s * xd, s * yd};
 	}
 
-
 	/**
 	 * Radial distortion function, to be applied in the form
 	 * <pre>r' = r * (1 + D(r))</pre>
@@ -227,7 +226,6 @@ public class Camera {
 		final double r2 = r * r;
 		return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
 	}
-
 
 	/**
 	 * Maps from the ideal projection plane to sensor coordinates, using the camera's intrinsic parameters.
@@ -429,6 +427,3 @@ public class Camera {
 //	}
 	
 }
-
-
-

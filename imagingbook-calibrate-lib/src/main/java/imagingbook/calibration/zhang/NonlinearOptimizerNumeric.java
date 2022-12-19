@@ -16,7 +16,7 @@ import java.util.Arrays;
  */
 public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	
-	protected NonlinearOptimizerNumeric(Point2D[] modelPts, Point2D[][] obsPts) {
+	NonlinearOptimizerNumeric(Point2D[] modelPts, Point2D[][] obsPts) {
 		super(modelPts, obsPts);
 	}
 	

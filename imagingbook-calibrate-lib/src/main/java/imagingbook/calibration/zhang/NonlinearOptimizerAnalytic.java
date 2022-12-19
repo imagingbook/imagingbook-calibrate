@@ -21,7 +21,7 @@ import static java.lang.Math.sqrt;
  */
 public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 
-	protected NonlinearOptimizerAnalytic(Point2D[] modelPts, Point2D[][] obsPts) {
+	NonlinearOptimizerAnalytic(Point2D[] modelPts, Point2D[][] obsPts) {
 		super(modelPts, obsPts);
 	}
 

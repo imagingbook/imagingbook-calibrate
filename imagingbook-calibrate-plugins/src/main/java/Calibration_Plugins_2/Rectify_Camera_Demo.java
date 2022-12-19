@@ -1,9 +1,8 @@
-package Calibration_Demos_More;
+package Calibration_Plugins_2;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 import imagingbook.calibration.zhang.data.CalibrationImage;
@@ -13,26 +12,19 @@ import imagingbook.calibration.zhang.RectificationMapping;
 import imagingbook.common.geometry.mappings.Mapping2D;
 import imagingbook.common.image.ImageMapper;
 import imagingbook.common.image.interpolation.InterpolationMethod;
-import imagingbook.common.math.PrintPrecision;
 import imagingbook.core.resource.ImageResource;
 
 /**
  * This plugin opens an image stack containing the 5 Zhang test images and removes the lens distortion based on the
- * calibrated camera parameters. The resulting (rectified) frames are shown in a new image stack.
+ * intrinsic camera parameters estimated by calibration. The resulting (rectified) frames are shown in a new image
+ * stack. Note that this plugin uses pre-calculated camera parameters, i.e., no calibration is performed.
  *
  * @author W. Burger
- * @version 2021-08-22
+ * @version 2022/12/19
  */
-public class Demo_Rectification implements PlugIn {
+public class Rectify_Camera_Demo implements PlugIn {
 
-	static boolean BeVerbose = false;
-
-	private static ImageResource resource = CalibrationImage.CalibImageStack;	// = "CalibImageStack.tif"
-
-	static {
-		LogStream.redirectSystem();
-		PrintPrecision.set(6);
-	}
+	private static ImageResource resource = CalibrationImage.CalibImageStack;
 
 	public void run(String arg0) {
 		// open the test image (stack):
@@ -45,28 +37,30 @@ public class Demo_Rectification implements PlugIn {
 		testIm.show();
 		String title = testIm.getShortTitle();
 
-		// get the camera intrinsics (typically by calibration):
+		// get pre-calculated camera intrinsics (typically by calibration):
 		Camera camera = ZhangData.getCameraIntrinsics();
 
 		// create a special geometric mapping
 		Mapping2D mapping = new RectificationMapping(camera);	// inverse, ie., maps target to source
 
-		// rectify the images and create a new stack:
+		// get the original (distorted) image stack:
 		ImageStack distStack = testIm.getStack();
 		final int w = distStack.getWidth();
 		final int h = distStack.getHeight();
 		final int M = distStack.getSize();
+
+		// create a new stack for the rectified images:
 		ImageStack rectStack = new ImageStack(w, h);
 		for (int i = 0; i < M; i++) {
-			IJ.showProgress(i, M);
 			ImageProcessor source = distStack.getProcessor(i + 1);
 			ImageProcessor target = source.createProcessor(w, h);
 			ImageMapper mapper = new ImageMapper(mapping, null, InterpolationMethod.Bicubic);
 			mapper.map(source, target);
-//			mapping.applyTo(source, target, InterpolationMethod.Bicubic);
-			rectStack.addSlice("frame"+ (i + 1), target);
+			String label = distStack.getSliceLabel(i + 1);
+			rectStack.addSlice(label, target);
 		}
-		new ImagePlus(title + "-rectified", rectStack).show();
+		// display the new stack:
+		new ImagePlus(title + " (rectified)", rectStack).show();
 	}
 
 }

@@ -1,7 +1,6 @@
 module imagingbook.calibrate.plugins {
-    exports Calibration_Demos;
-    exports Calibration_Demos_More;
-    exports Obsolete;
+    exports Calibration_Plugins_1;
+    exports Calibration_Plugins_2;
 
     requires ij;
     requires java.desktop;

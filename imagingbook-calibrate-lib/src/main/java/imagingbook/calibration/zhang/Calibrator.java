@@ -117,22 +117,21 @@ public class Calibrator {
 		optimizer.optimize(improvedCam, initViews);
 		finalCam = optimizer.getFinalCamera();
 		finalViews = optimizer.getFinalViews();
-
 		return finalCam;
 	}
 	
 	
 	//---------------------------------------------------------------------------
 	
-	@SuppressWarnings("unused")
-	private void printHomographies(RealMatrix[] homographies) {
-		int i = 0;
-		for (RealMatrix H : homographies) {
-			i++;
-			System.out.println("Homography " + i + ":");
-			System.out.println(Matrix.toString(H.getData()));
-		}
-	}
+	// @SuppressWarnings("unused")
+	// private void printHomographies(RealMatrix[] homographies) {
+	// 	int i = 0;
+	// 	for (RealMatrix H : homographies) {
+	// 		i++;
+	// 		System.out.println("Homography " + i + ":");
+	// 		System.out.println(Matrix.toString(H.getData()));
+	// 	}
+	// }
 
 	/**
 	 * Calculates the squared projection error for a single view, associated with a set of observed image points.

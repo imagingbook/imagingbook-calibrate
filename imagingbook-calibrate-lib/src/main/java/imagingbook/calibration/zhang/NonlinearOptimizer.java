@@ -23,19 +23,19 @@ public abstract class NonlinearOptimizer {
 	private static int maxEvaluations = 1000;
 	private static int maxIterations = 1000;
 
-	protected final Point2D[] modelPts;
-	protected final Point2D[][] obsPts;
-	protected final int M;        // number of views
-	protected final int N;        // number of model points
-	protected int camParLength;        // number of camera parameters (7)
-	protected int viewParLength;    // number of view parameters (6)
+	final Point2D[] modelPts;
+	final Point2D[][] obsPts;
+	final int M;        // number of views
+	final int N;        // number of model points
+	int camParLength;        // number of camera parameters (7)
+	int viewParLength;    // number of view parameters (6)
 
 	private Camera initCam = null;
 	private Camera finalCamera = null;
 	private ViewTransform[] initViews = null;
 	private ViewTransform[] finalViews = null;
 
-	protected NonlinearOptimizer(Point2D[] modelPts, Point2D[][] obsPts) {
+	NonlinearOptimizer(Point2D[] modelPts, Point2D[][] obsPts) {
 		this.modelPts = modelPts;
 		this.obsPts = obsPts;
 		this.M = obsPts.length;
@@ -48,7 +48,7 @@ public abstract class NonlinearOptimizer {
 	 * @param initCam the initial camera parameters
 	 * @param initViews the initial view transforms
 	 */
-	protected void optimize(Camera initCam, ViewTransform[] initViews) {
+	void optimize(Camera initCam, ViewTransform[] initViews) {
 		this.initCam = initCam;
 		this.initViews = initViews;
 		this.camParLength = initCam.getParameterVector().length;
@@ -92,7 +92,7 @@ public abstract class NonlinearOptimizer {
 	/**
 	 * Common value function for optimizers defined in sub-classes.
 	 */
-	protected class ValueFun implements MultivariateVectorFunction {
+	class ValueFun implements MultivariateVectorFunction {
 
 		@Override
 		public double[] value(double[] params) {
@@ -140,7 +140,7 @@ public abstract class NonlinearOptimizer {
 	 *
 	 * @return the observed vector
 	 */
-	protected RealVector makeObservedVector() {
+	RealVector makeObservedVector() {
 		double[] obs = new double[M * N * 2];
 		for (int i = 0, k = 0; i < M; i++) {
 			for (int j = 0; j < N; j++, k++) {
@@ -171,7 +171,7 @@ public abstract class NonlinearOptimizer {
 	 *
 	 * @return the optimized camera parameters
 	 */
-	protected Camera getFinalCamera() {
+	Camera getFinalCamera() {
 		return finalCamera;
 	}
 
@@ -180,7 +180,7 @@ public abstract class NonlinearOptimizer {
 	 *
 	 * @return the optimized view parameters
 	 */
-	protected ViewTransform[] getFinalViews() {
+	ViewTransform[] getFinalViews() {
 		return finalViews;
 	}
 
