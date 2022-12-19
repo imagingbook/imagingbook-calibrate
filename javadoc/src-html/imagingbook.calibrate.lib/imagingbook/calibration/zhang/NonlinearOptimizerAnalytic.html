@@ -13,460 +13,456 @@
 <div class="source-container">
 <pre><span class="source-line-no">001</span><span id="line-1">package imagingbook.calibration.zhang;</span>
 <span class="source-line-no">002</span><span id="line-2"></span>
-<span class="source-line-no">003</span><span id="line-3">import static java.lang.Math.cos;</span>
-<span class="source-line-no">004</span><span id="line-4">import static java.lang.Math.pow;</span>
-<span class="source-line-no">005</span><span id="line-5">import static java.lang.Math.sin;</span>
-<span class="source-line-no">006</span><span id="line-6">import static java.lang.Math.sqrt;</span>
+<span class="source-line-no">003</span><span id="line-3">import org.apache.commons.math3.analysis.MultivariateMatrixFunction;</span>
+<span class="source-line-no">004</span><span id="line-4">import org.apache.commons.math3.analysis.MultivariateVectorFunction;</span>
+<span class="source-line-no">005</span><span id="line-5"></span>
+<span class="source-line-no">006</span><span id="line-6">import java.awt.geom.Point2D;</span>
 <span class="source-line-no">007</span><span id="line-7"></span>
-<span class="source-line-no">008</span><span id="line-8">import java.awt.geom.Point2D;</span>
-<span class="source-line-no">009</span><span id="line-9"></span>
-<span class="source-line-no">010</span><span id="line-10">import org.apache.commons.math3.analysis.MultivariateMatrixFunction;</span>
-<span class="source-line-no">011</span><span id="line-11">import org.apache.commons.math3.analysis.MultivariateVectorFunction;</span>
+<span class="source-line-no">008</span><span id="line-8">import static java.lang.Math.cos;</span>
+<span class="source-line-no">009</span><span id="line-9">import static java.lang.Math.pow;</span>
+<span class="source-line-no">010</span><span id="line-10">import static java.lang.Math.sin;</span>
+<span class="source-line-no">011</span><span id="line-11">import static java.lang.Math.sqrt;</span>
 <span class="source-line-no">012</span><span id="line-12"></span>
 <span class="source-line-no">013</span><span id="line-13"></span>
 <span class="source-line-no">014</span><span id="line-14">/**</span>
-<span class="source-line-no">015</span><span id="line-15"> * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix</span>
-<span class="source-line-no">016</span><span id="line-16"> * is calculated from analytic expressions (obtained with MatLab).</span>
-<span class="source-line-no">017</span><span id="line-17"> * </span>
-<span class="source-line-no">018</span><span id="line-18"> * Part of this implementation is based on code from OpenIMAJ by J. Hare:</span>
-<span class="source-line-no">019</span><span id="line-19"> *     Copyright (c) 2011, The University of Southampton and the individual contributors.</span>
-<span class="source-line-no">020</span><span id="line-20"> *     All rights reserved (see https://github.com/openimaj/openimaj/).</span>
-<span class="source-line-no">021</span><span id="line-21"> * </span>
-<span class="source-line-no">022</span><span id="line-22"> * @author WB</span>
-<span class="source-line-no">023</span><span id="line-23"> */</span>
-<span class="source-line-no">024</span><span id="line-24">public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {</span>
-<span class="source-line-no">025</span><span id="line-25"></span>
-<span class="source-line-no">026</span><span id="line-26">        protected NonlinearOptimizerAnalytic(Point2D[] modelPts, Point2D[][] obsPts) {</span>
-<span class="source-line-no">027</span><span id="line-27">                super(modelPts, obsPts);</span>
-<span class="source-line-no">028</span><span id="line-28">        }</span>
-<span class="source-line-no">029</span><span id="line-29"></span>
-<span class="source-line-no">030</span><span id="line-30">        @Override</span>
-<span class="source-line-no">031</span><span id="line-31">        MultivariateVectorFunction makeValueFun() {</span>
-<span class="source-line-no">032</span><span id="line-32">                return new ValueFun();</span>
-<span class="source-line-no">033</span><span id="line-33">        }</span>
-<span class="source-line-no">034</span><span id="line-34"></span>
-<span class="source-line-no">035</span><span id="line-35">        @Override</span>
-<span class="source-line-no">036</span><span id="line-36">        MultivariateMatrixFunction makeJacobianFun() {</span>
-<span class="source-line-no">037</span><span id="line-37">                return new JacobianFun();</span>
-<span class="source-line-no">038</span><span id="line-38">        }</span>
-<span class="source-line-no">039</span><span id="line-39"></span>
-<span class="source-line-no">040</span><span id="line-40">        private class JacobianFun implements MultivariateMatrixFunction {</span>
-<span class="source-line-no">041</span><span id="line-41">                /**</span>
-<span class="source-line-no">042</span><span id="line-42">                 * Calculates a "stacked" Jacobian matrix with 2MN rows and K = 7 + 6M</span>
-<span class="source-line-no">043</span><span id="line-43">                 * columns (for M views with N points each, K parameters). For example, </span>
-<span class="source-line-no">044</span><span id="line-44">                 * with M = 5 views and N = 256 points each, J is of size 2560 × 37.</span>
-<span class="source-line-no">045</span><span id="line-45">                 * Each pair of rows in the Jacobian corresponds to one point.</span>
-<span class="source-line-no">046</span><span id="line-46">                 */</span>
-<span class="source-line-no">047</span><span id="line-47">                @Override</span>
-<span class="source-line-no">048</span><span id="line-48">                public double[][] value(double[] params) {</span>
-<span class="source-line-no">049</span><span id="line-49">                        final double[][] J = new double[2 * M * N][];</span>
-<span class="source-line-no">050</span><span id="line-50">                        int r = 0;      // row</span>
-<span class="source-line-no">051</span><span id="line-51">                        for (int i = 0; i &lt; M; i++) {   // for all views</span>
-<span class="source-line-no">052</span><span id="line-52">                                for (int j = 0; j &lt; N; j++) {   // for all points</span>
-<span class="source-line-no">053</span><span id="line-53">                                        final double[][] Jij = subJacobian(i, j, params);</span>
-<span class="source-line-no">054</span><span id="line-54">                                        J[r + 0] = Jij[0];      // row 0 (x-coordinate)</span>
-<span class="source-line-no">055</span><span id="line-55">                                        J[r + 1] = Jij[1];      // row 1 (y-coordinate)</span>
-<span class="source-line-no">056</span><span id="line-56">                                        r = r + 2;</span>
-<span class="source-line-no">057</span><span id="line-57">                                }</span>
-<span class="source-line-no">058</span><span id="line-58">                        }</span>
-<span class="source-line-no">059</span><span id="line-59">//                      System.out.format("**** J = %d / %d\n", J.length, J[0].length);</span>
-<span class="source-line-no">060</span><span id="line-60">//                      System.out.println(NonlinearOptimizerAnalytic.class.getSimpleName() + </span>
-<span class="source-line-no">061</span><span id="line-61">//                              ": Jacobian inverse condition number = " + MathUtil.inverseConditionNumber(J));</span>
-<span class="source-line-no">062</span><span id="line-62">                        return J;</span>
-<span class="source-line-no">063</span><span id="line-63">                }</span>
-<span class="source-line-no">064</span><span id="line-64"></span>
-<span class="source-line-no">065</span><span id="line-65">                /**</span>
-<span class="source-line-no">066</span><span id="line-66">                 * Calculates the sub-Jacobian for view 'i' / model point 'j' with the current </span>
-<span class="source-line-no">067</span><span id="line-67">                 * parameter vector 'params' .</span>
-<span class="source-line-no">068</span><span id="line-68">                 * </span>
-<span class="source-line-no">069</span><span id="line-69">                 * @param i the point index (= 0,...,M)</span>
-<span class="source-line-no">070</span><span id="line-70">                 * @param j the view index (= 0,...,N)</span>
-<span class="source-line-no">071</span><span id="line-71">                 * @param params the current parameters (of length K)</span>
-<span class="source-line-no">072</span><span id="line-72">                 * @return the two rows (2 x K sub-matrix) of the Jacobian for the given point</span>
-<span class="source-line-no">073</span><span id="line-73">                 */</span>
-<span class="source-line-no">074</span><span id="line-74">                private double[][] subJacobian(int i, int j, double[] params) {</span>
-<span class="source-line-no">075</span><span id="line-75">                        final double[][] A0 = new double[2][camParLength + viewParLength];</span>
-<span class="source-line-no">076</span><span id="line-76"></span>
-<span class="source-line-no">077</span><span id="line-77">                        final double X = modelPts[j].getX();</span>
-<span class="source-line-no">078</span><span id="line-78">                        final double Y = modelPts[j].getY();</span>
-<span class="source-line-no">079</span><span id="line-79"></span>
-<span class="source-line-no">080</span><span id="line-80">                        final double alpha = params[0];</span>
-<span class="source-line-no">081</span><span id="line-81">                        final double beta  = params[1];</span>
-<span class="source-line-no">082</span><span id="line-82">                        final double gamma = params[2];</span>
-<span class="source-line-no">083</span><span id="line-83">                        final double uc = params[3];</span>
-<span class="source-line-no">084</span><span id="line-84">                        final double vc = params[4];</span>
-<span class="source-line-no">085</span><span id="line-85">                        final double k0 = params[5];</span>
-<span class="source-line-no">086</span><span id="line-86">                        final double k1 = params[6];</span>
-<span class="source-line-no">087</span><span id="line-87"></span>
-<span class="source-line-no">088</span><span id="line-88">                        final double wx = params[i * viewParLength + camParLength + 0];</span>
-<span class="source-line-no">089</span><span id="line-89">                        final double wy = params[i * viewParLength + camParLength + 1];</span>
-<span class="source-line-no">090</span><span id="line-90">                        final double wz = params[i * viewParLength + camParLength + 2];</span>
-<span class="source-line-no">091</span><span id="line-91">                        final double tx = params[i * viewParLength + camParLength + 3];</span>
-<span class="source-line-no">092</span><span id="line-92">                        final double ty = params[i * viewParLength + camParLength + 4];</span>
-<span class="source-line-no">093</span><span id="line-93">                        final double tz = params[i * viewParLength + camParLength + 5];</span>
-<span class="source-line-no">094</span><span id="line-94"></span>
-<span class="source-line-no">095</span><span id="line-95">                        // begin matlab code</span>
-<span class="source-line-no">096</span><span id="line-96">                        final double t2 = wx * wx;</span>
-<span class="source-line-no">097</span><span id="line-97">                        final double t3 = wy * wy;</span>
-<span class="source-line-no">098</span><span id="line-98">                        final double t4 = wz * wz;</span>
-<span class="source-line-no">099</span><span id="line-99">                        final double t5 = t2 + t3 + t4;</span>
-<span class="source-line-no">100</span><span id="line-100">                        final double t6 = sqrt(t5);</span>
-<span class="source-line-no">101</span><span id="line-101">                        final double t7 = sin(t6);</span>
-<span class="source-line-no">102</span><span id="line-102">                        final double t8 = 1.0 / sqrt(t5);</span>
-<span class="source-line-no">103</span><span id="line-103">                        final double t9 = cos(t6);</span>
-<span class="source-line-no">104</span><span id="line-104">                        final double t10 = t9 - 1.0;</span>
-<span class="source-line-no">105</span><span id="line-105">                        final double t11 = 1.0 / t5;</span>
-<span class="source-line-no">106</span><span id="line-106">                        final double t12 = t7 * t8 * wy;</span>
-<span class="source-line-no">107</span><span id="line-107">                        final double t13 = t10 * t11 * wx * wz;</span>
-<span class="source-line-no">108</span><span id="line-108">                        final double t14 = t12 + t13;</span>
-<span class="source-line-no">109</span><span id="line-109">                        final double t15 = t7 * t8 * wz;</span>
-<span class="source-line-no">110</span><span id="line-110">                        final double t16 = t7 * t8 * wx;</span>
-<span class="source-line-no">111</span><span id="line-111">                        final double t18 = t10 * t11 * wy * wz;</span>
-<span class="source-line-no">112</span><span id="line-112">                        final double t17 = t16 - t18;</span>
-<span class="source-line-no">113</span><span id="line-113">                        final double t19 = Y * t17;</span>
-<span class="source-line-no">114</span><span id="line-114">                        final double t39 = X * t14;</span>
-<span class="source-line-no">115</span><span id="line-115">                        final double t20 = t19 - t39 + tz;</span>
-<span class="source-line-no">116</span><span id="line-116">                        final double t21 = 1.0 / t20;</span>
-<span class="source-line-no">117</span><span id="line-117">                        final double t22 = t10 * t11 * wx * wy;</span>
-<span class="source-line-no">118</span><span id="line-118">                        final double t23 = t3 + t4;</span>
-<span class="source-line-no">119</span><span id="line-119">                        final double t24 = t10 * t11 * t23;</span>
-<span class="source-line-no">120</span><span id="line-120">                        final double t25 = t24 + 1.0;</span>
-<span class="source-line-no">121</span><span id="line-121">                        final double t26 = alpha * t25;</span>
-<span class="source-line-no">122</span><span id="line-122">                        final double t27 = t15 + t22;</span>
-<span class="source-line-no">123</span><span id="line-123">                        final double t28 = t17 * uc;</span>
-<span class="source-line-no">124</span><span id="line-124">                        final double t29 = t2 + t4;</span>
-<span class="source-line-no">125</span><span id="line-125">                        final double t30 = t10 * t11 * t29;</span>
-<span class="source-line-no">126</span><span id="line-126">                        final double t31 = t30 + 1.0;</span>
-<span class="source-line-no">127</span><span id="line-127">                        final double t32 = gamma * t31;</span>
-<span class="source-line-no">128</span><span id="line-128">                        final double t45 = alpha * t27;</span>
-<span class="source-line-no">129</span><span id="line-129">                        final double t33 = t28 + t32 - t45;</span>
-<span class="source-line-no">130</span><span id="line-130">                        final double t34 = Y * t33;</span>
-<span class="source-line-no">131</span><span id="line-131">                        final double t35 = alpha * tx;</span>
-<span class="source-line-no">132</span><span id="line-132">                        final double t36 = gamma * ty;</span>
-<span class="source-line-no">133</span><span id="line-133">                        final double t37 = tz * uc;</span>
-<span class="source-line-no">134</span><span id="line-134">                        final double t40 = t15 - t22;</span>
-<span class="source-line-no">135</span><span id="line-135">                        final double t41 = gamma * t40;</span>
-<span class="source-line-no">136</span><span id="line-136">                        final double t42 = t14 * uc;</span>
-<span class="source-line-no">137</span><span id="line-137">                        final double t43 = t26 + t41 - t42;</span>
-<span class="source-line-no">138</span><span id="line-138">                        final double t44 = X * t43;</span>
-<span class="source-line-no">139</span><span id="line-139">                        final double t46 = t34 + t35 + t36 + t37 + t44;</span>
-<span class="source-line-no">140</span><span id="line-140">                        final double t47 = t21 * t46;</span>
-<span class="source-line-no">141</span><span id="line-141">                        final double t38 = -t47 + uc;</span>
-<span class="source-line-no">142</span><span id="line-142">                        final double t48 = 1.0 / (alpha * alpha * alpha);</span>
-<span class="source-line-no">143</span><span id="line-143">                        final double t49 = t38 * t38;</span>
-<span class="source-line-no">144</span><span id="line-144">                        final double t50 = t48 * t49 * 2.0;</span>
-<span class="source-line-no">145</span><span id="line-145">                        final double t51 = 1.0 / (alpha * alpha);</span>
-<span class="source-line-no">146</span><span id="line-146">                        final double t52 = X * t25;</span>
-<span class="source-line-no">147</span><span id="line-147">                        final double t57 = Y * t27;</span>
-<span class="source-line-no">148</span><span id="line-148">                        final double t53 = t52 - t57 + tx;</span>
-<span class="source-line-no">149</span><span id="line-149">                        final double t54 = t21 * t38 * t51 * t53 * 2.0;</span>
-<span class="source-line-no">150</span><span id="line-150">                        final double t55 = t50 + t54;</span>
-<span class="source-line-no">151</span><span id="line-151">                        final double t60 = beta * ty;</span>
-<span class="source-line-no">152</span><span id="line-152">                        final double t61 = beta * t40;</span>
-<span class="source-line-no">153</span><span id="line-153">                        final double t62 = t14 * vc;</span>
-<span class="source-line-no">154</span><span id="line-154">                        final double t63 = t61 - t62;</span>
-<span class="source-line-no">155</span><span id="line-155">                        final double t64 = X * t63;</span>
-<span class="source-line-no">156</span><span id="line-156">                        final double t65 = tz * vc;</span>
-<span class="source-line-no">157</span><span id="line-157">                        final double t66 = t17 * vc;</span>
-<span class="source-line-no">158</span><span id="line-158">                        final double t67 = beta * t31;</span>
-<span class="source-line-no">159</span><span id="line-159">                        final double t68 = t66 + t67;</span>
-<span class="source-line-no">160</span><span id="line-160">                        final double t69 = Y * t68;</span>
-<span class="source-line-no">161</span><span id="line-161">                        final double t70 = t60 + t64 + t65 + t69;</span>
-<span class="source-line-no">162</span><span id="line-162">                        final double t71 = t21 * t70;</span>
-<span class="source-line-no">163</span><span id="line-163">                        final double t56 = -t71 + vc;</span>
-<span class="source-line-no">164</span><span id="line-164">                        final double t58 = t49 * t51;</span>
-<span class="source-line-no">165</span><span id="line-165">                        final double t59 = 1.0 / (beta * beta);</span>
-<span class="source-line-no">166</span><span id="line-166">                        final double t72 = t56 * t56;</span>
-<span class="source-line-no">167</span><span id="line-167">                        final double t73 = t59 * t72;</span>
-<span class="source-line-no">168</span><span id="line-168">                        final double t74 = t58 + t73;</span>
-<span class="source-line-no">169</span><span id="line-169">                        final double t75 = 1.0 / (beta * beta * beta);</span>
-<span class="source-line-no">170</span><span id="line-170">                        final double t76 = t72 * t75 * 2.0;</span>
-<span class="source-line-no">171</span><span id="line-171">                        final double t77 = X * t40;</span>
-<span class="source-line-no">172</span><span id="line-172">                        final double t78 = Y * t31;</span>
-<span class="source-line-no">173</span><span id="line-173">                        final double t79 = t77 + t78 + ty;</span>
-<span class="source-line-no">174</span><span id="line-174">                        final double t80 = t21 * t56 * t59 * t79 * 2.0;</span>
-<span class="source-line-no">175</span><span id="line-175">                        final double t81 = t76 + t80;</span>
-<span class="source-line-no">176</span><span id="line-176">                        final double t82 = k0 * t74;</span>
-<span class="source-line-no">177</span><span id="line-177">                        final double t83 = t74 * t74;</span>
-<span class="source-line-no">178</span><span id="line-178">                        final double t84 = k1 * t83;</span>
-<span class="source-line-no">179</span><span id="line-179">                        final double t85 = t82 + t84;</span>
-<span class="source-line-no">180</span><span id="line-180">                        final double t86 = 1.0 / pow(t5, 3.0 / 2.0);</span>
-<span class="source-line-no">181</span><span id="line-181">                        final double t87 = 1.0 / (t5 * t5);</span>
-<span class="source-line-no">182</span><span id="line-182">                        final double t88 = t9 * t11 * wx * wz;</span>
-<span class="source-line-no">183</span><span id="line-183">                        final double t89 = t2 * t7 * t86 * wy;</span>
-<span class="source-line-no">184</span><span id="line-184">                        final double t90 = t2 * t10 * t87 * wy * 2.0;</span>
-<span class="source-line-no">185</span><span id="line-185">                        final double t91 = t7 * t86 * wx * wy;</span>
-<span class="source-line-no">186</span><span id="line-186">                        final double t92 = t2 * t7 * t86 * wz;</span>
-<span class="source-line-no">187</span><span id="line-187">                        final double t93 = t2 * t10 * t87 * wz * 2.0;</span>
-<span class="source-line-no">188</span><span id="line-188">                        final double t105 = t10 * t11 * wz;</span>
-<span class="source-line-no">189</span><span id="line-189">                        final double t106 = t9 * t11 * wx * wy;</span>
-<span class="source-line-no">190</span><span id="line-190">                        final double t94 = t91 + t92 + t93 - t105 - t106;</span>
-<span class="source-line-no">191</span><span id="line-191">                        final double t95 = t7 * t8;</span>
-<span class="source-line-no">192</span><span id="line-192">                        final double t96 = t2 * t9 * t11;</span>
-<span class="source-line-no">193</span><span id="line-193">                        final double t97 = t10 * t87 * wx * wy * wz * 2.0;</span>
-<span class="source-line-no">194</span><span id="line-194">                        final double t98 = t7 * t86 * wx * wy * wz;</span>
-<span class="source-line-no">195</span><span id="line-195">                        final double t103 = t2 * t7 * t86;</span>
-<span class="source-line-no">196</span><span id="line-196">                        final double t99 = t95 + t96 + t97 + t98 - t103;</span>
-<span class="source-line-no">197</span><span id="line-197">                        final double t100 = t10 * t29 * t87 * wx * 2.0;</span>
-<span class="source-line-no">198</span><span id="line-198">                        final double t101 = t7 * t29 * t86 * wx;</span>
-<span class="source-line-no">199</span><span id="line-199">                        final double t116 = t10 * t11 * wx * 2.0;</span>
-<span class="source-line-no">200</span><span id="line-200">                        final double t102 = t100 + t101 - t116;</span>
-<span class="source-line-no">201</span><span id="line-201">                        final double t104 = t7 * t86 * wx * wz;</span>
-<span class="source-line-no">202</span><span id="line-202">                        final double t107 = X * t94;</span>
-<span class="source-line-no">203</span><span id="line-203">                        final double t108 = Y * t99;</span>
-<span class="source-line-no">204</span><span id="line-204">                        final double t109 = t107 + t108;</span>
-<span class="source-line-no">205</span><span id="line-205">                        final double t110 = 1.0 / (t20 * t20);</span>
-<span class="source-line-no">206</span><span id="line-206">                        final double t111 = t10 * t23 * t87 * wx * 2.0;</span>
-<span class="source-line-no">207</span><span id="line-207">                        final double t112 = t7 * t23 * t86 * wx;</span>
-<span class="source-line-no">208</span><span id="line-208">                        final double t113 = t111 + t112;</span>
-<span class="source-line-no">209</span><span id="line-209">                        final double t117 = t10 * t11 * wy;</span>
-<span class="source-line-no">210</span><span id="line-210">                        final double t114 = t88 + t89 + t90 - t104 - t117;</span>
-<span class="source-line-no">211</span><span id="line-211">                        final double t115 = t94 * uc;</span>
-<span class="source-line-no">212</span><span id="line-212">                        final double t118 = t99 * uc;</span>
-<span class="source-line-no">213</span><span id="line-213">                        final double t119 = beta * t102;</span>
-<span class="source-line-no">214</span><span id="line-214">                        final double t262 = t99 * vc;</span>
-<span class="source-line-no">215</span><span id="line-215">                        final double t120 = t119 - t262;</span>
-<span class="source-line-no">216</span><span id="line-216">                        final double t121 = Y * t120;</span>
-<span class="source-line-no">217</span><span id="line-217">                        final double t122 = beta * t114;</span>
-<span class="source-line-no">218</span><span id="line-218">                        final double t123 = t94 * vc;</span>
-<span class="source-line-no">219</span><span id="line-219">                        final double t124 = t122 + t123;</span>
-<span class="source-line-no">220</span><span id="line-220">                        final double t263 = X * t124;</span>
-<span class="source-line-no">221</span><span id="line-221">                        final double t125 = t121 - t263;</span>
-<span class="source-line-no">222</span><span id="line-222">                        final double t126 = t21 * t125;</span>
-<span class="source-line-no">223</span><span id="line-223">                        final double t127 = t70 * t109 * t110;</span>
-<span class="source-line-no">224</span><span id="line-224">                        final double t128 = t126 + t127;</span>
-<span class="source-line-no">225</span><span id="line-225">                        final double t129 = gamma * t114;</span>
-<span class="source-line-no">226</span><span id="line-226">                        final double t141 = alpha * t113;</span>
-<span class="source-line-no">227</span><span id="line-227">                        final double t130 = t115 + t129 - t141;</span>
-<span class="source-line-no">228</span><span id="line-228">                        final double t131 = X * t130;</span>
-<span class="source-line-no">229</span><span id="line-229">                        final double t132 = -t88 + t89 + t90 + t104 - t117;</span>
-<span class="source-line-no">230</span><span id="line-230">                        final double t133 = alpha * t132;</span>
-<span class="source-line-no">231</span><span id="line-231">                        final double t142 = gamma * t102;</span>
-<span class="source-line-no">232</span><span id="line-232">                        final double t134 = t118 + t133 - t142;</span>
-<span class="source-line-no">233</span><span id="line-233">                        final double t135 = Y * t134;</span>
-<span class="source-line-no">234</span><span id="line-234">                        final double t136 = t131 + t135;</span>
-<span class="source-line-no">235</span><span id="line-235">                        final double t137 = t21 * t136;</span>
-<span class="source-line-no">236</span><span id="line-236">                        final double t143 = t46 * t109 * t110;</span>
-<span class="source-line-no">237</span><span id="line-237">                        final double t138 = t137 - t143;</span>
-<span class="source-line-no">238</span><span id="line-238">                        final double t139 = t38 * t51 * t138 * 2.0;</span>
-<span class="source-line-no">239</span><span id="line-239">                        final double t264 = t56 * t59 * t128 * 2.0;</span>
-<span class="source-line-no">240</span><span id="line-240">                        final double t140 = t139 - t264;</span>
-<span class="source-line-no">241</span><span id="line-241">                        final double t144 = t3 * t7 * t86 * wz;</span>
-<span class="source-line-no">242</span><span id="line-242">                        final double t145 = t3 * t10 * t87 * wz * 2.0;</span>
-<span class="source-line-no">243</span><span id="line-243">                        final double t146 = -t91 - t105 + t106 + t144 + t145;</span>
-<span class="source-line-no">244</span><span id="line-244">                        final double t147 = t3 * t7 * t86;</span>
-<span class="source-line-no">245</span><span id="line-245">                        final double t156 = t3 * t9 * t11;</span>
-<span class="source-line-no">246</span><span id="line-246">                        final double t148 = -t95 + t97 + t98 + t147 - t156;</span>
-<span class="source-line-no">247</span><span id="line-247">                        final double t149 = t10 * t29 * t87 * wy * 2.0;</span>
-<span class="source-line-no">248</span><span id="line-248">                        final double t150 = t7 * t29 * t86 * wy;</span>
-<span class="source-line-no">249</span><span id="line-249">                        final double t151 = t149 + t150;</span>
-<span class="source-line-no">250</span><span id="line-250">                        final double t152 = t9 * t11 * wy * wz;</span>
-<span class="source-line-no">251</span><span id="line-251">                        final double t153 = t3 * t7 * t86 * wx;</span>
-<span class="source-line-no">252</span><span id="line-252">                        final double t154 = t3 * t10 * t87 * wx * 2.0;</span>
-<span class="source-line-no">253</span><span id="line-253">                        final double t155 = t7 * t86 * wy * wz;</span>
-<span class="source-line-no">254</span><span id="line-254">                        final double t157 = Y * t146;</span>
-<span class="source-line-no">255</span><span id="line-255">                        final double t158 = X * t148;</span>
-<span class="source-line-no">256</span><span id="line-256">                        final double t159 = t157 + t158;</span>
-<span class="source-line-no">257</span><span id="line-257">                        final double t161 = t10 * t11 * wx;</span>
-<span class="source-line-no">258</span><span id="line-258">                        final double t160 = t152 + t153 + t154 - t155 - t161;</span>
-<span class="source-line-no">259</span><span id="line-259">                        final double t162 = beta * t160;</span>
-<span class="source-line-no">260</span><span id="line-260">                        final double t163 = t148 * vc;</span>
-<span class="source-line-no">261</span><span id="line-261">                        final double t164 = t162 + t163;</span>
-<span class="source-line-no">262</span><span id="line-262">                        final double t165 = X * t164;</span>
-<span class="source-line-no">263</span><span id="line-263">                        final double t166 = beta * t151;</span>
-<span class="source-line-no">264</span><span id="line-264">                        final double t267 = t146 * vc;</span>
-<span class="source-line-no">265</span><span id="line-265">                        final double t167 = t166 - t267;</span>
-<span class="source-line-no">266</span><span id="line-266">                        final double t268 = Y * t167;</span>
-<span class="source-line-no">267</span><span id="line-267">                        final double t168 = t165 - t268;</span>
-<span class="source-line-no">268</span><span id="line-268">                        final double t169 = t21 * t168;</span>
-<span class="source-line-no">269</span><span id="line-269">                        final double t269 = t70 * t110 * t159;</span>
-<span class="source-line-no">270</span><span id="line-270">                        final double t170 = t169 - t269;</span>
-<span class="source-line-no">271</span><span id="line-271">                        final double t171 = t56 * t59 * t170 * 2.0;</span>
-<span class="source-line-no">272</span><span id="line-272">                        final double t172 = -t152 + t153 + t154 + t155 - t161;</span>
-<span class="source-line-no">273</span><span id="line-273">                        final double t173 = alpha * t172;</span>
-<span class="source-line-no">274</span><span id="line-274">                        final double t174 = t146 * uc;</span>
-<span class="source-line-no">275</span><span id="line-275">                        final double t189 = gamma * t151;</span>
-<span class="source-line-no">276</span><span id="line-276">                        final double t175 = t173 + t174 - t189;</span>
-<span class="source-line-no">277</span><span id="line-277">                        final double t176 = Y * t175;</span>
-<span class="source-line-no">278</span><span id="line-278">                        final double t177 = t10 * t23 * t87 * wy * 2.0;</span>
-<span class="source-line-no">279</span><span id="line-279">                        final double t178 = t7 * t23 * t86 * wy;</span>
-<span class="source-line-no">280</span><span id="line-280">                        final double t190 = t10 * t11 * wy * 2.0;</span>
-<span class="source-line-no">281</span><span id="line-281">                        final double t179 = t177 + t178 - t190;</span>
-<span class="source-line-no">282</span><span id="line-282">                        final double t180 = gamma * t160;</span>
-<span class="source-line-no">283</span><span id="line-283">                        final double t181 = t148 * uc;</span>
-<span class="source-line-no">284</span><span id="line-284">                        final double t191 = alpha * t179;</span>
-<span class="source-line-no">285</span><span id="line-285">                        final double t182 = t180 + t181 - t191;</span>
-<span class="source-line-no">286</span><span id="line-286">                        final double t183 = X * t182;</span>
-<span class="source-line-no">287</span><span id="line-287">                        final double t184 = t176 + t183;</span>
-<span class="source-line-no">288</span><span id="line-288">                        final double t185 = t21 * t184;</span>
-<span class="source-line-no">289</span><span id="line-289">                        final double t192 = t46 * t110 * t159;</span>
-<span class="source-line-no">290</span><span id="line-290">                        final double t186 = t185 - t192;</span>
-<span class="source-line-no">291</span><span id="line-291">                        final double t187 = t38 * t51 * t186 * 2.0;</span>
-<span class="source-line-no">292</span><span id="line-292">                        final double t188 = t171 + t187;</span>
-<span class="source-line-no">293</span><span id="line-293">                        final double t193 = t4 * t9 * t11;</span>
-<span class="source-line-no">294</span><span id="line-294">                        final double t194 = t4 * t7 * t86 * wx;</span>
-<span class="source-line-no">295</span><span id="line-295">                        final double t195 = t4 * t10 * t87 * wx * 2.0;</span>
-<span class="source-line-no">296</span><span id="line-296">                        final double t196 = -t152 + t155 - t161 + t194 + t195;</span>
-<span class="source-line-no">297</span><span id="line-297">                        final double t197 = t4 * t7 * t86;</span>
-<span class="source-line-no">298</span><span id="line-298">                        final double t198 = t10 * t29 * t87 * wz * 2.0;</span>
-<span class="source-line-no">299</span><span id="line-299">                        final double t199 = t7 * t29 * t86 * wz;</span>
-<span class="source-line-no">300</span><span id="line-300">                        final double t204 = t10 * t11 * wz * 2.0;</span>
-<span class="source-line-no">301</span><span id="line-301">                        final double t200 = t198 + t199 - t204;</span>
-<span class="source-line-no">302</span><span id="line-302">                        final double t201 = t4 * t7 * t86 * wy;</span>
-<span class="source-line-no">303</span><span id="line-303">                        final double t202 = t4 * t10 * t87 * wy * 2.0;</span>
-<span class="source-line-no">304</span><span id="line-304">                        final double t203 = t88 - t104 - t117 + t201 + t202;</span>
-<span class="source-line-no">305</span><span id="line-305">                        final double t205 = t10 * t23 * t87 * wz * 2.0;</span>
-<span class="source-line-no">306</span><span id="line-306">                        final double t206 = t7 * t23 * t86 * wz;</span>
-<span class="source-line-no">307</span><span id="line-307">                        final double t207 = t196 * uc;</span>
-<span class="source-line-no">308</span><span id="line-308">                        final double t208 = t95 + t97 + t98 + t193 - t197;</span>
-<span class="source-line-no">309</span><span id="line-309">                        final double t209 = t203 * uc;</span>
-<span class="source-line-no">310</span><span id="line-310">                        final double t210 = -t95 + t97 + t98 - t193 + t197;</span>
-<span class="source-line-no">311</span><span id="line-311">                        final double t211 = alpha * t210;</span>
-<span class="source-line-no">312</span><span id="line-312">                        final double t231 = gamma * t200;</span>
-<span class="source-line-no">313</span><span id="line-313">                        final double t212 = t209 + t211 - t231;</span>
-<span class="source-line-no">314</span><span id="line-314">                        final double t213 = Y * t212;</span>
-<span class="source-line-no">315</span><span id="line-315">                        final double t214 = X * t196;</span>
-<span class="source-line-no">316</span><span id="line-316">                        final double t215 = Y * t203;</span>
-<span class="source-line-no">317</span><span id="line-317">                        final double t216 = t214 + t215;</span>
-<span class="source-line-no">318</span><span id="line-318">                        final double t217 = t196 * vc;</span>
-<span class="source-line-no">319</span><span id="line-319">                        final double t218 = beta * t208;</span>
-<span class="source-line-no">320</span><span id="line-320">                        final double t219 = t217 + t218;</span>
-<span class="source-line-no">321</span><span id="line-321">                        final double t220 = X * t219;</span>
-<span class="source-line-no">322</span><span id="line-322">                        final double t221 = beta * t200;</span>
-<span class="source-line-no">323</span><span id="line-323">                        final double t273 = t203 * vc;</span>
-<span class="source-line-no">324</span><span id="line-324">                        final double t222 = t221 - t273;</span>
-<span class="source-line-no">325</span><span id="line-325">                        final double t274 = Y * t222;</span>
-<span class="source-line-no">326</span><span id="line-326">                        final double t223 = t220 - t274;</span>
-<span class="source-line-no">327</span><span id="line-327">                        final double t224 = t21 * t223;</span>
-<span class="source-line-no">328</span><span id="line-328">                        final double t275 = t70 * t110 * t216;</span>
-<span class="source-line-no">329</span><span id="line-329">                        final double t225 = t224 - t275;</span>
-<span class="source-line-no">330</span><span id="line-330">                        final double t226 = t56 * t59 * t225 * 2.0;</span>
-<span class="source-line-no">331</span><span id="line-331">                        final double t227 = -t204 + t205 + t206;</span>
-<span class="source-line-no">332</span><span id="line-332">                        final double t228 = gamma * t208;</span>
-<span class="source-line-no">333</span><span id="line-333">                        final double t237 = alpha * t227;</span>
-<span class="source-line-no">334</span><span id="line-334">                        final double t229 = t207 + t228 - t237;</span>
-<span class="source-line-no">335</span><span id="line-335">                        final double t230 = X * t229;</span>
-<span class="source-line-no">336</span><span id="line-336">                        final double t232 = t213 + t230;</span>
-<span class="source-line-no">337</span><span id="line-337">                        final double t233 = t21 * t232;</span>
-<span class="source-line-no">338</span><span id="line-338">                        final double t238 = t46 * t110 * t216;</span>
-<span class="source-line-no">339</span><span id="line-339">                        final double t234 = t233 - t238;</span>
-<span class="source-line-no">340</span><span id="line-340">                        final double t235 = t38 * t51 * t234 * 2.0;</span>
-<span class="source-line-no">341</span><span id="line-341">                        final double t236 = t226 + t235;</span>
-<span class="source-line-no">342</span><span id="line-342">                        final double t239 = 1.0 / alpha;</span>
-<span class="source-line-no">343</span><span id="line-343">                        final double t240 = 1.0 / beta;</span>
-<span class="source-line-no">344</span><span id="line-344">                        final double t241 = t21 * t56 * t240 * 2.0;</span>
-<span class="source-line-no">345</span><span id="line-345">                        final double t242 = gamma * t21 * t38 * t51 * 2.0;</span>
-<span class="source-line-no">346</span><span id="line-346">                        final double t243 = t241 + t242;</span>
-<span class="source-line-no">347</span><span id="line-347">                        final double t244 = t21 * uc;</span>
-<span class="source-line-no">348</span><span id="line-348">                        final double t248 = t46 * t110;</span>
-<span class="source-line-no">349</span><span id="line-349">                        final double t245 = t244 - t248;</span>
-<span class="source-line-no">350</span><span id="line-350">                        final double t246 = t70 * t110;</span>
-<span class="source-line-no">351</span><span id="line-351">                        final double t285 = t21 * vc;</span>
-<span class="source-line-no">352</span><span id="line-352">                        final double t247 = t246 - t285;</span>
-<span class="source-line-no">353</span><span id="line-353">                        final double t249 = t38 * t51 * t245 * 2.0;</span>
-<span class="source-line-no">354</span><span id="line-354">                        final double t286 = t56 * t59 * t247 * 2.0;</span>
-<span class="source-line-no">355</span><span id="line-355">                        final double t250 = t249 - t286;</span>
-<span class="source-line-no">356</span><span id="line-356">                        final double t251 = k0 * t55;</span>
-<span class="source-line-no">357</span><span id="line-357">                        final double t252 = k1 * t55 * t74 * 2.0;</span>
-<span class="source-line-no">358</span><span id="line-358">                        final double t253 = t251 + t252;</span>
-<span class="source-line-no">359</span><span id="line-359">                        final double t254 = k0 * t81;</span>
-<span class="source-line-no">360</span><span id="line-360">                        final double t255 = k1 * t74 * t81 * 2.0;</span>
-<span class="source-line-no">361</span><span id="line-361">                        final double t256 = t254 + t255;</span>
-<span class="source-line-no">362</span><span id="line-362">                        final double t257 = t21 * t79;</span>
-<span class="source-line-no">363</span><span id="line-363">                        final double t258 = t21 * t79 * t85;</span>
-<span class="source-line-no">364</span><span id="line-364">                        final double t259 = k0 * t21 * t38 * t51 * t79 * 2.0;</span>
-<span class="source-line-no">365</span><span id="line-365">                        final double t260 = k1 * t21 * t38 * t51 * t74 * t79 * 4.0;</span>
-<span class="source-line-no">366</span><span id="line-366">                        final double t261 = t259 + t260;</span>
-<span class="source-line-no">367</span><span id="line-367">                        final double t265 = k0 * t140;</span>
-<span class="source-line-no">368</span><span id="line-368">                        final double t266 = k1 * t74 * t140 * 2.0;</span>
-<span class="source-line-no">369</span><span id="line-369">                        final double t270 = k0 * t188;</span>
-<span class="source-line-no">370</span><span id="line-370">                        final double t271 = k1 * t74 * t188 * 2.0;</span>
-<span class="source-line-no">371</span><span id="line-371">                        final double t272 = t270 + t271;</span>
-<span class="source-line-no">372</span><span id="line-372">                        final double t276 = k0 * t236;</span>
-<span class="source-line-no">373</span><span id="line-373">                        final double t277 = k1 * t74 * t236 * 2.0;</span>
-<span class="source-line-no">374</span><span id="line-374">                        final double t278 = t276 + t277;</span>
-<span class="source-line-no">375</span><span id="line-375">                        final double t279 = k0 * t21 * t38 * t239 * 2.0;</span>
-<span class="source-line-no">376</span><span id="line-376">                        final double t280 = k1 * t21 * t38 * t74 * t239 * 4.0;</span>
-<span class="source-line-no">377</span><span id="line-377">                        final double t281 = t279 + t280;</span>
-<span class="source-line-no">378</span><span id="line-378">                        final double t282 = k0 * t243;</span>
-<span class="source-line-no">379</span><span id="line-379">                        final double t283 = k1 * t74 * t243 * 2.0;</span>
-<span class="source-line-no">380</span><span id="line-380">                        final double t284 = t282 + t283;</span>
-<span class="source-line-no">381</span><span id="line-381">                        final double t287 = k0 * t250;</span>
-<span class="source-line-no">382</span><span id="line-382">                        final double t288 = k1 * t74 * t250 * 2.0;</span>
-<span class="source-line-no">383</span><span id="line-383">                        final double t289 = t287 + t288;</span>
-<span class="source-line-no">384</span><span id="line-384">                        // alpha</span>
-<span class="source-line-no">385</span><span id="line-385">                        A0[0][0] = t21 * t53 + t253</span>
-<span class="source-line-no">386</span><span id="line-386">                                        * (uc - t21 * (t34 + t35 + t36 + t37 + X * (t26 - t14 * uc + gamma * (t15 - t10 * t11 * wx * wy))))</span>
-<span class="source-line-no">387</span><span id="line-387">                                        + t21 * t53 * t85;</span>
-<span class="source-line-no">388</span><span id="line-388">                        // beta</span>
-<span class="source-line-no">389</span><span id="line-389">                        A0[0][1] = t38 * t256;</span>
-<span class="source-line-no">390</span><span id="line-390">                        // uc</span>
-<span class="source-line-no">391</span><span id="line-391">                        A0[0][3] = 1.0;</span>
-<span class="source-line-no">392</span><span id="line-392">                        // vc</span>
-<span class="source-line-no">393</span><span id="line-393">                        A0[0][4] = 0.0;</span>
-<span class="source-line-no">394</span><span id="line-394">                        // gamma</span>
-<span class="source-line-no">395</span><span id="line-395">                        A0[0][2] = t257 + t258 + t38 * t261;</span>
-<span class="source-line-no">396</span><span id="line-396">                        // k1</span>
-<span class="source-line-no">397</span><span id="line-397">                        A0[0][5] = -t38 * t74;</span>
-<span class="source-line-no">398</span><span id="line-398">                        // k2</span>
-<span class="source-line-no">399</span><span id="line-399">                        A0[0][6] = -t38 * t83;</span>
-<span class="source-line-no">400</span><span id="line-400">                        A0[0][7] = t137</span>
-<span class="source-line-no">401</span><span id="line-401">                                        - t143</span>
-<span class="source-line-no">402</span><span id="line-402">                                        + t38</span>
-<span class="source-line-no">403</span><span id="line-403">                                        * (t265 + t266)</span>
-<span class="source-line-no">404</span><span id="line-404">                                        + t85</span>
-<span class="source-line-no">405</span><span id="line-405">                                        * (t21</span>
-<span class="source-line-no">406</span><span id="line-406">                                                        * (X * (t115 - alpha * t113 + gamma * (t88 + t89 + t90 - t10 * t11 * wy - t7 * t86 * wx * wz)) + Y</span>
-<span class="source-line-no">407</span><span id="line-407">                                                                        * (t118 + alpha * (-t88 + t89 + t90 + t104 - t10 * t11 * wy) - gamma * t102)) - t46 * t109</span>
-<span class="source-line-no">408</span><span id="line-408">                                                                        * t110);</span>
-<span class="source-line-no">409</span><span id="line-409">                        A0[0][8] = t185 - t192 + t85 * t186 + t38 * t272;</span>
-<span class="source-line-no">410</span><span id="line-410">                        A0[0][9] = -t238</span>
-<span class="source-line-no">411</span><span id="line-411">                                        + t38</span>
-<span class="source-line-no">412</span><span id="line-412">                                        * t278</span>
-<span class="source-line-no">413</span><span id="line-413">                                        + t85</span>
-<span class="source-line-no">414</span><span id="line-414">                                        * t234</span>
-<span class="source-line-no">415</span><span id="line-415">                                        + t21</span>
-<span class="source-line-no">416</span><span id="line-416">                                        * (t213 + X</span>
-<span class="source-line-no">417</span><span id="line-417">                                                        * (t207 + gamma * (t95 + t97 + t98 + t193 - t4 * t7 * t86) - alpha</span>
-<span class="source-line-no">418</span><span id="line-418">                                                                        * (t205 + t206 - t10 * t11 * wz * 2.0)));</span>
-<span class="source-line-no">419</span><span id="line-419">                        A0[0][10] = alpha * t21 + t38 * t281 + alpha * t21 * t85;</span>
-<span class="source-line-no">420</span><span id="line-420">                        A0[0][11] = gamma * t21 + t38 * t284 + gamma * t21 * t85;</span>
-<span class="source-line-no">421</span><span id="line-421">                        A0[0][12] = t244 - t46 * t110 + t38 * t289 + t85 * t245;</span>
-<span class="source-line-no">422</span><span id="line-422"></span>
-<span class="source-line-no">423</span><span id="line-423">                        // alpha</span>
-<span class="source-line-no">424</span><span id="line-424">                        A0[1][0] = t56 * t253;</span>
-<span class="source-line-no">425</span><span id="line-425">                        // beta</span>
-<span class="source-line-no">426</span><span id="line-426">                        A0[1][1] = t257 + t258 + t56 * t256;</span>
-<span class="source-line-no">427</span><span id="line-427">                        // uc</span>
-<span class="source-line-no">428</span><span id="line-428">                        A0[1][3] = 0.0;</span>
-<span class="source-line-no">429</span><span id="line-429">                        // vc</span>
-<span class="source-line-no">430</span><span id="line-430">                        A0[1][4] = 1.0;</span>
-<span class="source-line-no">431</span><span id="line-431">                        // gamma</span>
-<span class="source-line-no">432</span><span id="line-432">                        A0[1][2] = t56 * t261;</span>
-<span class="source-line-no">433</span><span id="line-433">                        // k1</span>
-<span class="source-line-no">434</span><span id="line-434">                        A0[1][5] = -t56 * t74;</span>
-<span class="source-line-no">435</span><span id="line-435">                        // k2</span>
-<span class="source-line-no">436</span><span id="line-436">                        A0[1][6] = -t56 * t83;</span>
-<span class="source-line-no">437</span><span id="line-437"></span>
-<span class="source-line-no">438</span><span id="line-438">                        A0[1][7] = -t126 - t127 + t56 * (t265 + t266) - t85 * t128;</span>
-<span class="source-line-no">439</span><span id="line-439">                        A0[1][8] = t169 - t269 + t85 * t170 + t56 * t272;</span>
-<span class="source-line-no">440</span><span id="line-440">                        A0[1][9] = t224 - t275 + t85 * t225 + t56 * t278;</span>
-<span class="source-line-no">441</span><span id="line-441">                        A0[1][10] = t56 * t281;</span>
-<span class="source-line-no">442</span><span id="line-442">                        A0[1][11] = beta * t21 + t56 * t284 + beta * t21 * t85;</span>
-<span class="source-line-no">443</span><span id="line-443">                        A0[1][12] = -t246 + t285 - t85 * t247 + t56 * t289;</span>
-<span class="source-line-no">444</span><span id="line-444">                        // end of matlab code</span>
-<span class="source-line-no">445</span><span id="line-445"></span>
-<span class="source-line-no">446</span><span id="line-446">                        final double[][] Jij = new double[2][camParLength + viewParLength * M];</span>
-<span class="source-line-no">447</span><span id="line-447">                        System.arraycopy(A0[0], 0, Jij[0], 0, camParLength);</span>
-<span class="source-line-no">448</span><span id="line-448">                        System.arraycopy(A0[1], 0, Jij[1], 0, camParLength);</span>
-<span class="source-line-no">449</span><span id="line-449">                        System.arraycopy(A0[0], 7, Jij[0], camParLength + i * viewParLength, viewParLength);</span>
-<span class="source-line-no">450</span><span id="line-450">                        System.arraycopy(A0[1], 7, Jij[1], camParLength + i * viewParLength, viewParLength);</span>
-<span class="source-line-no">451</span><span id="line-451">                        //System.out.format("**** Jij = %d / %d\n", Jij.length, Jij[0].length);</span>
-<span class="source-line-no">452</span><span id="line-452">                        return Jij;</span>
-<span class="source-line-no">453</span><span id="line-453">                }</span>
-<span class="source-line-no">454</span><span id="line-454">        }</span>
-<span class="source-line-no">455</span><span id="line-455"></span>
-<span class="source-line-no">456</span><span id="line-456">}</span>
+<span class="source-line-no">015</span><span id="line-15"> * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix is calculated from analytic</span>
+<span class="source-line-no">016</span><span id="line-16"> * expressions (obtained with MatLab). Part of this implementation is based on code from OpenIMAJ by J. Hare: Copyright</span>
+<span class="source-line-no">017</span><span id="line-17"> * (c) 2011, The University of Southampton and the individual contributors. All rights reserved (see</span>
+<span class="source-line-no">018</span><span id="line-18"> * https://github.com/openimaj/openimaj/).</span>
+<span class="source-line-no">019</span><span id="line-19"> *</span>
+<span class="source-line-no">020</span><span id="line-20"> * @author WB</span>
+<span class="source-line-no">021</span><span id="line-21"> */</span>
+<span class="source-line-no">022</span><span id="line-22">public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {</span>
+<span class="source-line-no">023</span><span id="line-23"></span>
+<span class="source-line-no">024</span><span id="line-24">        NonlinearOptimizerAnalytic(Point2D[] modelPts, Point2D[][] obsPts) {</span>
+<span class="source-line-no">025</span><span id="line-25">                super(modelPts, obsPts);</span>
+<span class="source-line-no">026</span><span id="line-26">        }</span>
+<span class="source-line-no">027</span><span id="line-27"></span>
+<span class="source-line-no">028</span><span id="line-28">        @Override</span>
+<span class="source-line-no">029</span><span id="line-29">        MultivariateVectorFunction makeValueFun() {</span>
+<span class="source-line-no">030</span><span id="line-30">                return new ValueFun();</span>
+<span class="source-line-no">031</span><span id="line-31">        }</span>
+<span class="source-line-no">032</span><span id="line-32"></span>
+<span class="source-line-no">033</span><span id="line-33">        @Override</span>
+<span class="source-line-no">034</span><span id="line-34">        MultivariateMatrixFunction makeJacobianFun() {</span>
+<span class="source-line-no">035</span><span id="line-35">                return new JacobianFun();</span>
+<span class="source-line-no">036</span><span id="line-36">        }</span>
+<span class="source-line-no">037</span><span id="line-37"></span>
+<span class="source-line-no">038</span><span id="line-38">        private class JacobianFun implements MultivariateMatrixFunction {</span>
+<span class="source-line-no">039</span><span id="line-39">                /**</span>
+<span class="source-line-no">040</span><span id="line-40">                 * Calculates a "stacked" Jacobian matrix with 2MN rows and K = 7 + 6M columns (for M views with N points each,</span>
+<span class="source-line-no">041</span><span id="line-41">                 * K parameters). For example, with M = 5 views and N = 256 points each, J is of size 2560 × 37. Each pair of</span>
+<span class="source-line-no">042</span><span id="line-42">                 * rows in the Jacobian corresponds to one point.</span>
+<span class="source-line-no">043</span><span id="line-43">                 */</span>
+<span class="source-line-no">044</span><span id="line-44">                @Override</span>
+<span class="source-line-no">045</span><span id="line-45">                public double[][] value(double[] params) {</span>
+<span class="source-line-no">046</span><span id="line-46">                        final double[][] J = new double[2 * M * N][];</span>
+<span class="source-line-no">047</span><span id="line-47">                        int r = 0;      // row</span>
+<span class="source-line-no">048</span><span id="line-48">                        for (int i = 0; i &lt; M; i++) {   // for all views</span>
+<span class="source-line-no">049</span><span id="line-49">                                for (int j = 0; j &lt; N; j++) {   // for all points</span>
+<span class="source-line-no">050</span><span id="line-50">                                        final double[][] Jij = subJacobian(i, j, params);</span>
+<span class="source-line-no">051</span><span id="line-51">                                        J[r + 0] = Jij[0];      // row 0 (x-coordinate)</span>
+<span class="source-line-no">052</span><span id="line-52">                                        J[r + 1] = Jij[1];      // row 1 (y-coordinate)</span>
+<span class="source-line-no">053</span><span id="line-53">                                        r = r + 2;</span>
+<span class="source-line-no">054</span><span id="line-54">                                }</span>
+<span class="source-line-no">055</span><span id="line-55">                        }</span>
+<span class="source-line-no">056</span><span id="line-56">//                      System.out.format("**** J = %d / %d\n", J.length, J[0].length);</span>
+<span class="source-line-no">057</span><span id="line-57">//                      System.out.println(NonlinearOptimizerAnalytic.class.getSimpleName() + </span>
+<span class="source-line-no">058</span><span id="line-58">//                              ": Jacobian inverse condition number = " + MathUtil.inverseConditionNumber(J));</span>
+<span class="source-line-no">059</span><span id="line-59">                        return J;</span>
+<span class="source-line-no">060</span><span id="line-60">                }</span>
+<span class="source-line-no">061</span><span id="line-61"></span>
+<span class="source-line-no">062</span><span id="line-62">                /**</span>
+<span class="source-line-no">063</span><span id="line-63">                 * Calculates the sub-Jacobian for view 'i' / model point 'j' with the current parameter vector 'params' .</span>
+<span class="source-line-no">064</span><span id="line-64">                 *</span>
+<span class="source-line-no">065</span><span id="line-65">                 * @param i the point index (= 0,...,M)</span>
+<span class="source-line-no">066</span><span id="line-66">                 * @param j the view index (= 0,...,N)</span>
+<span class="source-line-no">067</span><span id="line-67">                 * @param params the current parameters (of length K)</span>
+<span class="source-line-no">068</span><span id="line-68">                 * @return the two rows (2 x K sub-matrix) of the Jacobian for the given point</span>
+<span class="source-line-no">069</span><span id="line-69">                 */</span>
+<span class="source-line-no">070</span><span id="line-70">                private double[][] subJacobian(int i, int j, double[] params) {</span>
+<span class="source-line-no">071</span><span id="line-71">                        final double[][] A0 = new double[2][camParLength + viewParLength];</span>
+<span class="source-line-no">072</span><span id="line-72"></span>
+<span class="source-line-no">073</span><span id="line-73">                        final double X = modelPts[j].getX();</span>
+<span class="source-line-no">074</span><span id="line-74">                        final double Y = modelPts[j].getY();</span>
+<span class="source-line-no">075</span><span id="line-75"></span>
+<span class="source-line-no">076</span><span id="line-76">                        final double alpha = params[0];</span>
+<span class="source-line-no">077</span><span id="line-77">                        final double beta  = params[1];</span>
+<span class="source-line-no">078</span><span id="line-78">                        final double gamma = params[2];</span>
+<span class="source-line-no">079</span><span id="line-79">                        final double uc = params[3];</span>
+<span class="source-line-no">080</span><span id="line-80">                        final double vc = params[4];</span>
+<span class="source-line-no">081</span><span id="line-81">                        final double k0 = params[5];</span>
+<span class="source-line-no">082</span><span id="line-82">                        final double k1 = params[6];</span>
+<span class="source-line-no">083</span><span id="line-83"></span>
+<span class="source-line-no">084</span><span id="line-84">                        final double wx = params[i * viewParLength + camParLength + 0];</span>
+<span class="source-line-no">085</span><span id="line-85">                        final double wy = params[i * viewParLength + camParLength + 1];</span>
+<span class="source-line-no">086</span><span id="line-86">                        final double wz = params[i * viewParLength + camParLength + 2];</span>
+<span class="source-line-no">087</span><span id="line-87">                        final double tx = params[i * viewParLength + camParLength + 3];</span>
+<span class="source-line-no">088</span><span id="line-88">                        final double ty = params[i * viewParLength + camParLength + 4];</span>
+<span class="source-line-no">089</span><span id="line-89">                        final double tz = params[i * viewParLength + camParLength + 5];</span>
+<span class="source-line-no">090</span><span id="line-90"></span>
+<span class="source-line-no">091</span><span id="line-91">                        // begin matlab code</span>
+<span class="source-line-no">092</span><span id="line-92">                        final double t2 = wx * wx;</span>
+<span class="source-line-no">093</span><span id="line-93">                        final double t3 = wy * wy;</span>
+<span class="source-line-no">094</span><span id="line-94">                        final double t4 = wz * wz;</span>
+<span class="source-line-no">095</span><span id="line-95">                        final double t5 = t2 + t3 + t4;</span>
+<span class="source-line-no">096</span><span id="line-96">                        final double t6 = sqrt(t5);</span>
+<span class="source-line-no">097</span><span id="line-97">                        final double t7 = sin(t6);</span>
+<span class="source-line-no">098</span><span id="line-98">                        final double t8 = 1.0 / sqrt(t5);</span>
+<span class="source-line-no">099</span><span id="line-99">                        final double t9 = cos(t6);</span>
+<span class="source-line-no">100</span><span id="line-100">                        final double t10 = t9 - 1.0;</span>
+<span class="source-line-no">101</span><span id="line-101">                        final double t11 = 1.0 / t5;</span>
+<span class="source-line-no">102</span><span id="line-102">                        final double t12 = t7 * t8 * wy;</span>
+<span class="source-line-no">103</span><span id="line-103">                        final double t13 = t10 * t11 * wx * wz;</span>
+<span class="source-line-no">104</span><span id="line-104">                        final double t14 = t12 + t13;</span>
+<span class="source-line-no">105</span><span id="line-105">                        final double t15 = t7 * t8 * wz;</span>
+<span class="source-line-no">106</span><span id="line-106">                        final double t16 = t7 * t8 * wx;</span>
+<span class="source-line-no">107</span><span id="line-107">                        final double t18 = t10 * t11 * wy * wz;</span>
+<span class="source-line-no">108</span><span id="line-108">                        final double t17 = t16 - t18;</span>
+<span class="source-line-no">109</span><span id="line-109">                        final double t19 = Y * t17;</span>
+<span class="source-line-no">110</span><span id="line-110">                        final double t39 = X * t14;</span>
+<span class="source-line-no">111</span><span id="line-111">                        final double t20 = t19 - t39 + tz;</span>
+<span class="source-line-no">112</span><span id="line-112">                        final double t21 = 1.0 / t20;</span>
+<span class="source-line-no">113</span><span id="line-113">                        final double t22 = t10 * t11 * wx * wy;</span>
+<span class="source-line-no">114</span><span id="line-114">                        final double t23 = t3 + t4;</span>
+<span class="source-line-no">115</span><span id="line-115">                        final double t24 = t10 * t11 * t23;</span>
+<span class="source-line-no">116</span><span id="line-116">                        final double t25 = t24 + 1.0;</span>
+<span class="source-line-no">117</span><span id="line-117">                        final double t26 = alpha * t25;</span>
+<span class="source-line-no">118</span><span id="line-118">                        final double t27 = t15 + t22;</span>
+<span class="source-line-no">119</span><span id="line-119">                        final double t28 = t17 * uc;</span>
+<span class="source-line-no">120</span><span id="line-120">                        final double t29 = t2 + t4;</span>
+<span class="source-line-no">121</span><span id="line-121">                        final double t30 = t10 * t11 * t29;</span>
+<span class="source-line-no">122</span><span id="line-122">                        final double t31 = t30 + 1.0;</span>
+<span class="source-line-no">123</span><span id="line-123">                        final double t32 = gamma * t31;</span>
+<span class="source-line-no">124</span><span id="line-124">                        final double t45 = alpha * t27;</span>
+<span class="source-line-no">125</span><span id="line-125">                        final double t33 = t28 + t32 - t45;</span>
+<span class="source-line-no">126</span><span id="line-126">                        final double t34 = Y * t33;</span>
+<span class="source-line-no">127</span><span id="line-127">                        final double t35 = alpha * tx;</span>
+<span class="source-line-no">128</span><span id="line-128">                        final double t36 = gamma * ty;</span>
+<span class="source-line-no">129</span><span id="line-129">                        final double t37 = tz * uc;</span>
+<span class="source-line-no">130</span><span id="line-130">                        final double t40 = t15 - t22;</span>
+<span class="source-line-no">131</span><span id="line-131">                        final double t41 = gamma * t40;</span>
+<span class="source-line-no">132</span><span id="line-132">                        final double t42 = t14 * uc;</span>
+<span class="source-line-no">133</span><span id="line-133">                        final double t43 = t26 + t41 - t42;</span>
+<span class="source-line-no">134</span><span id="line-134">                        final double t44 = X * t43;</span>
+<span class="source-line-no">135</span><span id="line-135">                        final double t46 = t34 + t35 + t36 + t37 + t44;</span>
+<span class="source-line-no">136</span><span id="line-136">                        final double t47 = t21 * t46;</span>
+<span class="source-line-no">137</span><span id="line-137">                        final double t38 = -t47 + uc;</span>
+<span class="source-line-no">138</span><span id="line-138">                        final double t48 = 1.0 / (alpha * alpha * alpha);</span>
+<span class="source-line-no">139</span><span id="line-139">                        final double t49 = t38 * t38;</span>
+<span class="source-line-no">140</span><span id="line-140">                        final double t50 = t48 * t49 * 2.0;</span>
+<span class="source-line-no">141</span><span id="line-141">                        final double t51 = 1.0 / (alpha * alpha);</span>
+<span class="source-line-no">142</span><span id="line-142">                        final double t52 = X * t25;</span>
+<span class="source-line-no">143</span><span id="line-143">                        final double t57 = Y * t27;</span>
+<span class="source-line-no">144</span><span id="line-144">                        final double t53 = t52 - t57 + tx;</span>
+<span class="source-line-no">145</span><span id="line-145">                        final double t54 = t21 * t38 * t51 * t53 * 2.0;</span>
+<span class="source-line-no">146</span><span id="line-146">                        final double t55 = t50 + t54;</span>
+<span class="source-line-no">147</span><span id="line-147">                        final double t60 = beta * ty;</span>
+<span class="source-line-no">148</span><span id="line-148">                        final double t61 = beta * t40;</span>
+<span class="source-line-no">149</span><span id="line-149">                        final double t62 = t14 * vc;</span>
+<span class="source-line-no">150</span><span id="line-150">                        final double t63 = t61 - t62;</span>
+<span class="source-line-no">151</span><span id="line-151">                        final double t64 = X * t63;</span>
+<span class="source-line-no">152</span><span id="line-152">                        final double t65 = tz * vc;</span>
+<span class="source-line-no">153</span><span id="line-153">                        final double t66 = t17 * vc;</span>
+<span class="source-line-no">154</span><span id="line-154">                        final double t67 = beta * t31;</span>
+<span class="source-line-no">155</span><span id="line-155">                        final double t68 = t66 + t67;</span>
+<span class="source-line-no">156</span><span id="line-156">                        final double t69 = Y * t68;</span>
+<span class="source-line-no">157</span><span id="line-157">                        final double t70 = t60 + t64 + t65 + t69;</span>
+<span class="source-line-no">158</span><span id="line-158">                        final double t71 = t21 * t70;</span>
+<span class="source-line-no">159</span><span id="line-159">                        final double t56 = -t71 + vc;</span>
+<span class="source-line-no">160</span><span id="line-160">                        final double t58 = t49 * t51;</span>
+<span class="source-line-no">161</span><span id="line-161">                        final double t59 = 1.0 / (beta * beta);</span>
+<span class="source-line-no">162</span><span id="line-162">                        final double t72 = t56 * t56;</span>
+<span class="source-line-no">163</span><span id="line-163">                        final double t73 = t59 * t72;</span>
+<span class="source-line-no">164</span><span id="line-164">                        final double t74 = t58 + t73;</span>
+<span class="source-line-no">165</span><span id="line-165">                        final double t75 = 1.0 / (beta * beta * beta);</span>
+<span class="source-line-no">166</span><span id="line-166">                        final double t76 = t72 * t75 * 2.0;</span>
+<span class="source-line-no">167</span><span id="line-167">                        final double t77 = X * t40;</span>
+<span class="source-line-no">168</span><span id="line-168">                        final double t78 = Y * t31;</span>
+<span class="source-line-no">169</span><span id="line-169">                        final double t79 = t77 + t78 + ty;</span>
+<span class="source-line-no">170</span><span id="line-170">                        final double t80 = t21 * t56 * t59 * t79 * 2.0;</span>
+<span class="source-line-no">171</span><span id="line-171">                        final double t81 = t76 + t80;</span>
+<span class="source-line-no">172</span><span id="line-172">                        final double t82 = k0 * t74;</span>
+<span class="source-line-no">173</span><span id="line-173">                        final double t83 = t74 * t74;</span>
+<span class="source-line-no">174</span><span id="line-174">                        final double t84 = k1 * t83;</span>
+<span class="source-line-no">175</span><span id="line-175">                        final double t85 = t82 + t84;</span>
+<span class="source-line-no">176</span><span id="line-176">                        final double t86 = 1.0 / pow(t5, 3.0 / 2.0);</span>
+<span class="source-line-no">177</span><span id="line-177">                        final double t87 = 1.0 / (t5 * t5);</span>
+<span class="source-line-no">178</span><span id="line-178">                        final double t88 = t9 * t11 * wx * wz;</span>
+<span class="source-line-no">179</span><span id="line-179">                        final double t89 = t2 * t7 * t86 * wy;</span>
+<span class="source-line-no">180</span><span id="line-180">                        final double t90 = t2 * t10 * t87 * wy * 2.0;</span>
+<span class="source-line-no">181</span><span id="line-181">                        final double t91 = t7 * t86 * wx * wy;</span>
+<span class="source-line-no">182</span><span id="line-182">                        final double t92 = t2 * t7 * t86 * wz;</span>
+<span class="source-line-no">183</span><span id="line-183">                        final double t93 = t2 * t10 * t87 * wz * 2.0;</span>
+<span class="source-line-no">184</span><span id="line-184">                        final double t105 = t10 * t11 * wz;</span>
+<span class="source-line-no">185</span><span id="line-185">                        final double t106 = t9 * t11 * wx * wy;</span>
+<span class="source-line-no">186</span><span id="line-186">                        final double t94 = t91 + t92 + t93 - t105 - t106;</span>
+<span class="source-line-no">187</span><span id="line-187">                        final double t95 = t7 * t8;</span>
+<span class="source-line-no">188</span><span id="line-188">                        final double t96 = t2 * t9 * t11;</span>
+<span class="source-line-no">189</span><span id="line-189">                        final double t97 = t10 * t87 * wx * wy * wz * 2.0;</span>
+<span class="source-line-no">190</span><span id="line-190">                        final double t98 = t7 * t86 * wx * wy * wz;</span>
+<span class="source-line-no">191</span><span id="line-191">                        final double t103 = t2 * t7 * t86;</span>
+<span class="source-line-no">192</span><span id="line-192">                        final double t99 = t95 + t96 + t97 + t98 - t103;</span>
+<span class="source-line-no">193</span><span id="line-193">                        final double t100 = t10 * t29 * t87 * wx * 2.0;</span>
+<span class="source-line-no">194</span><span id="line-194">                        final double t101 = t7 * t29 * t86 * wx;</span>
+<span class="source-line-no">195</span><span id="line-195">                        final double t116 = t10 * t11 * wx * 2.0;</span>
+<span class="source-line-no">196</span><span id="line-196">                        final double t102 = t100 + t101 - t116;</span>
+<span class="source-line-no">197</span><span id="line-197">                        final double t104 = t7 * t86 * wx * wz;</span>
+<span class="source-line-no">198</span><span id="line-198">                        final double t107 = X * t94;</span>
+<span class="source-line-no">199</span><span id="line-199">                        final double t108 = Y * t99;</span>
+<span class="source-line-no">200</span><span id="line-200">                        final double t109 = t107 + t108;</span>
+<span class="source-line-no">201</span><span id="line-201">                        final double t110 = 1.0 / (t20 * t20);</span>
+<span class="source-line-no">202</span><span id="line-202">                        final double t111 = t10 * t23 * t87 * wx * 2.0;</span>
+<span class="source-line-no">203</span><span id="line-203">                        final double t112 = t7 * t23 * t86 * wx;</span>
+<span class="source-line-no">204</span><span id="line-204">                        final double t113 = t111 + t112;</span>
+<span class="source-line-no">205</span><span id="line-205">                        final double t117 = t10 * t11 * wy;</span>
+<span class="source-line-no">206</span><span id="line-206">                        final double t114 = t88 + t89 + t90 - t104 - t117;</span>
+<span class="source-line-no">207</span><span id="line-207">                        final double t115 = t94 * uc;</span>
+<span class="source-line-no">208</span><span id="line-208">                        final double t118 = t99 * uc;</span>
+<span class="source-line-no">209</span><span id="line-209">                        final double t119 = beta * t102;</span>
+<span class="source-line-no">210</span><span id="line-210">                        final double t262 = t99 * vc;</span>
+<span class="source-line-no">211</span><span id="line-211">                        final double t120 = t119 - t262;</span>
+<span class="source-line-no">212</span><span id="line-212">                        final double t121 = Y * t120;</span>
+<span class="source-line-no">213</span><span id="line-213">                        final double t122 = beta * t114;</span>
+<span class="source-line-no">214</span><span id="line-214">                        final double t123 = t94 * vc;</span>
+<span class="source-line-no">215</span><span id="line-215">                        final double t124 = t122 + t123;</span>
+<span class="source-line-no">216</span><span id="line-216">                        final double t263 = X * t124;</span>
+<span class="source-line-no">217</span><span id="line-217">                        final double t125 = t121 - t263;</span>
+<span class="source-line-no">218</span><span id="line-218">                        final double t126 = t21 * t125;</span>
+<span class="source-line-no">219</span><span id="line-219">                        final double t127 = t70 * t109 * t110;</span>
+<span class="source-line-no">220</span><span id="line-220">                        final double t128 = t126 + t127;</span>
+<span class="source-line-no">221</span><span id="line-221">                        final double t129 = gamma * t114;</span>
+<span class="source-line-no">222</span><span id="line-222">                        final double t141 = alpha * t113;</span>
+<span class="source-line-no">223</span><span id="line-223">                        final double t130 = t115 + t129 - t141;</span>
+<span class="source-line-no">224</span><span id="line-224">                        final double t131 = X * t130;</span>
+<span class="source-line-no">225</span><span id="line-225">                        final double t132 = -t88 + t89 + t90 + t104 - t117;</span>
+<span class="source-line-no">226</span><span id="line-226">                        final double t133 = alpha * t132;</span>
+<span class="source-line-no">227</span><span id="line-227">                        final double t142 = gamma * t102;</span>
+<span class="source-line-no">228</span><span id="line-228">                        final double t134 = t118 + t133 - t142;</span>
+<span class="source-line-no">229</span><span id="line-229">                        final double t135 = Y * t134;</span>
+<span class="source-line-no">230</span><span id="line-230">                        final double t136 = t131 + t135;</span>
+<span class="source-line-no">231</span><span id="line-231">                        final double t137 = t21 * t136;</span>
+<span class="source-line-no">232</span><span id="line-232">                        final double t143 = t46 * t109 * t110;</span>
+<span class="source-line-no">233</span><span id="line-233">                        final double t138 = t137 - t143;</span>
+<span class="source-line-no">234</span><span id="line-234">                        final double t139 = t38 * t51 * t138 * 2.0;</span>
+<span class="source-line-no">235</span><span id="line-235">                        final double t264 = t56 * t59 * t128 * 2.0;</span>
+<span class="source-line-no">236</span><span id="line-236">                        final double t140 = t139 - t264;</span>
+<span class="source-line-no">237</span><span id="line-237">                        final double t144 = t3 * t7 * t86 * wz;</span>
+<span class="source-line-no">238</span><span id="line-238">                        final double t145 = t3 * t10 * t87 * wz * 2.0;</span>
+<span class="source-line-no">239</span><span id="line-239">                        final double t146 = -t91 - t105 + t106 + t144 + t145;</span>
+<span class="source-line-no">240</span><span id="line-240">                        final double t147 = t3 * t7 * t86;</span>
+<span class="source-line-no">241</span><span id="line-241">                        final double t156 = t3 * t9 * t11;</span>
+<span class="source-line-no">242</span><span id="line-242">                        final double t148 = -t95 + t97 + t98 + t147 - t156;</span>
+<span class="source-line-no">243</span><span id="line-243">                        final double t149 = t10 * t29 * t87 * wy * 2.0;</span>
+<span class="source-line-no">244</span><span id="line-244">                        final double t150 = t7 * t29 * t86 * wy;</span>
+<span class="source-line-no">245</span><span id="line-245">                        final double t151 = t149 + t150;</span>
+<span class="source-line-no">246</span><span id="line-246">                        final double t152 = t9 * t11 * wy * wz;</span>
+<span class="source-line-no">247</span><span id="line-247">                        final double t153 = t3 * t7 * t86 * wx;</span>
+<span class="source-line-no">248</span><span id="line-248">                        final double t154 = t3 * t10 * t87 * wx * 2.0;</span>
+<span class="source-line-no">249</span><span id="line-249">                        final double t155 = t7 * t86 * wy * wz;</span>
+<span class="source-line-no">250</span><span id="line-250">                        final double t157 = Y * t146;</span>
+<span class="source-line-no">251</span><span id="line-251">                        final double t158 = X * t148;</span>
+<span class="source-line-no">252</span><span id="line-252">                        final double t159 = t157 + t158;</span>
+<span class="source-line-no">253</span><span id="line-253">                        final double t161 = t10 * t11 * wx;</span>
+<span class="source-line-no">254</span><span id="line-254">                        final double t160 = t152 + t153 + t154 - t155 - t161;</span>
+<span class="source-line-no">255</span><span id="line-255">                        final double t162 = beta * t160;</span>
+<span class="source-line-no">256</span><span id="line-256">                        final double t163 = t148 * vc;</span>
+<span class="source-line-no">257</span><span id="line-257">                        final double t164 = t162 + t163;</span>
+<span class="source-line-no">258</span><span id="line-258">                        final double t165 = X * t164;</span>
+<span class="source-line-no">259</span><span id="line-259">                        final double t166 = beta * t151;</span>
+<span class="source-line-no">260</span><span id="line-260">                        final double t267 = t146 * vc;</span>
+<span class="source-line-no">261</span><span id="line-261">                        final double t167 = t166 - t267;</span>
+<span class="source-line-no">262</span><span id="line-262">                        final double t268 = Y * t167;</span>
+<span class="source-line-no">263</span><span id="line-263">                        final double t168 = t165 - t268;</span>
+<span class="source-line-no">264</span><span id="line-264">                        final double t169 = t21 * t168;</span>
+<span class="source-line-no">265</span><span id="line-265">                        final double t269 = t70 * t110 * t159;</span>
+<span class="source-line-no">266</span><span id="line-266">                        final double t170 = t169 - t269;</span>
+<span class="source-line-no">267</span><span id="line-267">                        final double t171 = t56 * t59 * t170 * 2.0;</span>
+<span class="source-line-no">268</span><span id="line-268">                        final double t172 = -t152 + t153 + t154 + t155 - t161;</span>
+<span class="source-line-no">269</span><span id="line-269">                        final double t173 = alpha * t172;</span>
+<span class="source-line-no">270</span><span id="line-270">                        final double t174 = t146 * uc;</span>
+<span class="source-line-no">271</span><span id="line-271">                        final double t189 = gamma * t151;</span>
+<span class="source-line-no">272</span><span id="line-272">                        final double t175 = t173 + t174 - t189;</span>
+<span class="source-line-no">273</span><span id="line-273">                        final double t176 = Y * t175;</span>
+<span class="source-line-no">274</span><span id="line-274">                        final double t177 = t10 * t23 * t87 * wy * 2.0;</span>
+<span class="source-line-no">275</span><span id="line-275">                        final double t178 = t7 * t23 * t86 * wy;</span>
+<span class="source-line-no">276</span><span id="line-276">                        final double t190 = t10 * t11 * wy * 2.0;</span>
+<span class="source-line-no">277</span><span id="line-277">                        final double t179 = t177 + t178 - t190;</span>
+<span class="source-line-no">278</span><span id="line-278">                        final double t180 = gamma * t160;</span>
+<span class="source-line-no">279</span><span id="line-279">                        final double t181 = t148 * uc;</span>
+<span class="source-line-no">280</span><span id="line-280">                        final double t191 = alpha * t179;</span>
+<span class="source-line-no">281</span><span id="line-281">                        final double t182 = t180 + t181 - t191;</span>
+<span class="source-line-no">282</span><span id="line-282">                        final double t183 = X * t182;</span>
+<span class="source-line-no">283</span><span id="line-283">                        final double t184 = t176 + t183;</span>
+<span class="source-line-no">284</span><span id="line-284">                        final double t185 = t21 * t184;</span>
+<span class="source-line-no">285</span><span id="line-285">                        final double t192 = t46 * t110 * t159;</span>
+<span class="source-line-no">286</span><span id="line-286">                        final double t186 = t185 - t192;</span>
+<span class="source-line-no">287</span><span id="line-287">                        final double t187 = t38 * t51 * t186 * 2.0;</span>
+<span class="source-line-no">288</span><span id="line-288">                        final double t188 = t171 + t187;</span>
+<span class="source-line-no">289</span><span id="line-289">                        final double t193 = t4 * t9 * t11;</span>
+<span class="source-line-no">290</span><span id="line-290">                        final double t194 = t4 * t7 * t86 * wx;</span>
+<span class="source-line-no">291</span><span id="line-291">                        final double t195 = t4 * t10 * t87 * wx * 2.0;</span>
+<span class="source-line-no">292</span><span id="line-292">                        final double t196 = -t152 + t155 - t161 + t194 + t195;</span>
+<span class="source-line-no">293</span><span id="line-293">                        final double t197 = t4 * t7 * t86;</span>
+<span class="source-line-no">294</span><span id="line-294">                        final double t198 = t10 * t29 * t87 * wz * 2.0;</span>
+<span class="source-line-no">295</span><span id="line-295">                        final double t199 = t7 * t29 * t86 * wz;</span>
+<span class="source-line-no">296</span><span id="line-296">                        final double t204 = t10 * t11 * wz * 2.0;</span>
+<span class="source-line-no">297</span><span id="line-297">                        final double t200 = t198 + t199 - t204;</span>
+<span class="source-line-no">298</span><span id="line-298">                        final double t201 = t4 * t7 * t86 * wy;</span>
+<span class="source-line-no">299</span><span id="line-299">                        final double t202 = t4 * t10 * t87 * wy * 2.0;</span>
+<span class="source-line-no">300</span><span id="line-300">                        final double t203 = t88 - t104 - t117 + t201 + t202;</span>
+<span class="source-line-no">301</span><span id="line-301">                        final double t205 = t10 * t23 * t87 * wz * 2.0;</span>
+<span class="source-line-no">302</span><span id="line-302">                        final double t206 = t7 * t23 * t86 * wz;</span>
+<span class="source-line-no">303</span><span id="line-303">                        final double t207 = t196 * uc;</span>
+<span class="source-line-no">304</span><span id="line-304">                        final double t208 = t95 + t97 + t98 + t193 - t197;</span>
+<span class="source-line-no">305</span><span id="line-305">                        final double t209 = t203 * uc;</span>
+<span class="source-line-no">306</span><span id="line-306">                        final double t210 = -t95 + t97 + t98 - t193 + t197;</span>
+<span class="source-line-no">307</span><span id="line-307">                        final double t211 = alpha * t210;</span>
+<span class="source-line-no">308</span><span id="line-308">                        final double t231 = gamma * t200;</span>
+<span class="source-line-no">309</span><span id="line-309">                        final double t212 = t209 + t211 - t231;</span>
+<span class="source-line-no">310</span><span id="line-310">                        final double t213 = Y * t212;</span>
+<span class="source-line-no">311</span><span id="line-311">                        final double t214 = X * t196;</span>
+<span class="source-line-no">312</span><span id="line-312">                        final double t215 = Y * t203;</span>
+<span class="source-line-no">313</span><span id="line-313">                        final double t216 = t214 + t215;</span>
+<span class="source-line-no">314</span><span id="line-314">                        final double t217 = t196 * vc;</span>
+<span class="source-line-no">315</span><span id="line-315">                        final double t218 = beta * t208;</span>
+<span class="source-line-no">316</span><span id="line-316">                        final double t219 = t217 + t218;</span>
+<span class="source-line-no">317</span><span id="line-317">                        final double t220 = X * t219;</span>
+<span class="source-line-no">318</span><span id="line-318">                        final double t221 = beta * t200;</span>
+<span class="source-line-no">319</span><span id="line-319">                        final double t273 = t203 * vc;</span>
+<span class="source-line-no">320</span><span id="line-320">                        final double t222 = t221 - t273;</span>
+<span class="source-line-no">321</span><span id="line-321">                        final double t274 = Y * t222;</span>
+<span class="source-line-no">322</span><span id="line-322">                        final double t223 = t220 - t274;</span>
+<span class="source-line-no">323</span><span id="line-323">                        final double t224 = t21 * t223;</span>
+<span class="source-line-no">324</span><span id="line-324">                        final double t275 = t70 * t110 * t216;</span>
+<span class="source-line-no">325</span><span id="line-325">                        final double t225 = t224 - t275;</span>
+<span class="source-line-no">326</span><span id="line-326">                        final double t226 = t56 * t59 * t225 * 2.0;</span>
+<span class="source-line-no">327</span><span id="line-327">                        final double t227 = -t204 + t205 + t206;</span>
+<span class="source-line-no">328</span><span id="line-328">                        final double t228 = gamma * t208;</span>
+<span class="source-line-no">329</span><span id="line-329">                        final double t237 = alpha * t227;</span>
+<span class="source-line-no">330</span><span id="line-330">                        final double t229 = t207 + t228 - t237;</span>
+<span class="source-line-no">331</span><span id="line-331">                        final double t230 = X * t229;</span>
+<span class="source-line-no">332</span><span id="line-332">                        final double t232 = t213 + t230;</span>
+<span class="source-line-no">333</span><span id="line-333">                        final double t233 = t21 * t232;</span>
+<span class="source-line-no">334</span><span id="line-334">                        final double t238 = t46 * t110 * t216;</span>
+<span class="source-line-no">335</span><span id="line-335">                        final double t234 = t233 - t238;</span>
+<span class="source-line-no">336</span><span id="line-336">                        final double t235 = t38 * t51 * t234 * 2.0;</span>
+<span class="source-line-no">337</span><span id="line-337">                        final double t236 = t226 + t235;</span>
+<span class="source-line-no">338</span><span id="line-338">                        final double t239 = 1.0 / alpha;</span>
+<span class="source-line-no">339</span><span id="line-339">                        final double t240 = 1.0 / beta;</span>
+<span class="source-line-no">340</span><span id="line-340">                        final double t241 = t21 * t56 * t240 * 2.0;</span>
+<span class="source-line-no">341</span><span id="line-341">                        final double t242 = gamma * t21 * t38 * t51 * 2.0;</span>
+<span class="source-line-no">342</span><span id="line-342">                        final double t243 = t241 + t242;</span>
+<span class="source-line-no">343</span><span id="line-343">                        final double t244 = t21 * uc;</span>
+<span class="source-line-no">344</span><span id="line-344">                        final double t248 = t46 * t110;</span>
+<span class="source-line-no">345</span><span id="line-345">                        final double t245 = t244 - t248;</span>
+<span class="source-line-no">346</span><span id="line-346">                        final double t246 = t70 * t110;</span>
+<span class="source-line-no">347</span><span id="line-347">                        final double t285 = t21 * vc;</span>
+<span class="source-line-no">348</span><span id="line-348">                        final double t247 = t246 - t285;</span>
+<span class="source-line-no">349</span><span id="line-349">                        final double t249 = t38 * t51 * t245 * 2.0;</span>
+<span class="source-line-no">350</span><span id="line-350">                        final double t286 = t56 * t59 * t247 * 2.0;</span>
+<span class="source-line-no">351</span><span id="line-351">                        final double t250 = t249 - t286;</span>
+<span class="source-line-no">352</span><span id="line-352">                        final double t251 = k0 * t55;</span>
+<span class="source-line-no">353</span><span id="line-353">                        final double t252 = k1 * t55 * t74 * 2.0;</span>
+<span class="source-line-no">354</span><span id="line-354">                        final double t253 = t251 + t252;</span>
+<span class="source-line-no">355</span><span id="line-355">                        final double t254 = k0 * t81;</span>
+<span class="source-line-no">356</span><span id="line-356">                        final double t255 = k1 * t74 * t81 * 2.0;</span>
+<span class="source-line-no">357</span><span id="line-357">                        final double t256 = t254 + t255;</span>
+<span class="source-line-no">358</span><span id="line-358">                        final double t257 = t21 * t79;</span>
+<span class="source-line-no">359</span><span id="line-359">                        final double t258 = t21 * t79 * t85;</span>
+<span class="source-line-no">360</span><span id="line-360">                        final double t259 = k0 * t21 * t38 * t51 * t79 * 2.0;</span>
+<span class="source-line-no">361</span><span id="line-361">                        final double t260 = k1 * t21 * t38 * t51 * t74 * t79 * 4.0;</span>
+<span class="source-line-no">362</span><span id="line-362">                        final double t261 = t259 + t260;</span>
+<span class="source-line-no">363</span><span id="line-363">                        final double t265 = k0 * t140;</span>
+<span class="source-line-no">364</span><span id="line-364">                        final double t266 = k1 * t74 * t140 * 2.0;</span>
+<span class="source-line-no">365</span><span id="line-365">                        final double t270 = k0 * t188;</span>
+<span class="source-line-no">366</span><span id="line-366">                        final double t271 = k1 * t74 * t188 * 2.0;</span>
+<span class="source-line-no">367</span><span id="line-367">                        final double t272 = t270 + t271;</span>
+<span class="source-line-no">368</span><span id="line-368">                        final double t276 = k0 * t236;</span>
+<span class="source-line-no">369</span><span id="line-369">                        final double t277 = k1 * t74 * t236 * 2.0;</span>
+<span class="source-line-no">370</span><span id="line-370">                        final double t278 = t276 + t277;</span>
+<span class="source-line-no">371</span><span id="line-371">                        final double t279 = k0 * t21 * t38 * t239 * 2.0;</span>
+<span class="source-line-no">372</span><span id="line-372">                        final double t280 = k1 * t21 * t38 * t74 * t239 * 4.0;</span>
+<span class="source-line-no">373</span><span id="line-373">                        final double t281 = t279 + t280;</span>
+<span class="source-line-no">374</span><span id="line-374">                        final double t282 = k0 * t243;</span>
+<span class="source-line-no">375</span><span id="line-375">                        final double t283 = k1 * t74 * t243 * 2.0;</span>
+<span class="source-line-no">376</span><span id="line-376">                        final double t284 = t282 + t283;</span>
+<span class="source-line-no">377</span><span id="line-377">                        final double t287 = k0 * t250;</span>
+<span class="source-line-no">378</span><span id="line-378">                        final double t288 = k1 * t74 * t250 * 2.0;</span>
+<span class="source-line-no">379</span><span id="line-379">                        final double t289 = t287 + t288;</span>
+<span class="source-line-no">380</span><span id="line-380">                        // alpha</span>
+<span class="source-line-no">381</span><span id="line-381">                        A0[0][0] = t21 * t53 + t253</span>
+<span class="source-line-no">382</span><span id="line-382">                                        * (uc - t21 * (t34 + t35 + t36 + t37 + X * (t26 - t14 * uc + gamma * (t15 - t10 * t11 * wx * wy))))</span>
+<span class="source-line-no">383</span><span id="line-383">                                        + t21 * t53 * t85;</span>
+<span class="source-line-no">384</span><span id="line-384">                        // beta</span>
+<span class="source-line-no">385</span><span id="line-385">                        A0[0][1] = t38 * t256;</span>
+<span class="source-line-no">386</span><span id="line-386">                        // uc</span>
+<span class="source-line-no">387</span><span id="line-387">                        A0[0][3] = 1.0;</span>
+<span class="source-line-no">388</span><span id="line-388">                        // vc</span>
+<span class="source-line-no">389</span><span id="line-389">                        A0[0][4] = 0.0;</span>
+<span class="source-line-no">390</span><span id="line-390">                        // gamma</span>
+<span class="source-line-no">391</span><span id="line-391">                        A0[0][2] = t257 + t258 + t38 * t261;</span>
+<span class="source-line-no">392</span><span id="line-392">                        // k1</span>
+<span class="source-line-no">393</span><span id="line-393">                        A0[0][5] = -t38 * t74;</span>
+<span class="source-line-no">394</span><span id="line-394">                        // k2</span>
+<span class="source-line-no">395</span><span id="line-395">                        A0[0][6] = -t38 * t83;</span>
+<span class="source-line-no">396</span><span id="line-396">                        A0[0][7] = t137</span>
+<span class="source-line-no">397</span><span id="line-397">                                        - t143</span>
+<span class="source-line-no">398</span><span id="line-398">                                        + t38</span>
+<span class="source-line-no">399</span><span id="line-399">                                        * (t265 + t266)</span>
+<span class="source-line-no">400</span><span id="line-400">                                        + t85</span>
+<span class="source-line-no">401</span><span id="line-401">                                        * (t21</span>
+<span class="source-line-no">402</span><span id="line-402">                                                        * (X * (t115 - alpha * t113 + gamma * (t88 + t89 + t90 - t10 * t11 * wy - t7 * t86 * wx * wz)) + Y</span>
+<span class="source-line-no">403</span><span id="line-403">                                                                        * (t118 + alpha * (-t88 + t89 + t90 + t104 - t10 * t11 * wy) - gamma * t102)) - t46 * t109</span>
+<span class="source-line-no">404</span><span id="line-404">                                                                        * t110);</span>
+<span class="source-line-no">405</span><span id="line-405">                        A0[0][8] = t185 - t192 + t85 * t186 + t38 * t272;</span>
+<span class="source-line-no">406</span><span id="line-406">                        A0[0][9] = -t238</span>
+<span class="source-line-no">407</span><span id="line-407">                                        + t38</span>
+<span class="source-line-no">408</span><span id="line-408">                                        * t278</span>
+<span class="source-line-no">409</span><span id="line-409">                                        + t85</span>
+<span class="source-line-no">410</span><span id="line-410">                                        * t234</span>
+<span class="source-line-no">411</span><span id="line-411">                                        + t21</span>
+<span class="source-line-no">412</span><span id="line-412">                                        * (t213 + X</span>
+<span class="source-line-no">413</span><span id="line-413">                                                        * (t207 + gamma * (t95 + t97 + t98 + t193 - t4 * t7 * t86) - alpha</span>
+<span class="source-line-no">414</span><span id="line-414">                                                                        * (t205 + t206 - t10 * t11 * wz * 2.0)));</span>
+<span class="source-line-no">415</span><span id="line-415">                        A0[0][10] = alpha * t21 + t38 * t281 + alpha * t21 * t85;</span>
+<span class="source-line-no">416</span><span id="line-416">                        A0[0][11] = gamma * t21 + t38 * t284 + gamma * t21 * t85;</span>
+<span class="source-line-no">417</span><span id="line-417">                        A0[0][12] = t244 - t46 * t110 + t38 * t289 + t85 * t245;</span>
+<span class="source-line-no">418</span><span id="line-418"></span>
+<span class="source-line-no">419</span><span id="line-419">                        // alpha</span>
+<span class="source-line-no">420</span><span id="line-420">                        A0[1][0] = t56 * t253;</span>
+<span class="source-line-no">421</span><span id="line-421">                        // beta</span>
+<span class="source-line-no">422</span><span id="line-422">                        A0[1][1] = t257 + t258 + t56 * t256;</span>
+<span class="source-line-no">423</span><span id="line-423">                        // uc</span>
+<span class="source-line-no">424</span><span id="line-424">                        A0[1][3] = 0.0;</span>
+<span class="source-line-no">425</span><span id="line-425">                        // vc</span>
+<span class="source-line-no">426</span><span id="line-426">                        A0[1][4] = 1.0;</span>
+<span class="source-line-no">427</span><span id="line-427">                        // gamma</span>
+<span class="source-line-no">428</span><span id="line-428">                        A0[1][2] = t56 * t261;</span>
+<span class="source-line-no">429</span><span id="line-429">                        // k1</span>
+<span class="source-line-no">430</span><span id="line-430">                        A0[1][5] = -t56 * t74;</span>
+<span class="source-line-no">431</span><span id="line-431">                        // k2</span>
+<span class="source-line-no">432</span><span id="line-432">                        A0[1][6] = -t56 * t83;</span>
+<span class="source-line-no">433</span><span id="line-433"></span>
+<span class="source-line-no">434</span><span id="line-434">                        A0[1][7] = -t126 - t127 + t56 * (t265 + t266) - t85 * t128;</span>
+<span class="source-line-no">435</span><span id="line-435">                        A0[1][8] = t169 - t269 + t85 * t170 + t56 * t272;</span>
+<span class="source-line-no">436</span><span id="line-436">                        A0[1][9] = t224 - t275 + t85 * t225 + t56 * t278;</span>
+<span class="source-line-no">437</span><span id="line-437">                        A0[1][10] = t56 * t281;</span>
+<span class="source-line-no">438</span><span id="line-438">                        A0[1][11] = beta * t21 + t56 * t284 + beta * t21 * t85;</span>
+<span class="source-line-no">439</span><span id="line-439">                        A0[1][12] = -t246 + t285 - t85 * t247 + t56 * t289;</span>
+<span class="source-line-no">440</span><span id="line-440">                        // end of matlab code</span>
+<span class="source-line-no">441</span><span id="line-441"></span>
+<span class="source-line-no">442</span><span id="line-442">                        final double[][] Jij = new double[2][camParLength + viewParLength * M];</span>
+<span class="source-line-no">443</span><span id="line-443">                        System.arraycopy(A0[0], 0, Jij[0], 0, camParLength);</span>
+<span class="source-line-no">444</span><span id="line-444">                        System.arraycopy(A0[1], 0, Jij[1], 0, camParLength);</span>
+<span class="source-line-no">445</span><span id="line-445">                        System.arraycopy(A0[0], 7, Jij[0], camParLength + i * viewParLength, viewParLength);</span>
+<span class="source-line-no">446</span><span id="line-446">                        System.arraycopy(A0[1], 7, Jij[1], camParLength + i * viewParLength, viewParLength);</span>
+<span class="source-line-no">447</span><span id="line-447">                        //System.out.format("**** Jij = %d / %d\n", Jij.length, Jij[0].length);</span>
+<span class="source-line-no">448</span><span id="line-448">                        return Jij;</span>
+<span class="source-line-no">449</span><span id="line-449">                }</span>
+<span class="source-line-no">450</span><span id="line-450">        }</span>
+<span class="source-line-no">451</span><span id="line-451"></span>
+<span class="source-line-no">452</span><span id="line-452">}</span>
 
 
 

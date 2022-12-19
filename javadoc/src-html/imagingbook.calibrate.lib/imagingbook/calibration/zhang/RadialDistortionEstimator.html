@@ -13,26 +13,26 @@
 <div class="source-container">
 <pre><span class="source-line-no">001</span><span id="line-1">package imagingbook.calibration.zhang;</span>
 <span class="source-line-no">002</span><span id="line-2"></span>
-<span class="source-line-no">003</span><span id="line-3">import java.awt.geom.Point2D;</span>
-<span class="source-line-no">004</span><span id="line-4"></span>
-<span class="source-line-no">005</span><span id="line-5">import org.apache.commons.math3.linear.ArrayRealVector;</span>
-<span class="source-line-no">006</span><span id="line-6">import org.apache.commons.math3.linear.DecompositionSolver;</span>
-<span class="source-line-no">007</span><span id="line-7">import org.apache.commons.math3.linear.MatrixUtils;</span>
-<span class="source-line-no">008</span><span id="line-8">import org.apache.commons.math3.linear.RealMatrix;</span>
-<span class="source-line-no">009</span><span id="line-9">import org.apache.commons.math3.linear.RealVector;</span>
-<span class="source-line-no">010</span><span id="line-10">import org.apache.commons.math3.linear.SingularValueDecomposition;</span>
+<span class="source-line-no">003</span><span id="line-3">import org.apache.commons.math3.linear.ArrayRealVector;</span>
+<span class="source-line-no">004</span><span id="line-4">import org.apache.commons.math3.linear.DecompositionSolver;</span>
+<span class="source-line-no">005</span><span id="line-5">import org.apache.commons.math3.linear.MatrixUtils;</span>
+<span class="source-line-no">006</span><span id="line-6">import org.apache.commons.math3.linear.RealMatrix;</span>
+<span class="source-line-no">007</span><span id="line-7">import org.apache.commons.math3.linear.RealVector;</span>
+<span class="source-line-no">008</span><span id="line-8">import org.apache.commons.math3.linear.SingularValueDecomposition;</span>
+<span class="source-line-no">009</span><span id="line-9"></span>
+<span class="source-line-no">010</span><span id="line-10">import java.awt.geom.Point2D;</span>
 <span class="source-line-no">011</span><span id="line-11"></span>
 <span class="source-line-no">012</span><span id="line-12"></span>
 <span class="source-line-no">013</span><span id="line-13">/**</span>
 <span class="source-line-no">014</span><span id="line-14"> * This class defines methods for estimating the radial lens distortion parameters</span>
-<span class="source-line-no">015</span><span id="line-15"> * </span>
-<span class="source-line-no">016</span><span id="line-16"> * @author W. Burger</span>
-<span class="source-line-no">017</span><span id="line-17"> *</span>
-<span class="source-line-no">018</span><span id="line-18"> */</span>
-<span class="source-line-no">019</span><span id="line-19">public class RadialDistortionEstimator {</span>
-<span class="source-line-no">020</span><span id="line-20">        </span>
-<span class="source-line-no">021</span><span id="line-21">        /**</span>
-<span class="source-line-no">022</span><span id="line-22">         * Estimates the lens distortion from multiple views, starting from an initial (linear) camera model.</span>
+<span class="source-line-no">015</span><span id="line-15"> *</span>
+<span class="source-line-no">016</span><span id="line-16"> * @author WB</span>
+<span class="source-line-no">017</span><span id="line-17"> */</span>
+<span class="source-line-no">018</span><span id="line-18">public class RadialDistortionEstimator {</span>
+<span class="source-line-no">019</span><span id="line-19"></span>
+<span class="source-line-no">020</span><span id="line-20">        /**</span>
+<span class="source-line-no">021</span><span id="line-21">         * Estimates the lens distortion from multiple views, starting from an initial (linear) camera model.</span>
+<span class="source-line-no">022</span><span id="line-22">         *</span>
 <span class="source-line-no">023</span><span id="line-23">         * @param cam the initial (linear) camera model</span>
 <span class="source-line-no">024</span><span id="line-24">         * @param views a sequence of extrinsic view transformations</span>
 <span class="source-line-no">025</span><span id="line-25">         * @param modelPts the set of 2D model points (on the planar calibration target)</span>
