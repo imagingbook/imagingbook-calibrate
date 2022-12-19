@@ -2,19 +2,18 @@ package Calibration_Demos;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import imagingbook.calibration.zhang.data.CalibrationImage;
 import imagingbook.core.resource.ImageResource;
 
 /**
  * Opens Zhang's standard calibration images as a stack of RGB images. The image data are stored as a resource in the
- * local Java class tree. This plugin also demonstrates the use of the resource access mechanism.
+ * local Java class tree. Also demonstrates the use of the resource access mechanism.
  *
  * @author WB
  * @version 2021/08/22
  */
-public class Open_Test_Images implements PlugIn {
+public class Open_Test_Image_Stack implements PlugIn {
 	
 	static ImageResource resource = CalibrationImage.CalibImageStack;
 

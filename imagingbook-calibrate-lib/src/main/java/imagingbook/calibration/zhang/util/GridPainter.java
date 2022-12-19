@@ -11,6 +11,7 @@ import java.awt.geom.Point2D;
  * @author WB
  *
  */
+@Deprecated	// replaced by overlay drawing
 public class GridPainter {
 
 	// parameters to modify:

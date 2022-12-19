@@ -13,17 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-/*
- * This class holds the coordinates of the standard planar calibration
- * model used by Zhangs. The original can be found here:
- * http://research.microsoft.com/en-us/um/people/zhang/Calib/Calibration/Model.txt
- * 
- * Each line describes the 2D (X, Y) coordinates of the corners of a planar square. 
- * The points are assumed to lie in the Z = 0 plane in 3D.
- * All units are inches!
+/**
+ * This class holds the coordinates of the standard planar calibration model used by Zhangs. The original can be found
+ * here: http://research.microsoft.com/en-us/um/people/zhang/Calib/Calibration/Model.txt
+ * Each line describes the 2D (X, Y) coordinates of the corners of a planar square. The points are assumed to lie in the
+ * Z = 0 plane in 3D. All units are inches!
  */
-
 abstract class StandardModel {
+
+	private StandardModel() {}
 	
 	static final double[][] data = {	
 			{ 0, -0.5, 0.5, -0.5, 0.5, 0, 0, 0 },
@@ -91,20 +89,31 @@ abstract class StandardModel {
 			{ 5.33333, -6.72222, 5.83333, -6.72222, 5.83333, -6.22222, 5.33333, -6.22222 },
 			{ 6.22222, -6.72222, 6.72222, -6.72222, 6.72222, -6.22222, 6.22222, -6.22222 }
 	};
-	
-	private StandardModel() {
-	}
 
-	private static Point2D[] makePointArray() {
+// 	private static Point2D[] makePointArray() {
+// 		int n = data.length;
+// 		List<Point2D> points = new ArrayList<Point2D>();
+// 		for (int i = 0; i < n; i++) {
+// 			double[] sq = data[i];
+// //			points.add(new Point2D.Double(sq[0], sq[1]));	// p0
+// //			points.add(new Point2D.Double(sq[2], sq[3]));	// p1
+// //			points.add(new Point2D.Double(sq[4], sq[5]));	// p2
+// //			points.add(new Point2D.Double(sq[6], sq[7]));	// p3
+//
+// 			for (int j = 0; j < sq.length; j += 2) {
+// 				double x = sq[j];
+// 				double y = sq[j + 1];
+// 				points.add(new Point2D.Double(x, y));
+// 			}
+// 		}
+// 		return points.toArray(new Point2D[points.size()]);
+// 	}
+	
+	protected static Point2D[] getPoints() {
 		int n = data.length;
-		List<Point2D> points = new ArrayList<Point2D>();
+		List<Point2D> points = new ArrayList<>();
 		for (int i = 0; i < n; i++) {
 			double[] sq = data[i];
-//			points.add(new Point2D.Double(sq[0], sq[1]));	// p0
-//			points.add(new Point2D.Double(sq[2], sq[3]));	// p1
-//			points.add(new Point2D.Double(sq[4], sq[5]));	// p2
-//			points.add(new Point2D.Double(sq[6], sq[7]));	// p3
-
 			for (int j = 0; j < sq.length; j += 2) {
 				double x = sq[j];
 				double y = sq[j + 1];
@@ -112,10 +121,6 @@ abstract class StandardModel {
 			}
 		}
 		return points.toArray(new Point2D[points.size()]);
-	}
-	
-	protected static Point2D[] getPoints() {
-		return makePointArray();
 	}
 	
 }
