@@ -6,15 +6,13 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
-
-import java.awt.geom.Point2D;
-
 
 /**
  * This class defines methods for estimating the radial lens distortion parameters
@@ -32,7 +30,7 @@ public class RadialDistortionEstimator {
 	 * @param obsPts a sequence of 2D image point sets, one set for each view
 	 * @return a vector of lens distortion coefficients
 	 */
-	protected double[] estimateLensDistortion(Camera cam, ViewTransform[] views, Point2D[] modelPts, Point2D[][] obsPts) {
+	protected double[] estimateLensDistortion(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
 		final int M = views.length;		// the number of views
 		final int N = modelPts.length;	// the number of model points
 
@@ -44,7 +42,7 @@ public class RadialDistortionEstimator {
 
 		int l = 0;
 		for (int i = 0; i < M; i++) {
-			Point2D[] obs = obsPts[i];
+			Pnt2d[] obs = obsPts[i];
 
 			for (int j = 0; j < N; j++) {
 				// determine the radius in the ideal image plane
@@ -67,7 +65,7 @@ public class RadialDistortionEstimator {
 				D.setEntry(l * 2 + 1, 1, dv * r4);
 				
 				// observed image point
-				Point2D UV = obs[j];
+				Pnt2d UV = obs[j];
 				double U = UV.getX();
 				double V = UV.getY();
 				

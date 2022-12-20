@@ -6,7 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.data;
 
-import java.awt.geom.Point2D;
+
+import imagingbook.common.geometry.basic.Pnt2d;
 
 /**
  * This class holds the point coordinates for 5 test views of Zhang's calibration pattern. The original point data can
@@ -1316,13 +1317,13 @@ abstract class ObservedPoints {
 	
 	protected static final double[][][] pointData = {data1, data2, data3, data4, data5};
 		
-	protected static Point2D[] getPoints(int vn) {	// vn = 1,...,5
+	protected static Pnt2d[] getPoints(int vn) {	// vn = 1,...,5
 		int i = vn - 1;
 		if (i < 0 || i >= pointData.length) return null;
 		double[][] points = pointData[i];
-		Point2D[] pts = new Point2D[points.length];
+		Pnt2d[] pts = new Pnt2d[points.length];
 		for (int j = 0; j < points.length; j++) {
-			pts[j] = new Point2D.Double(points[j][0], points[j][1]);
+			pts[j] = Pnt2d.from(points[j][0], points[j][1]);
 		}
 		return pts;
 	}

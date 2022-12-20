@@ -17,6 +17,7 @@ import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.calibration.zhang.data.CalibrationImage;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.color.sets.BasicAwtColor;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.core.resource.ImageResource;
@@ -24,7 +25,6 @@ import imagingbook.core.resource.ImageResource;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,9 +72,9 @@ public class Do_Calibration implements PlugIn {
 			return;
 		}
 
-		Point2D[] modelPoints = ZhangData.getModelPoints();
+		Pnt2d[] modelPoints = ZhangData.getModelPoints();
 		Camera camReference = ZhangData.getCameraIntrinsics();
-		Point2D[][] obsPoints = ZhangData.getAllObservedPoints();
+		Pnt2d[][] obsPoints = ZhangData.getAllObservedPoints();
 
 		// Set up the calibrator ------------------------------------------
 
@@ -123,7 +123,7 @@ public class Do_Calibration implements PlugIn {
 			for (int i = 0; i < M; i++) {
 				int sliceNo = i + 1;
 				ola.setStackPosition(sliceNo);
-				Point2D[] projPnts = camFinal.project(finalViews[i], modelPoints);
+				Pnt2d[] projPnts = camFinal.project(finalViews[i], modelPoints);
 				for (Shape s : makeQuads(projPnts)) {
 					ola.addShape(s);
 				}
@@ -133,7 +133,7 @@ public class Do_Calibration implements PlugIn {
 		// draw the (pre-calculated) image corner points used for calibration:
 		if (MarkCornerPoints) {
 			ola.setStroke(new ColoredStroke(StrokeWidth, CornerMarkColor.getColor()));
-			// Point2D[][] obsPoints = ZhangData.getAllObservedPoints();
+			// Pnt2d[][] obsPoints = ZhangData.getAllObservedPoints();
 			for (int i = 0; i < obsPoints.length; i++) {
 				int sliceNo = i + 1;
 				ola.setStackPosition(sliceNo);
@@ -146,14 +146,14 @@ public class Do_Calibration implements PlugIn {
 		testIm.setOverlay(ola.getOverlay());
 	}
 
-	private List<Shape> makeQuads(Point2D[] pnts) {
+	private List<Shape> makeQuads(Pnt2d[] pnts) {
 		List<Shape> shapes = new ArrayList<>(pnts.length);
 		// 4 successive points make a quad (projected rectangle)
 		for (int i = 0; i < pnts.length; i += 4) {
 			Path2D path = new Path2D.Double();
 			path.moveTo(pnts[i].getX(), pnts[i].getY());
 			for (int j = 1; j < 4; j++) {
-				Point2D p = pnts[i + j];
+				Pnt2d p = pnts[i + j];
 				path.lineTo(p.getX(), p.getY());
 			}
 			path.closePath();
@@ -162,7 +162,7 @@ public class Do_Calibration implements PlugIn {
 		return shapes;
 	}
 
-	private List<Shape> makeCircleShapes(Point2D[] pnts) {	// , Color lineCol
+	private List<Shape> makeCircleShapes(Pnt2d[] pnts) {	// , Color lineCol
 		final double r = CornerMarkRadius;
 		final double ofs = 0.5;	// pixel offset (elements to be placed at pixel centers)
 		List<Shape> shapes = new ArrayList<>(pnts.length);

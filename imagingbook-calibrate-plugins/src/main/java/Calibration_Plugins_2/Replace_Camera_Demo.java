@@ -12,16 +12,14 @@ import ij.ImageStack;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
-import imagingbook.calibration.zhang.data.CalibrationImage;
-import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.InterCameraMapping;
+import imagingbook.calibration.zhang.data.CalibrationImage;
+import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.geometry.mappings.Mapping2D;
 import imagingbook.common.image.ImageMapper;
 import imagingbook.common.image.interpolation.InterpolationMethod;
 import imagingbook.core.resource.ImageResource;
-
-import java.util.Locale;
 
 import static imagingbook.common.ij.DialogUtils.splitLines;
 

@@ -18,6 +18,7 @@ import imagingbook.calibration.zhang.data.CalibrationImage;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.common.color.sets.BasicAwtColor;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.core.resource.ImageResource;
@@ -25,7 +26,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 
 import java.awt.Shape;
 import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,7 +62,7 @@ public class View_Interpolation_Demo implements PlugIn {
 		}
 
 		Camera cam = ZhangData.getCameraIntrinsics();
-		Point2D[] modelPoints = ZhangData.getModelPoints();
+		Pnt2d[] modelPoints = ZhangData.getModelPoints();
 
 		final int w = testIm.getWidth();
 		final int h = testIm.getHeight();
@@ -109,29 +109,29 @@ public class View_Interpolation_Demo implements PlugIn {
 
 	// ----------------------------------------------------------------------
 
-	List<Shape> makePyramids(Camera cam, ViewTransform view, Point2D[] modelPoints) {
+	List<Shape> makePyramids(Camera cam, ViewTransform view, Pnt2d[] modelPoints) {
 		List<Shape> shapes = new ArrayList<>();
 		for (int i = 0; i < modelPoints.length; i += 4) {
-			Point2D[] modelSq = new Point2D[4];
-			Point2D[] imageSq = new Point2D[4];
+			Pnt2d[] modelSq = new Pnt2d[4];
+			Pnt2d[] imageSq = new Pnt2d[4];
 			// 3D points p0,...,p3 define a model square in the Z=0 plane
 			for (int j = 0; j < 4; j++) {
 				modelSq[j] = modelPoints[i + j];
-				imageSq[j] = MathUtil.toPoint2D(cam.project(view, modelSq[j]));
+				imageSq[j] = MathUtil.toPnt2d(cam.project(view, modelSq[j]));
 			}
 			// make the 3D pyramid peak and project to 2D:
 			double[] modelPeak3d = new double[3];
 			modelPeak3d[0] = (modelSq[0].getX() + modelSq[2].getX()) / 2;	// X
 			modelPeak3d[1] = (modelSq[0].getY() + modelSq[2].getY()) / 2;	// Y
 			modelPeak3d[2] = PeakHeightZ;	// Z
-			Point2D pk = MathUtil.toPoint2D(cam.project(view, modelPeak3d));
+			Pnt2d pk = MathUtil.toPnt2d(cam.project(view, modelPeak3d));
 			// make and add the projected pyramid for this model quad:
 			shapes.add(makePyramidShape(imageSq, pk));
 		}
 		return shapes;
 	}
 
-	private Shape makePyramidShape(Point2D[] pnts, Point2D pk) {    // takes 4 base points + 1 peak point
+	private Shape makePyramidShape(Pnt2d[] pnts, Pnt2d pk) {    // takes 4 base points + 1 peak point
 		Path2D path = new Path2D.Double();
 		// draw the base quad:
 		path.moveTo(pnts[0].getX(), pnts[0].getY());

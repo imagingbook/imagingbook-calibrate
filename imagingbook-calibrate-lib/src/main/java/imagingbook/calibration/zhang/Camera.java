@@ -7,6 +7,7 @@
 package imagingbook.calibration.zhang;
 
 import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.solvers.NewtonRaphsonSolver;
@@ -14,8 +15,6 @@ import org.apache.commons.math3.analysis.solvers.UnivariateDifferentiableSolver;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-
-import java.awt.geom.Point2D;
 
 
 /**
@@ -93,7 +92,7 @@ public class Camera {
 	 * @param P a single X/Y world point (with Z = 0)
 	 * @return the projected 2D image coordinates
 	 */
-	public double[] project(ViewTransform view, Point2D P) {
+	public double[] project(ViewTransform view, Pnt2d P) {
 		double[] XY0 = new double[] {P.getX(), P.getY(), 0}; 
 		return this.project(view, XY0);
 	}
@@ -106,11 +105,11 @@ public class Camera {
 	 * @param PP a set of X/Y world points (with Z = 0)
 	 * @return the projected 2D image coordinates
 	 */
-	public Point2D[] project(ViewTransform view, Point2D[] PP) {
-		Point2D[] imagePoints = new Point2D[PP.length];
+	public Pnt2d[] project(ViewTransform view, Pnt2d[] PP) {
+		Pnt2d[] imagePoints = new Pnt2d[PP.length];
 		for (int j = 0; j < PP.length; j++) {
 			double[] uv = project(view, PP[j]);
-			imagePoints[j] = MathUtil.toPoint2D(uv);
+			imagePoints[j] = MathUtil.toPnt2d(uv);
 		}
 		return imagePoints;
 	}
@@ -141,7 +140,7 @@ public class Camera {
 	 * @param P a point in 3D world coordinates (Z = 0)
 	 * @return the 2D ideal projection
 	 */
-	public double[] projectNormalized(ViewTransform view, Point2D P) {
+	public double[] projectNormalized(ViewTransform view, Pnt2d P) {
 		double[] XY0 = {P.getX(), P.getY(), 0};
 		return projectNormalized(view, XY0);
 	}

@@ -6,10 +6,10 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 
-import java.awt.geom.Point2D;
 import java.util.Arrays;
 
 /**
@@ -22,7 +22,7 @@ import java.util.Arrays;
  */
 public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	
-	NonlinearOptimizerNumeric(Point2D[] modelPts, Point2D[][] obsPts) {
+	NonlinearOptimizerNumeric(Pnt2d[] modelPts, Pnt2d[][] obsPts) {
 		super(modelPts, obsPts);
 	}
 	
@@ -79,7 +79,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 		        	double[] w = Arrays.copyOfRange(params, m, m + viewParLength);
 		        	ViewTransform view = new ViewTransform(w);
 		        	for (int j = 0; j < N; j++) {	// for all model points: calculate disturbed value
-		        		Point2D Pj = modelPts[j];
+		        		Pnt2d Pj = modelPts[j];
 		        		double[] uvMod = camMod.project(view, Pj);
 		        		J[r + 0][k] = (uvMod[0] - refValues[r + 0]) / delta;   // dX
 		        		J[r + 1][k] = (uvMod[1] - refValues[r + 1]) / delta;   // dY
@@ -102,7 +102,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        		ViewTransform view = new ViewTransform(w);
 	        		int r = 2 * i * N;	// row
 	        		for (int j = 0; j < N; j++) {		// for all model points: calculate disturbed value
-	        			Point2D Pj = modelPts[j];
+	        			Pnt2d Pj = modelPts[j];
 	        			double[] uvMod = camOrig.project(view, Pj);
 	        			J[r + 0][c + k] = (uvMod[0] - refValues[r + 0]) / delta;   // dX
 	        			J[r + 1][c + k] = (uvMod[1] - refValues[r + 1]) / delta;   // dY
@@ -164,7 +164,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 		        	double[] w = Arrays.copyOfRange(params, start, start + viewParLength);
 		        	ViewTransform view = new ViewTransform(w);
 		        	for (int n = 0; n < N; n++) {	// for all model points: calculate disturbed value
-		        		Point2D Pj = modelPts[n];
+		        		Pnt2d Pj = modelPts[n];
 		        		double[] uvMod = camMod.project(view, Pj);
 		        		J[row + 0][col] = (uvMod[0] - refValues[row + 0]) / delta;   // du
 		        		J[row + 1][col] = (uvMod[1] - refValues[row + 1]) / delta;   // dv	

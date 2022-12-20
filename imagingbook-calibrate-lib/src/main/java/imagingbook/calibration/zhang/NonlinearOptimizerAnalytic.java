@@ -6,10 +6,9 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-
-import java.awt.geom.Point2D;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.pow;
@@ -19,7 +18,7 @@ import static java.lang.Math.sqrt;
 
 public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 
-	NonlinearOptimizerAnalytic(Point2D[] modelPts, Point2D[][] obsPts) {
+	NonlinearOptimizerAnalytic(Pnt2d[] modelPts, Pnt2d[][] obsPts) {
 		super(modelPts, obsPts);
 	}
 

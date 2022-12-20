@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
@@ -15,7 +16,6 @@ import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunctio
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
-import java.awt.geom.Point2D;
 import java.util.Arrays;
 
 /**
@@ -29,8 +29,8 @@ public abstract class NonlinearOptimizer {
 	private static int maxEvaluations = 1000;
 	private static int maxIterations = 1000;
 
-	final Point2D[] modelPts;
-	final Point2D[][] obsPts;
+	final Pnt2d[] modelPts;
+	final Pnt2d[][] obsPts;
 	final int M;        // number of views
 	final int N;        // number of model points
 	int camParLength;        // number of camera parameters (7)
@@ -41,7 +41,7 @@ public abstract class NonlinearOptimizer {
 	private ViewTransform[] initViews = null;
 	private ViewTransform[] finalViews = null;
 
-	NonlinearOptimizer(Point2D[] modelPts, Point2D[][] obsPts) {
+	NonlinearOptimizer(Pnt2d[] modelPts, Pnt2d[][] obsPts) {
 		this.modelPts = modelPts;
 		this.obsPts = obsPts;
 		this.M = obsPts.length;

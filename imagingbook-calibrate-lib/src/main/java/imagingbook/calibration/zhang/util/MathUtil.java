@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.util;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.exception.DivideByZeroException;
 import org.apache.commons.math3.complex.Quaternion;
@@ -15,8 +16,6 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
-
-import java.awt.geom.Point2D;
 
 /**
  * Utility math methods used for camera calibration.
@@ -28,12 +27,12 @@ public abstract class MathUtil {
 
 	private MathUtil() {}
 
-	public static double[] toArray(Point2D p) {
+	public static double[] toArray(Pnt2d p) {
 		return new double[] {p.getX(), p.getY()};
 	}
 	
-	public static Point2D.Double toPoint2D(double[] xy) {
-		return new Point2D.Double(xy[0], xy[1]);
+	public static Pnt2d toPnt2d(double[] xy) {
+		return Pnt2d.from(xy);
 	}
 	
 	public static RealVector crossProduct3x3(RealVector A, RealVector B) {

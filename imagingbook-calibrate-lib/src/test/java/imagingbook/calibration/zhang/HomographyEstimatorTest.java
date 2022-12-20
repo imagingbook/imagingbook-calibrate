@@ -8,12 +8,12 @@
  */
 package imagingbook.calibration.zhang;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.junit.Test;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -36,26 +36,26 @@ public class HomographyEstimatorTest {
         double[][] HrealN = Hreal.scalarMultiply(1/Hreal.getEntry(2, 2)).getData();
         // System.out.println("H (real normalized) = \n" + Matrix.toString(HrealN));
 
-        List<Point2D> pntlistA = new ArrayList<Point2D>();
-        pntlistA.add(new Point2D.Double(10, 7));
-        pntlistA.add(new Point2D.Double(3, -1));
-        pntlistA.add(new Point2D.Double(5, 5));
-        pntlistA.add(new Point2D.Double(-6, 13));
-        pntlistA.add(new Point2D.Double(0, 1));
-        pntlistA.add(new Point2D.Double(2, 3));
+        List<Pnt2d> pntlistA = new ArrayList<Pnt2d>();
+        pntlistA.add(Pnt2d.from(10, 7));
+        pntlistA.add(Pnt2d.from(3, -1));
+        pntlistA.add(Pnt2d.from(5, 5));
+        pntlistA.add(Pnt2d.from(-6, 13));
+        pntlistA.add(Pnt2d.from(0, 1));
+        pntlistA.add(Pnt2d.from(2, 3));
 
-        List<Point2D> pntlistB = new ArrayList<Point2D>();
-        for (Point2D a : pntlistA) {
+        List<Pnt2d> pntlistB = new ArrayList<Pnt2d>();
+        for (Pnt2d a : pntlistA) {
             pntlistB.add(mapPointWithNoise(Hreal, a, NOISE));
         }
 
-        Point2D[] pntsA = pntlistA.toArray(new Point2D[0]);
-        Point2D[] pntsB = pntlistB.toArray(new Point2D[0]);
+        Pnt2d[] pntsA = pntlistA.toArray(new Pnt2d[0]);
+        Pnt2d[] pntsB = pntlistB.toArray(new Pnt2d[0]);
 
         // System.out.println("\nPoint correspondences:");
         // for (int i = 0; i < pntsA.length; i++) {
-        //     Point2D a = pntsA[i];
-        //     Point2D b = pntsB[i];
+        //     Pnt2d a = pntsA[i];
+        //     Pnt2d b = pntsB[i];
         //     System.out.format("(%.4f, %.4f) -> (%.4f, %.4f)\n", a.getX(), a.getY(), b.getX(), b.getY());
         // }
         // System.out.println();
@@ -80,7 +80,7 @@ public class HomographyEstimatorTest {
         }
     }
 
-    private static void runTest(HomographyEstimator he, Point2D[] pntsA, Point2D[] pntsB,
+    private static void runTest(HomographyEstimator he, Pnt2d[] pntsA, Pnt2d[] pntsB,
                                 double[][] Hexpd, double errExpd, double maxErrExpd) {
         RealMatrix Hest = he.estimateHomography(pntsA, pntsB);
        // System.out.println("H (estim.) = ");
@@ -90,7 +90,7 @@ public class HomographyEstimatorTest {
             assertArrayEquals(Hexpd[i], Hest.getData()[i], 1e-4);
         }
 
-        Point2D[] pntsC = new Point2D[pntsA.length];
+        Pnt2d[] pntsC = new Pnt2d[pntsA.length];
         for (int i = 0; i < pntsA.length; i++) {
             pntsC[i] = mapPoint(Hest, pntsA[i]);
         }
@@ -99,9 +99,9 @@ public class HomographyEstimatorTest {
         double sumDist2 = 0;
         double maxDist2 = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < pntsA.length; i++) {
-            Point2D a = pntsA[i];
-            Point2D b = pntsB[i];
-            Point2D c = pntsC[i];
+            Pnt2d a = pntsA[i];
+            Pnt2d b = pntsB[i];
+            Pnt2d c = pntsC[i];
             double dist2 = b.distanceSq(c);
             sumDist2 += dist2;
             maxDist2 = Math.max(maxDist2, dist2);
@@ -113,17 +113,17 @@ public class HomographyEstimatorTest {
         assertEquals(maxErrExpd, Math.sqrt(maxDist2), 1e-4);
     }
 
-    private static Point2D mapPoint(RealMatrix H, Point2D p) {
+    private static Pnt2d mapPoint(RealMatrix H, Pnt2d p) {
         double[] xa = {p.getX(), p.getY()};
         double[] xb = HomographyEstimator.transform(xa, H);
-        return new Point2D.Double(xb[0], xb[1]);
+        return Pnt2d.from(xb[0], xb[1]);
     }
 
-    private static Point2D mapPointWithNoise(RealMatrix H, Point2D p, double noise) {
+    private static Pnt2d mapPointWithNoise(RealMatrix H, Pnt2d p, double noise) {
         double[] xa = {p.getX(), p.getY()};
         double[] xb = HomographyEstimator.transform(xa, H);
         double xn = noise * rand.nextGaussian();
         double yn = noise * rand.nextGaussian();
-        return new Point2D.Double(xb[0] + xn, xb[1] + yn);
+        return Pnt2d.from(xb[0] + xn, xb[1] + yn);
     }
 }

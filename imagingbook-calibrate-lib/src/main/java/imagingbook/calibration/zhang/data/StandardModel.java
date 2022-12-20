@@ -6,7 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.data;
 
-import java.awt.geom.Point2D;
+import imagingbook.common.geometry.basic.Pnt2d;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,37 +89,37 @@ abstract class StandardModel {
 			{ 6.22222, -6.72222, 6.72222, -6.72222, 6.72222, -6.22222, 6.22222, -6.22222 }
 	};
 
-// 	private static Point2D[] makePointArray() {
+// 	private static Pnt2d[] makePointArray() {
 // 		int n = data.length;
-// 		List<Point2D> points = new ArrayList<Point2D>();
+// 		List<Pnt2d> points = new ArrayList<Pnt2d>();
 // 		for (int i = 0; i < n; i++) {
 // 			double[] sq = data[i];
-// //			points.add(new Point2D.Double(sq[0], sq[1]));	// p0
-// //			points.add(new Point2D.Double(sq[2], sq[3]));	// p1
-// //			points.add(new Point2D.Double(sq[4], sq[5]));	// p2
-// //			points.add(new Point2D.Double(sq[6], sq[7]));	// p3
+// //			points.add(new Pnt2d.Double(sq[0], sq[1]));	// p0
+// //			points.add(new Pnt2d.Double(sq[2], sq[3]));	// p1
+// //			points.add(new Pnt2d.Double(sq[4], sq[5]));	// p2
+// //			points.add(new Pnt2d.Double(sq[6], sq[7]));	// p3
 //
 // 			for (int j = 0; j < sq.length; j += 2) {
 // 				double x = sq[j];
 // 				double y = sq[j + 1];
-// 				points.add(new Point2D.Double(x, y));
+// 				points.add(new Pnt2d.Double(x, y));
 // 			}
 // 		}
-// 		return points.toArray(new Point2D[points.size()]);
+// 		return points.toArray(new Pnt2d[points.size()]);
 // 	}
 	
-	protected static Point2D[] getPoints() {
+	protected static Pnt2d[] getPoints() {
 		int n = data.length;
-		List<Point2D> points = new ArrayList<>();
+		List<Pnt2d> points = new ArrayList<>();
 		for (int i = 0; i < n; i++) {
 			double[] sq = data[i];
 			for (int j = 0; j < sq.length; j += 2) {
 				double x = sq[j];
 				double y = sq[j + 1];
-				points.add(new Point2D.Double(x, y));
+				points.add(Pnt2d.from(x, y));
 			}
 		}
-		return points.toArray(new Point2D[points.size()]);
+		return points.toArray(new Pnt2d[points.size()]);
 	}
 	
 }

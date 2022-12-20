@@ -7,6 +7,7 @@
 package imagingbook.calibration.zhang;
 
 import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
@@ -16,8 +17,6 @@ import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-
-import java.awt.geom.Point2D;
 
 /**
  * This class defines methods for estimating the homography (projective) transformation between pairs of 2D point sets.
@@ -53,7 +52,7 @@ public class HomographyEstimator {
 	 * @param obsPoints a sequence 2D image point sets (one set per view).
 	 * @return the sequence of estimated homographies (3 x 3 matrices), one for each view
 	 */
-	public RealMatrix[] estimateHomographies(Point2D[] modelPts, Point2D[][] obsPoints) {
+	public RealMatrix[] estimateHomographies(Pnt2d[] modelPts, Pnt2d[][] obsPoints) {
 		final int M = obsPoints.length;
 		RealMatrix[] homographies = new RealMatrix[M];
 		for (int i = 0; i < M; i++) {
@@ -73,7 +72,7 @@ public class HomographyEstimator {
 	 * @param ptsB the 2nd sequence of 2D points
 	 * @return the estimated homography (3 x 3 matrix)
 	 */
-	public RealMatrix estimateHomography(Point2D[] ptsA, Point2D[] ptsB) {
+	public RealMatrix estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
 		int n = ptsA.length;
 
 		RealMatrix Na = (normalizePointCoordinates) ? getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
@@ -121,7 +120,7 @@ public class HomographyEstimator {
 	 * @param pntsB the 2nd sequence of 2D points
 	 * @return the refined homography matrix
 	 */
-	public RealMatrix refineHomography(RealMatrix Hinit, Point2D[] pntsA, Point2D[] pntsB) {
+	public RealMatrix refineHomography(RealMatrix Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
 		final int M = pntsA.length;
 		double[] observed = new double[2 * M];
 		for (int i = 0; i < M; i++) {
@@ -154,7 +153,7 @@ public class HomographyEstimator {
 	}
 
 
-	private MultivariateVectorFunction getValueFunction(final Point2D[] X) {
+	private MultivariateVectorFunction getValueFunction(final Pnt2d[] X) {
 		// System.out.println("MultivariateVectorFunction getValueFunction");
 		return new MultivariateVectorFunction() {
 			public double[] value(double[] h) {
@@ -172,7 +171,7 @@ public class HomographyEstimator {
 		};
 	}
 
-	protected MultivariateMatrixFunction getJacobianFunction(final Point2D[] X) {
+	protected MultivariateMatrixFunction getJacobianFunction(final Pnt2d[] X) {
 		return new MultivariateMatrixFunction() {
 			public double[][] value(double[] h) {
 				final double[][] J = new double[2 * X.length][];
@@ -203,7 +202,7 @@ public class HomographyEstimator {
 		return MathUtil.toCartesian(pAt); // need to de-homogenize, since pAt[2] == 1?
 	}
 
-	private RealMatrix getNormalisationMatrix(Point2D[] pnts) {
+	private RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
 		final int N = pnts.length;
 		double[] x = new double[N];
 		double[] y = new double[N];

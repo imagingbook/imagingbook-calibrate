@@ -7,10 +7,10 @@
 package imagingbook.calibration.zhang;
 
 import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.util.ParameterBundle;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,10 +51,10 @@ public class Calibrator {
 	}
 	
 	private int M;								// the number of camera views
-	private final Point2D[] modelPts;			// the sequence of 2D points in the planar model
-	private final List<Point2D[]> imgPntSet; 	// list of vectors containing observed 2D image points for each view
+	private final Pnt2d[] modelPts;			// the sequence of 2D points in the planar model
+	private final List<Pnt2d[]> imgPntSet; 	// list of vectors containing observed 2D image points for each view
 	
-	private Point2D[][] obsPts = null;
+	private Pnt2d[][] obsPts = null;
 	private final Parameters params;
 	private Camera initCam, finalCam;
 	private ViewTransform[] initViews, finalViews;
@@ -68,7 +68,7 @@ public class Calibrator {
 	 * @param model a sequence of 2D points specifying the x/y coordinates of the planar calibration pattern (assuming
 	 * zero z-coordinates)
 	 */
-	public Calibrator(Parameters params, Point2D[] model) {
+	public Calibrator(Parameters params, Pnt2d[] model) {
 		this.params = (params != null) ? params : new Parameters();
 		this.modelPts = model;
 		this.imgPntSet = new ArrayList<>();
@@ -79,7 +79,7 @@ public class Calibrator {
 	 *
 	 * @param pts a sequence of 2D image points
 	 */
-	public void addView(Point2D[] pts) {
+	public void addView(Pnt2d[] pts) {
 		imgPntSet.add(pts);
 	}
 
@@ -94,7 +94,7 @@ public class Calibrator {
 			throw new IllegalStateException("Calibration: at least two views needed");
 		}
 		
-		obsPts = imgPntSet.toArray(new Point2D[0][]);
+		obsPts = imgPntSet.toArray(new Pnt2d[0][]);
 		
 		// Step 1: Calculate the homographies for each of the given N views:
 		HomographyEstimator hest = new HomographyEstimator(params.normalizePointCoordinates, true);
@@ -146,7 +146,7 @@ public class Calibrator {
 	 * @param observed a set of observed image points
 	 * @return the squared projection error (measured in pixel units)
 	 */
-    public double getProjectionError(Camera cam, ViewTransform view, Point2D[] observed) {
+    public double getProjectionError(Camera cam, ViewTransform view, Pnt2d[] observed) {
     	double sqError = 0;
 		for (int j = 0; j < modelPts.length; j++) {
 			double[] uv = cam.project(view, modelPts[j]);
@@ -167,7 +167,7 @@ public class Calibrator {
 	 * @param observed a sequence of sets of observed image points
 	 * @return the squared projection error (measured in pixel units)
 	 */
-    public double getProjectionError(Camera cam, ViewTransform[] views, Point2D[][] observed) {
+    public double getProjectionError(Camera cam, ViewTransform[] views, Pnt2d[][] observed) {
     	double totalError = 0;
     	for (int i = 0; i < views.length; i++) {
     		totalError = totalError + getProjectionError(cam, views[i], observed[i]);

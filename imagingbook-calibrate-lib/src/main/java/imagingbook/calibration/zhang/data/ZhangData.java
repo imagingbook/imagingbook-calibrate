@@ -8,9 +8,8 @@ package imagingbook.calibration.zhang.data;
 
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
+import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math3.linear.MatrixUtils;
-
-import java.awt.geom.Point2D;
 
 
 /**
@@ -24,16 +23,16 @@ public abstract class ZhangData {
 	public static final int ImageHeight = 480;
 	public static final int NumberOfViews = ObservedPoints.pointData.length;
 	
-	public static Point2D[] getModelPoints() {
+	public static Pnt2d[] getModelPoints() {
 		return StandardModel.getPoints();
 	}
 	
-	public static Point2D[] getObservedPoints(int viewNr) {
+	public static Pnt2d[] getObservedPoints(int viewNr) {
 		return ObservedPoints.getPoints(viewNr);
 	}
 	
-	public static Point2D[][] getAllObservedPoints() {
-		Point2D obsPoints[][] = new Point2D[NumberOfViews][];
+	public static Pnt2d[][] getAllObservedPoints() {
+		Pnt2d obsPoints[][] = new Pnt2d[NumberOfViews][];
 		for (int i = 0; i < NumberOfViews; i++) {
 			int viewNr = i + 1;
 			obsPoints[i] = getObservedPoints(viewNr);
