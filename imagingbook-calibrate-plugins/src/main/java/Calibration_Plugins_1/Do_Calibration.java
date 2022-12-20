@@ -33,8 +33,8 @@ import static imagingbook.common.ij.DialogUtils.splitLines;
 /**
  * This plugin performs Zhang's camera calibration on the pre-calculated corner point data for the M given target views.
  * Based on the estimated intrinsic and extrinsic (view) parameters, the corner points of the 3D target model are then
- * projected onto the corresponding calibration images (a stack). All rendering is done by pixel drawing (no graphic
- * overlays).
+ * projected onto the corresponding calibration images (a stack). All drawing is done by non-destructive graphic
+ * overlays.
  *
  * @author W. Burger
  * @version 2022/04/14
