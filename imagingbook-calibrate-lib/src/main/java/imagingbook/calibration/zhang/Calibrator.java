@@ -7,7 +7,6 @@
 package imagingbook.calibration.zhang;
 
 import imagingbook.calibration.zhang.util.MathUtil;
-import imagingbook.common.math.Matrix;
 import imagingbook.common.util.ParameterBundle;
 import org.apache.commons.math3.linear.RealMatrix;
 

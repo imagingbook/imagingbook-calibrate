@@ -80,7 +80,6 @@ public abstract class MathUtil {
 	 * @return the solution vector x.
 	 */
 	public static RealVector solveHomogeneousSystem(RealMatrix A) {
-		// TODO: needs to be validated!!
 		SingularValueDecomposition svd = new SingularValueDecomposition(A);
 		RealMatrix V = svd.getV();
 		// RealVector x = V.getColumnVector(V.getColumnDimension() - 1);
@@ -105,7 +104,6 @@ public abstract class MathUtil {
 		}
 		return xh;
 	}
-
 
 	/**
 	 * Converts a homogeneous vector to its equivalent Cartesian vector, which is one element shorter. See also
