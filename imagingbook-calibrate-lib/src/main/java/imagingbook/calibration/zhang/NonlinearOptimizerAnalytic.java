@@ -1,3 +1,9 @@
+/*******************************************************************************
+ * Permission to use and distribute this software is granted under the BSD 2-Clause
+ * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
+ * Copyright (c) 2016-2022 Wilhelm Burger. All rights reserved.
+ * Visit https://imagingbook.com for additional details.
+ ******************************************************************************/
 package imagingbook.calibration.zhang;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
@@ -11,14 +17,6 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 
 
-/**
- * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix is calculated from analytic
- * expressions (obtained with MatLab). Part of this implementation is based on code from OpenIMAJ by J. Hare: Copyright
- * (c) 2011, The University of Southampton and the individual contributors. All rights reserved (see
- * https://github.com/openimaj/openimaj/).
- *
- * @author WB
- */
 public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 
 	NonlinearOptimizerAnalytic(Point2D[] modelPts, Point2D[][] obsPts) {
