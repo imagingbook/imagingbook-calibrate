@@ -23,7 +23,7 @@ import imagingbook.core.resource.ImageResource;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 
-import static imagingbook.common.ij.DialogUtils.splitLines;
+import static imagingbook.common.ij.DialogUtils.formatText;
 
 
 /**
@@ -97,7 +97,7 @@ public class Draw_3D_Axes_Demo implements PlugIn {
 	private boolean runDialog() {
 		GenericDialog gd = new GenericDialog(this.getClass().getSimpleName());
 		gd.setInsets(0, 0, 0);
-		gd.addMessage(splitLines(40,
+		gd.addMessage(formatText(40,
 				"This plugin displays the 5 sample view images and",
 				"projects the 3D coordinate axis onto the origin of ",
 				"the calibration model, based on the pre-calculated",

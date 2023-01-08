@@ -26,7 +26,7 @@ import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.common.ij.DialogUtils.splitLines;
+import static imagingbook.common.ij.DialogUtils.formatText;
 
 
 /**
@@ -139,7 +139,7 @@ public class Validate_EasyCalib_Data implements PlugIn {
 	private boolean runDialog() {
 		GenericDialog gd = new GenericDialog(this.getClass().getSimpleName());
 		gd.setInsets(0, 0, 0);
-		gd.addMessage(splitLines(40,
+		gd.addMessage(formatText(50,
 				"This plugin only displays the 5 sample view images, marks",
 				"the (given) image corner points and projects the model's",
 				"squares using the given view and camera parameters. No",

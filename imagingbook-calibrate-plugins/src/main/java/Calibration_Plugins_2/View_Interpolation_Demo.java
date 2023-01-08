@@ -29,7 +29,7 @@ import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.common.ij.DialogUtils.splitLines;
+import static imagingbook.common.ij.DialogUtils.formatText;
 
 /**
  * This plugin performs interpolation of views, given a sequence of key views. Translations (3D camera positions) are
@@ -152,7 +152,7 @@ public class View_Interpolation_Demo implements PlugIn {
 	private boolean runDialog() {
 		GenericDialog gd = new GenericDialog(this.getClass().getSimpleName());
 		gd.setInsets(0, 0, 0);
-		gd.addMessage(splitLines(40,
+		gd.addMessage(formatText(40,
 				"This plugin performs interpolation of views, given a sequence of key views."));
 
 		gd.addNumericField("Number of interpolated frames", NumberOfInterpolatedFrames);

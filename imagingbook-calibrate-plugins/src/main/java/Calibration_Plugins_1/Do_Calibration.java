@@ -28,7 +28,7 @@ import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.common.ij.DialogUtils.splitLines;
+import static imagingbook.common.ij.DialogUtils.formatText;
 
 /**
  * This plugin performs Zhang's camera calibration on the pre-calculated corner point data for the M given target views.
@@ -181,7 +181,7 @@ public class Do_Calibration implements PlugIn {
 	private boolean runDialog() {
 		GenericDialog gd = new GenericDialog(this.getClass().getSimpleName());
 		gd.setInsets(0, 0, 0);
-		gd.addMessage(splitLines(40,
+		gd.addMessage(formatText(40,
 				"This plugin performs calibration on the supplied test images.",
 				"Note that pre-calculated image corner coordinates are used, i.e.,",
 				"no corner detection is performed."));

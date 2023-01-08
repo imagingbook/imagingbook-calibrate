@@ -21,7 +21,7 @@ import imagingbook.common.image.ImageMapper;
 import imagingbook.common.image.interpolation.InterpolationMethod;
 import imagingbook.core.resource.ImageResource;
 
-import static imagingbook.common.ij.DialogUtils.splitLines;
+import static imagingbook.common.ij.DialogUtils.formatText;
 
 
 /**
@@ -94,7 +94,7 @@ public class Replace_Camera_Demo implements PlugIn {
 	private boolean runDialog() {
 		GenericDialog gd = new GenericDialog(this.getClass().getSimpleName());
 		gd.setInsets(0, 0, 0);
-		gd.addMessage(splitLines(60,
+		gd.addMessage(formatText(60,
 				"This plugin transforms the stack of test images by replacing",
 				"the original camera by a new camera with different parameters.",
 				"Only the radial distortion parameters (κ1, κ2) are changed.",
