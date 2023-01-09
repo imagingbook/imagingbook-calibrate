@@ -11,90 +11,94 @@
 <body class="source-page">
 <main role="main">
 <div class="source-container">
-<pre><span class="source-line-no">001</span><span id="line-1">package imagingbook.calibration.zhang;</span>
-<span class="source-line-no">002</span><span id="line-2"></span>
-<span class="source-line-no">003</span><span id="line-3">import org.apache.commons.math3.linear.ArrayRealVector;</span>
-<span class="source-line-no">004</span><span id="line-4">import org.apache.commons.math3.linear.DecompositionSolver;</span>
-<span class="source-line-no">005</span><span id="line-5">import org.apache.commons.math3.linear.MatrixUtils;</span>
-<span class="source-line-no">006</span><span id="line-6">import org.apache.commons.math3.linear.RealMatrix;</span>
-<span class="source-line-no">007</span><span id="line-7">import org.apache.commons.math3.linear.RealVector;</span>
-<span class="source-line-no">008</span><span id="line-8">import org.apache.commons.math3.linear.SingularValueDecomposition;</span>
-<span class="source-line-no">009</span><span id="line-9"></span>
-<span class="source-line-no">010</span><span id="line-10">import java.awt.geom.Point2D;</span>
-<span class="source-line-no">011</span><span id="line-11"></span>
-<span class="source-line-no">012</span><span id="line-12"></span>
-<span class="source-line-no">013</span><span id="line-13">/**</span>
-<span class="source-line-no">014</span><span id="line-14"> * This class defines methods for estimating the radial lens distortion parameters</span>
-<span class="source-line-no">015</span><span id="line-15"> *</span>
-<span class="source-line-no">016</span><span id="line-16"> * @author WB</span>
-<span class="source-line-no">017</span><span id="line-17"> */</span>
-<span class="source-line-no">018</span><span id="line-18">public class RadialDistortionEstimator {</span>
-<span class="source-line-no">019</span><span id="line-19"></span>
-<span class="source-line-no">020</span><span id="line-20">        /**</span>
-<span class="source-line-no">021</span><span id="line-21">         * Estimates the lens distortion from multiple views, starting from an initial (linear) camera model.</span>
-<span class="source-line-no">022</span><span id="line-22">         *</span>
-<span class="source-line-no">023</span><span id="line-23">         * @param cam the initial (linear) camera model</span>
-<span class="source-line-no">024</span><span id="line-24">         * @param views a sequence of extrinsic view transformations</span>
-<span class="source-line-no">025</span><span id="line-25">         * @param modelPts the set of 2D model points (on the planar calibration target)</span>
-<span class="source-line-no">026</span><span id="line-26">         * @param obsPts a sequence of 2D image point sets, one set for each view</span>
-<span class="source-line-no">027</span><span id="line-27">         * @return a vector of lens distortion coefficients</span>
-<span class="source-line-no">028</span><span id="line-28">         */</span>
-<span class="source-line-no">029</span><span id="line-29">        protected double[] estimateLensDistortion(Camera cam, ViewTransform[] views, Point2D[] modelPts, Point2D[][] obsPts) {</span>
-<span class="source-line-no">030</span><span id="line-30">                final int M = views.length;             // the number of views</span>
-<span class="source-line-no">031</span><span id="line-31">                final int N = modelPts.length;  // the number of model points</span>
-<span class="source-line-no">032</span><span id="line-32"></span>
-<span class="source-line-no">033</span><span id="line-33">                final double uc = cam.getUc();</span>
-<span class="source-line-no">034</span><span id="line-34">                final double vc = cam.getVc();</span>
-<span class="source-line-no">035</span><span id="line-35"></span>
-<span class="source-line-no">036</span><span id="line-36">                RealMatrix D = MatrixUtils.createRealMatrix(2 * M * N, 2);</span>
-<span class="source-line-no">037</span><span id="line-37">                RealVector d = new ArrayRealVector(2 * M * N);</span>
-<span class="source-line-no">038</span><span id="line-38"></span>
-<span class="source-line-no">039</span><span id="line-39">                int l = 0;</span>
-<span class="source-line-no">040</span><span id="line-40">                for (int i = 0; i &lt; M; i++) {</span>
-<span class="source-line-no">041</span><span id="line-41">                        Point2D[] obs = obsPts[i];</span>
+<pre><span class="source-line-no">001</span><span id="line-1">/*******************************************************************************</span>
+<span class="source-line-no">002</span><span id="line-2"> * Permission to use and distribute this software is granted under the BSD 2-Clause</span>
+<span class="source-line-no">003</span><span id="line-3"> * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).</span>
+<span class="source-line-no">004</span><span id="line-4"> * Copyright (c) 2016-2023 Wilhelm Burger. All rights reserved.</span>
+<span class="source-line-no">005</span><span id="line-5"> * Visit https://imagingbook.com for additional details.</span>
+<span class="source-line-no">006</span><span id="line-6"> ******************************************************************************/</span>
+<span class="source-line-no">007</span><span id="line-7">package imagingbook.calibration.zhang;</span>
+<span class="source-line-no">008</span><span id="line-8"></span>
+<span class="source-line-no">009</span><span id="line-9">import imagingbook.common.geometry.basic.Pnt2d;</span>
+<span class="source-line-no">010</span><span id="line-10">import org.apache.commons.math3.linear.ArrayRealVector;</span>
+<span class="source-line-no">011</span><span id="line-11">import org.apache.commons.math3.linear.DecompositionSolver;</span>
+<span class="source-line-no">012</span><span id="line-12">import org.apache.commons.math3.linear.MatrixUtils;</span>
+<span class="source-line-no">013</span><span id="line-13">import org.apache.commons.math3.linear.RealMatrix;</span>
+<span class="source-line-no">014</span><span id="line-14">import org.apache.commons.math3.linear.RealVector;</span>
+<span class="source-line-no">015</span><span id="line-15">import org.apache.commons.math3.linear.SingularValueDecomposition;</span>
+<span class="source-line-no">016</span><span id="line-16"></span>
+<span class="source-line-no">017</span><span id="line-17">/**</span>
+<span class="source-line-no">018</span><span id="line-18"> * This class defines methods for estimating the radial lens distortion parameters</span>
+<span class="source-line-no">019</span><span id="line-19"> *</span>
+<span class="source-line-no">020</span><span id="line-20"> * @author WB</span>
+<span class="source-line-no">021</span><span id="line-21"> */</span>
+<span class="source-line-no">022</span><span id="line-22">public class RadialDistortionEstimator {</span>
+<span class="source-line-no">023</span><span id="line-23"></span>
+<span class="source-line-no">024</span><span id="line-24">        /**</span>
+<span class="source-line-no">025</span><span id="line-25">         * Estimates the lens distortion from multiple views, starting from an initial (linear) camera model.</span>
+<span class="source-line-no">026</span><span id="line-26">         *</span>
+<span class="source-line-no">027</span><span id="line-27">         * @param cam the initial (linear) camera model</span>
+<span class="source-line-no">028</span><span id="line-28">         * @param views a sequence of extrinsic view transformations</span>
+<span class="source-line-no">029</span><span id="line-29">         * @param modelPts the set of 2D model points (on the planar calibration target)</span>
+<span class="source-line-no">030</span><span id="line-30">         * @param obsPts a sequence of 2D image point sets, one set for each view</span>
+<span class="source-line-no">031</span><span id="line-31">         * @return a vector of lens distortion coefficients</span>
+<span class="source-line-no">032</span><span id="line-32">         */</span>
+<span class="source-line-no">033</span><span id="line-33">        protected double[] estimateLensDistortion(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {</span>
+<span class="source-line-no">034</span><span id="line-34">                final int M = views.length;             // the number of views</span>
+<span class="source-line-no">035</span><span id="line-35">                final int N = modelPts.length;  // the number of model points</span>
+<span class="source-line-no">036</span><span id="line-36"></span>
+<span class="source-line-no">037</span><span id="line-37">                final double uc = cam.getUc();</span>
+<span class="source-line-no">038</span><span id="line-38">                final double vc = cam.getVc();</span>
+<span class="source-line-no">039</span><span id="line-39"></span>
+<span class="source-line-no">040</span><span id="line-40">                RealMatrix D = MatrixUtils.createRealMatrix(2 * M * N, 2);</span>
+<span class="source-line-no">041</span><span id="line-41">                RealVector d = new ArrayRealVector(2 * M * N);</span>
 <span class="source-line-no">042</span><span id="line-42"></span>
-<span class="source-line-no">043</span><span id="line-43">                        for (int j = 0; j &lt; N; j++) {</span>
-<span class="source-line-no">044</span><span id="line-44">                                // determine the radius in the ideal image plane</span>
-<span class="source-line-no">045</span><span id="line-45">                                double[] xy = cam.projectNormalized(views[i], modelPts[j]);</span>
-<span class="source-line-no">046</span><span id="line-46">                                double x = xy[0];</span>
-<span class="source-line-no">047</span><span id="line-47">                                double y = xy[1];</span>
-<span class="source-line-no">048</span><span id="line-48">                                double r2 = x * x + y * y;</span>
-<span class="source-line-no">049</span><span id="line-49">                                double r4 = r2 * r2;</span>
-<span class="source-line-no">050</span><span id="line-50">                                </span>
-<span class="source-line-no">051</span><span id="line-51">                                // project model point to image</span>
-<span class="source-line-no">052</span><span id="line-52">                                double[] uv = cam.project(views[i], modelPts[j]);</span>
-<span class="source-line-no">053</span><span id="line-53">                                double u = uv[0];</span>
-<span class="source-line-no">054</span><span id="line-54">                                double v = uv[1];</span>
-<span class="source-line-no">055</span><span id="line-55">                                double du = u - uc;     // distance to estim. projection center</span>
-<span class="source-line-no">056</span><span id="line-56">                                double dv = v - vc;</span>
-<span class="source-line-no">057</span><span id="line-57">                                </span>
-<span class="source-line-no">058</span><span id="line-58">                                D.setEntry(l * 2 + 0, 0, du * r2);</span>
-<span class="source-line-no">059</span><span id="line-59">                                D.setEntry(l * 2 + 0, 1, du * r4);</span>
-<span class="source-line-no">060</span><span id="line-60">                                D.setEntry(l * 2 + 1, 0, dv * r2);</span>
-<span class="source-line-no">061</span><span id="line-61">                                D.setEntry(l * 2 + 1, 1, dv * r4);</span>
-<span class="source-line-no">062</span><span id="line-62">                                </span>
-<span class="source-line-no">063</span><span id="line-63">                                // observed image point</span>
-<span class="source-line-no">064</span><span id="line-64">                                Point2D UV = obs[j];</span>
-<span class="source-line-no">065</span><span id="line-65">                                double U = UV.getX();</span>
-<span class="source-line-no">066</span><span id="line-66">                                double V = UV.getY();</span>
-<span class="source-line-no">067</span><span id="line-67">                                </span>
-<span class="source-line-no">068</span><span id="line-68">                                d.setEntry(l * 2 + 0, U - u);</span>
-<span class="source-line-no">069</span><span id="line-69">                                d.setEntry(l * 2 + 1, V - v);</span>
-<span class="source-line-no">070</span><span id="line-70">                                l++;</span>
-<span class="source-line-no">071</span><span id="line-71">                        }</span>
-<span class="source-line-no">072</span><span id="line-72">                }</span>
-<span class="source-line-no">073</span><span id="line-73">                </span>
-<span class="source-line-no">074</span><span id="line-74">                DecompositionSolver solver = new SingularValueDecomposition(D).getSolver();</span>
-<span class="source-line-no">075</span><span id="line-75">                RealVector k = solver.solve(d);</span>
-<span class="source-line-no">076</span><span id="line-76">                </span>
-<span class="source-line-no">077</span><span id="line-77">//              double err1 = D.operate(new ArrayRealVector(new double[] {0,0})).subtract(d).getNorm();</span>
-<span class="source-line-no">078</span><span id="line-78">//              double err2 = D.operate(k).subtract(d).getNorm();</span>
-<span class="source-line-no">079</span><span id="line-79">//              System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);</span>
+<span class="source-line-no">043</span><span id="line-43">                int l = 0;</span>
+<span class="source-line-no">044</span><span id="line-44">                for (int i = 0; i &lt; M; i++) {</span>
+<span class="source-line-no">045</span><span id="line-45">                        Pnt2d[] obs = obsPts[i];</span>
+<span class="source-line-no">046</span><span id="line-46"></span>
+<span class="source-line-no">047</span><span id="line-47">                        for (int j = 0; j &lt; N; j++) {</span>
+<span class="source-line-no">048</span><span id="line-48">                                // determine the radius in the ideal image plane</span>
+<span class="source-line-no">049</span><span id="line-49">                                double[] xy = cam.projectNormalized(views[i], modelPts[j]);</span>
+<span class="source-line-no">050</span><span id="line-50">                                double x = xy[0];</span>
+<span class="source-line-no">051</span><span id="line-51">                                double y = xy[1];</span>
+<span class="source-line-no">052</span><span id="line-52">                                double r2 = x * x + y * y;</span>
+<span class="source-line-no">053</span><span id="line-53">                                double r4 = r2 * r2;</span>
+<span class="source-line-no">054</span><span id="line-54">                                </span>
+<span class="source-line-no">055</span><span id="line-55">                                // project model point to image</span>
+<span class="source-line-no">056</span><span id="line-56">                                double[] uv = cam.project(views[i], modelPts[j]);</span>
+<span class="source-line-no">057</span><span id="line-57">                                double u = uv[0];</span>
+<span class="source-line-no">058</span><span id="line-58">                                double v = uv[1];</span>
+<span class="source-line-no">059</span><span id="line-59">                                double du = u - uc;     // distance to estim. projection center</span>
+<span class="source-line-no">060</span><span id="line-60">                                double dv = v - vc;</span>
+<span class="source-line-no">061</span><span id="line-61">                                </span>
+<span class="source-line-no">062</span><span id="line-62">                                D.setEntry(l * 2 + 0, 0, du * r2);</span>
+<span class="source-line-no">063</span><span id="line-63">                                D.setEntry(l * 2 + 0, 1, du * r4);</span>
+<span class="source-line-no">064</span><span id="line-64">                                D.setEntry(l * 2 + 1, 0, dv * r2);</span>
+<span class="source-line-no">065</span><span id="line-65">                                D.setEntry(l * 2 + 1, 1, dv * r4);</span>
+<span class="source-line-no">066</span><span id="line-66">                                </span>
+<span class="source-line-no">067</span><span id="line-67">                                // observed image point</span>
+<span class="source-line-no">068</span><span id="line-68">                                Pnt2d UV = obs[j];</span>
+<span class="source-line-no">069</span><span id="line-69">                                double U = UV.getX();</span>
+<span class="source-line-no">070</span><span id="line-70">                                double V = UV.getY();</span>
+<span class="source-line-no">071</span><span id="line-71">                                </span>
+<span class="source-line-no">072</span><span id="line-72">                                d.setEntry(l * 2 + 0, U - u);</span>
+<span class="source-line-no">073</span><span id="line-73">                                d.setEntry(l * 2 + 1, V - v);</span>
+<span class="source-line-no">074</span><span id="line-74">                                l++;</span>
+<span class="source-line-no">075</span><span id="line-75">                        }</span>
+<span class="source-line-no">076</span><span id="line-76">                }</span>
+<span class="source-line-no">077</span><span id="line-77">                </span>
+<span class="source-line-no">078</span><span id="line-78">                DecompositionSolver solver = new SingularValueDecomposition(D).getSolver();</span>
+<span class="source-line-no">079</span><span id="line-79">                RealVector k = solver.solve(d);</span>
 <span class="source-line-no">080</span><span id="line-80">                </span>
-<span class="source-line-no">081</span><span id="line-81">                return k.toArray();</span>
-<span class="source-line-no">082</span><span id="line-82">        }</span>
-<span class="source-line-no">083</span><span id="line-83"></span>
-<span class="source-line-no">084</span><span id="line-84">}</span>
+<span class="source-line-no">081</span><span id="line-81">//              double err1 = D.operate(new ArrayRealVector(new double[] {0,0})).subtract(d).getNorm();</span>
+<span class="source-line-no">082</span><span id="line-82">//              double err2 = D.operate(k).subtract(d).getNorm();</span>
+<span class="source-line-no">083</span><span id="line-83">//              System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);</span>
+<span class="source-line-no">084</span><span id="line-84">                </span>
+<span class="source-line-no">085</span><span id="line-85">                return k.toArray();</span>
+<span class="source-line-no">086</span><span id="line-86">        }</span>
+<span class="source-line-no">087</span><span id="line-87"></span>
+<span class="source-line-no">088</span><span id="line-88">}</span>
 
 
 

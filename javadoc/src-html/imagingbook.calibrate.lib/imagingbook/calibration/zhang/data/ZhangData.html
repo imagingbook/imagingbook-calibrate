@@ -12,80 +12,77 @@
 <main role="main">
 <div class="source-container">
 <pre><span class="source-line-no">001</span><span id="line-1">/*******************************************************************************</span>
-<span class="source-line-no">002</span><span id="line-2"> * This software is provided as a supplement to the authors' textbooks on digital</span>
-<span class="source-line-no">003</span><span id="line-3"> * image processing published by Springer-Verlag in various languages and editions.</span>
-<span class="source-line-no">004</span><span id="line-4"> * Permission to use and distribute this software is granted under the BSD 2-Clause</span>
-<span class="source-line-no">005</span><span id="line-5"> * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).</span>
-<span class="source-line-no">006</span><span id="line-6"> * Copyright (c) 2006-2022 Wilhelm Burger, Mark J. Burge. All rights reserved.</span>
-<span class="source-line-no">007</span><span id="line-7"> * Visit https://imagingbook.com for additional details.</span>
-<span class="source-line-no">008</span><span id="line-8"> ******************************************************************************/</span>
-<span class="source-line-no">009</span><span id="line-9">package imagingbook.calibration.zhang.data;</span>
-<span class="source-line-no">010</span><span id="line-10"></span>
-<span class="source-line-no">011</span><span id="line-11">import imagingbook.calibration.zhang.Camera;</span>
-<span class="source-line-no">012</span><span id="line-12">import imagingbook.calibration.zhang.ViewTransform;</span>
-<span class="source-line-no">013</span><span id="line-13">import org.apache.commons.math3.linear.MatrixUtils;</span>
+<span class="source-line-no">002</span><span id="line-2"> * Permission to use and distribute this software is granted under the BSD 2-Clause</span>
+<span class="source-line-no">003</span><span id="line-3"> * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).</span>
+<span class="source-line-no">004</span><span id="line-4"> * Copyright (c) 2016-2023 Wilhelm Burger. All rights reserved.</span>
+<span class="source-line-no">005</span><span id="line-5"> * Visit https://imagingbook.com for additional details.</span>
+<span class="source-line-no">006</span><span id="line-6"> ******************************************************************************/</span>
+<span class="source-line-no">007</span><span id="line-7">package imagingbook.calibration.zhang.data;</span>
+<span class="source-line-no">008</span><span id="line-8"></span>
+<span class="source-line-no">009</span><span id="line-9">import imagingbook.calibration.zhang.Camera;</span>
+<span class="source-line-no">010</span><span id="line-10">import imagingbook.calibration.zhang.ViewTransform;</span>
+<span class="source-line-no">011</span><span id="line-11">import imagingbook.common.geometry.basic.Pnt2d;</span>
+<span class="source-line-no">012</span><span id="line-12">import org.apache.commons.math3.linear.MatrixUtils;</span>
+<span class="source-line-no">013</span><span id="line-13"></span>
 <span class="source-line-no">014</span><span id="line-14"></span>
-<span class="source-line-no">015</span><span id="line-15">import java.awt.geom.Point2D;</span>
-<span class="source-line-no">016</span><span id="line-16"></span>
-<span class="source-line-no">017</span><span id="line-17"></span>
-<span class="source-line-no">018</span><span id="line-18">/**</span>
-<span class="source-line-no">019</span><span id="line-19"> * Supplies all numeric data for Zhang's demo calibration test suite.</span>
-<span class="source-line-no">020</span><span id="line-20"> *</span>
-<span class="source-line-no">021</span><span id="line-21"> * @author WB</span>
-<span class="source-line-no">022</span><span id="line-22"> */</span>
-<span class="source-line-no">023</span><span id="line-23">public abstract class ZhangData {</span>
-<span class="source-line-no">024</span><span id="line-24">        </span>
-<span class="source-line-no">025</span><span id="line-25">        public static final int ImageWidth = 640;</span>
-<span class="source-line-no">026</span><span id="line-26">        public static final int ImageHeight = 480;</span>
-<span class="source-line-no">027</span><span id="line-27">        public static final int NumberOfViews = ObservedPoints.pointData.length;</span>
-<span class="source-line-no">028</span><span id="line-28">        </span>
-<span class="source-line-no">029</span><span id="line-29">        public static Point2D[] getModelPoints() {</span>
-<span class="source-line-no">030</span><span id="line-30">                return StandardModel.getPoints();</span>
-<span class="source-line-no">031</span><span id="line-31">        }</span>
-<span class="source-line-no">032</span><span id="line-32">        </span>
-<span class="source-line-no">033</span><span id="line-33">        public static Point2D[] getObservedPoints(int viewNr) {</span>
-<span class="source-line-no">034</span><span id="line-34">                return ObservedPoints.getPoints(viewNr);</span>
-<span class="source-line-no">035</span><span id="line-35">        }</span>
-<span class="source-line-no">036</span><span id="line-36">        </span>
-<span class="source-line-no">037</span><span id="line-37">        public static Point2D[][] getAllObservedPoints() {</span>
-<span class="source-line-no">038</span><span id="line-38">                Point2D obsPoints[][] = new Point2D[NumberOfViews][];</span>
-<span class="source-line-no">039</span><span id="line-39">                for (int i = 0; i &lt; NumberOfViews; i++) {</span>
-<span class="source-line-no">040</span><span id="line-40">                        int viewNr = i + 1;</span>
-<span class="source-line-no">041</span><span id="line-41">                        obsPoints[i] = getObservedPoints(viewNr);</span>
-<span class="source-line-no">042</span><span id="line-42">                }</span>
-<span class="source-line-no">043</span><span id="line-43">                return obsPoints;</span>
-<span class="source-line-no">044</span><span id="line-44">        }</span>
-<span class="source-line-no">045</span><span id="line-45">        </span>
-<span class="source-line-no">046</span><span id="line-46">        public static ViewTransform[] getAllViewTransforms() {</span>
-<span class="source-line-no">047</span><span id="line-47">                ViewTransform[] viewtransforms = new ViewTransform[NumberOfViews];</span>
-<span class="source-line-no">048</span><span id="line-48">                for (int i = 0; i &lt; NumberOfViews; i++) {</span>
-<span class="source-line-no">049</span><span id="line-49">                        viewtransforms[i] = getViewTransform(i);</span>
-<span class="source-line-no">050</span><span id="line-50">                }</span>
-<span class="source-line-no">051</span><span id="line-51">//              return new ViewTransform[] </span>
-<span class="source-line-no">052</span><span id="line-52">//                      {getViewTransform(1), getViewTransform(2), getViewTransform(3), getViewTransform(4), getViewTransform(5)};</span>
-<span class="source-line-no">053</span><span id="line-53">                return viewtransforms;</span>
-<span class="source-line-no">054</span><span id="line-54">        }</span>
-<span class="source-line-no">055</span><span id="line-55">        </span>
-<span class="source-line-no">056</span><span id="line-56">        public static ViewTransform getViewTransform(int viewNr) {</span>
-<span class="source-line-no">057</span><span id="line-57">                double[][] RT = CameraViews.getViewMatrix(viewNr);</span>
-<span class="source-line-no">058</span><span id="line-58">                return (RT == null) ? null : new ViewTransform(MatrixUtils.createRealMatrix(RT));</span>
-<span class="source-line-no">059</span><span id="line-59">        }</span>
-<span class="source-line-no">060</span><span id="line-60">        </span>
-<span class="source-line-no">061</span><span id="line-61">        public static Camera getCameraIntrinsics() {</span>
-<span class="source-line-no">062</span><span id="line-62">                // http://research.microsoft.com/en-us/um/people/zhang/calib/Calibration/Calib.txt</span>
-<span class="source-line-no">063</span><span id="line-63">                return new Camera (</span>
-<span class="source-line-no">064</span><span id="line-64">                                832.5,   832.53, 0.204494,      // alpha, beta, gamma, (!)</span>
-<span class="source-line-no">065</span><span id="line-65">                                303.959, 206.585,                       // c_x, c_y</span>
-<span class="source-line-no">066</span><span id="line-66">                                -0.228601, 0.190353);           // k1, k2</span>
-<span class="source-line-no">067</span><span id="line-67">        }</span>
-<span class="source-line-no">068</span><span id="line-68">                </span>
-<span class="source-line-no">069</span><span id="line-69">        public static int extractViewNumber(String imgShortTitle) {</span>
-<span class="source-line-no">070</span><span id="line-70">//              String imgShortTitle = im.getShortTitle();</span>
-<span class="source-line-no">071</span><span id="line-71">                String num = imgShortTitle.substring(imgShortTitle.length() - 1, imgShortTitle.length());</span>
-<span class="source-line-no">072</span><span id="line-72">                return Integer.decode(num) - 1;</span>
-<span class="source-line-no">073</span><span id="line-73">        }</span>
-<span class="source-line-no">074</span><span id="line-74"></span>
-<span class="source-line-no">075</span><span id="line-75">}</span>
+<span class="source-line-no">015</span><span id="line-15">/**</span>
+<span class="source-line-no">016</span><span id="line-16"> * Supplies all numeric data for Zhang's demo calibration test suite.</span>
+<span class="source-line-no">017</span><span id="line-17"> *</span>
+<span class="source-line-no">018</span><span id="line-18"> * @author WB</span>
+<span class="source-line-no">019</span><span id="line-19"> */</span>
+<span class="source-line-no">020</span><span id="line-20">public abstract class ZhangData {</span>
+<span class="source-line-no">021</span><span id="line-21">        </span>
+<span class="source-line-no">022</span><span id="line-22">        public static final int ImageWidth = 640;</span>
+<span class="source-line-no">023</span><span id="line-23">        public static final int ImageHeight = 480;</span>
+<span class="source-line-no">024</span><span id="line-24">        public static final int NumberOfViews = ObservedPoints.pointData.length;</span>
+<span class="source-line-no">025</span><span id="line-25">        </span>
+<span class="source-line-no">026</span><span id="line-26">        public static Pnt2d[] getModelPoints() {</span>
+<span class="source-line-no">027</span><span id="line-27">                return StandardModel.getPoints();</span>
+<span class="source-line-no">028</span><span id="line-28">        }</span>
+<span class="source-line-no">029</span><span id="line-29">        </span>
+<span class="source-line-no">030</span><span id="line-30">        public static Pnt2d[] getObservedPoints(int viewNr) {</span>
+<span class="source-line-no">031</span><span id="line-31">                return ObservedPoints.getPoints(viewNr);</span>
+<span class="source-line-no">032</span><span id="line-32">        }</span>
+<span class="source-line-no">033</span><span id="line-33">        </span>
+<span class="source-line-no">034</span><span id="line-34">        public static Pnt2d[][] getAllObservedPoints() {</span>
+<span class="source-line-no">035</span><span id="line-35">                Pnt2d obsPoints[][] = new Pnt2d[NumberOfViews][];</span>
+<span class="source-line-no">036</span><span id="line-36">                for (int i = 0; i &lt; NumberOfViews; i++) {</span>
+<span class="source-line-no">037</span><span id="line-37">                        int viewNr = i + 1;</span>
+<span class="source-line-no">038</span><span id="line-38">                        obsPoints[i] = getObservedPoints(viewNr);</span>
+<span class="source-line-no">039</span><span id="line-39">                }</span>
+<span class="source-line-no">040</span><span id="line-40">                return obsPoints;</span>
+<span class="source-line-no">041</span><span id="line-41">        }</span>
+<span class="source-line-no">042</span><span id="line-42">        </span>
+<span class="source-line-no">043</span><span id="line-43">        public static ViewTransform[] getAllViewTransforms() {</span>
+<span class="source-line-no">044</span><span id="line-44">                ViewTransform[] viewtransforms = new ViewTransform[NumberOfViews];</span>
+<span class="source-line-no">045</span><span id="line-45">                for (int i = 0; i &lt; NumberOfViews; i++) {</span>
+<span class="source-line-no">046</span><span id="line-46">                        viewtransforms[i] = getViewTransform(i);</span>
+<span class="source-line-no">047</span><span id="line-47">                }</span>
+<span class="source-line-no">048</span><span id="line-48">//              return new ViewTransform[] </span>
+<span class="source-line-no">049</span><span id="line-49">//                      {getViewTransform(1), getViewTransform(2), getViewTransform(3), getViewTransform(4), getViewTransform(5)};</span>
+<span class="source-line-no">050</span><span id="line-50">                return viewtransforms;</span>
+<span class="source-line-no">051</span><span id="line-51">        }</span>
+<span class="source-line-no">052</span><span id="line-52">        </span>
+<span class="source-line-no">053</span><span id="line-53">        public static ViewTransform getViewTransform(int viewNr) {</span>
+<span class="source-line-no">054</span><span id="line-54">                double[][] RT = CameraViews.getViewMatrix(viewNr);</span>
+<span class="source-line-no">055</span><span id="line-55">                return (RT == null) ? null : new ViewTransform(MatrixUtils.createRealMatrix(RT));</span>
+<span class="source-line-no">056</span><span id="line-56">        }</span>
+<span class="source-line-no">057</span><span id="line-57">        </span>
+<span class="source-line-no">058</span><span id="line-58">        public static Camera getCameraIntrinsics() {</span>
+<span class="source-line-no">059</span><span id="line-59">                // http://research.microsoft.com/en-us/um/people/zhang/calib/Calibration/Calib.txt</span>
+<span class="source-line-no">060</span><span id="line-60">                return new Camera (</span>
+<span class="source-line-no">061</span><span id="line-61">                                832.5,   832.53, 0.204494,      // alpha, beta, gamma, (!)</span>
+<span class="source-line-no">062</span><span id="line-62">                                303.959, 206.585,                       // c_x, c_y</span>
+<span class="source-line-no">063</span><span id="line-63">                                -0.228601, 0.190353);           // k1, k2</span>
+<span class="source-line-no">064</span><span id="line-64">        }</span>
+<span class="source-line-no">065</span><span id="line-65">                </span>
+<span class="source-line-no">066</span><span id="line-66">        public static int extractViewNumber(String imgShortTitle) {</span>
+<span class="source-line-no">067</span><span id="line-67">//              String imgShortTitle = im.getShortTitle();</span>
+<span class="source-line-no">068</span><span id="line-68">                String num = imgShortTitle.substring(imgShortTitle.length() - 1, imgShortTitle.length());</span>
+<span class="source-line-no">069</span><span id="line-69">                return Integer.decode(num) - 1;</span>
+<span class="source-line-no">070</span><span id="line-70">        }</span>
+<span class="source-line-no">071</span><span id="line-71"></span>
+<span class="source-line-no">072</span><span id="line-72">}</span>
 
 
 

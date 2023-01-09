@@ -41,7 +41,7 @@
 	
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
-		<module>imagingbook-calibrate-plugins</module>
+		<module>imagingbook_calibrate_plugins</module>
 	</modules>
 
 	<properties>
