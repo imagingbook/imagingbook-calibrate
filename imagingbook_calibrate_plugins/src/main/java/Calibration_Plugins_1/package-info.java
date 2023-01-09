@@ -5,6 +5,9 @@
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
 
+/**
+ * Basic ImageJ calibration plugins.
+ */
 @JavaDocBaseUrl("https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook_calibrate_plugins")
 package Calibration_Plugins_1;
 
