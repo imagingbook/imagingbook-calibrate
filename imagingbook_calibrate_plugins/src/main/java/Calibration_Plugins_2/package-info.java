@@ -8,7 +8,7 @@
 /**
  * Additional ImageJ calibration plugins.
  */
-@JavaDocBaseUrl("https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook_calibrate_plugins")
+@JavaDocBaseUrl("https://imagingbook.github.io/imagingbook-calibrate/javadoc/imagingbook_calibrate_plugins/")
 package Calibration_Plugins_2;
 
 import imagingbook.core.jdoc.JavaDocBaseUrl;
