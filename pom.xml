@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.imagingbook</groupId>
 		<artifactId>imagingbook-parent-pom</artifactId>
-		<version>7.0.1-SNAPSHOT</version>
+		<version>7.1.0</version>
 		<relativePath />
 	</parent>
 	
