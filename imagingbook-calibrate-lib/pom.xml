@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.imagingbook</groupId>
 		<artifactId>imagingbook-calibrate</artifactId>
-		<version>7.1.0</version>
+		<version>7.2.0-SNAPSHOT</version>
 		<!--<relativePath>../pom.xml</relativePath>-->
 		<!--<relativePath></relativePath>-->
 	</parent>
