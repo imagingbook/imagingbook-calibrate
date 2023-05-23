@@ -15,7 +15,13 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 
-
+/**
+ * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix
+ * is calculated analytically, with the first partial derivatives derived from the calibration model.
+ * As an alternative see {@link NonlinearOptimizerNumeric} which uses numeric differentiation.
+ *
+ * @author WB
+ */
 public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 
 	NonlinearOptimizerAnalytic(Pnt2d[] modelPts, Pnt2d[][] obsPts) {
@@ -50,9 +56,6 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 					r = r + 2;
 				}
 			}
-//			System.out.format("**** J = %d / %d\n", J.length, J[0].length);
-//			System.out.println(NonlinearOptimizerAnalytic.class.getSimpleName() + 
-//	        		": Jacobian inverse condition number = " + MathUtil.inverseConditionNumber(J));
 			return J;
 		}
 
@@ -390,25 +393,13 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 			A0[0][5] = -t38 * t74;
 			// k2
 			A0[0][6] = -t38 * t83;
-			A0[0][7] = t137
-					- t143
-					+ t38
-					* (t265 + t266)
-					+ t85
-					* (t21
-							* (X * (t115 - alpha * t113 + gamma * (t88 + t89 + t90 - t10 * t11 * wy - t7 * t86 * wx * wz)) + Y
-									* (t118 + alpha * (-t88 + t89 + t90 + t104 - t10 * t11 * wy) - gamma * t102)) - t46 * t109
-									* t110);
+			A0[0][7] = t137 - t143 + t38 * (t265 + t266) + t85 *
+					(t21 * (X * (t115 - alpha * t113 + gamma * (t88 + t89 + t90 - t10 * t11 * wy - t7 * t86 * wx * wz)) + Y
+						 * (t118 + alpha * (-t88 + t89 + t90 + t104 - t10 * t11 * wy) - gamma * t102)) - t46 * t109 * t110);
 			A0[0][8] = t185 - t192 + t85 * t186 + t38 * t272;
-			A0[0][9] = -t238
-					+ t38
-					* t278
-					+ t85
-					* t234
-					+ t21
-					* (t213 + X
-							* (t207 + gamma * (t95 + t97 + t98 + t193 - t4 * t7 * t86) - alpha
-									* (t205 + t206 - t10 * t11 * wz * 2.0)));
+			A0[0][9] = -t238 + t38 * t278 + t85 * t234 + t21
+					* (t213 + X * (t207 + gamma * (t95 + t97 + t98 + t193 - t4 * t7 * t86) - alpha
+					            * (t205 + t206 - t10 * t11 * wz * 2.0)));
 			A0[0][10] = alpha * t21 + t38 * t281 + alpha * t21 * t85;
 			A0[0][11] = gamma * t21 + t38 * t284 + gamma * t21 * t85;
 			A0[0][12] = t244 - t46 * t110 + t38 * t289 + t85 * t245;
