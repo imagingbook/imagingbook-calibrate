@@ -13,12 +13,13 @@
 	<parent>
 		<groupId>com.imagingbook</groupId>
 		<artifactId>imagingbook-calibrate</artifactId>
-		<version>7.1.0</version>
+		<version>7.2.0</version>
 	</parent>
 	
 	<properties>
 		<imagingbook.rootdir>${directory-up-2}</imagingbook.rootdir>
-		<maven.javadoc.skip>false</maven.javadoc.skip>
+        <imagingbook.skipjavadoc>false</imagingbook.skipjavadoc>
+        <imagingbook.gpgSkip>true</imagingbook.gpgSkip>
 	</properties>
 
 	<dependencies>
@@ -26,13 +27,13 @@
 		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-calibrate-lib</artifactId>
-			<version>7.1.0</version>
+			<version>7.2.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.imagingbook</groupId>
 			<artifactId>imagingbook-testing</artifactId>
-			<version>7.1.0</version>
+			<version>7.2.0</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -48,18 +49,6 @@
 	<build>
    		<!-- needed for updating Eclipse settings (see also ij-plugins-build profile) -->
     	<outputDirectory>ImageJ/plugins</outputDirectory>
-    	
-    	<plugins>
-			<!-- do not deploy this artifact -->
-			<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-deploy-plugin</artifactId>
-			  <version>3.0.0-M2</version>
-			  <configuration>
-			    <skip>true</skip>
-			  </configuration>
-			</plugin>
-		</plugins>
     </build>
 
 </project>
