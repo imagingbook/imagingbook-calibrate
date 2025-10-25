@@ -1,1 +1,0 @@
-moduleSearchIndex = [{"l":"imagingbook_calibrate_plugins"}];updateSearchResults();
