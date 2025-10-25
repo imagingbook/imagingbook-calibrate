@@ -1,0 +1,7 @@
+module:imagingbook_calibrate_plugins
+Calibration_Plugins_1
+Calibration_Plugins_2
+module:imagingbook.calibrate.lib
+imagingbook.calibration.zhang
+imagingbook.calibration.zhang.data
+imagingbook.calibration.zhang.util
