@@ -9,13 +9,20 @@ package imagingbook.calibration.zhang;
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.solvers.NewtonRaphsonSolver;
-import org.apache.commons.math3.analysis.solvers.UnivariateDifferentiableSolver;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
 
+import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
+import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealVector;
+
+// import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+// import org.apache.commons.math3.analysis.solvers.NewtonRaphsonSolver;
+// import org.apache.commons.math3.analysis.solvers.UnivariateDifferentiableSolver;
+// import org.apache.commons.math3.linear.MatrixUtils;
+// import org.apache.commons.math3.linear.RealMatrix;
+// import org.apache.commons.math3.linear.RealVector;
 
 /**
  * A camera model with parameters as specified in Zhang's paper.

@@ -8,10 +8,11 @@ package imagingbook.calibration.zhang.util;
 
 import imagingbook.common.math.Arithmetic;
 import imagingbook.common.math.Matrix;
-import org.apache.commons.math3.geometry.euclidean.threed.NotARotationMatrixException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+
+import org.apache.commons.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
+import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
+import org.apache.commons.numbers.quaternion.Quaternion;
 
 import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Matrix.add;
@@ -26,7 +27,8 @@ import static imagingbook.common.math.Matrix.zeroVector;
  */
 public class Rotations {
 
-    private static final double TWO_PI = 2 * Math.PI;
+    public static final double DefaultOrthogonalityThreshold = 1e-6;
+    static final double TWO_PI = 2 * Math.PI;
 
     // ++++++++++++++   Rodrigues vector --> Rotation matrix  +++++++++++++++++++
 
@@ -65,12 +67,42 @@ public class Rotations {
      */
     static double[][] toRotationMatrixACM(double[] rv) {
         double angle = normL2(rv);
-        Vector3D axis = new Vector3D(rv);
-        Rotation rotation = new Rotation(axis, angle, RotationConvention.VECTOR_OPERATOR);
-        System.out.println("rotation angle2 = " + rotation.getAngle());
-        System.out.println("rotation axis2 = " + rotation.getAxis(RotationConvention.VECTOR_OPERATOR));
-        return rotation.getMatrix();
+        Vector3D axis = Vector3D.of(rv);
+        QuaternionRotation qr = QuaternionRotation.fromAxisAngle(axis, angle);
+        // Rotation rotation = new Rotation(axis, angle, RotationConvention.VECTOR_OPERATOR);
+        // System.out.println("rotation angle2 = " + rotation.getAngle());
+        // System.out.println("rotation axis2 = " + rotation.getAxis(RotationConvention.VECTOR_OPERATOR));
+        // return rotation.getMatrix();
+        return to3x4(qr.toMatrix());
     }
+
+    /**
+     * Helper method, converts a (Commons Math 4) AffineTransformMatrix3D to a 2D double array.
+     * Note that AffineTransformMatrix3D natively only returns a 1D double vector.
+     * @param transform the AffineTransformMatrix3D
+     * @return a 2D double array
+     */
+    public static double[][] to3x4(AffineTransformMatrix3D transform) {
+        double[] a = transform.toArray();
+        return new double[][] {
+                { a[0], a[1], a[2],  a[3] },
+                { a[4], a[5], a[6],  a[7] },
+                { a[8], a[9], a[10], a[11] }
+        };
+    }
+    public static AffineTransformMatrix3D from3x4(double[][] m) {
+        if (m.length != 3 || m[0].length != 4) {
+            throw new IllegalArgumentException("Expected 3x4 matrix");
+        }
+
+        return AffineTransformMatrix3D.of(
+                m[0][0], m[0][1], m[0][2], m[0][3],
+                m[1][0], m[1][1], m[1][2], m[1][3],
+                m[2][0], m[2][1], m[2][2], m[2][3]
+        );
+    }
+
+
 
     // ++++++++++++++   Rotation matrix --> Rodrigues vector +++++++++++++++++++
 
@@ -123,10 +155,12 @@ public class Rotations {
      * @return
      */
     static double[] toRodriguesVectorACM(double[][] R) {
-        Rotation rot = new Rotation(R, 0.01);
+        Quaternion q = Quaternion.of(rotationFrom3x3Matrix(R, 0.01));        // Rotation rot = new Rotation(R, 0.01);
+        QuaternionRotation rot = QuaternionRotation.of(q);
         double angle = rot.getAngle();
-        Vector3D axis = rot.getAxis(RotationConvention.VECTOR_OPERATOR);
-        double[] rv = axis.scalarMultiply(angle / axis.getNorm()).toArray();
+        Vector3D axis = rot.getAxis();
+        double[] rv = axis.multiply(angle / axis.norm()).toArray();
+        //double[] rv = axis.scalarMultiply(angle / axis.getNorm()).toArray();
         return rv;
     }
 
@@ -136,7 +170,7 @@ public class Rotations {
      * @param x unit vector
      * @return same or inverted unit vector
      */
-    private static double[] normalizeSign(double[] x) {
+    static double[] normalizeSign(double[] x) {
         if ((x[0] < 0) ||
                 (isZero(x[0]) && x[1] < 0) ||
                 (isZero(x[0]) && isZero(x[1]) && x[2] < 0)) {
@@ -152,7 +186,7 @@ public class Rotations {
      * @param A a matrix
      * @return the maximum-norm column vector
      */
-    private static double[] getMaxColumnVector(double[][] A) {
+    static double[] getMaxColumnVector(double[][] A) {
         final int rows = A.length;
         final int cols = A[0].length;
         int maxCol = 0;
@@ -170,8 +204,6 @@ public class Rotations {
         return Matrix.getColumn(A, maxCol);
     }
 
-    public static final double DefaultOrthogonalityThreshold = 1e-6;
-
     /**
      * Checks if the specified matrix is a rotation matrix under the given orthogonality threshold.
      *
@@ -181,7 +213,7 @@ public class Rotations {
      */
     public static boolean isRotationMatrix(double[][] R, double threshold) {
         try {
-            Rotation rot = new Rotation(R, threshold);
+            double[] rot = rotationFrom3x3Matrix(R, threshold);
         } catch (NotARotationMatrixException e) {
             return false;
         }
@@ -226,5 +258,221 @@ public class Rotations {
         }
         return multiply(theta / s, axis);
     }
+
+    // --------------------------------------------------------------------------------
+
+    /**
+     * Build a rotation (quaternion) from a 3X3 matrix.
+     * Ported from org.apache.commons.math3.geometry.euclidean.threed.Rotation.java
+     *
+     * <p>Rotation matrices are orthogonal matrices, i.e. unit matrices
+     * (which are matrices for which m.m<sup>T</sup> = I) with real
+     * coefficients. The module of the determinant of unit matrices is
+     * 1, among the orthogonal 3X3 matrices, only the ones having a
+     * positive determinant (+1) are rotation matrices.</p>
+     *
+     * <p>When a rotation is defined by a matrix with truncated values
+     * (typically when it is extracted from a technical sheet where only
+     * four to five significant digits are available), the matrix is not
+     * orthogonal anymore. This constructor handles this case
+     * transparently by using a copy of the given matrix and applying a
+     * correction to the copy in order to perfect its orthogonality. If
+     * the Frobenius norm of the correction needed is above the given
+     * threshold, then the matrix is considered to be too far from a
+     * true rotation matrix and an exception is thrown.<p>
+     *
+     * @param m rotation matrix
+     * @param threshold convergence threshold for the iterative
+     * orthogonality correction (convergence is reached when the
+     * difference between two steps of the Frobenius norm of the
+     * correction is below this threshold)
+     *
+     * @exception NotARotationMatrixException if the matrix is not a 3X3
+     * matrix, or if it cannot be transformed into an orthogonal matrix
+     * with the given threshold, or if the determinant of the resulting
+     * orthogonal matrix is negative
+     */
+    public static double[] rotationFrom3x3Matrix(double[][] m, double threshold)
+            throws NotARotationMatrixException {
+        // dimension check
+        if ((m.length != 3) || (m[0].length != 3) ||
+                (m[1].length != 3) || (m[2].length != 3)) {
+            throw new NotARotationMatrixException("Rotation matrix is not 3x3");
+        }
+        // compute a "close" orthogonal matrix
+        double[][] ort = orthogonalizeMatrix(m, threshold);
+
+        // check the sign of the determinant
+        double det = ort[0][0] * (ort[1][1] * ort[2][2] - ort[2][1] * ort[1][2]) -
+                ort[1][0] * (ort[0][1] * ort[2][2] - ort[2][1] * ort[0][2]) +
+                ort[2][0] * (ort[0][1] * ort[1][2] - ort[1][1] * ort[0][2]);
+        if (det < 0.0) {
+            throw new NotARotationMatrixException("Closest orthogonal matrix has negative determinant: " + det);
+        }
+
+        double[] quat = mat2quat(ort);
+        // q0 = quat[0]; q1 = quat[1]; q2 = quat[2]; q3 = quat[3];
+        return quat;
+    }
+
+
+    /** Convert an orthogonal rotation matrix to a quaternion.
+     * Ported from org.apache.commons.math3.geometry.euclidean.threed.Rotation.java
+     * @param ort orthogonal rotation matrix
+     * @return quaternion corresponding to the matrix
+     */
+    private static double[] mat2quat(final double[][] ort) {
+        final double[] quat = new double[4];
+
+        // There are different ways to compute the quaternions elements
+        // from the matrix. They all involve computing one element from
+        // the diagonal of the matrix, and computing the three other ones
+        // using a formula involving a division by the first element,
+        // which unfortunately can be zero. Since the norm of the
+        // quaternion is 1, we know at least one element has an absolute
+        // value greater or equal to 0.5, so it is always possible to
+        // select the right formula and avoid division by zero and even
+        // numerical inaccuracy. Checking the elements in turn and using
+        // the first one greater than 0.45 is safe (this leads to a simple
+        // test since qi = 0.45 implies 4 qi^2 - 1 = -0.19)
+        double s = ort[0][0] + ort[1][1] + ort[2][2];
+        if (s > -0.19) {
+            // compute q0 and deduce q1, q2 and q3
+            quat[0] = 0.5 * Math.sqrt(s + 1.0);
+            double inv = 0.25 / quat[0];
+            quat[1] = inv * (ort[1][2] - ort[2][1]);
+            quat[2] = inv * (ort[2][0] - ort[0][2]);
+            quat[3] = inv * (ort[0][1] - ort[1][0]);
+        } else {
+            s = ort[0][0] - ort[1][1] - ort[2][2];
+            if (s > -0.19) {
+                // compute q1 and deduce q0, q2 and q3
+                quat[1] = 0.5 * Math.sqrt(s + 1.0);
+                double inv = 0.25 / quat[1];
+                quat[0] = inv * (ort[1][2] - ort[2][1]);
+                quat[2] = inv * (ort[0][1] + ort[1][0]);
+                quat[3] = inv * (ort[0][2] + ort[2][0]);
+            } else {
+                s = ort[1][1] - ort[0][0] - ort[2][2];
+                if (s > -0.19) {
+                    // compute q2 and deduce q0, q1 and q3
+                    quat[2] = 0.5 * Math.sqrt(s + 1.0);
+                    double inv = 0.25 / quat[2];
+                    quat[0] = inv * (ort[2][0] - ort[0][2]);
+                    quat[1] = inv * (ort[0][1] + ort[1][0]);
+                    quat[3] = inv * (ort[2][1] + ort[1][2]);
+                } else {
+                    // compute q3 and deduce q0, q1 and q2
+                    s = ort[2][2] - ort[0][0] - ort[1][1];
+                    quat[3] = 0.5 * Math.sqrt(s + 1.0);
+                    double inv = 0.25 / quat[3];
+                    quat[0] = inv * (ort[0][1] - ort[1][0]);
+                    quat[1] = inv * (ort[0][2] + ort[2][0]);
+                    quat[2] = inv * (ort[2][1] + ort[1][2]);
+                }
+            }
+        }
+        return quat;
+    }
+
+    /** Perfect orthogonality on a 3X3 matrix.
+     * Ported from org.apache.commons.math3.geometry.euclidean.threed.Rotation.java
+     *
+     * @param m initial matrix (not exactly orthogonal)
+     * @param threshold convergence threshold for the iterative
+     * orthogonality correction (convergence is reached when the
+     * difference between two steps of the Frobenius norm of the
+     * correction is below this threshold)
+     * @return an orthogonal matrix close to m
+     * @exception NotARotationMatrixException if the matrix cannot be
+     * orthogonalized with the given threshold after 10 iterations
+     */
+    private static double[][] orthogonalizeMatrix(double[][] m, double threshold)
+            throws NotARotationMatrixException {
+        double[] m0 = m[0];
+        double[] m1 = m[1];
+        double[] m2 = m[2];
+        double x00 = m0[0];
+        double x01 = m0[1];
+        double x02 = m0[2];
+        double x10 = m1[0];
+        double x11 = m1[1];
+        double x12 = m1[2];
+        double x20 = m2[0];
+        double x21 = m2[1];
+        double x22 = m2[2];
+        double fn = 0;
+        double fn1;
+
+        double[][] o = new double[3][3];
+        double[] o0 = o[0];
+        double[] o1 = o[1];
+        double[] o2 = o[2];
+
+        // iterative correction: Xn+1 = Xn - 0.5 * (Xn.Mt.Xn - M)
+        int i = 0;
+        while (++i < 11) {
+
+            // Mt.Xn
+            double mx00 = m0[0] * x00 + m1[0] * x10 + m2[0] * x20;
+            double mx10 = m0[1] * x00 + m1[1] * x10 + m2[1] * x20;
+            double mx20 = m0[2] * x00 + m1[2] * x10 + m2[2] * x20;
+            double mx01 = m0[0] * x01 + m1[0] * x11 + m2[0] * x21;
+            double mx11 = m0[1] * x01 + m1[1] * x11 + m2[1] * x21;
+            double mx21 = m0[2] * x01 + m1[2] * x11 + m2[2] * x21;
+            double mx02 = m0[0] * x02 + m1[0] * x12 + m2[0] * x22;
+            double mx12 = m0[1] * x02 + m1[1] * x12 + m2[1] * x22;
+            double mx22 = m0[2] * x02 + m1[2] * x12 + m2[2] * x22;
+
+            // Xn+1
+            o0[0] = x00 - 0.5 * (x00 * mx00 + x01 * mx10 + x02 * mx20 - m0[0]);
+            o0[1] = x01 - 0.5 * (x00 * mx01 + x01 * mx11 + x02 * mx21 - m0[1]);
+            o0[2] = x02 - 0.5 * (x00 * mx02 + x01 * mx12 + x02 * mx22 - m0[2]);
+            o1[0] = x10 - 0.5 * (x10 * mx00 + x11 * mx10 + x12 * mx20 - m1[0]);
+            o1[1] = x11 - 0.5 * (x10 * mx01 + x11 * mx11 + x12 * mx21 - m1[1]);
+            o1[2] = x12 - 0.5 * (x10 * mx02 + x11 * mx12 + x12 * mx22 - m1[2]);
+            o2[0] = x20 - 0.5 * (x20 * mx00 + x21 * mx10 + x22 * mx20 - m2[0]);
+            o2[1] = x21 - 0.5 * (x20 * mx01 + x21 * mx11 + x22 * mx21 - m2[1]);
+            o2[2] = x22 - 0.5 * (x20 * mx02 + x21 * mx12 + x22 * mx22 - m2[2]);
+
+            // correction on each elements
+            double corr00 = o0[0] - m0[0];
+            double corr01 = o0[1] - m0[1];
+            double corr02 = o0[2] - m0[2];
+            double corr10 = o1[0] - m1[0];
+            double corr11 = o1[1] - m1[1];
+            double corr12 = o1[2] - m1[2];
+            double corr20 = o2[0] - m2[0];
+            double corr21 = o2[1] - m2[1];
+            double corr22 = o2[2] - m2[2];
+            // Frobenius norm of the correction
+            fn1 = corr00 * corr00 + corr01 * corr01 + corr02 * corr02 +
+                    corr10 * corr10 + corr11 * corr11 + corr12 * corr12 +
+                    corr20 * corr20 + corr21 * corr21 + corr22 * corr22;
+
+            // convergence test
+            if (Math.abs(fn1 - fn) <= threshold) {
+                return o;
+            }
+            // prepare next iteration
+            x00 = o0[0];
+            x01 = o0[1];
+            x02 = o0[2];
+            x10 = o1[0];
+            x11 = o1[1];
+            x12 = o1[2];
+            x20 = o2[0];
+            x21 = o2[1];
+            x22 = o2[2];
+            fn  = fn1;
+
+        }
+        // the algorithm did not converge after 10 iterations
+        throw new NotARotationMatrixException("Unable to orthogonalize matrix.");
+    }
+
+    // private class NotARotationMatrixException extends RuntimeException {
+    //
+    // }
 
 }

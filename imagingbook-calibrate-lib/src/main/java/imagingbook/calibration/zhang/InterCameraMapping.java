@@ -10,7 +10,7 @@ import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Pnt2d.PntDouble;
 import imagingbook.common.geometry.mappings.Mapping2D;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 
 /**

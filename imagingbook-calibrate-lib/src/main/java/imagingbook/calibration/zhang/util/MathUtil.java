@@ -9,19 +9,22 @@ package imagingbook.calibration.zhang.util;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.exception.DivideByZeroException;
-import org.apache.commons.math3.complex.Quaternion;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
+
+import org.apache.commons.numbers.quaternion.Quaternion;
+import org.apache.commons.geometry.euclidean.threed.rotation.Rotation3D;
+import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
+
+import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealVector;
+import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
 
 /**
  * Utility math methods used for camera calibration.
  *
  * @author WB
- * @version 2022/12/19
+ * @version 2025/10/26
  */
 public abstract class MathUtil {
 
@@ -155,33 +158,36 @@ public abstract class MathUtil {
 	// ---------------------------------------------------------------
 
 	/**
-	 * Converts a {@link Rotation} to a {@link Quaternion}.
+	 * Converts a {@link Rotation3D} to a {@link Quaternion}.
 	 * @param R a rotation
 	 * @return the corresponding quaternion
 	 */
-	public static Quaternion toQuaternion(Rotation R) {
-		return new Quaternion(R.getQ0(), R.getQ1(), R.getQ2(), R.getQ3());
+	public static Quaternion toQuaternion(Rotation3D R) {
+
+        return Quaternion.of(R.getAngle(), R.getAxis().toArray());
+		// return new Quaternion(R.getQ0(), R.getQ1(), R.getQ2(), R.getQ3());
 	}
 
 	/**
-	 * Converts a {@link Quaternion} to a {@link Rotation}.
+	 * Converts a {@link Quaternion} to a {@link Rotation3D}.
 	 * @param q a quaternion
 	 * @return the associated rotation
 	 */
-	public static Rotation toRotation(Quaternion q) {
-		return new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true);
+	public static QuaternionRotation toRotation(Quaternion q) {
+        return QuaternionRotation.of(q);
+		//return new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true);
 	}
 
     /**
-     * Linearly interpolate two 3D {@link Rotation} instances.
+     * Linearly interpolate two 3D {@link Rotation3D} instances.
      * @param R0 first rotation
      * @param R1 second rotation
      * @param alpha the blending factor in [0,1]
      * @return the interpolated rotation
      */
-    public static Rotation Lerp(Rotation R0, Rotation R1, double alpha) {
-        Quaternion qa = toQuaternion(R0);
-        Quaternion qb = toQuaternion(R1);
+    public static QuaternionRotation Lerp(QuaternionRotation R0, QuaternionRotation R1, double alpha) {
+        Quaternion qa = R0.getQuaternion();     //toQuaternion(R0);
+        Quaternion qb = R1.getQuaternion();     //toQuaternion(R1);
         return toRotation(Lerp(qa, qb, alpha));
     }
 

@@ -9,7 +9,7 @@ package imagingbook.calibration.zhang.data;
 import imagingbook.calibration.zhang.Camera;
 import imagingbook.calibration.zhang.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
-import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
 
 
 /**

@@ -6,13 +6,23 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.calibration.zhang.util.Rotations;
 import imagingbook.common.math.Matrix;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+
+import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
+// import org.apache.commons.geometry.euclidean.threed.RotationConvention;
+import org.apache.commons.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealVector;
+import org.apache.commons.numbers.quaternion.Quaternion;
+
+// import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+// import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
+// import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+// import org.apache.commons.math3.linear.MatrixUtils;
+// import org.apache.commons.math3.linear.RealMatrix;
+// import org.apache.commons.math3.linear.RealVector;
 
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -25,13 +35,13 @@ import java.util.Arrays;
 public class ViewTransform {
 	
 	private static final double OrthogonalityThreshold = 0.01;
-	private final Rotation rotation;
+	private final QuaternionRotation rotation;
 	private final double[] translation;
 	
 	// ----------------------------------------------------------------------------------
 	
 	public ViewTransform() {
-		this.rotation = Rotation.IDENTITY;
+		this.rotation = QuaternionRotation.identity(); // Rotation3D.IDENTITY;
 		this.translation = new double[3];
 	}
 	
@@ -40,7 +50,7 @@ public class ViewTransform {
 		this.translation = new double[] {tX, tY, tZ};
 	}
 	
-	public ViewTransform(Rotation rot, double[] t) {
+	public ViewTransform(QuaternionRotation rot, double[] t) {
 		this.rotation = rot;
 		translation = t;
 	}
@@ -50,12 +60,16 @@ public class ViewTransform {
 			throw new IllegalArgumentException("View transform matrix must be 3 x 4");
 		}
 		RealMatrix R = RT.getSubMatrix(0, 2, 0, 2);
-		rotation = new Rotation(R.getData(), OrthogonalityThreshold);
+        double[] rotVec = Rotations.rotationFrom3x3Matrix(R.getData(), Rotations.DefaultOrthogonalityThreshold);
+        this.rotation = QuaternionRotation.of(Quaternion.of(rotVec));       // TODO: check!!
+		//rotation = new Rotation(R.getData(), OrthogonalityThreshold);
 		translation = RT.getColumnVector(3).toArray();
 	}
 	
 	public ViewTransform(RealMatrix R, RealVector t) {	// R is of size 3 x 3 , t of size 3 x 1
-		this(new Rotation(R.getData(), OrthogonalityThreshold), t.toArray());
+		this(// new Rotation(R.getData(),       // TODO: check/simplify!!!
+                // QuaternionRotation.of(Quaternion.of(Rotations.rotationFrom3x3Matrix(R.getData(), Rotations.DefaultOrthogonalityThreshold))),
+                t.toArray());
 	}
 	
 	public ViewTransform(double[] w) {
@@ -65,16 +79,18 @@ public class ViewTransform {
 	
 	// ----------------------------------------------------------------------------------
 	
-	private Rotation makeRotation(double[] w) {
-		Vector3D axis = new Vector3D(w[0], w[1], w[2]);
-		double angle = axis.getNorm();
+	private QuaternionRotation makeRotation(double[] w) {
+		Vector3D axis = Vector3D.of(w[0], w[1], w[2]);
+		double angle = axis.norm();
+        // double angle = axis.getNorm();
 		//return new Rotation(axis, angle);
-		return new Rotation(axis, angle, RotationConvention.VECTOR_OPERATOR);
+		//return new Rotation(axis, angle, RotationConvention.VECTOR_OPERATOR);
+        return QuaternionRotation.fromAxisAngle(axis, angle);
 	}
 	
 	protected double[] getParameters() {
 		//double[] rotAxis = rotation.getAxis().toArray();
-		double[] rotAxis = rotation.getAxis(RotationConvention.VECTOR_OPERATOR).toArray();
+		double[] rotAxis = rotation.getAxis().toArray();
 		double rotAngle = rotation.getAngle();
 		return new double[] {
 			rotAxis[0] * rotAngle,
@@ -83,13 +99,13 @@ public class ViewTransform {
 			translation[0], translation[1], translation[2]};
 	}
 	
-	public Rotation getRotation() {
+	public QuaternionRotation getRotation() {
 		return rotation;
 	}
 	
 	public double[] getRotationAxis() {
-		//double[] rotAxis = rotation.getAxis().toArray();
-		double[] rotAxis = rotation.getAxis(RotationConvention.VECTOR_OPERATOR).toArray();
+		double[] rotAxis = rotation.getAxis().toArray();
+		//double[] rotAxis = rotation.getAxis(RotationConvention.VECTOR_OPERATOR).toArray();
 		double rotAngle = rotation.getAngle();
 		rotAxis[0] *= rotAngle;
 		rotAxis[1] *= rotAngle;
@@ -97,8 +113,9 @@ public class ViewTransform {
 		return rotAxis;
 	}
 	
-	public RealMatrix getRotationMatrix() {
-		double[][] R = rotation.getMatrix();
+	public RealMatrix getRotationMatrix() { // TODO: check matrix dimensions!!
+        double[][] R = Rotations.to3x4(rotation.toMatrix());
+		// double[][] R = rotation.getMatrix();
 		return MatrixUtils.createRealMatrix(R);
 	}
 	
@@ -120,8 +137,9 @@ public class ViewTransform {
 	 * @return the given world point mapped to 3D camera coordinates
 	 */
 	protected double[] applyTo(double[] XYZ) {	// 3D vector XYZ assumed
-		double[] XYZc = new double[3];
-		rotation.applyTo(XYZ, XYZc);
+		//double[] XYZc = new double[3];
+		//rotation.applyTo(XYZ, XYZc);
+        double[] XYZc =  rotation.apply(Vector3D.of(XYZ)).toArray();    // TODO: check, stick with Vector3D?
 		for (int i = 0; i < 3; i++) {
 			XYZc[i] = XYZc[i] + translation[i];
 		}

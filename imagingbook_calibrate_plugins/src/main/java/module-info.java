@@ -7,4 +7,5 @@ module imagingbook_calibrate_plugins {
     requires imagingbook.calibrate.lib;
     requires imagingbook.common;
     requires imagingbook.core;
+    requires org.apache.commons.geometry.euclidean;
 }

@@ -23,7 +23,9 @@ import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.core.jdoc.JavaDocHelp;
 import imagingbook.core.resource.ImageResource;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
+//import org.apache.commons.geometry.euclidean.threed.rotation.Rotation3D;
+// import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 
 import java.awt.Shape;
 import java.awt.geom.Path2D;
@@ -83,15 +85,15 @@ public class View_Interpolation_Demo implements PlugIn, JavaDocHelp {
 			ViewTransform viewA = ZhangData.getViewTransform(A);	// view A
 			ViewTransform viewB = ZhangData.getViewTransform(B);	// view B
 
-			Rotation rA = viewA.getRotation();
-			Rotation rB = viewB.getRotation();
+			QuaternionRotation rA = viewA.getRotation();
+            QuaternionRotation rB = viewB.getRotation();
 			double[] tA = viewA.getTranslation();
 			double[] tB = viewB.getTranslation();
 
 			// interpolation step k for view pair (A,B)
 			for (int k = 0; k < NumberOfInterpolatedFrames; k++) {
 				double alpha = (double) k / NumberOfInterpolatedFrames;
-				Rotation rk = MathUtil.Lerp(rA, rB, alpha);	// interpolate rotation
+                QuaternionRotation rk = MathUtil.Lerp(rA, rB, alpha);	// interpolate rotation
 				double[] tk = MathUtil.Lerp(tA, tB, alpha);	// interpolate translation
 				ViewTransform viewK = new ViewTransform(rk, tk);
 

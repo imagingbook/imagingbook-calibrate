@@ -8,9 +8,10 @@ package imagingbook.calibration.zhang;
 
 import imagingbook.calibration.zhang.util.MathUtil;
 import imagingbook.common.math.Matrix;
-import org.apache.commons.math3.linear.CholeskyDecomposition;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+
+import org.apache.commons.math4.legacy.linear.CholeskyDecomposition;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 /**
  * This class defines methods for estimating the intrinsic camera parameters from multiple homographies. Alternative
