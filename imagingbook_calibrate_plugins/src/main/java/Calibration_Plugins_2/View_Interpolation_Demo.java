@@ -21,6 +21,7 @@ import imagingbook.common.color.sets.BasicAwtColor;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
+import imagingbook.common.math.Matrix;
 import imagingbook.core.jdoc.JavaDocHelp;
 import imagingbook.core.resource.ImageResource;
 import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
@@ -95,7 +96,8 @@ public class View_Interpolation_Demo implements PlugIn, JavaDocHelp {
 				double alpha = (double) k / NumberOfInterpolatedFrames;
                 QuaternionRotation rk = MathUtil.Lerp(rA, rB, alpha);	// interpolate rotation
 				double[] tk = MathUtil.Lerp(tA, tB, alpha);	// interpolate translation
-				ViewTransform viewK = new ViewTransform(rk, tk);
+				// ViewTransform viewK = new ViewTransform(rk, tk);
+                ViewTransform viewK = new ViewTransform(rk, Matrix.makeRealVector(tk));
 
 				String sliceLabel = String.format("frame-%d-%d", A, k);
 				animStack.addSlice(sliceLabel, bgIp);	// dummy image with white background

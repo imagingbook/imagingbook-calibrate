@@ -7,14 +7,15 @@
 package imagingbook.calibration.zhang;
 
 import imagingbook.common.geometry.basic.Pnt2d;
-import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
+import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
+
+import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresFactory;
+import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
+import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
+import org.apache.commons.math4.legacy.linear.ArrayRealVector;
+import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.Arrays;
 

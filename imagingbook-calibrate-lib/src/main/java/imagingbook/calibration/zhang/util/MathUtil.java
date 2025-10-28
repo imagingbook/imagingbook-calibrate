@@ -10,6 +10,8 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.exception.DivideByZeroException;
 
+import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
+import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
 import org.apache.commons.geometry.euclidean.threed.rotation.Rotation3D;
 import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
@@ -230,6 +232,28 @@ public abstract class MathUtil {
 		SingularValueDecomposition svd = new SingularValueDecomposition(M);
 		return svd.getInverseConditionNumber();
 	}
+
+    // ---------------------------------------------------------------
+
+    public static AffineTransformMatrix3D makeAffineTransformMatrix3D(RealMatrix M) {
+        // M must be 3 x 4
+        Vector3D col0 = Vector3D.of(M.getColumn(0));
+        Vector3D col1 = Vector3D.of(M.getColumn(1));
+        Vector3D col2 = Vector3D.of(M.getColumn(2));
+        Vector3D col3 = Vector3D.of(M.getColumn(3));
+        return AffineTransformMatrix3D.fromColumnVectors(col0, col1, col2, col3);
+    }
+
+    public static RealMatrix makeRealMatrix(AffineTransformMatrix3D A) {
+        // {this.m00, this.m01, this.m02, this.m03, this.m10, this.m11, this.m12, this.m13, this.m20, this.m21, this.m22, this.m23
+        double[] v = A.toArray();
+        double[][] m = {
+                { v[0], v[1], v[2], v[3] } ,
+                { v[4], v[5], v[6], v[7] },
+                { v[8], v[9], v[10], v[11] }};
+        // M must be 3 x 4
+        return MatrixUtils.createRealMatrix(m);
+    }
 
 
     // ---------------------------------------------------------------

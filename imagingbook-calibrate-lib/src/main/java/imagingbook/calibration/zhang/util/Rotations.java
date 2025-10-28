@@ -9,10 +9,17 @@ package imagingbook.calibration.zhang.util;
 import imagingbook.common.math.Arithmetic;
 import imagingbook.common.math.Matrix;
 
+// import org.apache.commons.geometry.euclidean.threed.Vector3D;
+// import org.apache.commons.numbers.quaternion.Quaternion;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
 import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.numbers.quaternion.Quaternion;
+
+
+import java.util.Arrays;
 
 import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Matrix.add;
@@ -68,41 +75,27 @@ public class Rotations {
     static double[][] toRotationMatrixACM(double[] rv) {
         double angle = normL2(rv);
         Vector3D axis = Vector3D.of(rv);
-        QuaternionRotation qr = QuaternionRotation.fromAxisAngle(axis, angle);
+        QuaternionRotation rot = QuaternionRotation.fromAxisAngle(axis, angle);
+        Quaternion q = rot.getQuaternion();
+        double[] qv = {q.getW(), q.getX(), q.getY(), q.getZ(), }; // quaternion components
+        // System.out.println("toRotationMatrixACM: qv = " + Arrays.toString(qv));
         // Rotation rotation = new Rotation(axis, angle, RotationConvention.VECTOR_OPERATOR);
         // System.out.println("rotation angle2 = " + rotation.getAngle());
         // System.out.println("rotation axis2 = " + rotation.getAxis(RotationConvention.VECTOR_OPERATOR));
         // return rotation.getMatrix();
-        return to3x4(qr.toMatrix());
-    }
-
-    /**
-     * Helper method, converts a (Commons Math 4) AffineTransformMatrix3D to a 2D double array.
-     * Note that AffineTransformMatrix3D natively only returns a 1D double vector.
-     * @param transform the AffineTransformMatrix3D
-     * @return a 2D double array
-     */
-    public static double[][] to3x4(AffineTransformMatrix3D transform) {
-        double[] a = transform.toArray();
-        return new double[][] {
-                { a[0], a[1], a[2],  a[3] },
-                { a[4], a[5], a[6],  a[7] },
-                { a[8], a[9], a[10], a[11] }
+        // adaptation to commons-math4:
+        double[] a = rot.toMatrix().toArray();
+        return new double[][] {     // requires transpose?
+                { a[0], a[4], a[8]},
+                { a[1], a[5], a[9]},
+                { a[2], a[6], a[10]}
         };
+        // return new double[][] {
+        //         { a[0], a[1], a[2]},
+        //         { a[4], a[5], a[6]},
+        //         { a[8], a[9], a[10]}
+        // };
     }
-    public static AffineTransformMatrix3D from3x4(double[][] m) {
-        if (m.length != 3 || m[0].length != 4) {
-            throw new IllegalArgumentException("Expected 3x4 matrix");
-        }
-
-        return AffineTransformMatrix3D.of(
-                m[0][0], m[0][1], m[0][2], m[0][3],
-                m[1][0], m[1][1], m[1][2], m[1][3],
-                m[2][0], m[2][1], m[2][2], m[2][3]
-        );
-    }
-
-
 
     // ++++++++++++++   Rotation matrix --> Rodrigues vector +++++++++++++++++++
 
@@ -146,7 +139,6 @@ public class Rotations {
     }
 
     // http://math.stackexchange.com/questions/83874/efficient-and-accurate-numerical-implementation-of-the-inverse-rodrigues-rotatio
-
     /**
      * Converts a 3D rotation matrix (R) to the equivalent Rodrigues rotation vector. For comparison, this version uses
      * Apache Commons Math (ACM).
@@ -155,10 +147,15 @@ public class Rotations {
      * @return
      */
     static double[] toRodriguesVectorACM(double[][] R) {
-        Quaternion q = Quaternion.of(rotationFrom3x3Matrix(R, 0.01));        // Rotation rot = new Rotation(R, 0.01);
-        QuaternionRotation rot = QuaternionRotation.of(q);
+        double[] qv = makeRotation(R, 0.01);   // replacement for 'Rotation' constructor
+        // System.out.println("toRodriguesVectorACM: qv = " + Arrays.toString(qv));  // OK!
+        QuaternionRotation rot = QuaternionRotation.of(qv[0], qv[1], qv[2], qv[3]); // = (w, x, y, z)
+
         double angle = rot.getAngle();
         Vector3D axis = rot.getAxis();
+        // System.out.println("toRodriguesVectorACM: angle = " + angle);
+        // System.out.println("toRodriguesVectorACM: axis = " + Arrays.toString(axis.toArray()));
+
         double[] rv = axis.multiply(angle / axis.norm()).toArray();
         //double[] rv = axis.scalarMultiply(angle / axis.getNorm()).toArray();
         return rv;
@@ -213,7 +210,7 @@ public class Rotations {
      */
     public static boolean isRotationMatrix(double[][] R, double threshold) {
         try {
-            double[] rot = rotationFrom3x3Matrix(R, threshold);
+            double[] rot = makeRotation(R, threshold);
         } catch (NotARotationMatrixException e) {
             return false;
         }
@@ -262,6 +259,20 @@ public class Rotations {
     // --------------------------------------------------------------------------------
 
     /**
+     * Creates a QuaternionRotation instance from a given rotation matrix, which
+     * must be orthogonal.
+     *
+     * @param R 3x3 rotation matrix
+     * @param threshold orthogonality threshold
+     * @return
+     */
+    public static QuaternionRotation makeRotation(RealMatrix R, double threshold) {
+        double[] rv = makeRotation(R.getData(), threshold);
+        // System.out.println("QuaternionRotation makeRotation: rv = " + Matrix.toString(rv));
+        return QuaternionRotation.of(rv[0], rv[1], rv[2], rv[3]);
+    }
+
+    /**
      * Build a rotation (quaternion) from a 3X3 matrix.
      * Ported from org.apache.commons.math3.geometry.euclidean.threed.Rotation.java
      *
@@ -279,7 +290,7 @@ public class Rotations {
      * correction to the copy in order to perfect its orthogonality. If
      * the Frobenius norm of the correction needed is above the given
      * threshold, then the matrix is considered to be too far from a
-     * true rotation matrix and an exception is thrown.<p>
+     * true rotation matrix and an exception is thrown.</p>
      *
      * @param m rotation matrix
      * @param threshold convergence threshold for the iterative
@@ -292,27 +303,28 @@ public class Rotations {
      * with the given threshold, or if the determinant of the resulting
      * orthogonal matrix is negative
      */
-    public static double[] rotationFrom3x3Matrix(double[][] m, double threshold)
+    public static double[] makeRotation(double[][] m, double threshold)
             throws NotARotationMatrixException {
-        // dimension check
+                // dimension check
         if ((m.length != 3) || (m[0].length != 3) ||
                 (m[1].length != 3) || (m[2].length != 3)) {
             throw new NotARotationMatrixException("Rotation matrix is not 3x3");
         }
         // compute a "close" orthogonal matrix
         double[][] ort = orthogonalizeMatrix(m, threshold);
+        //System.out.println("makeRotation: ort = \n" + Matrix.toString(ort));
 
         // check the sign of the determinant
-        double det = ort[0][0] * (ort[1][1] * ort[2][2] - ort[2][1] * ort[1][2]) -
+        double det =
+                ort[0][0] * (ort[1][1] * ort[2][2] - ort[2][1] * ort[1][2]) -
                 ort[1][0] * (ort[0][1] * ort[2][2] - ort[2][1] * ort[0][2]) +
                 ort[2][0] * (ort[0][1] * ort[1][2] - ort[1][1] * ort[0][2]);
         if (det < 0.0) {
             throw new NotARotationMatrixException("Closest orthogonal matrix has negative determinant: " + det);
         }
-
-        double[] quat = mat2quat(ort);
+        // double[] quat = mat2quat(ort);
         // q0 = quat[0]; q1 = quat[1]; q2 = quat[2]; q3 = quat[3];
-        return quat;
+        return mat2quat(ort);
     }
 
 
@@ -471,8 +483,38 @@ public class Rotations {
         throw new NotARotationMatrixException("Unable to orthogonalize matrix.");
     }
 
-    // private class NotARotationMatrixException extends RuntimeException {
-    //
-    // }
+    /**
+     * Helper method, converts a (Commons Math 4) QuaternionRotation to a 3x3 double array.
+     * Note that AffineTransformMatrix3D natively only returns a 1D double vector.
+     * @param rot the QuaternionRotation
+     * @return a 3x3 2D double array
+     */
+    public static double[][] getRotationMatrix(QuaternionRotation rot) {
+        AffineTransformMatrix3D transform = rot.toMatrix();
+        double[] a = transform.toArray();   // 1D vector!
+        double[][] R = {
+                { a[0], a[1], a[2] },
+                { a[4], a[5], a[6] },
+                { a[8], a[9], a[10] }
+        };
+        // double[][] R = {    // must be transposed!!
+        //         { a[0], a[4], a[2] },
+        //         { a[1], a[5], a[9] },
+        //         { a[2], a[6], a[10] }};
+        return R; // MatrixUtils.createRealMatrix(R);
+    }
+
+    /**
+     * Substitute for analogous exception in commons math3.
+     */
+    public static class NotARotationMatrixException extends RuntimeException {
+
+        public NotARotationMatrixException(String s) {
+            super(s);
+        }
+    }
+
+
+
 
 }

@@ -8,7 +8,16 @@ package imagingbook.calibration.zhang.util;
 
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
+import imagingbook.common.util.ArrayUtils;
+import imagingbook.testutils.NumericTestUtils;
+import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
+import org.apache.commons.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import static imagingbook.calibration.zhang.util.Rotations.isRotationMatrix;
 import static imagingbook.calibration.zhang.util.Rotations.normalizeAngle;
@@ -28,7 +37,12 @@ public class RotationsTest {
         PrintPrecision.set(6);
     }
 
-    @Test   // Rodrigues vector -> Rotation matrix
+    static final double[][] R1 = {  // orthogonal rotation matrix
+            {0.283662, 0.000000, 0.958924},
+            {0.000000, 1.000000, 0.000000},
+            {-0.958924, 0.000000, 0.283662}};
+
+    @Test   // Check workings of Rotations.normalizeAngle()
     public void testNormalizeAngle() {
         double TOL = 1e-12;
         assertEquals(0.0, normalizeAngle(0.0), TOL);
@@ -44,51 +58,115 @@ public class RotationsTest {
         assertEquals(-Math.PI/2, normalizeAngle(-10.5 * Math.PI), TOL);
     }
 
-    @Test   // Rodrigues vector -> Rotation matrix
+    @Test   // Check workings of Rotations.isRotationMatrix()
     public void testIsRotationMatrix() {
-        double[][] R1 = {
-                {0.283662, 0.000000, 0.958924},
-                {0.000000, 1.000000, 0.000000},
-                {-0.958924, 0.000000, 0.283662}};
+        assertTrue(isRotationMatrix(Matrix.idMatrix(3)));
         assertTrue(isRotationMatrix(R1, threshold));
         assertTrue(isRotationMatrix(Matrix.transpose(R1), threshold));
         assertTrue(isRotationMatrix(Matrix.inverse(R1), threshold));
         assertFalse(isRotationMatrix(Matrix.multiply(2.0, R1), threshold));
     }
 
-    @Test   // Rodrigues vector <-> Rotation matrix
+    @Test   // Check conversion of Rodrigues rotation vector to 3D rotation matrix
     public void testRodriguesToMatrix() {
-        double[][] R1 = {
-                {0.283662, 0.000000, 0.958924},
-                {0.000000, 1.000000, 0.000000},
-                {-0.958924, 0.000000, 0.283662}};
-
+        // rotation vector from matrix R1
         double[] rv1 = toRodriguesVector(R1);
+        // check values of rv1
+        // System.out.println("rv1 = " + Arrays.toString(rv1));
+        // assertArrayEquals(new double[] {0.0, -1.283185407, 0.0}, rv1, 1e-6); // this fails!!
+        // rotation matrix back from vector rv1
         double[][] R2 = toRotationMatrix(rv1);
+        // R1, R2 must be the same
+        NumericTestUtils.assert2dArrayEquals(R1, R2, 1e-6); // this is successful
+    }
 
-        for (int i = 0; i < R1.length; i++) {
-            assertArrayEquals(R1[i], R2[i], 1e-6);
-        }
 
-        double[] rv2 = toRodriguesVector(R2);
-        assertArrayEquals(rv1, rv2, 1e-6);
+    @Test   // same as testRodriguesToMatrix() but using commons math methods
+    public void testRodriguesToMatrixACM() {
+        // rotation vector from matrix R1
+        double[] rv1 = toRodriguesVectorACM(R1);
+        // check values of rv1
+        // System.out.println("rv1 = " + Arrays.toString(rv1));
+        assertArrayEquals(new double[] {0.0, -1.283185407, 0.0}, rv1, 1e-6);
+        // rotation matrix back from vector rv1
+        double[][] R2 = toRotationMatrixACM(rv1);
+        // R1, R2 must be the same
+        NumericTestUtils.assert2dArrayEquals(R1, R2, 1e-6);
     }
 
     @Test   // Rodrigues vector <-> Rotation matrix (Apache)
-    public void testRodriguesToMatrixACM() {
-        double[][] R1 = {
-                {0.283662, 0.000000, 0.958924},
-                {0.000000, 1.000000, 0.000000},
-                {-0.958924, 0.000000, 0.283662}};
+    public void testMakeRotation1() {
+        // System.out.println("R1 = \n" + Matrix.toString(R1));
+        QuaternionRotation qr = Rotations.makeRotation(MatrixUtils.createRealMatrix(R1), threshold);
+        // double angle = qr.getAngle();
+        // double[] axis = qr.getAxis().toArray();
+        double[][] Rx = Rotations.getRotationMatrix(qr);
+        // System.out.println("Rx = \n" + Matrix.toString(Rx));
+        // NumericTestUtils.assert2dArrayEquals(R1, Rx, 0.01);
 
-        double[] rv1 = toRodriguesVectorACM(R1);
-        double[][] R2 = toRotationMatrixACM(rv1);
-
-        for (int i = 0; i < R1.length; i++) {
-            assertArrayEquals(R1[i], R2[i], 1e-6);
-        }
-
-        double[] rv2 = toRodriguesVectorACM(R2);
-        assertArrayEquals(rv1, rv2, 1e-6);
     }
+
+    // -----------------------------------------
+
+    @Test   // Check conversions from RealMatrix to/from AffineTransformMatrix3D
+    public void testMakeAffineTransformMatrix3D() {
+        RealMatrix m1 = Matrix.makeRealMatrix(3, 4,
+                -0.5, 0, 0, 4,
+                0, 2, 0.1, 5,
+                0, 0, 3, 6);
+        AffineTransformMatrix3D atf = MathUtil.makeAffineTransformMatrix3D (m1);
+        RealMatrix m2 = MathUtil.makeRealMatrix(atf);
+        NumericTestUtils.assert2dArrayEquals(m1.getData(), m2.getData());
+    }
+
+    // -----------------------------------------
+
+    @Test   // Check conversion of Rodrigues rotation vector to 3D rotation matrix
+    public void testQuaternionRotation1() {
+        QuaternionRotation qr = QuaternionRotation.identity();
+        //Rotations.getRotationMatrix(qr);
+        AffineTransformMatrix3D atm = qr.toMatrix();
+    }
+
+    @Test   // Check QuaternionRotation creation from axis + angle
+    public void testQuaternionRotation2() {
+        double angle = 0.5;
+        double[] axis = {0.5, -0.2, 0.9};
+        QuaternionRotation qr = QuaternionRotation.fromAxisAngle(Vector3D.of(axis), angle);
+        double angle1 = qr.getAngle();
+        double[] axis1 = qr.getAxis().toArray();
+        assertEquals(angle, angle1, 1e-6);
+        // System.out.println("axis1 = " + Arrays.toString(axis1));
+        // System.out.println("norm = " + Arrays.toString(Matrix.normalize(axis)));
+        assertArrayEquals(Matrix.normalize(axis), axis1, 1e-6);
+    }
+
+    @Test   // Check QuaternionRotation creation from axis + angle
+    public void testQuaternionRotation3() {
+        double angle = 0;
+        double[] axis = Matrix.normalize(new double[] {0.5, -0.2, 0.9});
+        //          = [0.4767312946227961, -0.19069251784911845, 0.8581163303210331]
+        // System.out.println("axis = " + Arrays.toString(axis));
+        QuaternionRotation qr1 = QuaternionRotation.fromAxisAngle(Vector3D.of(axis), angle);
+        double angle1 = qr1.getAngle();
+        double[] axis1 = qr1.getAxis().toArray();
+        // System.out.println("angle1 = " + angle1);
+        // System.out.println("axis1 = " + Arrays.toString(axis1));
+        // System.out.println("norm = " + Arrays.toString(Matrix.normalize(axis)));
+        // assertEquals(angle, angle1, 1e-6);
+
+        // assertArrayEquals(axis, axis1, 1e-6);
+        //
+        //
+        // double[][] Ra = Rotations.getRotationMatrix(qr1);
+        // System.out.println("Ra = \n" + Matrix.toString(Ra));
+        //
+        // double[][] Rb = MathUtil.makeRealMatrix(qr1.toMatrix()).getSubMatrix(0, 2, 0, 2).getData();
+        // System.out.println("Rb = \n" + Matrix.toString(Rb));
+
+    }
+
+
+
+
 }

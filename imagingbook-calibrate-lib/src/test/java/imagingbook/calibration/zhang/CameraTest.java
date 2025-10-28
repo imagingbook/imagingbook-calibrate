@@ -6,8 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
 
 import java.util.Locale;

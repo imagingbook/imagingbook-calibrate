@@ -9,6 +9,7 @@ package imagingbook.calibration.zhang;
 import imagingbook.calibration.zhang.util.Rotations;
 import imagingbook.common.math.Matrix;
 
+import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
 import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
 // import org.apache.commons.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
@@ -16,13 +17,6 @@ import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 import org.apache.commons.numbers.quaternion.Quaternion;
-
-// import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-// import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-// import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-// import org.apache.commons.math3.linear.MatrixUtils;
-// import org.apache.commons.math3.linear.RealMatrix;
-// import org.apache.commons.math3.linear.RealVector;
 
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -44,43 +38,71 @@ public class ViewTransform {
 		this.rotation = QuaternionRotation.identity(); // Rotation3D.IDENTITY;
 		this.translation = new double[3];
 	}
-	
+
+    /**
+     * Creates a 3D ViewTransform from the 3 elements of a rotation (Rodrigues) vector
+     * and the 3 elements of a translation vector.
+     * @param rX rotation vector x
+     * @param rY rotation vector y
+     * @param rZ rotation vector z
+     * @param tX translation vector x
+     * @param tY translation vector y
+     * @param tZ translation vector z
+     */
 	public ViewTransform(double rX, double rY, double rZ, double tX, double tY, double tZ) {
 		this.rotation = makeRotation(new double[] {rX, rY, rZ});
 		this.translation = new double[] {tX, tY, tZ};
 	}
-	
-	public ViewTransform(QuaternionRotation rot, double[] t) {
-		this.rotation = rot;
-		translation = t;
+
+    /**
+     * Creates a 3D ViewTransform from a vector w = (rX, rY, rZ, tX, tY, tY).
+     * @param w
+     */
+    public ViewTransform(double[] w) {
+        // this.rotation = makeRotation(w);
+        // this.translation = Arrays.copyOfRange(w, 3, 6);
+        this(w[0], w[1], w[2], w[3], w[4], w[5]);
+    }
+
+    /**
+     * Creates a 3D ViewTransform from a QuaternionRotation and a
+     * 3D translation vector.
+     * @param qr rotation quaternion
+     * @param t translation vector
+     */
+	public ViewTransform(QuaternionRotation qr, RealVector t) {
+		this.rotation = qr;
+		translation = t.toArray();
 	}
-	
+
+    /**
+     * Creates a 3D ViewTransform from  a 3x4 homography matrix.
+     * @param RT homography matrix
+     */
 	public ViewTransform(RealMatrix RT) {	// RT is of size 3 x 4 (a homography)
 		if (RT.getRowDimension() != 3 || RT.getColumnDimension() != 4) {
 			throw new IllegalArgumentException("View transform matrix must be 3 x 4");
 		}
 		RealMatrix R = RT.getSubMatrix(0, 2, 0, 2);
-        double[] rotVec = Rotations.rotationFrom3x3Matrix(R.getData(), Rotations.DefaultOrthogonalityThreshold);
-        this.rotation = QuaternionRotation.of(Quaternion.of(rotVec));       // TODO: check!!
-		//rotation = new Rotation(R.getData(), OrthogonalityThreshold);
-		translation = RT.getColumnVector(3).toArray();
+        this.rotation = Rotations.makeRotation(R, Rotations.DefaultOrthogonalityThreshold);
+		this.translation = RT.getColumnVector(3).toArray();
 	}
-	
+
+    /**
+     * Creates a 3D ViewTransform from a 3x3 rotation matrix and a
+     * 3D translation vector.
+     * @param R 3x3 rotation matrix
+     * @param t 3D translation vector
+     */
 	public ViewTransform(RealMatrix R, RealVector t) {	// R is of size 3 x 3 , t of size 3 x 1
-		this(// new Rotation(R.getData(),       // TODO: check/simplify!!!
-                // QuaternionRotation.of(Quaternion.of(Rotations.rotationFrom3x3Matrix(R.getData(), Rotations.DefaultOrthogonalityThreshold))),
-                t.toArray());
-	}
-	
-	public ViewTransform(double[] w) {
-		this.rotation = makeRotation(w);
-		this.translation = Arrays.copyOfRange(w, 3, 6);
+        // alternatively check private method QuaternionRotation.orthogonalRotationMatrixToQuaternion(..)
+		this(Rotations.makeRotation(R, 0.01), t);
 	}
 	
 	// ----------------------------------------------------------------------------------
 	
-	private QuaternionRotation makeRotation(double[] w) {
-		Vector3D axis = Vector3D.of(w[0], w[1], w[2]);
+	private QuaternionRotation makeRotation(double[] r) {
+		Vector3D axis = Vector3D.of(r[0], r[1], r[2]);
 		double angle = axis.norm();
         // double angle = axis.getNorm();
 		//return new Rotation(axis, angle);
@@ -114,9 +136,7 @@ public class ViewTransform {
 	}
 	
 	public RealMatrix getRotationMatrix() { // TODO: check matrix dimensions!!
-        double[][] R = Rotations.to3x4(rotation.toMatrix());
-		// double[][] R = rotation.getMatrix();
-		return MatrixUtils.createRealMatrix(R);
+        return MatrixUtils.createRealMatrix(Rotations.getRotationMatrix(this.rotation));
 	}
 	
 	public double[] getTranslation() {
