@@ -6,6 +6,7 @@ module imagingbook.calibrate.lib {
     requires org.apache.commons.geometry.euclidean;
     requires org.apache.commons.numbers.quaternion;
     requires org.apache.commons.math4.core;
+    requires org.apache.commons.numbers.arrays;
 
     exports imagingbook.calibration.zhang.data;
     exports imagingbook.calibration.zhang;

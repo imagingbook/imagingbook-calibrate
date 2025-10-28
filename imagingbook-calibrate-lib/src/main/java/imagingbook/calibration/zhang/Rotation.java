@@ -112,6 +112,7 @@ public class Rotation implements Serializable {
     static final String ZERO_NORM_FOR_ROTATION_DEFINING_VECTOR = "zero norm for rotation defining vector";
     static final String UNABLE_TO_ORTHOGONOLIZE_MATRIX = "unable to orthogonalize matrix in {0} iterations";
 
+
     /** Identity rotation. */
     public static final Rotation IDENTITY = new Rotation(1.0, 0.0, 0.0, 0.0, false);
 
@@ -1401,9 +1402,7 @@ public class Rotation implements Serializable {
         }
 
         // the algorithm did not converge after 10 iterations
-        throw new NotARotationMatrixException(
-                LocalizedFormats.UNABLE_TO_ORTHOGONOLIZE_MATRIX,
-                i - 1);
+        throw new NotARotationMatrixException(UNABLE_TO_ORTHOGONOLIZE_MATRIX, i - 1);
     }
 
     /** Compute the <i>distance</i> between two rotations.

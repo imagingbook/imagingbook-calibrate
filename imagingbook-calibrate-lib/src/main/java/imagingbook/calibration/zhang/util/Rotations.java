@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.util;
 
+import imagingbook.calibration.zhang.NotARotationMatrixException;
 import imagingbook.common.math.Arithmetic;
 import imagingbook.common.math.Matrix;
 
@@ -14,12 +15,9 @@ import imagingbook.common.math.Matrix;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
 import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
-import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.numbers.quaternion.Quaternion;
 
-
-import java.util.Arrays;
 
 import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Matrix.add;
@@ -503,18 +501,6 @@ public class Rotations {
         //         { a[2], a[6], a[10] }};
         return R; // MatrixUtils.createRealMatrix(R);
     }
-
-    /**
-     * Substitute for analogous exception in commons math3.
-     */
-    public static class NotARotationMatrixException extends RuntimeException {
-
-        public NotARotationMatrixException(String s) {
-            super(s);
-        }
-    }
-
-
 
 
 }
