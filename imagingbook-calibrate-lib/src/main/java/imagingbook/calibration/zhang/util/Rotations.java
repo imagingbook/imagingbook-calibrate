@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.util;
 
-import imagingbook.calibration.zhang.NotARotationMatrixException;
+import imagingbook.calibration.zhang.geom3d.NotARotationMatrixException;
 import imagingbook.common.math.Arithmetic;
 import imagingbook.common.math.Matrix;
 

@@ -4,36 +4,12 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration.zhang;
-
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package imagingbook.calibration.zhang.geom3d;
 
 import java.io.Serializable;
-
-
-//import org.apache.commons.math3.exception.ArithmeticException;
-//import org.apache.commons.math3.exception.IllegalArgumentException;
-//import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math4.core.jdkmath.JdkMath;
-//import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.arrays.LinearCombination;
-// import org.apache.commons.math3.util.MathArrays;
 
 
 /**
@@ -111,6 +87,7 @@ public class Rotation implements Serializable {
     static final String CLOSEST_ORTHOGONAL_MATRIX_HAS_NEGATIVE_DETERMINANT = "the closest orthogonal matrix has a negative determinant {0}";
     static final String ZERO_NORM_FOR_ROTATION_DEFINING_VECTOR = "zero norm for rotation defining vector";
     static final String UNABLE_TO_ORTHOGONOLIZE_MATRIX = "unable to orthogonalize matrix in {0} iterations";
+
 
     /** Identity rotation. */
     public static final Rotation IDENTITY = new Rotation(1.0, 0.0, 0.0, 0.0, false);
@@ -282,11 +259,11 @@ public class Rotation implements Serializable {
      * @param u2 second vector of the origin pair
      * @param v1 desired image of u1 by the rotation
      * @param v2 desired image of u2 by the rotation
-     * @exception ArithmeticException if the norm of one of the vectors is zero,
+     * @exception IllegalArgumentException if the norm of one of the vectors is zero,
      * or if one of the pair is degenerated (i.e. the vectors of the pair are collinear)
      */
     public Rotation(Vector3D u1, Vector3D u2, Vector3D v1, Vector3D v2)
-            throws ArithmeticException {
+            throws IllegalArgumentException {
 
         // build orthonormalized base from u1, u2
         // this fails when vectors are null or collinear, which is forbidden to define a rotation
@@ -1401,9 +1378,7 @@ public class Rotation implements Serializable {
         }
 
         // the algorithm did not converge after 10 iterations
-        throw new NotARotationMatrixException(
-                LocalizedFormats.UNABLE_TO_ORTHOGONOLIZE_MATRIX,
-                i - 1);
+        throw new NotARotationMatrixException(UNABLE_TO_ORTHOGONOLIZE_MATRIX, i - 1);
     }
 
     /** Compute the <i>distance</i> between two rotations.
