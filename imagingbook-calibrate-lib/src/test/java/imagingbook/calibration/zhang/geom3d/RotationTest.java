@@ -8,7 +8,7 @@ package imagingbook.calibration.zhang.geom3d;
 
 import org.apache.commons.math4.core.jdkmath.JdkMath;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.numbers.angle.Angle;
+//import org.apache.commons.numbers.angle.Angle;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;

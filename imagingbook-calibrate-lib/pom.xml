@@ -52,11 +52,11 @@
             <version>1.0-beta1</version>
         </dependency>
 
-        <dependency>
+        <!--<dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-numbers-angle</artifactId>
             <version>1.0-beta1</version>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -88,13 +88,7 @@
             <artifactId>imagingbook-testing</artifactId>
             <version>7.3.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-numbers-angle</artifactId>
-            <version>1.2</version>
-            <scope>test</scope>
-        </dependency>
-
+       
     </dependencies>
 
     <!-- https://stackoverflow.com/questions/15886209/maven-is-not-working-in-java-8-when-javadoc-tags-are-incomplete -->
