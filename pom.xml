@@ -55,25 +55,6 @@
 		</imagingbook.bottom>
         <imagingbook.gpgSkip>true</imagingbook.gpgSkip>
 
-        <CommonsMath4LegacyVersion>4.0-beta1</CommonsMath4LegacyVersion>
-        <CommonsMath4NumbersVersion>1.0-beta1</CommonsMath4NumbersVersion>
-        <CommonsMath4GeometryVersion>1.0-beta1</CommonsMath4GeometryVersion>
-	</properties>
+        </properties>
 	
-	<!--<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<links>
-						<link>https://javadoc.io/doc/com.imagingbook/imagingbook-common/6.0.0</link>
-						<link>${imagej.apilink}</link>
-						<link>${commons-math3.apilink}</link>
-					</links>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>-->
-
 </project>
