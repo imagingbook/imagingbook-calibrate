@@ -7,8 +7,9 @@
 package imagingbook.calibration.zhang.geom3d;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
-import imagingbook.common.math.Matrix;
+import imagingbook.calibration.zhang.util.MathUtil;
 import org.apache.commons.math4.core.jdkmath.JdkMath;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.arrays.LinearCombination;
@@ -110,16 +111,24 @@ public class Rotation implements Serializable {
     private final double q3;
 
     /**
-     * Constructor added by wilbur.
-     * Creates a Rotation instance from a (Rodrigues) rotation vector
-     * r = (r0, r1, r2).
+     * Constructors added by wilbur.
+     * Creates a Rotation instance from a quaternion vector
+     * q = (q0, q1, q2, q3) = (w, x, y, z).
      */
-    public Rotation(double[] r) {
-        this(Vector3D.of(r), Matrix.normL2(r));
-        System.out.println("Rotation(double[] r)");
+    public Rotation(double[] q) {
+        this(q[0], q[1], q[2], q[3], true);
     }
 
-    // ------------------------------------------------------------
+    // /**
+    //  * Converts a {@link Quaternion} to a {@link Rotation}.
+    //  * @param q a quaternion
+    //  * @return the associated rotation
+    //  */
+    // public Rotation (Quaternion q) {
+    //     this(q.getW(), q.getX(), q.getY(), q.getZ(), true);
+    // }
+
+   // ------------------------------------------------------------
 
     /** Build a rotation from the quaternion coordinates.
      * <p>A rotation can be built from a <em>normalized</em> quaternion,
@@ -1421,5 +1430,48 @@ public class Rotation implements Serializable {
     public static double distance(Rotation r1, Rotation r2) {
         return r1.composeInverseInternal(r2).getAngle();
     }
+
+
+    // ---- added by wilbur
+
+    /**
+     * Linearly interpolate two 3D {@link Rotation} instances.
+     * @param ra first rotation
+     * @param rb second rotation
+     * @param alpha the blending factor in [0,1]
+     * @return the interpolated rotation
+     */
+    public static Rotation Lerp(Rotation ra, Rotation rb, double alpha) {
+        // Quaternion Qa = ra.toQuaternion();
+        // Quaternion Qb = rb.toQuaternion();
+        // return new Rotation(MathUtil.Lerp(Qa, Qb, alpha));
+        double[] qab = MathUtil.Lerp(ra.getQ(), rb.getQ(), alpha);
+        return new Rotation(qab);
+    }
+
+    // /**
+    //  * Converts a {@link Rotation} to a {@link Quaternion}.
+    //  * @return the corresponding quaternion
+    //  */
+    // public Quaternion toQuaternion() {
+    //     return Quaternion.of(q0, q1, q2, q3);
+    //     // return Quaternion.of(getQ());
+    // }
+
+    /**
+     * Returns the quaternion vector.
+     * @return quaternion vector q = (q0, q1, q2, q3) = (w, x, y, z)
+     */
+    public double[] getQ() {
+        return new double[] {q0, q1, q2, q3};
+    }
+
+    // --------------------------------------------------
+
+    @Override
+    public String toString() {
+        return(Rotation.class.getSimpleName() + Arrays.toString(getQ()));
+    }
+
 
 }

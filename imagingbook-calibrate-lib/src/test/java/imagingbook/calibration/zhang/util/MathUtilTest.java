@@ -10,7 +10,10 @@ import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
+
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
@@ -92,4 +95,36 @@ public class MathUtilTest {
         RealVector ax = M.operate(x);
         assertArrayEquals(Matrix.zeroVector(ax.getDimension()), ax.toArray(), 1e-6);
     }
+
+    // --- Quaternion stuff --------------------------------------------
+
+    // Lerp public static double[] Lerp(double[] t0, double[] t1, double alpha) {
+
+    @Test
+    public void testLerpPlainArray1() {
+        double[] ta = {1};
+        double[] tb = {5};
+        double[] tab = MathUtil.Lerp(ta, tb, 0.3);
+        // System.out.println(Arrays.toString(tab));
+        assertArrayEquals(new double[] {2.2}, tab, 1e-6);
+    }
+
+    @Test
+    public void testLerpPlainArray3() {
+        double[] ta = {1, -2, 7};
+        double[] tb = {5, 0, 3};
+        double[] tab = MathUtil.Lerp(ta, tb, 0.3);
+        // System.out.println(Arrays.toString(tab));
+        assertArrayEquals(new double[] {2.2, -1.4, 5.8}, tab, 1e-6);
+    }
+
+    @Test
+    public void testLerpPlainArray5() {
+        double[] ta = {1, -2, 7, 9, -1};
+        double[] tb = {5, 0, 3, 2, 7};
+        double[] tab = MathUtil.Lerp(ta, tb, 0.3);
+        // System.out.println(Arrays.toString(tab));
+        assertArrayEquals(new double[] {2.2, -1.4, 5.8, 6.9, 1.4}, tab, 1e-6);
+    }
+
 }

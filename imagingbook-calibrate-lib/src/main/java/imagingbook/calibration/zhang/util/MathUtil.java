@@ -11,9 +11,9 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.exception.DivideByZeroException;
 
-import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
-import org.apache.commons.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.numbers.quaternion.Quaternion;
+// import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
+// import org.apache.commons.geometry.euclidean.threed.Vector3D;
+// import org.apache.commons.numbers.quaternion.Quaternion;
 
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
@@ -158,48 +158,35 @@ public abstract class MathUtil {
 
     // ---------------------------------------------------------------
 
-    /**
-     * Converts a {@link Rotation} to a {@link Quaternion}.
-     * @param R a rotation
-     * @return the corresponding quaternion
-     */
-    public static Quaternion toQuaternion(Rotation R) {
-        return Quaternion.of(R.getQ0(), R.getQ1(), R.getQ2(), R.getQ3());
-    }
+    // /**
+    //  * Converts a {@link Rotation} to a {@link Quaternion}.
+    //  * @param R a rotation
+    //  * @return the corresponding quaternion
+    //  */
+    // public static Quaternion toQuaternion(Rotation R) {
+    //     return Quaternion.of(R.getQ0(), R.getQ1(), R.getQ2(), R.getQ3());
+    // }
 
-    /**
-     * Converts a {@link Quaternion} to a {@link Rotation}.
-     * @param q a quaternion
-     * @return the associated rotation
-     */
-    public static Rotation toRotation(Quaternion q) {
-        return new Rotation(q.getW(), q.getX(), q.getY(), q.getZ(), true);
-        // return new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true);
-    }
+    // /**
+    //  * Converts a {@link Quaternion} to a {@link Rotation}.
+    //  * @param q a quaternion
+    //  * @return the associated rotation
+    //  */
+    // public static Rotation toRotation(Quaternion q) {
+    //     return new Rotation(q.getW(), q.getX(), q.getY(), q.getZ(), true);
+    //     // return new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true);
+    // }
 
-    /**
-     * Linearly interpolate two 3D {@link Rotation} instances.
-     * @param R0 first rotation
-     * @param R1 second rotation
-     * @param alpha the blending factor in [0,1]
-     * @return the interpolated rotation
-     */
-    public static Rotation Lerp(Rotation R0, Rotation R1, double alpha) {
-        Quaternion qa = toQuaternion(R0);
-        Quaternion qb = toQuaternion(R1);
-        return toRotation(Lerp(qa, qb, alpha));
-    }
-
-    /**
-     * Linearly interpolate two {@link Quaternion} instances.
-     * @param Q0 first quaternion
-     * @param Q1 second quaternion
-     * @param alpha the blending factor in [0,1]
-     * @return the interpolated quaternion
-     */
-    public static Quaternion Lerp(Quaternion Q0, Quaternion Q1, double alpha) {
-        return Quaternion.add(Q0.multiply(1 - alpha), Q1.multiply(alpha));
-    }
+    // /**
+    //  * Linearly interpolate two {@link Quaternion} instances.
+    //  * @param Q0 first quaternion
+    //  * @param Q1 second quaternion
+    //  * @param alpha the blending factor in [0,1]
+    //  * @return the interpolated quaternion
+    //  */
+    // public static Quaternion Lerp(Quaternion Q0, Quaternion Q1, double alpha) {
+    //     return Quaternion.add(Q0.multiply(1 - alpha), Q1.multiply(alpha));
+    // }
 
     /**
      * Linearly interpolate two 3D translation vectors.
@@ -232,41 +219,24 @@ public abstract class MathUtil {
 
     // ---------------------------------------------------------------
 
-    public static AffineTransformMatrix3D makeAffineTransformMatrix3D(RealMatrix M) {
-        // M must be 3 x 4
-        Vector3D col0 = Vector3D.of(M.getColumn(0));
-        Vector3D col1 = Vector3D.of(M.getColumn(1));
-        Vector3D col2 = Vector3D.of(M.getColumn(2));
-        Vector3D col3 = Vector3D.of(M.getColumn(3));
-        return AffineTransformMatrix3D.fromColumnVectors(col0, col1, col2, col3);
-    }
+    // public static AffineTransformMatrix3D makeAffineTransformMatrix3D(RealMatrix M) {
+    //     // M must be 3 x 4
+    //     Vector3D col0 = Vector3D.of(M.getColumn(0));
+    //     Vector3D col1 = Vector3D.of(M.getColumn(1));
+    //     Vector3D col2 = Vector3D.of(M.getColumn(2));
+    //     Vector3D col3 = Vector3D.of(M.getColumn(3));
+    //     return AffineTransformMatrix3D.fromColumnVectors(col0, col1, col2, col3);
+    // }
+    //
+    // public static RealMatrix makeRealMatrix(AffineTransformMatrix3D A) {
+    //     // {this.m00, this.m01, this.m02, this.m03, this.m10, this.m11, this.m12, this.m13, this.m20, this.m21, this.m22, this.m23
+    //     double[] v = A.toArray();
+    //     double[][] m = {
+    //             { v[0], v[1], v[2], v[3] } ,
+    //             { v[4], v[5], v[6], v[7] },
+    //             { v[8], v[9], v[10], v[11] }};
+    //     // M must be 3 x 4
+    //     return MatrixUtils.createRealMatrix(m);
+    // }
 
-    public static RealMatrix makeRealMatrix(AffineTransformMatrix3D A) {
-        // {this.m00, this.m01, this.m02, this.m03, this.m10, this.m11, this.m12, this.m13, this.m20, this.m21, this.m22, this.m23
-        double[] v = A.toArray();
-        double[][] m = {
-                { v[0], v[1], v[2], v[3] } ,
-                { v[4], v[5], v[6], v[7] },
-                { v[8], v[9], v[10], v[11] }};
-        // M must be 3 x 4
-        return MatrixUtils.createRealMatrix(m);
-    }
-
-
-    // ---------------------------------------------------------------
-	
-	// /**
-	//  * For testing only.
-	//  * @param args ignored
-	//  */
-	// public static void main (String[] args) {
-	// 	//double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}};
-	// 	double[][] A = {{1, 2, 3}, {4, 5, 6}, {9, 8, 0}, {-3, 7, 2}};
-	// 	{
-	// 		RealMatrix AM = MatrixUtils.createRealMatrix(A);
-	// 		RealVector x = solveHomogeneousSystem(AM);
-	// 		System.out.println("Solution x = " + x.toString());
-	// 	}
-	// 	// Solution x = {0.649964237; -0.7338780288; 0.1974070146}
-	// }
 }

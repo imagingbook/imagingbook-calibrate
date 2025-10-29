@@ -22,7 +22,6 @@ import imagingbook.common.color.sets.BasicAwtColor;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
-import imagingbook.common.math.Matrix;
 import imagingbook.core.jdoc.JavaDocHelp;
 import imagingbook.core.resource.ImageResource;
 //import org.apache.commons.geometry.euclidean.threed.rotation.Rotation3D;
@@ -94,7 +93,7 @@ public class View_Interpolation_Demo implements PlugIn, JavaDocHelp {
             // interpolation step k for view pair (A,B)
             for (int k = 0; k < NumberOfInterpolatedFrames; k++) {
                 double alpha = (double) k / NumberOfInterpolatedFrames;
-                Rotation rk = MathUtil.Lerp(rA, rB, alpha);	// interpolate rotation
+                Rotation rk = Rotation.Lerp(rA, rB, alpha);	// interpolate rotation
                 double[] tk = MathUtil.Lerp(tA, tB, alpha);	// interpolate translation
                 ViewTransform viewK = new ViewTransform(rk, tk);
 

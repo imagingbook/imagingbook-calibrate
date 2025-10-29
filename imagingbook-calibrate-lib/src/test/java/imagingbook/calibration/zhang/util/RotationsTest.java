@@ -8,15 +8,11 @@ package imagingbook.calibration.zhang.util;
 
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
-import imagingbook.common.util.ArrayUtils;
+
 import imagingbook.testutils.NumericTestUtils;
 import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
-import org.apache.commons.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
-
-import java.util.Arrays;
 
 import static imagingbook.calibration.zhang.util.Rotations.isRotationMatrix;
 import static imagingbook.calibration.zhang.util.Rotations.normalizeAngle;
@@ -98,37 +94,6 @@ public class RotationsTest {
         // R1, R2 must be the same
         NumericTestUtils.assert2dArrayEquals(R1, R2, 1e-6);
     }
-
-
-    // @Test   // Rodrigues vector <-> Rotation matrix (Apache)
-    // public void testMakeRotation1() {
-    //     // System.out.println("R1 = \n" + Matrix.toString(R1));
-    //     QuaternionRotation qr = Rotations.makeRotation(MatrixUtils.createRealMatrix(R1), threshold);
-    //     // double angle = qr.getAngle();
-    //     // double[] axis = qr.getAxis().toArray();
-    //     double[][] Rx = Rotations.getRotationMatrix(qr);
-    //     // System.out.println("Rx = \n" + Matrix.toString(Rx));
-    //     // NumericTestUtils.assert2dArrayEquals(R1, Rx, 0.01);
-    //
-    // }
-
-    // -----------------------------------------
-
-    @Test   // Check conversions from RealMatrix to/from AffineTransformMatrix3D
-    public void testMakeAffineTransformMatrix3D() {
-        RealMatrix m1 = Matrix.makeRealMatrix(3, 4,
-                -0.5, 0, 0, 4,
-                0, 2, 0.1, 5,
-                0, 0, 3, 6);
-        AffineTransformMatrix3D atf = MathUtil.makeAffineTransformMatrix3D (m1);
-        RealMatrix m2 = MathUtil.makeRealMatrix(atf);
-        NumericTestUtils.assert2dArrayEquals(m1.getData(), m2.getData());
-    }
-
-    // -----------------------------------------
-
-
-
 
 
 }

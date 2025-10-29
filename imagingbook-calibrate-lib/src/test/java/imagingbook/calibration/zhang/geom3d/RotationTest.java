@@ -13,7 +13,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-// Class ported from org.apache.commons.math3.geometry.euclidean.threed
+// Class partly ported from org.apache.commons.math3.geometry.euclidean.threed
 
 public class RotationTest {
 
@@ -825,5 +825,38 @@ public class RotationTest {
         return a - TWO_PI * JdkMath.floor((a + JdkMath.PI - center) / TWO_PI);
     }
 
+    // wilbur: check quaternion conversions:
+
+    // @Test
+    // public void testQuaternionConversion() {
+    //     Rotation r1 = new Rotation(0.001, 0.36, 0.48, 0.8, true);
+    //     // System.out.println("r1 = " + r1);
+    //     double[] q1 = {r1.getQ0(), r1.getQ1(), r1.getQ2(), r1.getQ3()};
+    //
+    //     Quaternion Q = r1.toQuaternion();
+    //
+    //     Rotation r2 = new Rotation(Q);
+    //     // System.out.println("r2 = " + r2);
+    //     double[] q2 = {r2.getQ0(), r2.getQ1(), r2.getQ2(), r2.getQ3()};
+    //
+    //     assertArrayEquals(q1, q2, 1e-6);
+    // }
+
+    @Test
+    public void testLerpRotation() {
+        double[] ref = {0.46180342045467504, 0.0737474444457355, 0.4446204856605702, 0.7639447224930902};
+        double alpha = 0.3;
+        Rotation r1 = new Rotation(0.5, -0.3, 0.4, 0.8, true);
+        Rotation r2 = new Rotation(0.1,  0.5, 0.2, 0.2, true);
+
+        Rotation r12 = Rotation.Lerp(r1, r2, alpha);
+        // System.out.println("r12 = " + r12);
+        assertArrayEquals(ref, r12.getQ(), 1e-6);
+
+        Rotation r21 = Rotation.Lerp(r2, r1, 1 - alpha);
+        // System.out.println("r21 = " + r21);
+        assertArrayEquals(ref, r21.getQ(), 1e-6);
+
+    }
 
 }
