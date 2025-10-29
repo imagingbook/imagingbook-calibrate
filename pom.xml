@@ -54,6 +54,10 @@
 			Build Date: ${maven.build.timestamp}
 		</imagingbook.bottom>
         <imagingbook.gpgSkip>true</imagingbook.gpgSkip>
+
+        <CommonsMath4LegacyVersion>4.0-beta1</CommonsMath4LegacyVersion>
+        <CommonsMath4NumbersVersion>1.0-beta1</CommonsMath4NumbersVersion>
+        <CommonsMath4GeometryVersion>1.0-beta1</CommonsMath4GeometryVersion>
 	</properties>
 	
 	<!--<build>

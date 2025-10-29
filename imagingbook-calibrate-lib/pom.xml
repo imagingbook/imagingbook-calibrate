@@ -22,53 +22,44 @@
 
 	<dependencies>
 
-        <!--<dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-        </dependency>-->
-
-        <!-- Commons Math 4 dependencies (legacy) -->
+        <!-- Commons Math 4 dependencies -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math4-core</artifactId>
-            <version>4.0-beta1</version>
+            <version>${CommonsMath4LegacyVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math4-legacy</artifactId>
-            <version>4.0-beta1</version>
+            <version>${CommonsMath4LegacyVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-numbers-complex</artifactId>
-            <version>1.0-beta1</version>
+            <version>${CommonsMath4NumbersVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-numbers-arrays</artifactId>
-            <version>1.0-beta1</version>
+            <version>${CommonsMath4NumbersVersion}</version>
         </dependency>
-
-        <!--<dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-numbers-angle</artifactId>
-            <version>1.0-beta1</version>
-        </dependency>-->
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-geometry-core</artifactId>
-            <version>1.0-beta1</version>
+            <version>${CommonsMath4GeometryVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-geometry-euclidean</artifactId>
-            <version>1.0-beta1</version>
+            <version>${CommonsMath4GeometryVersion}</version>
         </dependency>
+
+        <!-- End of Commons Math 4 dependencies -->
 
 		<dependency>
       		<groupId>junit</groupId>
@@ -87,6 +78,7 @@
             <groupId>com.imagingbook</groupId>
             <artifactId>imagingbook-testing</artifactId>
             <version>7.3.0</version>
+            <scope>test</scope>
         </dependency>
        
     </dependencies>
