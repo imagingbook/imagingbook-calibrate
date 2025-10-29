@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.util;
 
+import imagingbook.calibration.zhang.geom3d.Rotation;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.exception.DivideByZeroException;
@@ -13,8 +14,6 @@ import imagingbook.common.math.exception.DivideByZeroException;
 import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.quaternion.Quaternion;
-import org.apache.commons.geometry.euclidean.threed.rotation.Rotation3D;
-import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
 
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
@@ -30,166 +29,164 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
  */
 public abstract class MathUtil {
 
-	private MathUtil() {}
+    private MathUtil() {}
 
-	public static double[] toArray(Pnt2d p) {
-		return new double[] {p.getX(), p.getY()};
-	}
-	
-	public static Pnt2d toPnt2d(double[] xy) {
-		return Pnt2d.from(xy);
-	}
-	
-	public static RealVector crossProduct3x3(RealVector A, RealVector B) {
-		final double[] a = A.toArray();
-		final double[] b = B.toArray();
-		final double[] c = {
-				a[1] * b[2] - b[1] * a[2],
-				a[2] * b[0] - b[2] * a[0],
-				a[0] * b[1] - b[0] * a[1]
-		};
-		return MatrixUtils.createRealVector(c);
-	}
-	
-	public static RealVector getRowPackedVector(RealMatrix A) {
-		double[][] AA = A.getData();
-		double[] V = new double[AA.length * AA[0].length];
-		int k = 0;
-		for (int i = 0; i < AA.length; i++) {
-			for (int j = 0; j < AA[0].length; j++) {
-				V[k++] = AA[i][j];
-			}
-		}
-		return MatrixUtils.createRealVector(V);
-	}
-	
-	public static RealMatrix fromRowPackedVector(RealVector V, int rows, int columns) {
-		double[][] AA = new double[rows][columns];
-		double[] data = V.toArray();
-		int k = 0;
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < columns; j++) {
-				AA[i][j] = data[k++];
-			}
-		}
-		return MatrixUtils.createRealMatrix(AA);
-	}
+    public static double[] toArray(Pnt2d p) {
+        return new double[] {p.getX(), p.getY()};
+    }
 
-	/**
-	 * Finds a nontrivial solution (x) to the homogeneous linear system A . x = 0 by singular-value decomposition. If A
-	 * has more rows than columns, the system of equations is overdetermined. In this case the returned solution
-	 * minimizes the residual ||A . x|| in the least-squares sense.
-	 *
-	 * @param A the original matrix.
-	 * @return the solution vector x.
-	 */
-	public static RealVector solveHomogeneousSystem(RealMatrix A) {
-		SingularValueDecomposition svd = new SingularValueDecomposition(A);
-		RealMatrix V = svd.getV();
-		// RealVector x = V.getColumnVector(V.getColumnDimension() - 1);
-		// return x;
-		int minIdx = Matrix.idxMin(svd.getSingularValues());
-		return V.getColumnVector(minIdx);
-	}
+    public static Pnt2d toPnt2d(double[] xy) {
+        return Pnt2d.from(xy);
+    }
 
-	/**
-	 * Converts a Cartesian vector to an equivalent homogeneous vector by attaching an additional 1-element. The
-	 * resulting homogeneous vector is one element longer than the specified Cartesian vector. See also
-	 * {@link #toCartesian(double[])}.
-	 *
-	 * @param ac a Cartesian vector
-	 * @return an equivalent homogeneous vector
-	 */
-	public static double[] toHomogeneous(double[] ac) {
-		double[] xh = new double[ac.length + 1];
-		for (int i = 0; i < ac.length; i++) {
-			xh[i] = ac[i];
-			xh[xh.length - 1] = 1;
-		}
-		return xh;
-	}
+    public static RealVector crossProduct3x3(RealVector A, RealVector B) {
+        final double[] a = A.toArray();
+        final double[] b = B.toArray();
+        final double[] c = {
+                a[1] * b[2] - b[1] * a[2],
+                a[2] * b[0] - b[2] * a[0],
+                a[0] * b[1] - b[0] * a[1]
+        };
+        return MatrixUtils.createRealVector(c);
+    }
 
-	/**
-	 * Converts a homogeneous vector to its equivalent Cartesian vector, which is one element shorter. See also
-	 * {@link #toHomogeneous(double[])}.
-	 *
-	 * @param ah a homogeneous vector
-	 * @return the equivalent Cartesian vector
-	 * @throws DivideByZeroException if the last vector element is zero
-	 */
-	public static double[] toCartesian(double[] ah) throws DivideByZeroException {
-		double[] xc = new double[ah.length - 1];
-		final double s = 1 / ah[ah.length - 1];
-		if (!Double.isFinite(s))	// isZero(s)
-			throw new DivideByZeroException();
-		for (int i = 0; i < ah.length - 1; i++) {
-			xc[i] = s * ah[i];
-		}
-		return xc;
-	}
-	
-	public static double mean(double[] x) {
-		final int n = x.length;
-		if (n == 0) 
-			return 0;
-		double sum = 0;
-		for (int i = 0; i < x.length; i++) {
-			sum = sum + x[i];
-		}
-		return sum / n;
-	}
-	
-	/**
-	 * Returns the variance of the specified values.
-	 * @param x a sequence of real values 
-	 * @return the variance of the values in x (sigma^2)
-	 */
-	public static double variance(double[] x) {
-		final int n = x.length;
-		if (n == 0) 
-			return 0;
-		double sum = 0;
-		double sum2 = 0;
-		for (int i = 0; i < x.length; i++) {
-			sum = sum + x[i];
-			sum2 = sum2 + x[i] * x[i];
-		}
-		return (sum2 - (sum * sum) / n) / n;
-	}
-	
-	// ---------------------------------------------------------------
+    public static RealVector getRowPackedVector(RealMatrix A) {
+        double[][] AA = A.getData();
+        double[] V = new double[AA.length * AA[0].length];
+        int k = 0;
+        for (int i = 0; i < AA.length; i++) {
+            for (int j = 0; j < AA[0].length; j++) {
+                V[k++] = AA[i][j];
+            }
+        }
+        return MatrixUtils.createRealVector(V);
+    }
 
-	/**
-	 * Converts a {@link Rotation3D} to a {@link Quaternion}.
-	 * @param R a rotation
-	 * @return the corresponding quaternion
-	 */
-	public static Quaternion toQuaternion(Rotation3D R) {
-
-        return Quaternion.of(R.getAngle(), R.getAxis().toArray());
-		// return new Quaternion(R.getQ0(), R.getQ1(), R.getQ2(), R.getQ3());
-	}
-
-	/**
-	 * Converts a {@link Quaternion} to a {@link Rotation3D}.
-	 * @param q a quaternion
-	 * @return the associated rotation
-	 */
-	public static QuaternionRotation toRotation(Quaternion q) {
-        return QuaternionRotation.of(q);
-		//return new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true);
-	}
+    public static RealMatrix fromRowPackedVector(RealVector V, int rows, int columns) {
+        double[][] AA = new double[rows][columns];
+        double[] data = V.toArray();
+        int k = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                AA[i][j] = data[k++];
+            }
+        }
+        return MatrixUtils.createRealMatrix(AA);
+    }
 
     /**
-     * Linearly interpolate two 3D {@link Rotation3D} instances.
+     * Finds a nontrivial solution (x) to the homogeneous linear system A . x = 0 by singular-value decomposition. If A
+     * has more rows than columns, the system of equations is overdetermined. In this case the returned solution
+     * minimizes the residual ||A . x|| in the least-squares sense.
+     *
+     * @param A the original matrix.
+     * @return the solution vector x.
+     */
+    public static RealVector solveHomogeneousSystem(RealMatrix A) {
+        SingularValueDecomposition svd = new SingularValueDecomposition(A);
+        RealMatrix V = svd.getV();
+        // RealVector x = V.getColumnVector(V.getColumnDimension() - 1);
+        // return x;
+        int minIdx = Matrix.idxMin(svd.getSingularValues());
+        return V.getColumnVector(minIdx);
+    }
+
+    /**
+     * Converts a Cartesian vector to an equivalent homogeneous vector by attaching an additional 1-element. The
+     * resulting homogeneous vector is one element longer than the specified Cartesian vector. See also
+     * {@link #toCartesian(double[])}.
+     *
+     * @param ac a Cartesian vector
+     * @return an equivalent homogeneous vector
+     */
+    public static double[] toHomogeneous(double[] ac) {
+        double[] xh = new double[ac.length + 1];
+        for (int i = 0; i < ac.length; i++) {
+            xh[i] = ac[i];
+            xh[xh.length - 1] = 1;
+        }
+        return xh;
+    }
+
+    /**
+     * Converts a homogeneous vector to its equivalent Cartesian vector, which is one element shorter. See also
+     * {@link #toHomogeneous(double[])}.
+     *
+     * @param ah a homogeneous vector
+     * @return the equivalent Cartesian vector
+     * @throws DivideByZeroException if the last vector element is zero
+     */
+    public static double[] toCartesian(double[] ah) throws DivideByZeroException {
+        double[] xc = new double[ah.length - 1];
+        final double s = 1 / ah[ah.length - 1];
+        if (!Double.isFinite(s))	// isZero(s)
+            throw new DivideByZeroException();
+        for (int i = 0; i < ah.length - 1; i++) {
+            xc[i] = s * ah[i];
+        }
+        return xc;
+    }
+
+    public static double mean(double[] x) {
+        final int n = x.length;
+        if (n == 0)
+            return 0;
+        double sum = 0;
+        for (int i = 0; i < x.length; i++) {
+            sum = sum + x[i];
+        }
+        return sum / n;
+    }
+
+    /**
+     * Returns the variance of the specified values.
+     * @param x a sequence of real values
+     * @return the variance of the values in x (sigma^2)
+     */
+    public static double variance(double[] x) {
+        final int n = x.length;
+        if (n == 0)
+            return 0;
+        double sum = 0;
+        double sum2 = 0;
+        for (int i = 0; i < x.length; i++) {
+            sum = sum + x[i];
+            sum2 = sum2 + x[i] * x[i];
+        }
+        return (sum2 - (sum * sum) / n) / n;
+    }
+
+    // ---------------------------------------------------------------
+
+    /**
+     * Converts a {@link Rotation} to a {@link Quaternion}.
+     * @param R a rotation
+     * @return the corresponding quaternion
+     */
+    public static Quaternion toQuaternion(Rotation R) {
+        return Quaternion.of(R.getQ0(), R.getQ1(), R.getQ2(), R.getQ3());
+    }
+
+    /**
+     * Converts a {@link Quaternion} to a {@link Rotation}.
+     * @param q a quaternion
+     * @return the associated rotation
+     */
+    public static Rotation toRotation(Quaternion q) {
+        return new Rotation(q.getW(), q.getX(), q.getY(), q.getZ(), true);
+        // return new Rotation(q.getQ0(), q.getQ1(), q.getQ2(), q.getQ3(), true);
+    }
+
+    /**
+     * Linearly interpolate two 3D {@link Rotation} instances.
      * @param R0 first rotation
      * @param R1 second rotation
      * @param alpha the blending factor in [0,1]
      * @return the interpolated rotation
      */
-    public static QuaternionRotation Lerp(QuaternionRotation R0, QuaternionRotation R1, double alpha) {
-        Quaternion qa = R0.getQuaternion();     //toQuaternion(R0);
-        Quaternion qb = R1.getQuaternion();     //toQuaternion(R1);
+    public static Rotation Lerp(Rotation R0, Rotation R1, double alpha) {
+        Quaternion qa = toQuaternion(R0);
+        Quaternion qb = toQuaternion(R1);
         return toRotation(Lerp(qa, qb, alpha));
     }
 
@@ -219,19 +216,19 @@ public abstract class MathUtil {
         return t01;
     }
 
-	// ---------------------------------------------------------------
+    // ---------------------------------------------------------------
 
-	/**
-	 * Calculates the 'inverse condition number' (RCOND() in Matlab)
-	 * of the given matrix (0,...,1, ideally close to 1).
-	 * @param A the matrix
-	 * @return the inverse condition number
-	 */
-	public static double inverseConditionNumber(double[][] A) {
-		RealMatrix M = new Array2DRowRealMatrix(A);
-		SingularValueDecomposition svd = new SingularValueDecomposition(M);
-		return svd.getInverseConditionNumber();
-	}
+    /**
+     * Calculates the 'inverse condition number' (RCOND() in Matlab)
+     * of the given matrix (0,...,1, ideally close to 1).
+     * @param A the matrix
+     * @return the inverse condition number
+     */
+    public static double inverseConditionNumber(double[][] A) {
+        RealMatrix M = new Array2DRowRealMatrix(A);
+        SingularValueDecomposition svd = new SingularValueDecomposition(M);
+        return svd.getInverseConditionNumber();
+    }
 
     // ---------------------------------------------------------------
 
