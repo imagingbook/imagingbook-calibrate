@@ -68,5 +68,7 @@ public enum RotationConvention {
      */
     FRAME_TRANSFORM;
 
+    public static final RotationConvention DEFAULT = VECTOR_OPERATOR;
+
 }
 

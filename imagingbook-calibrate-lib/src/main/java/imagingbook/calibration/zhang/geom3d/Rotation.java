@@ -7,6 +7,8 @@
 package imagingbook.calibration.zhang.geom3d;
 
 import java.io.Serializable;
+
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.core.jdkmath.JdkMath;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.numbers.arrays.LinearCombination;
@@ -107,6 +109,18 @@ public class Rotation implements Serializable {
     /** Third coordinate of the vectorial part of the quaternion. */
     private final double q3;
 
+    /**
+     * Constructor added by wilbur.
+     * Creates a Rotation instance from a (Rodrigues) rotation vector
+     * r = (r0, r1, r2).
+     */
+    public Rotation(double[] r) {
+        this(Vector3D.of(r), Matrix.normL2(r));
+        System.out.println("Rotation(double[] r)");
+    }
+
+    // ------------------------------------------------------------
+
     /** Build a rotation from the quaternion coordinates.
      * <p>A rotation can be built from a <em>normalized</em> quaternion,
      * i.e. a quaternion for which q<sub>0</sub><sup>2</sup> +
@@ -148,7 +162,7 @@ public class Rotation implements Serializable {
      * <p>
      * Calling this constructor is equivalent to call
      * {@link #Rotation(Vector3D, double, RotationConvention)
-     * new Rotation(axis, angle, RotationConvention.VECTOR_OPERATOR)}
+     * new Rotation(axis, angle, RotationConvention.DEFAULT)}
      * </p>
      * @param axis axis around which to rotate
      * @param angle rotation angle.
@@ -157,7 +171,7 @@ public class Rotation implements Serializable {
      */
     @Deprecated
     public Rotation(Vector3D axis, double angle) throws IllegalArgumentException {
-        this(axis, angle, RotationConvention.VECTOR_OPERATOR);
+        this(axis, angle, RotationConvention.DEFAULT);
     }
 
     /** Build a rotation from an axis and an angle.
@@ -169,7 +183,6 @@ public class Rotation implements Serializable {
      */
     public Rotation(final Vector3D axis, final double angle, final RotationConvention convention)
             throws IllegalArgumentException {
-
         double norm = axis.norm(); // axis.getNorm();
         if (norm == 0) {
             throw new IllegalArgumentException(ZERO_NORM_FOR_ROTATION_AXIS);
@@ -352,7 +365,7 @@ public class Rotation implements Serializable {
      * <p>
      * Calling this constructor is equivalent to call
      * {@link Rotation(RotationOrder, RotationConvention, double, double, double)
-     * new Rotation(order, RotationConvention.VECTOR_OPERATOR, alpha1, alpha2, alpha3)}
+     * new Rotation(order, RotationConvention.DEFAULT, alpha1, alpha2, alpha3)}
      * </p>
 
      * @param order order of rotations to use
@@ -365,7 +378,7 @@ public class Rotation implements Serializable {
     @Deprecated
     public Rotation(RotationOrder order,
                     double alpha1, double alpha2, double alpha3) {
-        this(order, RotationConvention.VECTOR_OPERATOR, alpha1, alpha2, alpha3);
+        this(order, RotationConvention.DEFAULT, alpha1, alpha2, alpha3);
     }
 
     /** Build a rotation from three Cardan or Euler elementary rotations.
@@ -505,7 +518,7 @@ public class Rotation implements Serializable {
     /** Get the normalized axis of the rotation.
      * <p>
      * Calling this method is equivalent to call
-     * {@link #getAxis(RotationConvention) getAxis(RotationConvention.VECTOR_OPERATOR)}
+     * {@link #getAxis(RotationConvention) getAxis(RotationConvention.DEFAULT)}
      * </p>
      * @return normalized axis of the rotation
      * @see #Rotation(Vector3D, double, RotationConvention)
@@ -513,7 +526,7 @@ public class Rotation implements Serializable {
      */
     @Deprecated
     public Vector3D getAxis() {
-        return getAxis(RotationConvention.VECTOR_OPERATOR);
+        return getAxis(RotationConvention.DEFAULT);
     }
 
     /** Get the normalized axis of the rotation.
@@ -560,7 +573,7 @@ public class Rotation implements Serializable {
      * <p>
      * Calling this method is equivalent to call
      * {@link #getAngles(RotationOrder, RotationConvention)
-     * getAngles(order, RotationConvention.VECTOR_OPERATOR)}
+     * getAngles(order, RotationConvention.DEFAULT)}
      * </p>
 
      * @param order rotation order to use
@@ -572,7 +585,7 @@ public class Rotation implements Serializable {
     @Deprecated
     public double[] getAngles(RotationOrder order)
             throws CardanEulerSingularityException {
-        return getAngles(order, RotationConvention.VECTOR_OPERATOR);
+        return getAngles(order, RotationConvention.DEFAULT);
     }
 
     /** Get the Cardan or Euler angles corresponding to the instance.
@@ -1174,13 +1187,13 @@ public class Rotation implements Serializable {
      * <p>
      * Calling this method is equivalent to call
      * {@link #compose(Rotation, RotationConvention)
-     * compose(r, RotationConvention.VECTOR_OPERATOR)}.
+     * compose(r, RotationConvention.DEFAULT)}.
      * </p>
      * @param r rotation to apply the rotation to
      * @return a new rotation which is the composition of r by the instance
      */
     public Rotation applyTo(Rotation r) {
-        return compose(r, RotationConvention.VECTOR_OPERATOR);
+        return compose(r, RotationConvention.DEFAULT);
     }
 
     /** Compose the instance with another rotation.
@@ -1193,7 +1206,7 @@ public class Rotation implements Serializable {
      * {@code r1.applyTo(u) = v}). Let {@code w} be the image of {@code v} by
      * rotation {@code r2} (i.e. {@code r2.applyTo(v) = w}). Then
      * {@code w = comp.applyTo(u)}, where
-     * {@code comp = r2.compose(r1, RotationConvention.VECTOR_OPERATOR)}.
+     * {@code comp = r2.compose(r1, RotationConvention.DEFAULT)}.
      * </p>
      * <p>
      * If the semantics of the rotations composition corresponds to a
@@ -1229,14 +1242,14 @@ public class Rotation implements Serializable {
      * <p>
      * Calling this method is equivalent to call
      * {@link #composeInverse(Rotation, RotationConvention)
-     * composeInverse(r, RotationConvention.VECTOR_OPERATOR)}.
+     * composeInverse(r, RotationConvention.DEFAULT)}.
      * </p>
      * @param r rotation to apply the rotation to
      * @return a new rotation which is the composition of r by the inverse
      * of the instance
      */
     public Rotation applyInverseTo(Rotation r) {
-        return composeInverse(r, RotationConvention.VECTOR_OPERATOR);
+        return composeInverse(r, RotationConvention.DEFAULT);
     }
 
     /** Compose the inverse of the instance with another rotation.

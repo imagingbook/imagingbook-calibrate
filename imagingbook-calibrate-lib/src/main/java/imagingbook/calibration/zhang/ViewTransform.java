@@ -7,16 +7,13 @@
 package imagingbook.calibration.zhang;
 
 import imagingbook.calibration.zhang.geom3d.Rotation;
-import imagingbook.calibration.zhang.util.Rotations;
+import imagingbook.calibration.zhang.geom3d.RotationConvention;
 import imagingbook.common.math.Matrix;
 
-import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
-// import org.apache.commons.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
-import org.apache.commons.numbers.quaternion.Quaternion;
 
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -40,7 +37,8 @@ public class ViewTransform {
     }
 
     public ViewTransform(double rX, double rY, double rZ, double tX, double tY, double tZ) {
-        this.rotation = makeRotation(new double[] {rX, rY, rZ});
+        this.rotation = new Rotation(new double[] {rX, rY, rZ});
+        // this.rotation = makeRotation(new double[] {rX, rY, rZ});
         this.translation = new double[] {tX, tY, tZ};
     }
 
@@ -62,9 +60,15 @@ public class ViewTransform {
         this(new Rotation(R.getData(), OrthogonalityThreshold), t.toArray());
     }
 
+    /**
+     * Creates a ViewTransform instance from a 1D vector
+     * w = (r0, r1, r2, t0, t1, t2), where
+     * (r0, r1, r2) is a 3D (Rodrigues) rotation vector and
+     * (t0, t1, t2) is a 3D translation vector.
+     * @param w
+     */
     public ViewTransform(double[] w) {
-        this.rotation = makeRotation(w);
-        this.translation = Arrays.copyOfRange(w, 3, 6);
+        this(w[0], w[1], w[2], w[3], w[4], w[5]);
     }
 
     // ----------------------------------------------------------------------------------
@@ -73,12 +77,12 @@ public class ViewTransform {
         Vector3D axis = Vector3D.of(w[0], w[1], w[2]);
         double angle = axis.norm();
         //return new Rotation(axis, angle);
-        return new Rotation(axis, angle, Globals.ROTATION_CONVENTION);
+        return new Rotation(axis, angle, RotationConvention.DEFAULT);
     }
 
     protected double[] getParameters() {
         //double[] rotAxis = rotation.getAxis().toArray();
-        double[] rotAxis = rotation.getAxis(Globals.ROTATION_CONVENTION).toArray();
+        double[] rotAxis = rotation.getAxis(RotationConvention.DEFAULT).toArray();
         double rotAngle = rotation.getAngle();
         return new double[] {
                 rotAxis[0] * rotAngle,
@@ -91,15 +95,15 @@ public class ViewTransform {
         return rotation;
     }
 
-    public double[] getRotationAxis() {
-        //double[] rotAxis = rotation.getAxis().toArray();
-        double[] rotAxis = rotation.getAxis(Globals.ROTATION_CONVENTION).toArray();
-        double rotAngle = rotation.getAngle();
-        rotAxis[0] *= rotAngle;
-        rotAxis[1] *= rotAngle;
-        rotAxis[2] *= rotAngle;
-        return rotAxis;
-    }
+    // public double[] getRotationAxis() {
+    //     //double[] rotAxis = rotation.getAxis().toArray();
+    //     double[] rotAxis = rotation.getAxis(RotationConvention.DEFAULT).toArray();
+    //     double rotAngle = rotation.getAngle();
+    //     rotAxis[0] *= rotAngle;
+    //     rotAxis[1] *= rotAngle;
+    //     rotAxis[2] *= rotAngle;
+    //     return rotAxis;
+    // }
 
     public RealMatrix getRotationMatrix() {
         double[][] R = rotation.getMatrix();

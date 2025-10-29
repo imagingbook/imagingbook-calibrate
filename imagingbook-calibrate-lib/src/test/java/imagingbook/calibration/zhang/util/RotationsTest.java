@@ -36,10 +36,12 @@ public class RotationsTest {
         PrintPrecision.set(6);
     }
 
-    static final double[][] R1 = {  // orthogonal rotation matrix
+    static final double[][] R1 = {  // some orthogonal rotation matrix
             {0.283662, 0.000000, 0.958924},
             {0.000000, 1.000000, 0.000000},
             {-0.958924, 0.000000, 0.283662}};
+
+    // --------------------------------------------------------------------------
 
     @Test   // Check workings of Rotations.normalizeAngle()
     public void testNormalizeAngle() {
@@ -72,11 +74,13 @@ public class RotationsTest {
         double[] rv1 = toRodriguesVector(R1);
         // check values of rv1
         // System.out.println("rv1 = " + Arrays.toString(rv1));
-        // assertArrayEquals(new double[] {0.0, -1.283185407, 0.0}, rv1, 1e-6); // this fails!!
+        assertArrayEquals(new double[] {0.0, 1.283185407, 0.0}, rv1, 1e-6); // sure?
         // rotation matrix back from vector rv1
         double[][] R2 = toRotationMatrix(rv1);
+        // R2 must be a rotation matrix
+        assertTrue(isRotationMatrix(R2, threshold));
         // R1, R2 must be the same
-        NumericTestUtils.assert2dArrayEquals(R1, R2, 1e-6); // this is successful
+        NumericTestUtils.assert2dArrayEquals(R1, R2, 1e-6);
     }
 
 
@@ -86,12 +90,15 @@ public class RotationsTest {
         double[] rv1 = toRodriguesVectorACM(R1);
         // check values of rv1
         // System.out.println("rv1 = " + Arrays.toString(rv1));
-        assertArrayEquals(new double[] {0.0, -1.283185407, 0.0}, rv1, 1e-6);
+        assertArrayEquals(new double[] {0.0, 1.283185407, 0.0}, rv1, 1e-6);   // different sign!
         // rotation matrix back from vector rv1
         double[][] R2 = toRotationMatrixACM(rv1);
+        // R2 must be a rotation matrix
+        assertTrue(isRotationMatrix(R2, threshold));
         // R1, R2 must be the same
         NumericTestUtils.assert2dArrayEquals(R1, R2, 1e-6);
     }
+
 
     // @Test   // Rodrigues vector <-> Rotation matrix (Apache)
     // public void testMakeRotation1() {

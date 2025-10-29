@@ -6,21 +6,16 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.util;
 
-import imagingbook.calibration.zhang.Globals;
 import imagingbook.calibration.zhang.geom3d.NotARotationMatrixException;
 import imagingbook.calibration.zhang.geom3d.Rotation;
+import imagingbook.calibration.zhang.geom3d.RotationConvention;
 import imagingbook.common.math.Arithmetic;
 import imagingbook.common.math.Matrix;
 
 // import org.apache.commons.geometry.euclidean.threed.Vector3D;
 // import org.apache.commons.numbers.quaternion.Quaternion;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
-import org.apache.commons.math4.legacy.linear.RealMatrix;
-import org.apache.commons.numbers.quaternion.Quaternion;
 
-
-import java.util.Arrays;
 
 import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Matrix.add;
@@ -76,9 +71,9 @@ public class Rotations {
     static double[][] toRotationMatrixACM(double[] rv) {
         double angle = normL2(rv);
         Vector3D axis = Vector3D.of(rv);
-        Rotation rot = new Rotation(axis, angle, Globals.ROTATION_CONVENTION);
+        Rotation rot = new Rotation(axis, angle, RotationConvention.DEFAULT);
         double[] qv = {rot.getQ0(), rot.getQ1(), rot.getQ2(), rot.getQ3()}; // quaternion components
-        System.out.println("toRotationMatrixACM: qv = " + Arrays.toString(qv));
+        // System.out.println("toRotationMatrixACM: qv = " + Arrays.toString(qv));
         return rot.getMatrix();
     }
 
@@ -135,12 +130,12 @@ public class Rotations {
     static double[] toRodriguesVectorACM(double[][] R) {
         Rotation rot = new Rotation(R, 0.01);
         double[] qv = {rot.getQ0(), rot.getQ1(), rot.getQ2(), rot.getQ3()}; // quaternion components
-        System.out.println("toRodriguesVectorACM: qv = " + Arrays.toString(qv));  // OK!
+        // System.out.println("toRodriguesVectorACM: qv = " + Arrays.toString(qv));  // OK!
 
         double angle = rot.getAngle();
-        Vector3D axis = rot.getAxis(Globals.ROTATION_CONVENTION);
-        System.out.println("toRodriguesVectorACM: angle = " + angle);
-        System.out.println("toRodriguesVectorACM: axis = " + Arrays.toString(axis.toArray()));
+        Vector3D axis = rot.getAxis(RotationConvention.DEFAULT);
+        // System.out.println("toRodriguesVectorACM: angle = " + angle);
+        // System.out.println("toRodriguesVectorACM: axis = " + Arrays.toString(axis.toArray()));
 
         // double[] rv = axis.scalarMultiply(angle / axis.getNorm()).toArray();
         double[] rv = axis.multiply(angle / axis.norm()).toArray();
