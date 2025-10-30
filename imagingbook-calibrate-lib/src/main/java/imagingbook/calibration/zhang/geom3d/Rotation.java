@@ -6,13 +6,13 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.geom3d;
 
+import imagingbook.calibration.zhang.util.MathUtil;
+import org.apache.commons.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math4.core.jdkmath.JdkMath;
+import org.apache.commons.numbers.arrays.LinearCombination;
+
 import java.io.Serializable;
 import java.util.Arrays;
-
-import imagingbook.calibration.zhang.util.MathUtil;
-import org.apache.commons.math4.core.jdkmath.JdkMath;
-import org.apache.commons.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.numbers.arrays.LinearCombination;
 
 
 /**
