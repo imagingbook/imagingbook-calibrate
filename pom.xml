@@ -54,7 +54,13 @@
 			Build Date: ${maven.build.timestamp}
 		</imagingbook.bottom>
         <imagingbook.gpgSkip>true</imagingbook.gpgSkip>
+    </properties>
 
-        </properties>
+
+    <dependencyManagement>
+        <dependencies>
+
+        </dependencies>
+    </dependencyManagement>
 	
 </project>
