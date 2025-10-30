@@ -9,7 +9,7 @@ package imagingbook.calibration.zhang.geom3d;
 import imagingbook.calibration.zhang.util.MathUtil;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math4.core.jdkmath.JdkMath;
-//import org.apache.commons.numbers.arrays.LinearCombination;
+//import org.apache.commons.numbers.arrays.LinearCombination;   // does not exist!
 
 import java.io.Serializable;
 import java.util.Arrays;
