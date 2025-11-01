@@ -11,11 +11,7 @@ import imagingbook.calibration.zhang.geom3d.Rotation;
 import imagingbook.calibration.zhang.geom3d.RotationConvention;
 import imagingbook.common.math.Arithmetic;
 import imagingbook.common.math.Matrix;
-
-// import org.apache.commons.geometry.euclidean.threed.Vector3D;
-// import org.apache.commons.numbers.quaternion.Quaternion;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
-
 
 import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Matrix.add;

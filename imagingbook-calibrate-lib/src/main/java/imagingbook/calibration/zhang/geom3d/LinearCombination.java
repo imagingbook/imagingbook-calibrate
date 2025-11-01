@@ -17,7 +17,7 @@
 
 /*
  WB: Converted to a local class from org.apache.commons.numbers.arrays.LinearCombination,
- where  it was removed after version 1.0-beta1.
+ where it was removed after version 1.0-beta1.
  */
 
 package imagingbook.calibration.zhang.geom3d;

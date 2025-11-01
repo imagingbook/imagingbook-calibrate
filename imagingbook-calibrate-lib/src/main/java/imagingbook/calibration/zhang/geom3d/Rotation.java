@@ -1,19 +1,33 @@
-/*******************************************************************************
- * Permission to use and distribute this software is granted under the BSD 2-Clause
- * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
- * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
- * Visit https://imagingbook.com for additional details.
- ******************************************************************************/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+Note: This class was ported from org.apache.commons.math3.geometry.euclidean.Rotation.java
+(see original license above).
+ */
 package imagingbook.calibration.zhang.geom3d;
 
 import imagingbook.calibration.zhang.util.MathUtil;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math4.core.jdkmath.JdkMath;
-//import org.apache.commons.numbers.arrays.LinearCombination;   // does not exist!
+//import org.apache.commons.numbers.arrays.LinearCombination;   // does not exist, replaced by local class!
 
 import java.io.Serializable;
 import java.util.Arrays;
-
 
 /**
  * This class implements rotations in a three-dimensional space.
@@ -90,7 +104,6 @@ public class Rotation implements Serializable {
     static final String CLOSEST_ORTHOGONAL_MATRIX_HAS_NEGATIVE_DETERMINANT = "the closest orthogonal matrix has a negative determinant {0}";
     static final String ZERO_NORM_FOR_ROTATION_DEFINING_VECTOR = "zero norm for rotation defining vector";
     static final String UNABLE_TO_ORTHOGONOLIZE_MATRIX = "unable to orthogonalize matrix in {0} iterations";
-
 
     /** Identity rotation. */
     public static final Rotation IDENTITY = new Rotation(1.0, 0.0, 0.0, 0.0, false);
@@ -207,8 +220,8 @@ public class Rotation implements Serializable {
 
     }
 
-    /** Build a rotation from a 3X3 matrix.
-
+    /**
+     * Build a rotation from a 3X3 matrix.
      * <p>Rotation matrices are orthogonal matrices, i.e. unit matrices
      * (which are matrices for which m.m<sup>T</sup> = I) with real
      * coefficients. The module of the determinant of unit matrices is
@@ -223,7 +236,7 @@ public class Rotation implements Serializable {
      * correction to the copy in order to perfect its orthogonality. If
      * the Frobenius norm of the correction needed is above the given
      * threshold, then the matrix is considered to be too far from a
-     * true rotation matrix and an exception is thrown.<p>
+     * true rotation matrix and an exception is thrown.</p>
 
      * @param m rotation matrix
      * @param threshold convergence threshold for the iterative
@@ -1409,14 +1422,15 @@ public class Rotation implements Serializable {
      * or very different. It is mathematically defined as the angle of
      * the rotation r that prepended to one of the rotations gives the other
      * one:</p>
-     * <pre>
-     *        r<sub>1</sub>(r) = r<sub>2</sub>
-     * </pre>
+     * <blockquote>
+     * r₁(r) = r₂
+     *  </blockquote>
      * <p>This distance is an angle between 0 and &pi;. Its value is the smallest
-     * possible upper bound of the angle in radians between r<sub>1</sub>(v)
-     * and r<sub>2</sub>(v) for all possible vectors v. This upper bound is
+     * possible upper bound of the angle in radians between r₁(v)
+     * and r₂(v) for all possible vectors v. This upper bound is
      * reached for some v. The distance is equal to 0 if and only if the two
      * rotations are identical.</p>
+     *
      * <p>Comparing two rotations should always be done using this value rather
      * than for example comparing the components of the quaternions. It is much
      * more stable, and has a geometric meaning. Also comparing quaternions

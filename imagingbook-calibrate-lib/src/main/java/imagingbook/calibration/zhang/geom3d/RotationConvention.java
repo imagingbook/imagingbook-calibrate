@@ -1,9 +1,25 @@
-/*******************************************************************************
- * Permission to use and distribute this software is granted under the BSD 2-Clause
- * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
- * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
- * Visit https://imagingbook.com for additional details.
- ******************************************************************************/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+Note: This class was ported from org.apache.commons.math3.geometry.euclidean.RotationConvention.java
+(see original license above).
+ */
+
 package imagingbook.calibration.zhang.geom3d;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
@@ -23,10 +39,10 @@ public enum RotationConvention {
      * </p>
      * <p>
      * This means that if we define rotation r is a 90 degrees rotation around
-     * the Z axis, the image of vector {@link Vector3D%PLUS_I} would be
-     * {@link Vector3D%PLUS_J}, the image of vector {@link Vector3D%PLUS_J}
-     * would be {@link Vector3D%MINUS_I}, the image of vector {@link Vector3D%PLUS_K}
-     * would be {@link Vector3D%PLUS_K}, and the image of vector with coordinates (1, 2, 3)
+     * the Z axis, the image of vector {@code Vector3D.Unit.PLUS_X} would be
+     * {@code Vector3D.Unit.PLUS_Y}, the image of vector {@code Vector3D.Unit.PLUS_Y}
+     * would be {@code Vector3D.Unit.MINUS_X}, the image of vector {@code Vector3D.Unit.PLUS_Z}
+     * would be {@code Vector3D.Unit.PLUS_Z}, and the image of vector with coordinates (1, 2, 3)
      * would be vector (-2, 1, 3). This means that the vector rotates counterclockwise.
      * </p>
      * <p>
@@ -50,10 +66,10 @@ public enum RotationConvention {
      * </p>
      * <p>
      * This means that if we define rotation r is a 90 degrees rotation around
-     * the Z axis, the image of vector {@link Vector3D%PLUS_I} would be
-     * {@link Vector3D%MINUS_J}, the image of vector {@link Vector3D%PLUS_J}
-     * would be {@link Vector3D%PLUS_I}, the image of vector {@link Vector3D%PLUS_K}
-     * would be {@link Vector3D%PLUS_K}, and the image of vector with coordinates (1, 2, 3)
+     * the Z axis, the image of vector {@code Vector3D.Unit.PLUS_X} would be
+     * {@code Vector3D.Unit.MINUS_Y}, the image of vector {@code Vector3D.Unit.PLUS_Y}
+     * would be {@code Vector3D.Unit.PLUS_X}, the image of vector {@code Vector3D.Unit.PLUS_Z}
+     * would be {@code Vector3D.Unit.PLUS_Z}, and the image of vector with coordinates (1, 2, 3)
      * would be vector (2, -1, 3). This means that the coordinates of the vector rotates
      * clockwise, because they are expressed with respect to a destination frame that is rotated
      * counterclockwise.
