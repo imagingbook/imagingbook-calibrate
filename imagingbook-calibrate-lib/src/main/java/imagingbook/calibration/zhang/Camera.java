@@ -39,6 +39,7 @@ public class Camera {
 	 * </pre>
 	 */
 	private final double[][] A;		// 2 x 3
+    // TODO: change this to a general lens distortion model!
 	private final double[] K;		// the vector of lens distortion coefficients
 		
 	// for the standard Zhang camera

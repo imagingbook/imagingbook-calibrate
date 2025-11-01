@@ -1,0 +1,35 @@
+/*******************************************************************************
+ * Permission to use and distribute this software is granted under the BSD 2-Clause
+ * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
+ * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
+ * Visit https://imagingbook.com for additional details.
+ ******************************************************************************/
+package imagingbook.calibration.distortion;
+
+/**
+ * The mother of all radial  distortion models.
+ */
+public interface RadialLensDistortionModel {
+
+    default double apply(double r) {
+        return r;
+    }
+}
+
+/*
+https://chatgpt.com/share/690646c8-4ee0-8006-9d14-04d216f841ba
+
+| Model                        | Formula                                | Terms | Tangential? | Notes                                |
+| ---------------------------- | -------------------------------------- | ----- | ----------- | ------------------------------------ |
+| **Brown–Conrady**            | (r' = r(1 + k_1r^2 + k_2r^4 + k_3r^6)) | 3     | ✅ Yes       | Classical photogrammetric model      |
+| **Zhang (EasyCalib)**        | (r' = r(1 + k_0r^2 + k_1r^4))          | 2     | ❌ No        | Simplified Brown–Conrady             |
+| **PTLens**                   | (r' = r(1 + a r^2 + b r^4 + c r^6))    | 3     | ❌ No        | Empirical, image-processing oriented |
+| **Division (Fitzgibbon)**    | (r' = \frac{r}{1 + \lambda r^2})       | 1     | ❌ No        | Analytically invertible              |
+| **Fisheye / Kannala–Brandt** | (r' = f(\theta))                       | 4–8   | ❌ No        | Angle-based, wide FoV                |
+
+
+“Zhang’s polynomial radial distortion model”
+or simply
+“Two-coefficient polynomial radial distortion model.”
+
+ */
