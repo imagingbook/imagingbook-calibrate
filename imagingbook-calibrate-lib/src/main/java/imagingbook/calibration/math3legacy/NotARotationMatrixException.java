@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration.zhang.math3legacy;
+package imagingbook.calibration.math3legacy;
 
 /**
  * Substitute for analogous exception in commons math3.

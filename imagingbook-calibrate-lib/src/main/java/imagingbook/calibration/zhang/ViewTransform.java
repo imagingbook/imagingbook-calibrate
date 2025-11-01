@@ -6,8 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
-import imagingbook.calibration.zhang.math3legacy.Rotation;
-import imagingbook.calibration.zhang.math3legacy.RotationConvention;
+import imagingbook.calibration.math3legacy.Rotation;
+import imagingbook.calibration.math3legacy.RotationConvention;
 import imagingbook.common.math.Matrix;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;

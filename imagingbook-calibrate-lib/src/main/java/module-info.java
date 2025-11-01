@@ -10,6 +10,6 @@ module imagingbook.calibrate.lib {
 
     exports imagingbook.calibration.zhang.data;
     exports imagingbook.calibration.zhang;
-    exports imagingbook.calibration.zhang.util;
-    exports imagingbook.calibration.zhang.math3legacy;
+    exports imagingbook.calibration.util;
+    exports imagingbook.calibration.math3legacy;
 }

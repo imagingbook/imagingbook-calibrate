@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
-import imagingbook.calibration.zhang.util.MathUtil;
+import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.math.Matrix;
 
 import org.apache.commons.math4.legacy.linear.CholeskyDecomposition;

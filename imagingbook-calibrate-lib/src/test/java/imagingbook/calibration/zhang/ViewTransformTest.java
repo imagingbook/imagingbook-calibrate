@@ -6,24 +6,13 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
-// import imagingbook.calibration.zhang.util.Rotations;
 import imagingbook.common.math.PrintPrecision;
-// import org.apache.commons.math4.legacy.linear.MatrixUtils;
-// import org.apache.commons.math4.legacy.linear.RealMatrix;
-// import org.apache.commons.math4.legacy.linear.RealVector;
-// import org.apache.commons.numbers.quaternion.Quaternion;
-// import org.junit.Assert;
 import org.junit.Test;
 import imagingbook.common.math.Matrix;
 
-import java.util.Arrays;
-
-import static imagingbook.calibration.zhang.util.Rotations.isRotationMatrix;
+import static imagingbook.calibration.util.Rotations.isRotationMatrix;
 import static imagingbook.testutils.NumericTestUtils.assert2dArrayEquals;
-
-
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ViewTransformTest {

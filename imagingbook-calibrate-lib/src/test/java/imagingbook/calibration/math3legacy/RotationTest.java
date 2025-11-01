@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration.zhang.math3legacy;
+package imagingbook.calibration.math3legacy;
 
 import org.apache.commons.math4.core.jdkmath.JdkMath;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;

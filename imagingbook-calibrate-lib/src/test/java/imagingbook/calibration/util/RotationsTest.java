@@ -1,25 +1,23 @@
 /*******************************************************************************
  * Permission to use and distribute this software is granted under the BSD 2-Clause
  * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
- * Copyright (c) 2016-2023 Wilhelm Burger. All rights reserved.
+ * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration.zhang.util;
+package imagingbook.calibration.util;
 
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
 
 import imagingbook.testutils.NumericTestUtils;
-import org.apache.commons.geometry.euclidean.threed.AffineTransformMatrix3D;
-import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
 
-import static imagingbook.calibration.zhang.util.Rotations.isRotationMatrix;
-import static imagingbook.calibration.zhang.util.Rotations.normalizeAngle;
-import static imagingbook.calibration.zhang.util.Rotations.toRodriguesVector;
-import static imagingbook.calibration.zhang.util.Rotations.toRodriguesVectorACM;
-import static imagingbook.calibration.zhang.util.Rotations.toRotationMatrix;
-import static imagingbook.calibration.zhang.util.Rotations.toRotationMatrixACM;
+import static imagingbook.calibration.util.Rotations.isRotationMatrix;
+import static imagingbook.calibration.util.Rotations.normalizeAngle;
+import static imagingbook.calibration.util.Rotations.toRodriguesVector;
+import static imagingbook.calibration.util.Rotations.toRodriguesVectorACM;
+import static imagingbook.calibration.util.Rotations.toRotationMatrix;
+import static imagingbook.calibration.util.Rotations.toRotationMatrixACM;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
