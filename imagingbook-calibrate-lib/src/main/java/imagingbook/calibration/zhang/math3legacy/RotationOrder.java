@@ -20,7 +20,7 @@ Note: This class was ported from org.apache.commons.math3.geometry.euclidean.Rot
 (see original license above).
  */
 
-package imagingbook.calibration.zhang.geom3d;
+package imagingbook.calibration.zhang.math3legacy;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 

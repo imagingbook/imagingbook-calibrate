@@ -6,8 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
-import imagingbook.calibration.zhang.geom3d.Rotation;
-import imagingbook.calibration.zhang.geom3d.RotationConvention;
+import imagingbook.calibration.zhang.math3legacy.Rotation;
+import imagingbook.calibration.zhang.math3legacy.RotationConvention;
 import imagingbook.common.math.Matrix;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
@@ -16,7 +16,6 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.io.StringWriter;
-import java.util.Arrays;
 
 /**
  * Instances of this class represent extrinsic camera (view) parameters.

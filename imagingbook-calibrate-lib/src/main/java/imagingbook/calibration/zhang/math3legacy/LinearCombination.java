@@ -20,7 +20,7 @@
  where it was removed after version 1.0-beta1.
  */
 
-package imagingbook.calibration.zhang.geom3d;
+package imagingbook.calibration.zhang.math3legacy;
 
 /**
  * Computes linear combinations accurately.

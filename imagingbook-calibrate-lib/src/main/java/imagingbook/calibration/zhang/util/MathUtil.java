@@ -6,7 +6,6 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.util;
 
-import imagingbook.calibration.zhang.geom3d.Rotation;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.exception.DivideByZeroException;

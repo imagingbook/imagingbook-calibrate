@@ -6,9 +6,9 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang.util;
 
-import imagingbook.calibration.zhang.geom3d.NotARotationMatrixException;
-import imagingbook.calibration.zhang.geom3d.Rotation;
-import imagingbook.calibration.zhang.geom3d.RotationConvention;
+import imagingbook.calibration.zhang.math3legacy.NotARotationMatrixException;
+import imagingbook.calibration.zhang.math3legacy.Rotation;
+import imagingbook.calibration.zhang.math3legacy.RotationConvention;
 import imagingbook.common.math.Arithmetic;
 import imagingbook.common.math.Matrix;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
