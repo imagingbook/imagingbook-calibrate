@@ -6,6 +6,6 @@
  ******************************************************************************/
 
 /**
- * 3D rotation-related classes ported from {@code }org.apache.commons.math3.geometry.euclidean}
+ * 3D rotation-related classes ported from (obsolete) {@code org.apache.commons.math3.geometry.euclidean}.
  */
 package imagingbook.calibration.zhang.geom3d;
