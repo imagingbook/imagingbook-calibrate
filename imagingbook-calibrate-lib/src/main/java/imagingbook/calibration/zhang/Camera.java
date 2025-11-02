@@ -6,6 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.calibration.distortion.LensDistortionModel;
+import imagingbook.calibration.distortion.ZhangDistortionModel;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
@@ -16,13 +18,6 @@ import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiable
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
-
-// import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-// import org.apache.commons.math3.analysis.solvers.NewtonRaphsonSolver;
-// import org.apache.commons.math3.analysis.solvers.UnivariateDifferentiableSolver;
-// import org.apache.commons.math3.linear.MatrixUtils;
-// import org.apache.commons.math3.linear.RealMatrix;
-// import org.apache.commons.math3.linear.RealVector;
 
 /**
  * A camera model with parameters as specified in Zhang's paper.
@@ -39,13 +34,30 @@ public class Camera {
 	 * </pre>
 	 */
 	private final double[][] A;		// 2 x 3
-    // TODO: change this to a general lens distortion model!
-	private final double[] K;		// the vector of lens distortion coefficients
+
+    @Deprecated
+	// private double[] K;		// the vector of lens distortion coefficients
+    private ZhangDistortionModel distortion; // make final!
+
+    /**
+     * Basic constructor.
+     * @param alpha
+     * @param beta
+     * @param gamma
+     * @param uc
+     * @param vc
+     * @param distortion
+     */
+    public Camera(double alpha, double beta, double gamma, double uc, double vc, ZhangDistortionModel distortion) {
+        this.A = makeA(alpha, beta, gamma, uc, vc);
+        this.distortion = distortion;
+    }
 		
 	// for the standard Zhang camera
 	public Camera(double alpha, double beta, double gamma, double uc, double vc, double k0, double k1) {
-		this.A = makeA(alpha, beta, gamma, uc, vc);
-		this.K = new double[] {k0, k1};
+        this(alpha, beta, gamma, uc, vc, new ZhangDistortionModel(k0, k1));
+		// this.A = makeA(alpha, beta, gamma, uc, vc);
+		// this.K = new double[] {k0, k1};
 	}
 
 	/**
@@ -54,9 +66,10 @@ public class Camera {
 	 * @param s a vector of intrinsic camera parameters (alpha, beta, gamma, uc, vc, k0, k1).
 	 */
 	public Camera (double[] s) {
+        this(s[0], s[1], s[2], s[3], s[4], s[5], s[6]);
 		//s = (alpha, beta, gamma, uc, vc, k0, k1);	
-		this.A = makeA(s[0], s[1], s[2], s[3], s[4]);
-		this.K = new double[] {s[5], s[6]};
+		// this.A = makeA(s[0], s[1], s[2], s[3], s[4]);
+		// this.K = new double[] {s[5], s[6]};
 	}
 
 	/**
@@ -66,21 +79,22 @@ public class Camera {
 	 * @param K the radial distortion coefficients k0, k1, ... (may be {@code null})
 	 */
 	public Camera(RealMatrix A, double[] K) {
-		this.K = (K == null) ? new double[0] : K.clone();
-		this.A = A.getSubMatrix(0, 1, 0, 2).getData();
+		// this.K = (K == null) ? new double[0] : K.clone();
+        this.distortion = (K == null) ? new ZhangDistortionModel() : new ZhangDistortionModel(K[0], K[1]);
+        this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 	}
 
-	/**
-	 * Creates a simple pinhole camera (with no distortion whatsoever).
-	 *
-	 * @param f the camera's focal length (in pixel units).
-	 * @param uc the x-position of the optical axis intersecting the image plane (in pixel units)
-	 * @param vc the y-position of the optical axis intersecting the image plane (in pixel units)
-	 */
-	public Camera(double f, double uc, double vc) {
-		this.K = new double[0];
-		this.A = makeA(f, f, 0, uc, vc);
-	}
+	// /**
+	//  * Creates a simple pinhole camera (with no distortion whatsoever).
+	//  *
+	//  * @param f the camera's focal length (in pixel units).
+	//  * @param uc the x-position of the optical axis intersecting the image plane (in pixel units)
+	//  * @param vc the y-position of the optical axis intersecting the image plane (in pixel units)
+	//  */
+	// public Camera(double f, double uc, double vc) {
+	// 	this.K = new double[0];
+	// 	this.A = makeA(f, f, 0, uc, vc);
+	// }
 	
 	// --------------------------------------------------------------------------
 	
@@ -197,8 +211,8 @@ public class Camera {
 	 * @return the undistorted radius
 	 */
 	public double unwarp(double R) {
-		double k0 = K[0];
-		double k1 = K[1];
+		double k0 = distortion.getK0(); // K[0];
+		double k1 = distortion.getK1(); // K[1];
 		double[] coefficients = {-R, 1, 0, k0, 0, k1};
 		PolynomialFunction p = new PolynomialFunction(coefficients);
 		UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
@@ -234,8 +248,10 @@ public class Camera {
 	 * @return the pos/neg deviation for the given radius
 	 */
 	public double D(double r) {
-		final double k0 = (K.length > 0) ? K[0] : 0;
-		final double k1 = (K.length > 1) ? K[1] : 0;
+		// final double k0 = (K.length > 0) ? K[0] : 0;
+		// final double k1 = (K.length > 1) ? K[1] : 0;
+        double k0 = distortion.getK0(); // K[0];
+        double k1 = distortion.getK1(); // K[1];
 		final double r2 = r * r;
 		return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
 	}
@@ -262,9 +278,12 @@ public class Camera {
 	 * @return the camera's inner parameters
 	 */
 	public double[] getParameterVector() {
+        double k0 = distortion.getK0(); // K[0];
+        double k1 = distortion.getK1(); // K[1];
 		return new double[] 
-				{getAlpha(), getBeta(),	getGamma(), getUc(), getVc(), K[0], K[1]};	
-	}
+				{getAlpha(), getBeta(),	getGamma(), getUc(), getVc(), k0, k1};
+                // {getAlpha(), getBeta(),	getGamma(), getUc(), getVc(), K[0], K[1]};
+    }
 
 	/**
 	 * Returns the camera's alpha value.
@@ -317,7 +336,7 @@ public class Camera {
 	 * @return the vector of lens distortion coefficients
 	 */
 	public double[] getK() {
-		return K;
+        return new double[] {distortion.getK0(), distortion.getK1()};
 	}
 
 	/**

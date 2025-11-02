@@ -9,11 +9,25 @@ package imagingbook.calibration.distortion;
 /**
  * The mother of all radial  distortion models.
  */
-public interface RadialLensDistortionModel {
+public interface LensDistortionModel {
 
-    default double apply(double r) {
-        return r;
-    }
+    /**
+     * Applies lens distortion to a point in the ideal 2D projection.
+     *
+     * @param xy a 2D point in the ideal projection
+     * @return the lens-distorted position in the ideal projection
+     */
+    double[] warp(double[] xy);
+
+
+    /**
+     * Applies inverse lens distortion to a given point in the ideal image plane.
+     *
+     * @param xyd a distorted 2D point in the ideal image plane
+     * @return the undistorted point
+     */
+    double[] unwarp(double[] xyd);
+
 }
 
 /*
