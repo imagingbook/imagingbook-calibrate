@@ -36,10 +36,10 @@ public class CameraTest {
         assertArrayEquals(new double[] {345.5060, 279.2637}, uv1, 1e-4);
 
         double r1 = 0.95;
-        double rr = camera1.warp(r1);
+        double rr = camera1.getDistortion().warp(r1);
         assertEquals(0.9013, rr, 1e-4);
 //        System.out.format("radial distortion: r1=%.4f -> rr=%.4f\n", r1, rr);
-        double r2 = camera1.unwarp(rr);
+        double r2 = camera1.getDistortion().unwarp(rr);
 //        System.out.format("inv. radial distortion: rr=%.4f -> r2=%.4f\n", rr, r2);
         assertEquals(r1, r2, 1e-4);
 
@@ -60,27 +60,27 @@ public class CameraTest {
 //        System.out.format("u=%.4f, u=%.4f\n", uv2[0], uv2[1]);
 
         r1 = 0.95;
-        rr = camera2.warp(r1);
+        rr = camera2.getDistortion().warp(r1);
 //        System.out.format("radial distortion: r=%.4f -> rr=%.4f\n", r1, rr);
-        r1 = camera2.unwarp(rr);
+        r1 = camera2.getDistortion().unwarp(rr);
 //        System.out.format("inv. radial distortion: rr=%.4f -> r=%.4f\n", rr, r1);
 
 //        System.out.println("\nTesting radial lens distortion:");
         double[] xy2 = {0.3, -0.7};
 //        System.out.format("original x=%.4f, y=%.4f\n", xy2[0], xy2[1]);
-        double[] xy2d = camera2.warp(xy2);
+        double[] xy2d = camera2.getDistortion().warp(xy2);
         assertArrayEquals(new double[] {0.2844, -0.6636}, xy2d, 1e-4);
 
 //        System.out.format("distorted x=%.4f, y=%.4f\n", xy2d[0], xy2d[1]);
-        double[] xy2u = camera2.unwarp(xy2d);
+        double[] xy2u = camera2.getDistortion().unwarp(xy2d);
 //        System.out.format("undistorted x=%.4f, y=%.4f\n", xy2u[0], xy2u[1]);
         assertArrayEquals(xy2, xy2u, 1e-4);
 
 //        System.out.println("\nTesting only radial lens distortion fun:");
         double ra = 0.10;
-        double rb = camera2.warp(ra);
+        double rb = camera2.getDistortion().warp(ra);
         assertEquals(0.0998, rb, 1e-4);
-        double rc = camera2.unwarp(rb);
+        double rc = camera2.getDistortion().unwarp(rb);
         assertEquals(ra, rc, 1e-4);
 //        System.out.format("ra=%.4f, rb=%.4f, rc=%.4f\n", ra, rb, rc);
     }

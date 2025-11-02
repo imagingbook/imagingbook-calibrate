@@ -44,7 +44,7 @@ public class RectificationMapping implements Mapping2D {
 		// apply the inverse camera mapping to get the normalized (x,y) point:
 		double[] xy = Ai.operate(MathUtil.toHomogeneous(uv.toDoubleArray()));
 		// apply the camera's radial lens distortion in the normalized plane:
-		double[] xyd = cam.warp(xy);
+		double[] xyd = cam.getDistortion().warp(xy);
 		// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
 		return PntDouble.from(cam.mapToSensorPlane(xyd));
 	}

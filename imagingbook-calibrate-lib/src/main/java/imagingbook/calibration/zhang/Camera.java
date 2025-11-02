@@ -37,7 +37,7 @@ public class Camera {
 
     @Deprecated
 	// private double[] K;		// the vector of lens distortion coefficients
-    private ZhangDistortionModel distortion; // make final!
+    private final ZhangDistortionModel distortion; // make final!
 
     /**
      * Basic constructor.
@@ -97,6 +97,11 @@ public class Camera {
 	// }
 	
 	// --------------------------------------------------------------------------
+
+    // TODO: Should return LensDistortionModel eventually!
+    public ZhangDistortionModel getDistortion() {
+        return this.distortion;
+    }
 	
 	private double[][] makeA(double alpha, double beta, double gamma, double uc, double vc) {
 		return new double[][] {
@@ -147,7 +152,7 @@ public class Camera {
 		// map to the ideal projection plane (f = 1)
 		double[] xy = projectNormalized(view, XYZ);
 		// apply radial lens distortion to the ideal projection
-		double[] xyd = warp(xy);
+		double[] xyd = distortion.warp(xy);
 		// apply the intrinsic camera transformation:
 		double[] uv = mapToSensorPlane(xyd);
 		return uv;
@@ -182,79 +187,86 @@ public class Camera {
 		return new double[] {x, y};
 	}
 	
-	// not used in this form, just for symmetry
-	public double warp(double r) {
-		return r * (1 + D(r));
-	}
+	// // Used in tests only!
+    // @Deprecated
+	// public double warp(double r) {
+	// 	// return r * (1 + D(r));
+    //     return distortion.warp(r);
+	// }
 
-	/**
-	 * Applies radial distortion to a point in the ideal 2D projection.
-	 *
-	 * @param xy a 2D point in the ideal projection
-	 * @return the lens-distorted position in the ideal projection
-	 */
-	public double[] warp(double[] xy) {
-		final double x = xy[0];
-		final double y = xy[1];
-		final double r = Math.sqrt(x * x + y * y);
-		double d = (1 + D(r));
-		return new double[] {d * x, d * y};
-	}
+	// /**
+	//  * Applies radial distortion to a point in the ideal 2D projection.
+	//  *
+	//  * @param xy a 2D point in the ideal projection
+	//  * @return the lens-distorted position in the ideal projection
+	//  */
+	// public double[] warp(double[] xy) {
+	// 	// final double x = xy[0];
+	// 	// final double y = xy[1];
+	// 	// final double r = Math.sqrt(x * x + y * y);
+	// 	// double d = (1 + D(r));
+	// 	// return new double[] {d * x, d * y};
+    //     return distortion.warp(xy);
+	// }
 
-	/**
-	 * Inverse radial distortion function. Finds the original (undistorted) radius r from the distorted radius R, both
-	 * measured from the center = (0,0) of the ideal projection. Finds r as the root of the polynomial
-	 * <pre>p(r) = - R + r + k0 * r^3 + k1 * r^5,</pre>
-	 * where R is constant, by using a Newton-Raphson solver.
-	 *
-	 * @param R the distorted radius
-	 * @return the undistorted radius
-	 */
-	public double unwarp(double R) {
-		double k0 = distortion.getK0(); // K[0];
-		double k1 = distortion.getK1(); // K[1];
-		double[] coefficients = {-R, 1, 0, k0, 0, k1};
-		PolynomialFunction p = new PolynomialFunction(coefficients);
-		UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
-		double rInit = R;
-		int maxEval = 20;
-		double r = solver.solve(maxEval, p, rInit);
-//		System.out.format("** solver iterations = %d\n", solver.getEvaluations());
-		return r;
-	}
+	// /**
+	//  * Inverse radial distortion function. Finds the original (undistorted) radius r from the distorted radius R, both
+	//  * measured from the center = (0,0) of the ideal projection. Finds r as the root of the polynomial
+	//  * <pre>p(r) = - R + r + k0 * r^3 + k1 * r^5,</pre>
+	//  * where R is constant, by using a Newton-Raphson solver.
+	//  *
+	//  * @param R the distorted radius
+	//  * @return the undistorted radius
+	//  */
+    // @Deprecated // used in tests only!!
+	// public double unwarp(double R) {
+	// 	// double k0 = distortion.getK0(); // K[0];
+	// 	// double k1 = distortion.getK1(); // K[1];
+	// 	// double[] coefficients = {-R, 1, 0, k0, 0, k1};
+	// 	// PolynomialFunction p = new PolynomialFunction(coefficients);
+	// 	// UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
+	// 	// double rInit = R;
+	// 	// int maxEval = 20;
+	// 	// double r = solver.solve(maxEval, p, rInit);
+    //     // // System.out.format("** solver iterations = %d\n", solver.getEvaluations());
+	// 	// return r;
+    //     return distortion.unwarp(R);
+	// }
 
-	/**
-	 * Applies inverse radial distortion to a given point in the ideal image plane.
-	 *
-	 * @param xyd a distorted 2D point in the ideal image plane
-	 * @return the undistorted point
-	 */
-	public double[] unwarp(double[] xyd) {
-		final double xd = xyd[0];
-		final double yd = xyd[1];
-		final double R = Math.sqrt(xd * xd + yd * yd);	// distorted radius
-		final double r = unwarp(R);						// undistorted radius
-		final double s = r / R;
-		return new double[] {s * xd, s * yd};
-	}
+	// /**
+	//  * Applies inverse radial distortion to a given point in the ideal image plane.
+	//  *
+	//  * @param xyd a distorted 2D point in the ideal image plane
+	//  * @return the undistorted point
+	//  */
+	// public double[] unwarp(double[] xyd) {
+	// 	// final double xd = xyd[0];
+	// 	// final double yd = xyd[1];
+	// 	// final double R = Math.sqrt(xd * xd + yd * yd);	// distorted radius
+	// 	// final double r = unwarp(R);						// undistorted radius
+	// 	// final double s = r / R;
+	// 	// return new double[] {s * xd, s * yd};
+    //     return distortion.unwarp(xyd);
+	// }
 
-	/**
-	 * Radial distortion function, to be applied in the form
-	 * <pre>r' = r * (1 + D(r))</pre>
-	 * to points in the ideal projection plane. Distortion coefficients k0, k1 are a property of the enclosing
-	 * {@link Camera}.
-	 *
-	 * @param r the original radius of a point in the ideal projection plane
-	 * @return the pos/neg deviation for the given radius
-	 */
-	public double D(double r) {
-		// final double k0 = (K.length > 0) ? K[0] : 0;
-		// final double k1 = (K.length > 1) ? K[1] : 0;
-        double k0 = distortion.getK0(); // K[0];
-        double k1 = distortion.getK1(); // K[1];
-		final double r2 = r * r;
-		return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
-	}
+	// /**
+	//  * Radial distortion function, to be applied in the form
+	//  * <pre>r' = r * (1 + D(r))</pre>
+	//  * to points in the ideal projection plane. Distortion coefficients k0, k1 are a property of the enclosing
+	//  * {@link Camera}.
+	//  *
+	//  * @param r the original radius of a point in the ideal projection plane
+	//  * @return the pos/neg deviation for the given radius
+	//  */
+    // @Deprecated
+	// public double D(double r) {
+	// 	// final double k0 = (K.length > 0) ? K[0] : 0;
+	// 	// final double k1 = (K.length > 1) ? K[1] : 0;
+    //     double k0 = distortion.getK0(); // K[0];
+    //     double k1 = distortion.getK1(); // K[1];
+	// 	final double r2 = r * r;
+	// 	return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
+	// }
 
 	/**
 	 * Maps from the ideal projection plane to sensor coordinates, using the camera's intrinsic parameters.

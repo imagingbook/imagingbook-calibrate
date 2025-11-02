@@ -69,6 +69,10 @@ public class ZhangDistortionModel implements LensDistortionModel {
         return (this.k0 + this.k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
     }
 
+    public double warp(double r) {
+        return r * (1 + D(r));
+    }
+
     /**
      * Inverse radial distortion function. Finds the original (undistorted) radius r from the distorted radius R, both
      * measured from the center = (0,0) of the ideal projection. Finds r as the root of the polynomial

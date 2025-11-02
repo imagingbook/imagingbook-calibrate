@@ -39,10 +39,10 @@ public class InterCameraMapping implements Mapping2D {
 		double[] xy = Abi.operate(MathUtil.toHomogeneous(uv.toDoubleArray()));
 
 		// remove the lens distortion of camera b:
-		double[] xyu = camB.unwarp(xy);
+		double[] xyu = camB.getDistortion().unwarp(xy);
 
 		// apply the lens distortion of camera a:
-		double[] xyd = camA.warp(xyu);
+		double[] xyd = camA.getDistortion().warp(xyu);
 
 		// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
 		return PntDouble.from(camA.mapToSensorPlane(xyd));

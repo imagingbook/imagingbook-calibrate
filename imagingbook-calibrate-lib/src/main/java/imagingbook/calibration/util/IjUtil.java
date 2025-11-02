@@ -50,7 +50,7 @@ public class IjUtil {
 		for (int i = 0; i < n; i++) {
 			double r = i * (rmax / n);
 			//double d = cam.distFun2(r * r); //getRadialDistortion(r, K);
-			double d = cam.D(r);
+			double d = cam.getDistortion().D(r);     // cam.D(r);
 			xVals[i] = r;
 			yVals[i] = d;
 		}
