@@ -68,7 +68,7 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 		 * @return the two rows (2 x K sub-matrix) of the Jacobian for the given point
 		 */
 		private double[][] subJacobian(int i, int j, double[] params) {
-			final double[][] A0 = new double[2][camParLength + viewParLength];
+			final double[][] A0 = new double[2][camParCount + viewParCount];
 
 			final double X = modelPts[j].getX();
 			final double Y = modelPts[j].getY();
@@ -81,12 +81,12 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 			final double k0 = params[5];
 			final double k1 = params[6];
 
-			final double wx = params[i * viewParLength + camParLength + 0];
-			final double wy = params[i * viewParLength + camParLength + 1];
-			final double wz = params[i * viewParLength + camParLength + 2];
-			final double tx = params[i * viewParLength + camParLength + 3];
-			final double ty = params[i * viewParLength + camParLength + 4];
-			final double tz = params[i * viewParLength + camParLength + 5];
+			final double wx = params[i * viewParCount + camParCount + 0];
+			final double wy = params[i * viewParCount + camParCount + 1];
+			final double wz = params[i * viewParCount + camParCount + 2];
+			final double tx = params[i * viewParCount + camParCount + 3];
+			final double ty = params[i * viewParCount + camParCount + 4];
+			final double tz = params[i * viewParCount + camParCount + 5];
 
 			// begin matlab code
 			final double t2 = wx * wx;
@@ -427,11 +427,11 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 			A0[1][12] = -t246 + t285 - t85 * t247 + t56 * t289;
 			// end of matlab code
 
-			final double[][] Jij = new double[2][camParLength + viewParLength * M];
-			System.arraycopy(A0[0], 0, Jij[0], 0, camParLength);
-			System.arraycopy(A0[1], 0, Jij[1], 0, camParLength);
-			System.arraycopy(A0[0], 7, Jij[0], camParLength + i * viewParLength, viewParLength);
-			System.arraycopy(A0[1], 7, Jij[1], camParLength + i * viewParLength, viewParLength);
+			final double[][] Jij = new double[2][camParCount + viewParCount * M];
+			System.arraycopy(A0[0], 0, Jij[0], 0, camParCount);
+			System.arraycopy(A0[1], 0, Jij[1], 0, camParCount);
+			System.arraycopy(A0[0], 7, Jij[0], camParCount + i * viewParCount, viewParCount);
+			System.arraycopy(A0[1], 7, Jij[1], camParCount + i * viewParCount, viewParCount);
 			//System.out.format("**** Jij = %d / %d\n", Jij.length, Jij[0].length);
 			return Jij;
 		}

@@ -27,23 +27,30 @@ import java.util.Arrays;
  */
 public abstract class NonlinearOptimizer {
 
-	private static int maxEvaluations = 1000;
-	private static int maxIterations = 1000;
+    protected static int maxEvaluations = 1000;
+    protected static int maxIterations  = 1000;
 
-	final Pnt2d[] modelPts;
-	final Pnt2d[][] obsPts;
-	final int M;        // number of views
-	final int N;        // number of model points
-	int camParLength;        // number of camera parameters (7)
-	int viewParLength;    // number of view parameters (6)
+    protected final Pnt2d[]  modelPts;
+    protected final Pnt2d[][] obsPts;
+    protected final int M;                // number of views
+    protected final int N;                // number of model points
+    protected final int camParCount;      // number of camera parameters (7+)
+    protected final int viewParCount;     // number of view parameters (6)
 
 	protected final Camera initCam;
-	private Camera finalCamera = null;
-	private ViewTransform[] initViews = null;
-	private ViewTransform[] finalViews = null;
+    protected Camera finalCamera;
+    protected ViewTransform[] finalViews;
 
+    /**
+     * Super-constructor, invoked by constructors of inheriting classes.
+     * @param initCam the initial camera parameters
+     * @param modelPts the 3D model points
+     * @param obsPts the observed sensor points
+     */
 	NonlinearOptimizer(Camera initCam, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
         this.initCam = initCam;
+        this.camParCount = initCam.getParameterCount();
+        this.viewParCount = ViewTransform.PARAMETER_COUNT;
 		this.modelPts = modelPts;
 		this.obsPts = obsPts;
 		this.M = obsPts.length;
@@ -57,14 +64,10 @@ public abstract class NonlinearOptimizer {
      * @param initViews the initial view transforms
      */
 	void optimize(ViewTransform[] initViews) {
-		this.initViews = initViews;
-		this.camParLength = initCam.getParameterCount();
-		this.viewParLength = initViews[0].getParameterCount();
-
 		MultivariateVectorFunction V = makeValueFun();
 		MultivariateMatrixFunction J = makeJacobianFun();
 
-		RealVector start = makeInitialParameters();
+		RealVector start = makeInitialParameters(initViews);
 		RealVector observed = makeObservedVector();
 
 		MultivariateJacobianFunction model = LeastSquaresFactory.model(V, J);
@@ -83,33 +86,32 @@ public abstract class NonlinearOptimizer {
 
 	/**
 	 * To be implemented by subclasses.
-	 *
 	 * @return a vector value function
 	 */
 	abstract MultivariateVectorFunction makeValueFun();
 
 	/**
 	 * To be implemented by subclasses.
-	 *
 	 * @return a Jacobian function
 	 */
 	abstract MultivariateMatrixFunction makeJacobianFun();
 
-
 	/**
-	 * Common value function for optimizers defined in sub-classes.
+	 * Common value function for optimizers defined in sub-classes,
+     * implemented as a non-static class to access data of
+     * enclosing class.
 	 */
 	class ValueFun implements MultivariateVectorFunction {
 
 		@Override
 		public double[] value(double[] params) {
-			final double[] a = Arrays.copyOfRange(params, 0, camParLength);
+			final double[] a = Arrays.copyOfRange(params, 0, camParCount);
 			final Camera cam = initCam.fromParameterVector(a);
 			final double[] Y = new double[2 * M * N];
 			int c = 0;
 			for (int m = 0; m < M; m++) {
-				int q = camParLength + m * viewParLength;
-				double[] w = Arrays.copyOfRange(params, q, q + viewParLength);
+				int q = camParCount + m * viewParCount;
+				double[] w = Arrays.copyOfRange(params, q, q + viewParCount);
 				ViewTransform view = new ViewTransform(w);
 				for (int n = 0; n < N; n++) {
 					double[] uv = cam.project(view, modelPts[n]);
@@ -124,9 +126,9 @@ public abstract class NonlinearOptimizer {
 
 	// ---------------------------------------------------------------------
 
-	private RealVector makeInitialParameters() {
+	private RealVector makeInitialParameters(ViewTransform[] initViews) {
 		double[] s = initCam.getParameterVector();
-		double[] c = new double[s.length + M * viewParLength];
+		double[] c = new double[s.length + M * viewParCount];
 
 		// insert camera parameters at beginning of c
 		System.arraycopy(s, 0, c, 0, s.length);
@@ -161,13 +163,13 @@ public abstract class NonlinearOptimizer {
 
 	private void updateEstimates(RealVector parameters) {
 		double[] c = parameters.toArray();
-		double[] s = Arrays.copyOfRange(c, 0, camParLength);
+		double[] s = Arrays.copyOfRange(c, 0, camParCount);
 		finalCamera = initCam.fromParameterVector(s);
 
 		finalViews = new ViewTransform[M];
 		int start = s.length;
 		for (int i = 0; i < M; i++) {
-			double[] w = Arrays.copyOfRange(c, start, start + viewParLength);
+			double[] w = Arrays.copyOfRange(c, start, start + viewParCount);
 			finalViews[i] = new ViewTransform(w);
 			start = start + w.length;
 		}

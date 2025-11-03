@@ -28,6 +28,8 @@ public class ViewTransform {
     private final Rotation rotation;
     private final double[] translation;
 
+    public static final int PARAMETER_COUNT = 6;    // 3 rotation + 3 translation parameters
+
     // ----------------------------------------------------------------------------------
 
     public ViewTransform() {
@@ -71,6 +73,7 @@ public class ViewTransform {
         this(w[0], w[1], w[2], w[3], w[4], w[5]);
     }
 
+
     // ----------------------------------------------------------------------------------
 
     private Rotation makeRotation(double[] w) {
@@ -92,7 +95,7 @@ public class ViewTransform {
     }
 
     protected int getParameterCount() {
-        return 6;   // 3 rotation + 3 translation parameters
+        return PARAMETER_COUNT;
     }
 
     public Rotation getRotation() {
