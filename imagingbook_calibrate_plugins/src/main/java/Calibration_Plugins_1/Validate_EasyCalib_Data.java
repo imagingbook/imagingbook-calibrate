@@ -70,7 +70,7 @@ public class Validate_EasyCalib_Data implements PlugIn, JavaDocHelp {
 
 
 		Pnt2d[] modelPoints = ZhangData.getModelPoints();				// get the reference model points
-		Camera camReal = ZhangData.getCameraIntrinsics();				// get the (known) camera intrinsics
+		Camera camReal = ZhangData.getCamera();				// get the (known) camera intrinsics
 		ViewTransform[] viewsReal = ZhangData.getAllViewTransforms();	// get the (known) camera views
 		if (viewsReal.length != M) {
 			IJ.error("Wrong number of view transforms: " + viewsReal.length);

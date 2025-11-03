@@ -64,7 +64,7 @@ public class View_Interpolation_Demo implements PlugIn, JavaDocHelp {
             return;
         }
 
-        Camera cam = ZhangData.getCameraIntrinsics();
+        Camera cam = ZhangData.getCamera();
         Pnt2d[] modelPoints = ZhangData.getModelPoints();
 
         final int w = testIm.getWidth();

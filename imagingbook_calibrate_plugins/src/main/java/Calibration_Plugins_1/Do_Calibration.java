@@ -74,7 +74,7 @@ public class Do_Calibration implements PlugIn, JavaDocHelp {
 		}
 
 		Pnt2d[] modelPoints = ZhangData.getModelPoints();
-		Camera camReference = ZhangData.getCameraIntrinsics();
+		Camera camReference = ZhangData.getCamera();
 		Pnt2d[][] obsPoints = ZhangData.getAllObservedPoints();
 
 		// Set up the calibrator ------------------------------------------

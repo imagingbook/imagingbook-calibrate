@@ -52,7 +52,7 @@ public class Replace_Camera_Demo implements PlugIn, JavaDocHelp {
 		testIm.show();
 
 		// get the camera intrinsics (typically by calibration):
-		Camera cameraA = ZhangData.getCameraIntrinsics();
+		Camera cameraA = ZhangData.getCamera();
 
 		double[] cameraParameters = cameraA.getParameterVector();
 		k1 = cameraParameters[5];
@@ -65,7 +65,7 @@ public class Replace_Camera_Demo implements PlugIn, JavaDocHelp {
 		cameraParameters[5] = k1;	// change only radial distortion parameters
 		cameraParameters[6] = k2;
 
-		Camera cameraB = new Camera(cameraParameters);
+		Camera cameraB = cameraA.fromParameterVector(cameraParameters);
 
 		// create a special geometric mapping
 		Mapping2D mapping = new InterCameraMapping(cameraA, cameraB);	// inverse, maps target to source

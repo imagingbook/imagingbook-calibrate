@@ -67,7 +67,7 @@ public class Draw_3D_Axes_Demo implements PlugIn, JavaDocHelp {
 		}
 
 		// get pre-calculated camera intrinsics and view parameters (typically by calibration):
-		Camera camera = ZhangData.getCameraIntrinsics();
+		Camera camera = ZhangData.getCamera();
 		ViewTransform[] views = ZhangData.getAllViewTransforms();
 		final int M = views.length;
 

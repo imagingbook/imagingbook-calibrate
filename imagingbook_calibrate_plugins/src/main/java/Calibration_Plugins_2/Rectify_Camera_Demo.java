@@ -45,7 +45,7 @@ public class Rectify_Camera_Demo implements PlugIn, JavaDocHelp {
 		String title = testIm.getShortTitle();
 
 		// get pre-calculated camera intrinsics (typically by calibration):
-		Camera camera = ZhangData.getCameraIntrinsics();
+		Camera camera = ZhangData.getCamera();
 
 		// create a special geometric mapping
 		Mapping2D mapping = new RectificationMapping(camera);	// inverse, ie., maps target to source
