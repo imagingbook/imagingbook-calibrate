@@ -9,37 +9,39 @@ package imagingbook.calibration.distortion;
 /**
  * The mother of all radial  distortion models.
  */
-public interface LensDistortionModel {      // extends Copyable<LensDistortionModel>
+public interface LensDistortionModel {
 
     /**
      * Copy an existing distortion model instance from a suitable parameter vector.
      * @param params a parameter vector of required length
      * @return
      */
-    LensDistortionModel copyOf(double[] params);
+    LensDistortionModel copyOf(double... params);
 
     default int getParameterCount() {
         return getParameters().length;
     }
-
     double[] getParameters();
-    double getParameter(int i);
+
+    default double getParameter(int i) {
+        double[] parameters = getParameters();
+        if (i < 0 || i >= parameters.length)
+            throw new IllegalArgumentException("invalid distortion parameter index: " + i);
+        return parameters[i];
+    }
 
     double[] getDMatrixRowU(double x, double y, double du, double dv);
     double[] getDMatrixRowV(double x, double y, double du, double dv);
 
     /**
      * Applies lens distortion to a point in the ideal 2D projection.
-     *
      * @param xy a 2D point in the ideal projection
      * @return the lens-distorted position in the ideal projection
      */
     double[] warp(double[] xy);
 
-
     /**
      * Applies inverse lens distortion to a given point in the ideal image plane.
-     *
      * @param xyd a distorted 2D point in the ideal image plane
      * @return the undistorted point
      */
@@ -47,17 +49,17 @@ public interface LensDistortionModel {      // extends Copyable<LensDistortionMo
 
     // outdated methods for testing radial warping only! -----------------
 
+    @Deprecated
     default double warp(double r) {
         double[] xy2 = warp(new double[] {r, 0});
         return  xy2[0];
     }
 
+    @Deprecated
     default double unwarp(double rr) {
         double[] xy2 = unwarp(new double[] {rr, 0});
         return  xy2[0];
     }
-    // ------------------------------------------------------------------
-
 }
 
 /*

@@ -37,7 +37,7 @@ public class ViewTransformTest {
         // get the rotation matrix
         double[][] R = vt.getRotation().getMatrix();
         // check rotation matrix
-        PrintPrecision.set(6); System.out.println("Rotation = \n" + Matrix.toString(R));
+        // PrintPrecision.set(6); System.out.println("Rotation = \n" + Matrix.toString(R));
         assert2dArrayEquals(new double[][]{
                 {0.226296, -0.183008, 0.956712},
                 {0.956712, 0.226296, -0.183008},

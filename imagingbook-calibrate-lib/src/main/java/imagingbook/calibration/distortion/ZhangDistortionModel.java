@@ -17,8 +17,8 @@ public class ZhangDistortionModel implements LensDistortionModel {
     private final double[] parameters; // lens distortion parameters
 
     /**
-     * The only constructor. If no argument is supplied an instance
-     * with zero parameters is constructed.
+     * The only constructor. If no argument is supplied, an instance
+     * with zero-valued parameters is constructed.
      * @param params vector of distortion parameters
      */
     public ZhangDistortionModel(double... params) {
@@ -31,7 +31,7 @@ public class ZhangDistortionModel implements LensDistortionModel {
     }
 
     @Override
-    public ZhangDistortionModel copyOf(double[] params) {
+    public ZhangDistortionModel copyOf(double... params) {
         return new ZhangDistortionModel(params);
     }
 
@@ -41,17 +41,6 @@ public class ZhangDistortionModel implements LensDistortionModel {
     public double[] getParameters() {
         return parameters;  // TODO: clone?
     }
-
-    @Override
-    public double getParameter(int i) {
-        // TODO: check i
-        return parameters[i];
-    }
-
-    // D.setEntry(l2 + 0, 0, du * r2);
-	// D.setEntry(l2 + 0, 1, du * r4);
-	// D.setEntry(l2 + 1, 0, dv * r2);
-	// D.setEntry(l2 + 1, 1, dv * r4);
 
     @Override
     public double[] getDMatrixRowU(double x, double y, double du, double dv) {
@@ -83,31 +72,16 @@ public class ZhangDistortionModel implements LensDistortionModel {
         final double xd = xyd[0];
         final double yd = xyd[1];
         final double R = Math.sqrt(xd * xd + yd * yd);	// distorted radius
+        if (R < 1e-6)
+            return new double[] {0, 0};
         final double r = unwarp(R);						// undistorted radius
-        final double s = r / R;
+        final double s = r / R;             // TODO: what if R=0??
         return new double[] {s * xd, s * yd};
     }
 
     @Deprecated
     public double warp(double r) {
         return r * (1 + D(r));
-    }
-
-    // ------------------------------------------------------------------------
-
-    /**
-     * Radial distortion function, to be applied in the form
-     * <pre>r' = r * (1 + D(r))</pre>
-     * to points in the ideal projection plane. Distortion coefficients k0, k1.
-     *
-     * @param r the original radius of a point in the ideal projection plane
-     * @return the pos/neg deviation for the given radius
-     */
-    public double D(double r) {
-        final double r2 = r * r;
-        final double k0 = parameters[0];
-        final double k1 = parameters[1];
-        return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
     }
 
     /**
@@ -125,10 +99,26 @@ public class ZhangDistortionModel implements LensDistortionModel {
         double[] coefficients = {-R, 1, 0, k0, 0, k1};
         PolynomialFunction p = new PolynomialFunction(coefficients);
         UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
-        double rInit = R;
         int maxEval = 20;
-        double r = solver.solve(maxEval, p, rInit);
+        double r = solver.solve(maxEval, p, R); // rInit = R
 //		System.out.format("** solver iterations = %d\n", solver.getEvaluations());
         return r;
+    }
+
+    // ------------------------------------------------------------------------
+
+    /**
+     * Radial distortion function, to be applied in the form
+     * <pre>r' = r * (1 + D(r))</pre>
+     * to points in the ideal projection plane. Distortion coefficients k0, k1.
+     *
+     * @param r the original radius of a point in the ideal projection plane
+     * @return the pos/neg deviation for the given radius
+     */
+    public double D(double r) {
+        final double r2 = r * r;
+        final double k0 = parameters[0];
+        final double k1 = parameters[1];
+        return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
     }
 }
