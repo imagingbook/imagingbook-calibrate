@@ -112,8 +112,9 @@ public class Calibrator {
 		initViews = eve.getExtrinsics(H_init);
 		
 		// Step 4: Determine the lens distortion from initial estimates:
-		RadialDistortionEstimator rde = new RadialDistortionEstimator();
-		double[] distParams = rde.estimateLensDistortion(initCam, initViews, modelPts, obsPts);
+		RadialDistortionEstimate rde = RadialDistortionEstimate.from(initCam, initViews, modelPts, obsPts);
+		double[] distParams = rde.getParameters();
+        // double err = rde.getError();
 		Camera improvedCam = new Camera(A_init, distParams);
 		
 		// Step 5: Refine all parameters by non-linear optimization
