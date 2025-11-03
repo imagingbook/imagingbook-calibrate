@@ -67,7 +67,7 @@ public class Camera {
 	 * @param K the radial distortion coefficients [k0, k1, ...] (may be {@code null})
 	 */
 	public Camera(RealMatrix A, double[] K) {
-        this.distortion = (K == null) ? new ZhangDistortionModel() : new ZhangDistortionModel(K[0], K[1]);
+        this.distortion = (K == null) ? new ZhangDistortionModel(0, 0) : new ZhangDistortionModel(K[0], K[1]);
         this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 	}
 
@@ -207,8 +207,8 @@ public class Camera {
 	 * @return the camera's inner parameters
 	 */
 	public double[] getParameterVector() {
-        double k0 = distortion.getK0(); // K[0];
-        double k1 = distortion.getK1(); // K[1];
+        double k0 = distortion.getParameter(0); // K[0];
+        double k1 = distortion.getParameter(1); // K[1];
 		return new double[] 
 				{getAlpha(), getBeta(),	getGamma(), getUc(), getVc(), k0, k1};
                 // {getAlpha(), getBeta(),	getGamma(), getUc(), getVc(), K[0], K[1]};
@@ -264,8 +264,10 @@ public class Camera {
 	 *
 	 * @return the vector of lens distortion coefficients
 	 */
+    @Deprecated
 	public double[] getK() {
-        return new double[] {distortion.getK0(), distortion.getK1()};
+        //return new double[] {distortion.getK0(), distortion.getK1()};
+        return distortion.getParameters();
 	}
 
 	/**

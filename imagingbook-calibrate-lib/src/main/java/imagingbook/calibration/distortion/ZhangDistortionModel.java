@@ -12,25 +12,33 @@ import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiable
 
 public class ZhangDistortionModel implements LensDistortionModel {
 
-    final double k0, k1;    // lens distortion parameters
+    private final double[] parameters; // lens distortion parameters
 
     public ZhangDistortionModel(double k0, double k1) {
-        this.k0 = k0;
-        this.k1 = k1;
+        this.parameters = new double[] {k0, k1};
     }
 
-    public ZhangDistortionModel() {
-        this(0, 0);
+    public ZhangDistortionModel(double[] p) {
+        // TODO: check length of p!
+        this(p[0], p[1]);
     }
 
     // -----------------------------------------
 
-    public double getK0() {
-        return this.k0;
+    @Override
+    public int getParameterCount() {
+        return parameters.length;
     }
 
-    public double getK1() {
-        return this.k1;
+    @Override
+    public double[] getParameters() {
+        return parameters;  // TODO: clone?
+    }
+
+    @Override
+    public double getParameter(int i) {
+        // TODO: check i
+        return parameters[i];
     }
 
     // -----------------------------------------
@@ -54,6 +62,11 @@ public class ZhangDistortionModel implements LensDistortionModel {
         return new double[] {s * xd, s * yd};
     }
 
+    @Deprecated
+    public double warp(double r) {
+        return r * (1 + D(r));
+    }
+
     // ------------------------------------------------------------------------
 
     /**
@@ -66,11 +79,9 @@ public class ZhangDistortionModel implements LensDistortionModel {
      */
     public double D(double r) {
         final double r2 = r * r;
-        return (this.k0 + this.k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
-    }
-
-    public double warp(double r) {
-        return r * (1 + D(r));
+        final double k0 = parameters[0];
+        final double k1 = parameters[1];
+        return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
     }
 
     /**
@@ -83,7 +94,9 @@ public class ZhangDistortionModel implements LensDistortionModel {
      * @return the undistorted radius
      */
     public double unwarp(double R) {
-        double[] coefficients = {-R, 1, 0, this.k0, 0, this.k1};
+        final double k0 = parameters[0];
+        final double k1 = parameters[1];
+        double[] coefficients = {-R, 1, 0, k0, 0, k1};
         PolynomialFunction p = new PolynomialFunction(coefficients);
         UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
         double rInit = R;

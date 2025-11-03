@@ -23,6 +23,14 @@ public class RadialDistortionEstimator {
 
 	/**
 	 * Estimates the lens distortion from multiple views, starting from an initial (linear) camera model.
+     * Given an initial estimate of the camera intrinsics (without lens distortion),
+     * the task is to find the optimal distortion parameter vector k = (k0, k1)
+     * by minimum least-squares optimization of
+     *
+     *   D * k = d ,
+     *
+     * where D is of size 2MN x 2, k of size 2, and d of size 2MN
+     * (M views with N observed points).
 	 *
 	 * @param cam the initial (linear) camera model
 	 * @param views a sequence of extrinsic view transformations
@@ -34,6 +42,7 @@ public class RadialDistortionEstimator {
 		final int M = views.length;		// the number of views
 		final int N = modelPts.length;	// the number of model points
 
+        // the estimated projection center on the sensor plane
 		final double uc = cam.getUc();
 		final double vc = cam.getVc();
 
@@ -45,24 +54,25 @@ public class RadialDistortionEstimator {
 			Pnt2d[] obs = obsPts[i];
 
 			for (int j = 0; j < N; j++) {
-				// determine the radius in the ideal image plane
+				// determine the radius in the ideal image plane (normalized projection for f=1)
 				double[] xy = cam.projectNormalized(views[i], modelPts[j]);
 				double x = xy[0];
 				double y = xy[1];
 				double r2 = x * x + y * y;
 				double r4 = r2 * r2;
 				
-				// project model point to image
+				// project model point to the sensor image
 				double[] uv = cam.project(views[i], modelPts[j]);
 				double u = uv[0];
 				double v = uv[1];
 				double du = u - uc;	// distance to estim. projection center
 				double dv = v - vc;
-				
-				D.setEntry(l * 2 + 0, 0, du * r2);
-				D.setEntry(l * 2 + 0, 1, du * r4);
-				D.setEntry(l * 2 + 1, 0, dv * r2);
-				D.setEntry(l * 2 + 1, 1, dv * r4);
+
+                int l2 = l * 2;
+				D.setEntry(l2 + 0, 0, du * r2);
+				D.setEntry(l2 + 0, 1, du * r4);
+				D.setEntry(l2 + 1, 0, dv * r2);
+				D.setEntry(l2 + 1, 1, dv * r4);
 				
 				// observed image point
 				Pnt2d UV = obs[j];

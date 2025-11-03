@@ -38,9 +38,9 @@ public class CameraTest {
         double r1 = 0.95;
         double rr = camera1.getDistortion().warp(r1);
         assertEquals(0.9013, rr, 1e-4);
-//        System.out.format("radial distortion: r1=%.4f -> rr=%.4f\n", r1, rr);
+        // System.out.format("radial distortion: r1=%.4f -> rr=%.4f\n", r1, rr);
         double r2 = camera1.getDistortion().unwarp(rr);
-//        System.out.format("inv. radial distortion: rr=%.4f -> r2=%.4f\n", rr, r2);
+        // System.out.format("inv. radial distortion: rr=%.4f -> r2=%.4f\n", rr, r2);
         assertEquals(r1, r2, 1e-4);
 
 //        System.out.println();

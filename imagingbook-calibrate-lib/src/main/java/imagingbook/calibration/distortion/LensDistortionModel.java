@@ -11,6 +11,11 @@ package imagingbook.calibration.distortion;
  */
 public interface LensDistortionModel {
 
+    int getParameterCount();
+    double[] getParameters();
+    double getParameter(int i);
+
+
     /**
      * Applies lens distortion to a point in the ideal 2D projection.
      *
