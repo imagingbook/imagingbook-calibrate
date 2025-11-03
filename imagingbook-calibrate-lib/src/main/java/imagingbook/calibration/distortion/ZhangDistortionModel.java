@@ -12,23 +12,30 @@ import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiable
 
 public class ZhangDistortionModel implements LensDistortionModel {
 
+    public static final int PARAM_COUNT = 2;
+    public static final ZhangDistortionModel INSTANCE = new ZhangDistortionModel();
     private final double[] parameters; // lens distortion parameters
 
-    public ZhangDistortionModel(double k0, double k1) {
-        this.parameters = new double[] {k0, k1};
+    /**
+     * The only constructor. If no argument is supplied an instance
+     * with zero parameters is constructed.
+     * @param params vector of distortion parameters
+     */
+    public ZhangDistortionModel(double... params) {
+        if (params.length == 0)
+            this.parameters = new double[PARAM_COUNT];
+        else if (params.length == PARAM_COUNT)
+            this.parameters = params;
+        else
+            throw new IllegalArgumentException("wrong parameter count: " + params.length);
     }
 
-    public ZhangDistortionModel(double[] p) {
-        // TODO: check length of p!
-        this(p[0], p[1]);
+    @Override
+    public ZhangDistortionModel copyOf(double[] params) {
+        return new ZhangDistortionModel(params);
     }
 
     // -----------------------------------------
-
-    @Override
-    public int getParameterCount() {
-        return parameters.length;
-    }
 
     @Override
     public double[] getParameters() {
@@ -124,5 +131,4 @@ public class ZhangDistortionModel implements LensDistortionModel {
 //		System.out.format("** solver iterations = %d\n", solver.getEvaluations());
         return r;
     }
-
 }

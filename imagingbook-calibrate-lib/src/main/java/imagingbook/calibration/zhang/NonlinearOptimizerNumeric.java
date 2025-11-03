@@ -22,8 +22,8 @@ import java.util.Arrays;
  */
 public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	
-	NonlinearOptimizerNumeric(Pnt2d[] modelPts, Pnt2d[][] obsPts) {
-		super(modelPts, obsPts);
+	NonlinearOptimizerNumeric(Camera initCam, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+		super(initCam, modelPts, obsPts);
 	}
 	
 	@Override
@@ -50,7 +50,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        double[] refValues = new double[2 * M * N];	// values obtained with undisturbed parameters 
 	        
 	        double[] a = Arrays.copyOfRange(params, 0, camParLength);	// camera parameters
-	        Camera camOrig = new Camera(a);
+	        Camera camOrig = initCam.fromParameterVector(a);
 	        
 	        // Step 0: calculate all 2MN reference output values (for undisturbed parameters)
 	       
@@ -72,7 +72,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        	double ak = a[k];					// keep original parameter value       	
 	        	double delta = estimateDelta(ak);
 	        	a[k] = a[k] + delta;		// modify parameter s_k
-	        	Camera camMod = new Camera(a);	// modified camera
+	        	Camera camMod = camOrig.fromParameterVector(a);	// modified camera
 	        	
 		        for (int r = 0, i = 0; i < M; i++) {	// for all views, r = row
 		        	int m = camParLength + i * viewParLength;
@@ -131,7 +131,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        double[] refValues = new double[2 * M * N];	// function values obtained with undisturbed parameters 
 	        
 	        double[] s = Arrays.copyOfRange(params, 0, camParLength);
-	        Camera cam = new Camera(s);
+	        Camera cam = initCam.fromParameterVector(s);
 	        
 	        // Step 0: calculate all 2MN reference output values (for undisturbed parameters)
 	        
@@ -157,7 +157,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        	params[k] = params[k] + delta;		// modify parameter c_k
 	        	
 	        	double[] smod = Arrays.copyOfRange(params, 0, camParLength);
-	        	Camera camMod = new Camera(smod);	// modified camera
+	        	Camera camMod = cam.fromParameterVector(smod);	// modified camera
 	        	
 		        for (int row = 0, m = 0; m < M; m++) {	// for all views
 		        	int start = camParLength + m * viewParLength;

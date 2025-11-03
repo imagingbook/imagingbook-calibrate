@@ -6,6 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.calibration.distortion.LensDistortionModel;
+import imagingbook.calibration.distortion.ZhangDistortionModel;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.util.ParameterBundle;
@@ -51,7 +53,7 @@ public class Calibrator {
 		public boolean debug = false;					
 	}
 	
-	private int M;								// the number of camera views
+	private int M;							// the number of camera views
 	private final Pnt2d[] modelPts;			// the sequence of 2D points in the planar model
 	private final List<Pnt2d[]> imgPntSet; 	// list of vectors containing observed 2D image points for each view
 	
@@ -105,7 +107,7 @@ public class Calibrator {
 		CameraIntrinsicsEstimator cis = new CameraIntrinsicsEstimator();
 		
 		RealMatrix A_init = cis.getCameraIntrinsics(H_init);
-		initCam = new Camera(A_init, new double[params.lensDistortionKoeffients]);
+		initCam = new Camera(A_init, ZhangDistortionModel.INSTANCE);  // TODO: select lens distortion model!
 		
 		// Step 3: calculate the extrinsic view parameters:
 		ExtrinsicViewEstimator eve = new ExtrinsicViewEstimator(A_init);
@@ -113,15 +115,16 @@ public class Calibrator {
 		
 		// Step 4: Determine the lens distortion from initial estimates:
 		RadialDistortionEstimate rde = RadialDistortionEstimate.from(initCam, initViews, modelPts, obsPts);
-		double[] distParams = rde.getParameters();
+		// double[] distParams = rde.getParameters();
+        LensDistortionModel distParams = rde.getDistortion();
         // double err = rde.getError();
 		Camera improvedCam = new Camera(A_init, distParams);
 		
 		// Step 5: Refine all parameters by non-linear optimization
 		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?
-				new NonlinearOptimizerNumeric(modelPts, obsPts) :
-				new NonlinearOptimizerAnalytic(modelPts, obsPts);
-		optimizer.optimize(improvedCam, initViews);
+				new NonlinearOptimizerNumeric(improvedCam, modelPts, obsPts) :
+				new NonlinearOptimizerAnalytic(improvedCam, modelPts, obsPts);
+		optimizer.optimize(initViews);
 		finalCam = optimizer.getFinalCamera();
 		finalViews = optimizer.getFinalViews();
 		return finalCam;

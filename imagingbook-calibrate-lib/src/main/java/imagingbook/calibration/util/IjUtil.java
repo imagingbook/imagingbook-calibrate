@@ -42,25 +42,25 @@ public class IjUtil {
 	// -------------------------------------------------------------------
 	
 	
-	public static PlotWindow plotLensDistortionFunction(Camera cam, double rmax) {
-		int n = 100;
-//		double[] K = cam.getK();
-		double[] xVals = new double[n];
-		double[] yVals = new double[n];
-		for (int i = 0; i < n; i++) {
-			double r = i * (rmax / n);
-			//double d = cam.distFun2(r * r); //getRadialDistortion(r, K);
-			double d = cam.getDistortion().D(r);     // cam.D(r);
-			xVals[i] = r;
-			yVals[i] = d;
-		}
-		Plot plot = new Plot("d(r)", "x", "f(x)");
-		plot.setColor(Color.BLUE);
-		plot.setLimits(0, 1.25, -0.1, 0.1);
-		plot.addPoints(xVals, yVals, Plot.LINE);
-		plot.draw();
-		return plot.show();
-	}
+	// public static PlotWindow plotLensDistortionFunction(Camera cam, double rmax) {
+	// 	int n = 100;
+    //
+	// 	double[] xVals = new double[n];
+	// 	double[] yVals = new double[n];
+	// 	for (int i = 0; i < n; i++) {
+	// 		double r = i * (rmax / n);
+	// 		//double d = cam.distFun2(r * r); //getRadialDistortion(r, K);
+	// 		double d = cam.getDistortion().D(r);     // cam.D(r);
+	// 		xVals[i] = r;
+	// 		yVals[i] = d;
+	// 	}
+	// 	Plot plot = new Plot("d(r)", "x", "f(x)");
+	// 	plot.setColor(Color.BLUE);
+	// 	plot.setLimits(0, 1.25, -0.1, 0.1);
+	// 	plot.addPoints(xVals, yVals, Plot.LINE);
+	// 	plot.draw();
+	// 	return plot.show();
+	// }
 	
 	// ---------------------------------------------------------------
 	

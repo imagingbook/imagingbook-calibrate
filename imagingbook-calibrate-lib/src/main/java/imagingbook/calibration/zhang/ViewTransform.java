@@ -91,6 +91,10 @@ public class ViewTransform {
                 translation[0], translation[1], translation[2]};
     }
 
+    protected int getParameterCount() {
+        return 6;   // 3 rotation + 3 translation parameters
+    }
+
     public Rotation getRotation() {
         return rotation;
     }

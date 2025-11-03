@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.calibration.distortion.LensDistortionModel;
 import imagingbook.calibration.distortion.ZhangDistortionModel;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -14,6 +15,8 @@ import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
+
+import java.util.Arrays;
 
 /**
  * A camera model with parameters as specified in Zhang's paper.
@@ -30,7 +33,7 @@ public class Camera {
 	 * </pre>
 	 */
 	private final double[][] A;		// 2 x 3 2D affine transformation matrix
-    private final ZhangDistortionModel distortion;
+    private final LensDistortionModel distortion;
 
     /**
      * Basic constructor.
@@ -41,52 +44,49 @@ public class Camera {
      * @param vc
      * @param distortion
      */
-    public Camera(double alpha, double beta, double gamma, double uc, double vc, ZhangDistortionModel distortion) {
+    public Camera(double alpha, double beta, double gamma, double uc, double vc, LensDistortionModel distortion) {
         this.A = makeAffineCameraMatrix(alpha, beta, gamma, uc, vc);
         this.distortion = distortion;
     }
-		
-	// for the standard Zhang camera
-	public Camera(double alpha, double beta, double gamma, double uc, double vc, double k0, double k1) {
-        this(alpha, beta, gamma, uc, vc, new ZhangDistortionModel(k0, k1));
-	}
 
-	/**
-	 * Creates a standard camera from a vector of intrinsic parameters
-	 *
-	 * @param s a vector of intrinsic camera parameters (alpha, beta, gamma, uc, vc, k0, k1).
-	 */
-	public Camera (double[] s) {
-        this(s[0], s[1], s[2], s[3], s[4], s[5], s[6]);
-	}
+    /**
+     * Auxiliary (non-public) constructor.
+     * @param a vector of linear camera parameters
+     * @param distortion instance of lens distortion model
+     */
+    private Camera(double[] a, LensDistortionModel distortion) {
+        this(a[0], a[1], a[2], a[3], a[4], distortion);
+    }
+		
+    /**
+     * Create a new instance from an existing Camera instance.
+     * @param params all linear and non-linear camera parameters
+     * @return a new Camera instance with the specified parameters and the same type of lens distortion
+     * model as this instance
+     */
+    public Camera fromParameterVector(double[] params) {
+        final int P = distortion.getParameterCount();
+        if (params.length < 5 + P)
+            throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
+        double[] lin = Arrays.copyOfRange(params, 0, 5);    // = [alpha, beta, dgamma, uc, vc]
+        double[] dist = Arrays.copyOfRange(params, 5, 5 + P);
+        return new Camera(lin, distortion.copyOf(dist));
+    }
 
 	/**
 	 * Creates a standard camera from a transformation matrix and a vector of lens distortion coefficients.
 	 *
 	 * @param A the (min.) 2 x 3 matrix holding the intrinsic camera parameters
-	 * @param K the radial distortion coefficients [k0, k1, ...] (may be {@code null})
+	 * @param distortion a lens distortion model instance
 	 */
-	public Camera(RealMatrix A, double[] K) {
-        this.distortion = (K == null) ? new ZhangDistortionModel(0, 0) : new ZhangDistortionModel(K[0], K[1]);
+	public Camera(RealMatrix A, LensDistortionModel distortion) {
+        this.distortion = distortion; // ? new ZhangDistortionModel(0, 0) : new ZhangDistortionModel(K);
         this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 	}
 
-	// /**
-	//  * Creates a simple pinhole camera (with no distortion whatsoever).
-	//  *
-	//  * @param f the camera's focal length (in pixel units).
-	//  * @param uc the x-position of the optical axis intersecting the image plane (in pixel units)
-	//  * @param vc the y-position of the optical axis intersecting the image plane (in pixel units)
-	//  */
-    // @Deprecated
-	// public Camera(double f, double uc, double vc) {
-    //     this(MatrixUtils.createRealMatrix(makeA(f, f, 0, uc, vc)), null);;
-	// }
-	
 	// --------------------------------------------------------------------------
 
-    // TODO: Should return LensDistortionModel eventually!
-    public ZhangDistortionModel getDistortion() {
+    public LensDistortionModel getDistortion() {
         return this.distortion;
     }
 
@@ -202,16 +202,24 @@ public class Camera {
 	// -------------------------------------------------------------------
 
 	/**
-	 * Returns the camera's inner parameters as a vector (alpha, beta, gamma, uc, vc, k0, k1).
+	 * Returns the camera's inner (linear and distortion parameters as one vector
+     * (alpha, beta, gamma, uc, vc, <distortion-params> ...).
 	 *
 	 * @return the camera's inner parameters
 	 */
 	public double[] getParameterVector() {
-        double k0 = distortion.getParameter(0); // K[0];
-        double k1 = distortion.getParameter(1); // K[1];
-		return new double[] 
-				{getAlpha(), getBeta(),	getGamma(), getUc(), getVc(), k0, k1};
-                // {getAlpha(), getBeta(),	getGamma(), getUc(), getVc(), K[0], K[1]};
+        double[] lin = new double[] {getAlpha(), getBeta(),	getGamma(), getUc(), getVc()};  // linear parameters
+        double[] dist = distortion.getParameters();
+        return Matrix.join(lin, dist);  // concatenate linear/nonlinear coefficients into one vector
+    }
+
+    /**
+     * Returns the total number of linear and non-linear (distortion) camera parameters,
+     * which is 5 + the number of distortion parameters.
+     * @return the total number of parameters for this camera
+     */
+    public int getParameterCount() {
+        return 5 + distortion.getParameterCount();
     }
 
 	/**

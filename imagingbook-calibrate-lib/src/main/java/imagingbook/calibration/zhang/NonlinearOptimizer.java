@@ -37,12 +37,13 @@ public abstract class NonlinearOptimizer {
 	int camParLength;        // number of camera parameters (7)
 	int viewParLength;    // number of view parameters (6)
 
-	private Camera initCam = null;
+	protected final Camera initCam;
 	private Camera finalCamera = null;
 	private ViewTransform[] initViews = null;
 	private ViewTransform[] finalViews = null;
 
-	NonlinearOptimizer(Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+	NonlinearOptimizer(Camera initCam, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+        this.initCam = initCam;
 		this.modelPts = modelPts;
 		this.obsPts = obsPts;
 		this.M = obsPts.length;
@@ -50,16 +51,15 @@ public abstract class NonlinearOptimizer {
 	}
 
 	/**
-	 * Performs Levenberg-Marquardt non-linear optimization to get better estimates of the parameters.
-	 *
-	 * @param initCam the initial camera parameters
-	 * @param initViews the initial view transforms
-	 */
-	void optimize(Camera initCam, ViewTransform[] initViews) {
-		this.initCam = initCam;
+     * Performs Levenberg-Marquardt non-linear optimization to get better
+     * estimates of the parameters.
+     *
+     * @param initViews the initial view transforms
+     */
+	void optimize(ViewTransform[] initViews) {
 		this.initViews = initViews;
-		this.camParLength = initCam.getParameterVector().length;
-		this.viewParLength = initViews[0].getParameters().length;
+		this.camParLength = initCam.getParameterCount();
+		this.viewParLength = initViews[0].getParameterCount();
 
 		MultivariateVectorFunction V = makeValueFun();
 		MultivariateMatrixFunction J = makeJacobianFun();
@@ -104,7 +104,7 @@ public abstract class NonlinearOptimizer {
 		@Override
 		public double[] value(double[] params) {
 			final double[] a = Arrays.copyOfRange(params, 0, camParLength);
-			final Camera cam = new Camera(a);
+			final Camera cam = initCam.fromParameterVector(a);
 			final double[] Y = new double[2 * M * N];
 			int c = 0;
 			for (int m = 0; m < M; m++) {
@@ -162,7 +162,7 @@ public abstract class NonlinearOptimizer {
 	private void updateEstimates(RealVector parameters) {
 		double[] c = parameters.toArray();
 		double[] s = Arrays.copyOfRange(c, 0, camParLength);
-		finalCamera = new Camera(s);
+		finalCamera = initCam.fromParameterVector(s);
 
 		finalViews = new ViewTransform[M];
 		int start = s.length;

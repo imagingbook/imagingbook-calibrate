@@ -6,6 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.calibration.distortion.LensDistortionModel;
+import imagingbook.calibration.distortion.ZhangDistortionModel;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
@@ -22,10 +24,13 @@ public class CameraTest {
         Locale.setDefault(Locale.US);
         ViewTransform view = new ViewTransform();
 
-        Camera camera1 = new Camera (
-                832.5, 832.53, 0.204494, 	// alpha, beta, gamma,
-                303.959, 206.585,			// c_x, c_y
-                -0.228601, 0.190353);		// k0, k1
+        // Camera camera1 = new Camera (
+        //         832.5, 832.53, 0.204494, 	// alpha, beta, gamma,
+        //         303.959, 206.585,			// c_x, c_y
+        //         -0.228601, 0.190353);		// k0, k1
+
+        Camera camera1 =  new Camera(832.5, 832.53, 0.204494, 303.959, 206.585,
+                new ZhangDistortionModel(-0.228601, 0.190353));
 //        System.out.println("Camera 1: " + camera1.toString());
 
         double[] XYZ1 = {40, 70, 800};
@@ -51,7 +56,9 @@ public class CameraTest {
                 {832.5, 0.204494, 303.959},
                 {  0.0, 832.53, 206.585},
                 {  0.0,   0.0,     1.0}});
-        Camera camera2 = new Camera(A, new double[] {-0.2, 0.190353});
+
+        Camera camera2 = new Camera(A, new ZhangDistortionModel(-0.2, 0.190353));
+
 //        System.out.println("Camera 2: " + camera2.toString());
 
         double[] XYZ2 = {40, 70, 800};

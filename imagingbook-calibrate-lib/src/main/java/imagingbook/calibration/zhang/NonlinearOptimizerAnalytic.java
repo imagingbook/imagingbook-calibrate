@@ -24,8 +24,8 @@ import static java.lang.Math.sqrt;
  */
 public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 
-	NonlinearOptimizerAnalytic(Pnt2d[] modelPts, Pnt2d[][] obsPts) {
-		super(modelPts, obsPts);
+	NonlinearOptimizerAnalytic(Camera initCam, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+		super(initCam, modelPts, obsPts);
 	}
 
 	@Override

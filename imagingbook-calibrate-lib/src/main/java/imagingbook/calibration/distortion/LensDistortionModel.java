@@ -9,16 +9,24 @@ package imagingbook.calibration.distortion;
 /**
  * The mother of all radial  distortion models.
  */
-public interface LensDistortionModel {
+public interface LensDistortionModel {      // extends Copyable<LensDistortionModel>
 
-    int getParameterCount();
+    /**
+     * Copy an existing distortion model instance from a suitable parameter vector.
+     * @param params a parameter vector of required length
+     * @return
+     */
+    LensDistortionModel copyOf(double[] params);
+
+    default int getParameterCount() {
+        return getParameters().length;
+    }
+
     double[] getParameters();
     double getParameter(int i);
 
     double[] getDMatrixRowU(double x, double y, double du, double dv);
     double[] getDMatrixRowV(double x, double y, double du, double dv);
-
-
 
     /**
      * Applies lens distortion to a point in the ideal 2D projection.
@@ -37,6 +45,18 @@ public interface LensDistortionModel {
      */
     double[] unwarp(double[] xyd);
 
+    // outdated methods for testing radial warping only! -----------------
+
+    default double warp(double r) {
+        double[] xy2 = warp(new double[] {r, 0});
+        return  xy2[0];
+    }
+
+    default double unwarp(double rr) {
+        double[] xy2 = unwarp(new double[] {rr, 0});
+        return  xy2[0];
+    }
+    // ------------------------------------------------------------------
 
 }
 

@@ -20,11 +20,11 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
  */
 public class RadialDistortionEstimate {
 
-    private final double[] kopt;
+    private final LensDistortionModel estimate;
     private final double[] errors;
 
-    private RadialDistortionEstimate(double[] kopt, double[] errors) {
-        this.kopt = kopt;
+    private RadialDistortionEstimate(LensDistortionModel estimate, double... errors) {
+        this.estimate = estimate;
         this.errors = errors;
     }
 
@@ -95,17 +95,23 @@ public class RadialDistortionEstimate {
 		}
 		
 		DecompositionSolver solver = new SingularValueDecomposition(D).getSolver();
-		RealVector kopt = solver.solve(d);  // optimal distortion parameter vector
-		
-		double err1 = D.operate(new ArrayRealVector(new double[] {0,0})).subtract(d).getNorm();
+		RealVector kopt = solver.solve(d);  // optimal distortion parameter
+        LensDistortionModel model = dstrt.copyOf(kopt.toArray());
+
+
+        double err1 = D.operate(new ArrayRealVector(new double[] {0,0})).subtract(d).getNorm();
 		double err2 = D.operate(kopt).subtract(d).getNorm();
 		// System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
-        return new RadialDistortionEstimate(kopt.toArray(), new double[] {err1, err2});
+        return new RadialDistortionEstimate(model, err1, err2);
 	}
 
-    public double[] getParameters() {
-        return 	kopt;
+    // public double[] getParameters() {
+    //     return 	kopt;
+    // }
+
+    public LensDistortionModel getDistortion() {
+        return this.estimate;
     }
 
     public double getError() {
