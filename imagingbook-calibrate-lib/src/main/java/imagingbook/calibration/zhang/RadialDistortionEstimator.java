@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration.zhang;
 
+import imagingbook.calibration.distortion.LensDistortionModel;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
@@ -42,57 +43,61 @@ public class RadialDistortionEstimator {
 		final int M = views.length;		// the number of views
 		final int N = modelPts.length;	// the number of model points
 
+        final LensDistortionModel dstrt = cam.getDistortion();
+        final int P = dstrt.getParameterCount();    // number of distortion parameters
+
         // the estimated projection center on the sensor plane
 		final double uc = cam.getUc();
 		final double vc = cam.getVc();
 
-		RealMatrix D = MatrixUtils.createRealMatrix(2 * M * N, 2);
-		RealVector d = new ArrayRealVector(2 * M * N);
+		final RealMatrix D = MatrixUtils.createRealMatrix(2 * M * N, P);
+		final RealVector d = new ArrayRealVector(2 * M * N);
 
-		int l = 0;
-		for (int i = 0; i < M; i++) {
+        // matrix double-line counter l
+		for (int i = 0, l = 0; i < M; i++) {    // iterate over M views:
 			Pnt2d[] obs = obsPts[i];
+            ViewTransform vt = views[i];
 
-			for (int j = 0; j < N; j++) {
-				// determine the radius in the ideal image plane (normalized projection for f=1)
-				double[] xy = cam.projectNormalized(views[i], modelPts[j]);
+			for (int j = 0; j < N; j++, l+=2) {   // iterate over M observed points
+                final Pnt2d mpt = modelPts[j];    // model point
+				// get point positions in the ideal image plane (normalized projection, f=1)
+				double[] xy = cam.projectNormalized(vt, mpt);
 				double x = xy[0];
 				double y = xy[1];
-				double r2 = x * x + y * y;
-				double r4 = r2 * r2;
-				
-				// project model point to the sensor image
-				double[] uv = cam.project(views[i], modelPts[j]);
+
+				// project 3D model point j to the sensor image, using view transform i
+				double[] uv = cam.project(vt, mpt);
 				double u = uv[0];
 				double v = uv[1];
-				double du = u - uc;	// distance to estim. projection center
+				double du = u - uc;	// distance to estim. sensor projection center
 				double dv = v - vc;
 
-                int l2 = l * 2;
-				D.setEntry(l2 + 0, 0, du * r2);
-				D.setEntry(l2 + 0, 1, du * r4);
-				D.setEntry(l2 + 1, 0, dv * r2);
-				D.setEntry(l2 + 1, 1, dv * r4);
-				
-				// observed image point
-				Pnt2d UV = obs[j];
-				double U = UV.getX();
-				double V = UV.getY();
-				
-				d.setEntry(l * 2 + 0, U - u);
-				d.setEntry(l * 2 + 1, V - v);
-				l++;
+                // insert one pair of rows into matrix D:
+                final int l0 = l;
+                final int l1 = l + 1;
+                // rowU, rowV are vectors with P elements each:
+                double[] rowU = dstrt.getDMatrixRowU(x, y, du, dv);
+                double[] rowV = dstrt.getDMatrixRowV(x, y, du, dv);
+                for (int k = 0; k < P; k++) {
+                    D.setEntry(l0, k, rowU[k]);
+                    D.setEntry(l1, k, rowV[k]);
+                }
+
+				// mount vector d with difference between observed and predicted sensor points
+				Pnt2d UV = obs[j];  // observed point
+				d.setEntry(l0, UV.getX() - u);
+				d.setEntry(l1, UV.getY() - v);
 			}
 		}
 		
 		DecompositionSolver solver = new SingularValueDecomposition(D).getSolver();
-		RealVector k = solver.solve(d);
+		RealVector kopt = solver.solve(d);  // optimal distortion parameter vector
 		
 //		double err1 = D.operate(new ArrayRealVector(new double[] {0,0})).subtract(d).getNorm();
 //		double err2 = D.operate(k).subtract(d).getNorm();
 //		System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 		
-		return k.toArray();
+		return kopt.toArray();
 	}
 
 }

@@ -41,6 +41,25 @@ public class ZhangDistortionModel implements LensDistortionModel {
         return parameters[i];
     }
 
+    // D.setEntry(l2 + 0, 0, du * r2);
+	// D.setEntry(l2 + 0, 1, du * r4);
+	// D.setEntry(l2 + 1, 0, dv * r2);
+	// D.setEntry(l2 + 1, 1, dv * r4);
+
+    @Override
+    public double[] getDMatrixRowU(double x, double y, double du, double dv) {
+        final double r2 = x * x + y * y;
+        final double r4 = r2 * r2;
+        return new double[] {du * r2, du * r4};
+    }
+
+    @Override
+    public double[] getDMatrixRowV(double x, double y, double du, double dv) {
+        final double r2 = x * x + y * y;
+        final double r4 = r2 * r2;
+        return new double[] {dv * r2, dv * r4};
+    }
+
     // -----------------------------------------
 
     @Override

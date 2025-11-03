@@ -15,6 +15,10 @@ public interface LensDistortionModel {
     double[] getParameters();
     double getParameter(int i);
 
+    double[] getDMatrixRowU(double x, double y, double du, double dv);
+    double[] getDMatrixRowV(double x, double y, double du, double dv);
+
+
 
     /**
      * Applies lens distortion to a point in the ideal 2D projection.
@@ -32,6 +36,7 @@ public interface LensDistortionModel {
      * @return the undistorted point
      */
     double[] unwarp(double[] xyd);
+
 
 }
 
