@@ -9,21 +9,25 @@ package imagingbook.calibration.zhang;
 import imagingbook.common.math.Arithmetic;
 import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 /**
- * A 2D homography represented by a 3x3 matrix.
+ * A 2D homography represented by a 3x3 matrix. All homography instances
+ * are normalized (i.e., element (2,2) has value 1) and immutable.
+ * Implements RealMatrix.
  */
 public class Homography2d extends Array2DRowRealMatrix {
 
     public Homography2d(double[][] H) {
-        this(H, false);
+        super(normalize(H));
     }
 
-    public Homography2d(double[][] H, boolean normalize) {
-        super(normalize ? normalize(H) : H);
+    public Homography2d(RealMatrix H) {
+       this(H.getData());
     }
 
-    /**
+     /**
      * Scale all elements of H such that H(2,2) = 1.
      * Used for comparing homography matrices.
      * @param H a 3 x 3 homography matrix
@@ -37,6 +41,5 @@ public class Homography2d extends Array2DRowRealMatrix {
             throw new IllegalArgumentException("zero homography matrix element H(2,2)");
         return Matrix.multiply(1.0 / h22, H);
     }
-
 
 }

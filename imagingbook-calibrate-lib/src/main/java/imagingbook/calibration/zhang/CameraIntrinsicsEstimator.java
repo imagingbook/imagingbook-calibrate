@@ -160,13 +160,13 @@ public class CameraIntrinsicsEstimator {
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */
-	protected RealMatrix getCameraIntrinsics(RealMatrix[] homographies) {
+	protected RealMatrix getCameraIntrinsics(HomographyEstimate[] homographies) {
 		final int M = homographies.length;
 		int rows = 2 * M;
 		double[][] V = new double[rows][];
 
 		for (int i = 0; i < M; i++) {
-			RealMatrix H = homographies[i];
+			RealMatrix H = homographies[i].getHomography();
 			V[2*i] = getVpq(H, 0, 1); // v01
 			V[2*i + 1] = Matrix.subtract(getVpq(H, 0, 0), getVpq(H, 1, 1)); // v00-v11
 		}

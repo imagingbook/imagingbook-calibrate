@@ -23,63 +23,67 @@ import org.apache.commons.math4.legacy.linear.RealVector;
 
 /**
  * This class defines methods for estimating the homography (projective) transformation between pairs of 2D point sets.
- *
+ * TODO: merge all this into Homography2d !!?
  * @author WB
  */
-public class HomographyEstimator {
-
+public class HomographyEstimate {
+    /** Max. number of Levenberg-Marquardt evaluations. */
 	public static int MaxLmEvaluations = 1000;
+    /** Max. number of Levenberg-Marquardt iterations. */
 	public static int MaxLmIterations = 1000;
 
-	private final boolean normalizePointCoordinates;
-	private final boolean doNonlinearRefinement;
+//	private final boolean normalizePointCoordinates;
+//	private final boolean doNonlinearRefinement;
+
+    private final Homography2d hom;
 
 	// ------------------------------------------------------------
 
-	public HomographyEstimator() {
-		this(true, true);
+	public HomographyEstimate(RealMatrix H) {
+		this.hom = new Homography2d(H);
 	}
 
-	public HomographyEstimator(boolean normalizePointCoordinates, boolean doNonlinearRefinement) {
-		this.normalizePointCoordinates = normalizePointCoordinates;
-		this.doNonlinearRefinement = doNonlinearRefinement;
-	}
+    public Homography2d getHomography() {
+        return this.hom;
+    }
 
-	// ------------------------------------------------------------
+//	public HomographyEstimate(boolean normalizePointCoordinates, boolean doNonlinearRefinement) {
+//		this.normalizePointCoordinates = normalizePointCoordinates;
+//		this.doNonlinearRefinement = doNonlinearRefinement;
+//	}
 
-	/**
-	 * Estimates the homographies between a fixed set of 2D model points and multiple observations (image point sets).
-	 * The correspondence between the points is assumed to be known.
-	 *
-	 * @param modelPts a sequence of 2D points on the model (calibration target)
-	 * @param obsPoints a sequence 2D image point sets (one set per view).
-	 * @return the sequence of estimated homographies (3 x 3 matrices), one for each view
-	 */
-	public RealMatrix[] estimateHomographies(Pnt2d[] modelPts, Pnt2d[][] obsPoints) {
-		final int M = obsPoints.length;
-		RealMatrix[] homographies = new RealMatrix[M];
-		for (int i = 0; i < M; i++) {
-			RealMatrix Hinit = estimateHomography(modelPts, obsPoints[i]);
-			RealMatrix H = doNonlinearRefinement ?
-					refineHomography(Hinit, modelPts, obsPoints[i]) : Hinit;
-			homographies[i] = H;
-		}
-		return homographies;
-	}
+    // ------------------------------------------------------------
+
+
 
 	/**
 	 * Estimates the homography (projective) transformation from two given 2D point sets. The correspondence between the
 	 * points is assumed to be known.
-	 *
 	 * @param ptsA the 1st sequence of 2D points
 	 * @param ptsB the 2nd sequence of 2D points
 	 * @return the estimated homography (3 x 3 matrix)
 	 */
-	public RealMatrix estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
-		int n = ptsA.length;
+    public static HomographyEstimate from(Pnt2d[] ptsA, Pnt2d[] ptsB) {
+        return from(ptsA, ptsB, true, true);
+    }
 
-		RealMatrix Na = (normalizePointCoordinates) ? getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
-		RealMatrix Nb = (normalizePointCoordinates) ? getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);
+    /**
+     * Estimates the homography (projective) transformation from two given 2D point sets. The correspondence between the
+     * points is assumed to be known.
+     * @param ptsA
+     * @param ptsB
+     * @param normalizePointCoordinates
+     * @param doNonlinearRefinement
+     * @return
+     */
+	public static HomographyEstimate from(Pnt2d[] ptsA, Pnt2d[] ptsB,
+                                   boolean normalizePointCoordinates,
+                                   boolean doNonlinearRefinement) {
+		final int n = ptsA.length;
+		RealMatrix Na = (normalizePointCoordinates) ?
+                getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
+		RealMatrix Nb = (normalizePointCoordinates) ?
+                getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);
 		RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
 
 		for (int j = 0, r = 0; j < ptsA.length; j++) {
@@ -93,37 +97,31 @@ public class HomographyEstimator {
 			M.setRow(r + 1, new double[]{0, 0, 0, xA, yA, 1, -(xA * yB), -(yA * yB), -(yB)});
 			r = r + 2;
 		}
-
 		// find h, such that M . h = 0:
 		double[] h = MathUtil.solveHomogeneousSystem(M).toArray();
-
 		// assemble homography matrix H from h:
 		RealMatrix H = MatrixUtils.createRealMatrix(new double[][]
 				{{h[0], h[1], h[2]},
 						{h[3], h[4], h[5]},
 						{h[6], h[7], h[8]}});
-
 		// de-normalize the homography
 		H = MatrixUtils.inverse(Nb).multiply(H).multiply(Na);
+        Homography2d hom = new Homography2d(H); // this does normalization
 
-		// rescale M such that H[2][2] = 1 (unless H[2][2] close to 0)
-		if (Math.abs(H.getEntry(2, 2)) > 10e-8) {
-			H = H.scalarMultiply(1.0 / H.getEntry(2, 2));
-		}
-
-		return doNonlinearRefinement ? refineHomography(H, ptsA, ptsB) : H;
+        if (doNonlinearRefinement) {
+            hom = refineHomography(hom, ptsA, ptsB);
+        }
+        return new HomographyEstimate(hom);
 	}
-
 
 	/**
 	 * Refines the initial homography by non-linear (Levenberg-Marquart) optimization.
-	 *
-	 * @param Hinit the initial (estimated) homography matrix
+	 * @param Hinit the initial (estimated) homography
 	 * @param pntsA the 1st sequence of 2D points
 	 * @param pntsB the 2nd sequence of 2D points
-	 * @return the refined homography matrix
+	 * @return the refined homography
 	 */
-	public RealMatrix refineHomography(RealMatrix Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
+	private static Homography2d refineHomography(Homography2d Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
 		final int M = pntsA.length;
 		double[] observed = new double[2 * M];
 		for (int i = 0; i < M; i++) {
@@ -151,12 +149,10 @@ public class HomographyEstimator {
 			throw new RuntimeException("refineHomography(): max. number of iterations exceeded");
 		}
 		// System.out.println("LM optimizer iterations " + iterations);
-
-		return Hopt.scalarMultiply(1.0 / Hopt.getEntry(2, 2));
+		return new Homography2d(Hopt);
 	}
 
-
-	private MultivariateVectorFunction getValueFunction(final Pnt2d[] X) {
+	private static MultivariateVectorFunction getValueFunction(final Pnt2d[] X) {
 		// System.out.println("MultivariateVectorFunction getValueFunction");
 		return new MultivariateVectorFunction() {
 			public double[] value(double[] h) {
@@ -174,7 +170,7 @@ public class HomographyEstimator {
 		};
 	}
 
-	protected MultivariateMatrixFunction getJacobianFunction(final Pnt2d[] X) {
+	private static MultivariateMatrixFunction getJacobianFunction(final Pnt2d[] X) {
 		return new MultivariateMatrixFunction() {
 			public double[][] value(double[] h) {
 				final double[][] J = new double[2 * X.length][];
@@ -206,7 +202,7 @@ public class HomographyEstimator {
 	}
 
 
-	private RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
+	private static RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
 		final int N = pnts.length;
 		double[] x = new double[N];
 		double[] y = new double[N];
@@ -248,5 +244,27 @@ public class HomographyEstimator {
         if (Arithmetic.isZero(h22, 1e-15))
             throw new IllegalArgumentException("zero homography matrix element H(2,2)");
         return H.scalarMultiply(1.0 / h22);
+    }
+
+    // ----------------------------------------------------------------------
+
+    /**
+     * Estimates the homographies between a fixed set of 2D model points and multiple observations (image point sets).
+     * The correspondence between the points is assumed to be known.
+     *
+     * @param modelPts a sequence of 2D points on the model (calibration target)
+     * @param obsPoints a sequence 2D image point sets (one set per view).
+     * @return the sequence of estimated homographies (3 x 3 matrices), one for each view
+     */
+    public static HomographyEstimate[] estimateHomographies(Pnt2d[] modelPts, Pnt2d[][] obsPoints,
+                                             boolean normalizePointCoordinates,
+                                             boolean doNonlinearRefinement) {
+        final int M = obsPoints.length;
+        HomographyEstimate[] homographies = new HomographyEstimate[M];
+        for (int i = 0; i < M; i++) {
+            homographies[i] = HomographyEstimate.from(modelPts, obsPoints[i],
+                    normalizePointCoordinates, doNonlinearRefinement);
+        }
+        return homographies;
     }
 }

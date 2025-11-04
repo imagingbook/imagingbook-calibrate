@@ -41,7 +41,7 @@ public class Calibrator {
 	 * Parameters can be specified by setting the associated public fields.
 	 */
 	public static class Parameters implements ParameterBundle<Calibrator> {
-		/** Normalize point coordinates for numerical stability in {@link HomographyEstimator}. */
+		/** Normalize point coordinates for numerical stability in {@link HomographyEstimate}. */
 		public boolean normalizePointCoordinates = true;
 		/** Assume that the camera has no skew (currently not used). */
 		public boolean assumeZeroSkew = false;
@@ -100,8 +100,8 @@ public class Calibrator {
 		obsPts = imgPntSet.toArray(new Pnt2d[0][]);
 		
 		// Step 1: Calculate the homographies for each of the given N views:
-		HomographyEstimator hest = new HomographyEstimator(params.normalizePointCoordinates, true);
-		RealMatrix[] H_init = hest.estimateHomographies(modelPts, obsPts);
+		//HomographyEstimate hest = new HomographyEstimate(params.normalizePointCoordinates, true);
+        HomographyEstimate[] H_init = HomographyEstimate.estimateHomographies(modelPts, obsPts, true, true);
 		
 		// Step 2: Estimate the intrinsic parameters by linear optimization:
 		CameraIntrinsicsEstimator cis = new CameraIntrinsicsEstimator();
