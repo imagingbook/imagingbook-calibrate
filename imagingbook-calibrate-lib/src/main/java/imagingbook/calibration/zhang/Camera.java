@@ -7,7 +7,6 @@
 package imagingbook.calibration.zhang;
 
 import imagingbook.calibration.distortion.LensDistortionModel;
-import imagingbook.calibration.distortion.ZhangDistortionModel;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
@@ -287,7 +286,7 @@ public class Camera {
 	 *
 	 * @return the camara's inner transformation matrix (2 x 3)
 	 */
-	public RealMatrix getA() {
+	public RealMatrix getMatrixA() {
 		return MatrixUtils.createRealMatrix(A);
 	}
 

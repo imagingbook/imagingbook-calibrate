@@ -9,6 +9,7 @@ package imagingbook.calibration.zhang;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 
+import imagingbook.common.math.Arithmetic;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
 
@@ -19,16 +20,6 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOp
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
-
-// import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
-// import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-// import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
-// import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
-// import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-// import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-// import org.apache.commons.math3.linear.MatrixUtils;
-// import org.apache.commons.math3.linear.RealMatrix;
-// import org.apache.commons.math3.linear.RealVector;
 
 /**
  * This class defines methods for estimating the homography (projective) transformation between pairs of 2D point sets.
@@ -92,8 +83,8 @@ public class HomographyEstimator {
 		RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
 
 		for (int j = 0, r = 0; j < ptsA.length; j++) {
-			final double[] pA = transform(MathUtil.toArray(ptsA[j]), Na);
-			final double[] pB = transform(MathUtil.toArray(ptsB[j]), Nb);
+			final double[] pA = transform(ptsA[j].toDoubleArray(), Na);
+			final double[] pB = transform(ptsB[j].toDoubleArray(), Nb);
 			final double xA = pA[0];
 			final double yA = pA[1];
 			final double xB = pB[0];
@@ -214,6 +205,7 @@ public class HomographyEstimator {
 		return MathUtil.toCartesian(pAt); // need to de-homogenize, since pAt[2] == 1?
 	}
 
+
 	private RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
 		final int N = pnts.length;
 		double[] x = new double[N];
@@ -243,4 +235,18 @@ public class HomographyEstimator {
 		return matrixA;
 	}
 
+    /**
+     * Scale all elements of H such that H(2,2) = 1.
+     * Used for comparing homography matrices.
+     * @param H a 3 x 3 homography matrix
+     * @return the normalized matrix
+     */
+    public static RealMatrix normalizeHomography(RealMatrix H) {
+        if (H.getColumnDimension() != 3 || H.getRowDimension() != 3)
+            throw new IllegalArgumentException("homography matrix is not of size 3 x 3");
+        double h22 = H.getEntry(2, 2);
+        if (Arithmetic.isZero(h22, 1e-15))
+            throw new IllegalArgumentException("zero homography matrix element H(2,2)");
+        return H.scalarMultiply(1.0 / h22);
+    }
 }
