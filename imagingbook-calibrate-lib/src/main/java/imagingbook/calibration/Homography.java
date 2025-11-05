@@ -7,6 +7,7 @@
 package imagingbook.calibration;
 
 import imagingbook.calibration.util.MathUtil;
+import imagingbook.calibration.util.PointStatistics;
 import imagingbook.common.geometry.basic.Pnt2d;
 
 import imagingbook.common.math.Arithmetic;
@@ -91,9 +92,9 @@ public class Homography  extends Array2DRowRealMatrix {
                                   boolean doNonlinearRefinement) {
 		final int n = ptsA.length;
 		RealMatrix Na = (normalizePointCoordinates) ?
-                getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
+                PointStatistics.getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
 		RealMatrix Nb = (normalizePointCoordinates) ?
-                getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);
+                PointStatistics.getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);
 		RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
 
 		for (int j = 0, r = 0; j < ptsA.length; j++) {
@@ -211,40 +212,6 @@ public class Homography  extends Array2DRowRealMatrix {
 		double[] pA = MathUtil.toHomogeneous(p);
 		double[] pAt = M3x3.operate(pA);
 		return MathUtil.toCartesian(pAt); // need to de-homogenize, since pAt[2] == 1?
-	}
-
-    /**
-     * Calculates and returns a normalization matrix for the specified 2D
-     * point set. Applying this matrix to the same point set will create
-     * a new point set with mean = (0,0) and variance = 1 in x,y.
-     * @param pnts the input point set
-     * @return a 3x3 normalization matrix.
-     */
-	private static RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
-		final int N = pnts.length;
-		double[] x = new double[N];
-		double[] y = new double[N];
-
-		for (int i = 0; i < N; i++) {
-			x[i] = pnts[i].getX();
-			y[i] = pnts[i].getY();
-		}
-
-		// calculate the means in x/y
-		double meanx = MathUtil.mean(x);
-		double meany = MathUtil.mean(y);
-
-		// calculate the variances in x/y
-		double varx = MathUtil.variance(x);
-		double vary = MathUtil.variance(y);
-
-		double sx = Math.sqrt(2 / varx);
-		double sy = Math.sqrt(2 / vary);
-
-		return MatrixUtils.createRealMatrix(new double[][]{
-				{sx, 0, -sx * meanx},
-				{0, sy, -sy * meany},
-				{0, 0, 1}});
 	}
 
     /**
