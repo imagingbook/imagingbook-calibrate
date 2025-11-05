@@ -4,9 +4,8 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration.zhang;
+package imagingbook.calibration;
 
-import imagingbook.common.math.PrintPrecision;
 import org.junit.Test;
 import imagingbook.common.math.Matrix;
 

@@ -9,8 +9,8 @@ module imagingbook.calibrate.lib {
     requires org.apache.commons.geometry.euclidean;
 
     exports imagingbook.calibration.zhang.data;
-    exports imagingbook.calibration.zhang;
     exports imagingbook.calibration.util;
     exports imagingbook.calibration.math3legacy;
     exports imagingbook.calibration.distortion;
+    exports imagingbook.calibration;
 }

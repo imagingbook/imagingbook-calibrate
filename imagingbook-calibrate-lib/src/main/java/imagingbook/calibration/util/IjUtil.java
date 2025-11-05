@@ -7,14 +7,9 @@
 package imagingbook.calibration.util;
 
 import ij.ImagePlus;
-import ij.gui.Plot;
-import ij.gui.PlotWindow;
 import ij.process.FloatProcessor;
-import imagingbook.calibration.zhang.Camera;
 import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
-
-import java.awt.Color;
 
 
 /**

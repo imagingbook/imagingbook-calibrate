@@ -8,8 +8,8 @@ package imagingbook.calibration.zhang.data;
 
 import imagingbook.calibration.distortion.LensDistortionModel;
 import imagingbook.calibration.distortion.ZhangDistortionModel;
-import imagingbook.calibration.zhang.Camera;
-import imagingbook.calibration.zhang.ViewTransform;
+import imagingbook.calibration.Camera;
+import imagingbook.calibration.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 
