@@ -41,12 +41,12 @@ public class ExtrinsicViewEstimator {
 	 * @param homographies a set of homographies given as 3 x 3 matrices
 	 * @return the sequence of extrinsic camera parameters (views), one view for each homography
 	 */
-	protected ViewTransform[] getExtrinsics(HomographyEstimate[] homographies) {
+	protected ViewTransform[] getExtrinsics(Homography[] homographies) {
 		final int M = homographies.length;
 		ViewTransform[] views = new ViewTransform[M];
 		// ExtrinsicViewEstimator eve = new ExtrinsicViewEstimator(A);
 		for (int i = 0; i < M; i++) {
-			views[i] = estimateViewTransform(homographies[i].getHomography());
+			views[i] = estimateViewTransform(homographies[i]);
 		}
 		return views;
 	}
