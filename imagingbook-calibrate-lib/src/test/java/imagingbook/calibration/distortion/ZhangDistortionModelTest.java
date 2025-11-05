@@ -54,26 +54,26 @@ public class ZhangDistortionModelTest {
     @Test
     public void warpRTest() {
         double r1 = 0.35;
-        LensDistortionModel m1 = new ZhangDistortionModel(k0, k1);
-        double r2 = m1.warp(r1);
+        RadialDistortionModel dist = new ZhangDistortionModel(k0, k1);
+        double r2 = dist.warp(r1);
         // System.out.println(r2);
         assertEquals(0.358312390625, r2, tol);
-        double r3 = m1.unwarp(r2);
+        double r3 = dist.unwarp(r2);
         assertEquals(r1, r3, tol);
-        double r0 = m1.warp(0.0);
+        double r0 = dist.warp(0.0);
         assertEquals(0.0, r0, tol);
     }
 
     @Test
     public void unwarpRTest() {
         double r1 = 0.35;
-        LensDistortionModel m1 = new ZhangDistortionModel(k0, k1);
-        double r2 = m1.unwarp(r1);
+        RadialDistortionModel dist = new ZhangDistortionModel(k0, k1);
+        double r2 = dist.unwarp(r1);
         // System.out.println(r2);
         assertEquals(0.3422189, r2, tol);
-        double r3 = m1.warp(r2);
+        double r3 = dist.warp(r2);
         assertEquals(r1, r3, tol);
-        double r0 = m1.unwarp(0.0);
+        double r0 = dist.unwarp(0.0);
         assertEquals(0.0, r0, tol);
     }
 

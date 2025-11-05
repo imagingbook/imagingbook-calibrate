@@ -46,20 +46,6 @@ public interface LensDistortionModel {
      * @return the undistorted point
      */
     double[] unwarp(double[] xyd);
-
-    // outdated methods for testing radial warping only! -----------------
-
-    @Deprecated
-    default double warp(double r) {
-        double[] xy2 = warp(new double[] {r, 0});
-        return  xy2[0];
-    }
-
-    @Deprecated
-    default double unwarp(double rr) {
-        double[] xy2 = unwarp(new double[] {rr, 0});
-        return  xy2[0];
-    }
 }
 
 /*

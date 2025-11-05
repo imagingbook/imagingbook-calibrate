@@ -6,11 +6,12 @@
  ******************************************************************************/
 package imagingbook.calibration.distortion;
 
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
 
-public class ZhangDistortionModel implements LensDistortionModel {
+public class ZhangDistortionModel implements RadialDistortionModel {
 
     public static final int PARAM_COUNT = 2;
     public static final ZhangDistortionModel INSTANCE = new ZhangDistortionModel();
@@ -58,30 +59,42 @@ public class ZhangDistortionModel implements LensDistortionModel {
 
     // -----------------------------------------
 
-    @Override
-    public double[] warp(double[] xy) {
-        final double x = xy[0];
-        final double y = xy[1];
-        final double r = Math.sqrt(x * x + y * y);
-        double d = (1 + D(r));
-        return new double[] {d * x, d * y};
-    }
+    // @Override
+    // public double[] warp(double[] xy) {
+    //     final double x = xy[0];
+    //     final double y = xy[1];
+    //     final double r = Math.sqrt(x * x + y * y);  // undistorted radius
+    //     if (r < 1e-6)
+    //         return new double[] {0, 0};
+    //     // final double R = warp(r);        // distorted radius
+    //     final double s = warp(r) / r;
+    //     return new double[] {s * x, s* y};
+    // }
 
-    @Override
-    public double[] unwarp(double[] xyd) {
-        final double xd = xyd[0];
-        final double yd = xyd[1];
-        final double R = Math.sqrt(xd * xd + yd * yd);	// distorted radius
-        if (R < 1e-6)
-            return new double[] {0, 0};
-        final double r = unwarp(R);						// undistorted radius
-        final double s = r / R;             // TODO: what if R=0??
-        return new double[] {s * xd, s * yd};
-    }
+    // @Override
+    // public double[] unwarp(double[] xyd) {
+    //     final double xd = xyd[0];
+    //     final double yd = xyd[1];
+    //     final double R = Math.sqrt(xd * xd + yd * yd);	// distorted radius
+    //     if (R < 1e-6)
+    //         return new double[] {0, 0};
+    //     // final double r = unwarp(R);					// undistorted radius
+    //     final double s = unwarp(R) / R;
+    //     return new double[] {s * xd, s * yd};
+    // }
 
-    @Deprecated
+    /**
+     * Forward radial distortion function.
+     * @param r the original radius of a point in the ideal projection plane
+     * @return the distorted radius
+     */
+    @Override
     public double warp(double r) {
-        return r * (1 + D(r));
+        final double r2 = r * r;
+        final double k0 = parameters[0];
+        final double k1 = parameters[1];
+        double D = (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
+        return r * (1 + D);
     }
 
     /**
@@ -93,6 +106,7 @@ public class ZhangDistortionModel implements LensDistortionModel {
      * @param R the distorted radius
      * @return the undistorted radius
      */
+    @Override
     public double unwarp(double R) {
         final double k0 = parameters[0];
         final double k1 = parameters[1];
@@ -107,18 +121,18 @@ public class ZhangDistortionModel implements LensDistortionModel {
 
     // ------------------------------------------------------------------------
 
-    /**
-     * Radial distortion function, to be applied in the form
-     * <pre>r' = r * (1 + D(r))</pre>
-     * to points in the ideal projection plane. Distortion coefficients k0, k1.
-     *
-     * @param r the original radius of a point in the ideal projection plane
-     * @return the pos/neg deviation for the given radius
-     */
-    public double D(double r) {
-        final double r2 = r * r;
-        final double k0 = parameters[0];
-        final double k1 = parameters[1];
-        return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
-    }
+    // /**
+    //  * Radial distortion function, to be applied in the form
+    //  * <pre>r' = r * (1 + D(r))</pre>
+    //  * to points in the ideal projection plane. Distortion coefficients k0, k1.
+    //  *
+    //  * @param r the original radius of a point in the ideal projection plane
+    //  * @return the pos/neg deviation for the given radius
+    //  */
+    // private double D(double r) {
+    //     final double r2 = r * r;
+    //     final double k0 = parameters[0];
+    //     final double k1 = parameters[1];
+    //     return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
+    // }
 }
