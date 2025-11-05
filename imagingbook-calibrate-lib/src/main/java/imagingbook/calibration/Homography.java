@@ -24,8 +24,11 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
 /**
- * This class defines methods for estimating the homography (projective) transformation between pairs of 2D point sets.
- * TODO: merge all this into Homography2d !!?
+ * This class represents a homography, i.e., a projective transformation
+ * and methods for estimating such transformations from sets of 2D point pairs.
+ * Implements RealMatrix, each instance being a 3x3 matrix.
+ * Homographies are normalized (element (2, 2) is 1) and immutable.
+ *
  * @author WB
  */
 public class Homography  extends Array2DRowRealMatrix {
@@ -34,15 +37,11 @@ public class Homography  extends Array2DRowRealMatrix {
     /** Max. number of Levenberg-Marquardt iterations. */
 	public static int MaxLmIterations = 1000;
 
-//	private final boolean normalizePointCoordinates;
-//	private final boolean doNonlinearRefinement;
-
 	// ------------------------------------------------------------
 
     public Homography(double[][] H) {
         super(normalize(H));
     }
-
 
     public Homography(RealMatrix H) {
         this(H.getData());
@@ -124,6 +123,8 @@ public class Homography  extends Array2DRowRealMatrix {
         }
         return new Homography(hom);
 	}
+
+    // -------------------------------------------------------------------------
 
 	/**
 	 * Refines the initial homography by non-linear (Levenberg-Marquart) optimization.
@@ -212,7 +213,13 @@ public class Homography  extends Array2DRowRealMatrix {
 		return MathUtil.toCartesian(pAt); // need to de-homogenize, since pAt[2] == 1?
 	}
 
-
+    /**
+     * Calculates and returns a normalization matrix for the specified 2D
+     * point set. Applying this matrix to the same point set will create
+     * a new point set with mean = (0,0) and variance = 1 in x,y.
+     * @param pnts the input point set
+     * @return a 3x3 normalization matrix.
+     */
 	private static RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
 		final int N = pnts.length;
 		double[] x = new double[N];
@@ -234,12 +241,10 @@ public class Homography  extends Array2DRowRealMatrix {
 		double sx = Math.sqrt(2 / varx);
 		double sy = Math.sqrt(2 / vary);
 
-		RealMatrix matrixA = MatrixUtils.createRealMatrix(new double[][]{
+		return MatrixUtils.createRealMatrix(new double[][]{
 				{sx, 0, -sx * meanx},
 				{0, sy, -sy * meany},
 				{0, 0, 1}});
-
-		return matrixA;
 	}
 
     /**
@@ -260,7 +265,8 @@ public class Homography  extends Array2DRowRealMatrix {
     // ----------------------------------------------------------------------
 
     /**
-     * Estimates the homographies between a fixed set of 2D model points and multiple observations (image point sets).
+     * Estimates the homographies between a fixed set of 2D model points and
+     * multiple observations (image point sets).
      * The correspondence between the points is assumed to be known.
      *
      * @param modelPts a sequence of 2D points on the model (calibration target)

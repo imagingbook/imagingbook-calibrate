@@ -66,7 +66,6 @@ public class Calibrator {
 
 	/**
 	 * The only constructor.
-	 *
 	 * @param params a parameter object (default parameters are used if {@code null} is passed)
 	 * @param model a sequence of 2D points specifying the x/y coordinates of the planar calibration pattern (assuming
 	 * zero z-coordinates)
@@ -79,7 +78,6 @@ public class Calibrator {
 
 	/**
 	 * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
-	 *
 	 * @param pts a sequence of 2D image points
 	 */
 	public void addView(Pnt2d[] pts) {
@@ -88,7 +86,6 @@ public class Calibrator {
 
 	/**
 	 * Performs the actual camera calibration based on the provided sequence of views.
-	 *
 	 * @return the estimated camera intrinsics as a {@link Camera} object
 	 */
 	public Camera calibrate() {
