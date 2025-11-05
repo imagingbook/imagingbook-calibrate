@@ -10,6 +10,7 @@ import imagingbook.calibration.Homography;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.calibration.util.PointStatistics;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresFactory;
@@ -19,6 +20,8 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOp
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
+
+import static org.apache.commons.math4.legacy.linear.MatrixUtils.createRealMatrix;
 
 public class HomographyEstimator {
 
@@ -35,10 +38,8 @@ public class HomographyEstimator {
     private final boolean normalizePoints;
     private final boolean doRefinement;
 
-
     /**
-     * Constructor
-     *
+     * The only constructor.
      * @param normalizePoints
      * @param doRefinement
      */
@@ -50,7 +51,6 @@ public class HomographyEstimator {
     /**
      * Estimates the homography (projective) transformation from two given 2D
      * point sequences assumed to be in correspondence (and of same length).
-     *
      * @param ptsA the 1st sequence of 2D points
      * @param ptsB the 1st sequence of 2D points
      * @return
@@ -62,33 +62,36 @@ public class HomographyEstimator {
             throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
 
         final int n = ptsA.length;
-        RealMatrix Na = (normalizePoints) ?
-                PointStatistics.getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
-        RealMatrix Nb = (normalizePoints) ?
-                PointStatistics.getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);
-        RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
+        AffineMapping2D Na = (normalizePoints) ?
+                PointStatistics.getNormalisationMatrix(ptsA) : new AffineMapping2D();
+        AffineMapping2D Nb = (normalizePoints) ?
+                PointStatistics.getNormalisationMatrix(ptsB) : new AffineMapping2D();
 
+        RealMatrix MM = createRealMatrix(n * 2, 9);
         for (int j = 0, r = 0; j < ptsA.length; j++) {
-            final double[] pA = mapPoint(Na, ptsA[j].toDoubleArray());
-            final double[] pB = mapPoint(Nb, ptsB[j].toDoubleArray());
-            final double xA = pA[0];
-            final double yA = pA[1];
-            final double xB = pB[0];
-            final double yB = pB[1];
-            M.setRow(r + 0, new double[]{xA, yA, 1, 0, 0, 0, -(xA * xB), -(yA * xB), -(xB)});
-            M.setRow(r + 1, new double[]{0, 0, 0, xA, yA, 1, -(xA * yB), -(yA * yB), -(yB)});
+            Pnt2d pA = Na.applyTo(ptsA[j]);   // mapPoint(Na, ptsA[j].toDoubleArray());
+            Pnt2d pB = Nb.applyTo(ptsB[j]);   // mapPoint(Nb, ptsB[j].toDoubleArray());
+            final double xA = pA.getX();
+            final double yA = pA.getY();
+            final double xB = pB.getX();
+            final double yB = pB.getY();
+            MM.setRow(r + 0, new double[]{xA, yA, 1, 0, 0, 0, -(xA * xB), -(yA * xB), -(xB)});
+            MM.setRow(r + 1, new double[]{0, 0, 0, xA, yA, 1, -(xA * yB), -(yA * yB), -(yB)});
             r = r + 2;
         }
-        // find h, such that M . h = 0:
-        double[] h = MathUtil.solveHomogeneousSystem(M).toArray();
+        // find h, such that MM . h ~ 0:
+        double[] h = MathUtil.solveHomogeneousSystem(MM).toArray();
         // assemble homography matrix H from h:
-        RealMatrix H = MatrixUtils.createRealMatrix(new double[][]
-                {{h[0], h[1], h[2]},
-                        {h[3], h[4], h[5]},
-                        {h[6], h[7], h[8]}});
-        // de-normalize the homography
-        H = MatrixUtils.inverse(Nb).multiply(H).multiply(Na);
-        Homography hom = new Homography(H); // this does normalization
+        RealMatrix Hinit = createRealMatrix(new double[][] {
+                {h[0], h[1], h[2]},
+                {h[3], h[4], h[5]},
+                {h[6], h[7], h[8]}});
+
+        // de-normalize the homography H (when point sets were normalized)
+        RealMatrix HNa = createRealMatrix(Na.getTransformationMatrix());    // 3x3 matrix of Ha
+        RealMatrix HNbi = createRealMatrix(Nb.getInverse().getTransformationMatrix());   // 3x3 inverse of Hb
+        RealMatrix H = HNbi.multiply(Hinit).multiply(HNa);  // H = MatrixUtils.inverse(Nb).multiply(H).multiply(Na);
+        Homography hom = new Homography(H);                 // this does normalization
 
         if (doRefinement) {
             hom = refineHomography(hom, ptsA, ptsB);

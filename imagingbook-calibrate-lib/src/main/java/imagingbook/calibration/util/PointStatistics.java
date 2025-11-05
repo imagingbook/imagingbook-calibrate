@@ -7,8 +7,7 @@
 package imagingbook.calibration.util;
 
 import imagingbook.common.geometry.basic.Pnt2d;
-import org.apache.commons.math4.legacy.linear.MatrixUtils;
-import org.apache.commons.math4.legacy.linear.RealMatrix;
+import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
 
 public abstract class PointStatistics {
 
@@ -19,9 +18,9 @@ public abstract class PointStatistics {
      * point set. Applying this matrix to the same point set will create
      * a new point set with mean = (0,0) and variance = 1 in x,y.
      * @param pnts the input point set
-     * @return a 3x3 normalization matrix.
+     * @return an affine 2D transformation (2x3)
      */
-	public static RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
+	public static AffineMapping2D getNormalisationMatrix(Pnt2d[] pnts) {
 		final int N = pnts.length;
 		double[] x = new double[N];
 		double[] y = new double[N];
@@ -42,9 +41,9 @@ public abstract class PointStatistics {
 		double sx = Math.sqrt(2 / varx);
 		double sy = Math.sqrt(2 / vary);
 
-		return MatrixUtils.createRealMatrix(new double[][]{
-				{sx, 0, -sx * meanx},
-				{0, sy, -sy * meany},
-				{0, 0, 1}});
+        return new AffineMapping2D(new double[][]{
+                {sx, 0, -sx * meanx},
+                {0, sy, -sy * meany},
+                {0, 0, 1}});
 	}
 }
