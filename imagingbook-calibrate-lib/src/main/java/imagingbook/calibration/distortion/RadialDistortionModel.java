@@ -6,19 +6,25 @@
  ******************************************************************************/
 package imagingbook.calibration.distortion;
 
+/**
+ * Lens model with radial-only distortion.
+ */
 public interface RadialDistortionModel extends LensDistortionModel {
 
     /**
-     * Forward radial distortion function.
+     * Forward radial distortion function.  Returns the distorted
+     * radius R from the distorted radius r, both
+     * measured from the center = (0,0) of the ideal projection plane.
      * @param r the original radius of a point in the ideal projection plane
      * @return the distorted radius
      */
     double warp(double r);
 
     /**
-     * Inverse radial distortion function. Finds the original (undistorted) radius r from the distorted radius R, both
-     * measured from the center = (0,0) of the ideal projection.
-     * @param R the distorted radius
+     * Inverse radial distortion function. Returns the original (undistorted)
+     * radius r from the distorted radius R, both
+     * measured from the center = (0,0) of the ideal projection plane.
+     * @param R the distorted radius of a point in the ideal projection plane
      * @return the undistorted radius
      */
     double unwarp(double R);

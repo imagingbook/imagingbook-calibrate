@@ -6,15 +6,17 @@
  ******************************************************************************/
 package imagingbook.calibration.distortion;
 
-import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
 
-public class ZhangDistortionModel implements RadialDistortionModel {
+/**
+ * Simplified radial distortion model used in Zhang's EasyCalib implementation.
+ */
+public class Radial2TermDistortionModel implements RadialDistortionModel {
 
     public static final int PARAM_COUNT = 2;
-    public static final ZhangDistortionModel INSTANCE = new ZhangDistortionModel();
+    public static final Radial2TermDistortionModel INSTANCE = new Radial2TermDistortionModel();
     private final double[] parameters; // lens distortion parameters
 
     /**
@@ -22,7 +24,7 @@ public class ZhangDistortionModel implements RadialDistortionModel {
      * with zero-valued parameters is constructed.
      * @param params vector of distortion parameters
      */
-    public ZhangDistortionModel(double... params) {
+    public Radial2TermDistortionModel(double... params) {
         if (params.length == 0)
             this.parameters = new double[PARAM_COUNT];
         else if (params.length == PARAM_COUNT)
@@ -32,8 +34,8 @@ public class ZhangDistortionModel implements RadialDistortionModel {
     }
 
     @Override
-    public ZhangDistortionModel copyOf(double... params) {
-        return new ZhangDistortionModel(params);
+    public Radial2TermDistortionModel copyOf(double... params) {
+        return new Radial2TermDistortionModel(params);
     }
 
     // -----------------------------------------

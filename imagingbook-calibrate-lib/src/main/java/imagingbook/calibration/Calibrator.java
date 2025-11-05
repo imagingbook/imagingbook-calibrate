@@ -7,9 +7,8 @@
 package imagingbook.calibration;
 
 import imagingbook.calibration.distortion.LensDistortionModel;
-import imagingbook.calibration.distortion.ZhangDistortionModel;
+import imagingbook.calibration.distortion.Radial2TermDistortionModel;
 import imagingbook.calibration.util.MathUtil;
-import imagingbook.calibration.zhang.HomographyEstimator;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.util.ParameterBundle;
 
@@ -107,7 +106,7 @@ public class Calibrator {
 		CameraIntrinsicsEstimator cis = new CameraIntrinsicsEstimator();
 		
 		RealMatrix A_init = cis.getCameraIntrinsics(H_init);
-		initCam = new Camera(A_init, ZhangDistortionModel.INSTANCE);  // TODO: select lens distortion model!
+		initCam = new Camera(A_init, Radial2TermDistortionModel.INSTANCE);  // TODO: select lens distortion model!
 		
 		// Step 3: calculate the extrinsic view parameters:
 		ExtrinsicViewEstimator eve = new ExtrinsicViewEstimator(A_init);

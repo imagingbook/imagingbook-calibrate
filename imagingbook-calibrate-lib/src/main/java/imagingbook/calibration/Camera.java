@@ -79,7 +79,7 @@ public class Camera {
 	 * @param distortion a lens distortion model instance
 	 */
 	public Camera(RealMatrix A, LensDistortionModel distortion) {
-        this.distortion = distortion; // ? new ZhangDistortionModel(0, 0) : new ZhangDistortionModel(K);
+        this.distortion = distortion; // ? new Radial2TermDistortionModel(0, 0) : new Radial2TermDistortionModel(K);
         this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 	}
 

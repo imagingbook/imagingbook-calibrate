@@ -6,8 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
+import imagingbook.calibration.distortion.Radial2TermDistortionModel;
 import imagingbook.calibration.distortion.RadialDistortionModel;
-import imagingbook.calibration.distortion.ZhangDistortionModel;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
@@ -21,7 +21,7 @@ public class CameraTest {
 
     static final double tol = 1e-6;
     static final Camera camera1 =  new Camera(832.5, 832.53, 0.204494, 303.959, 206.585,
-            new ZhangDistortionModel(-0.228601, 0.190353));
+            new Radial2TermDistortionModel(-0.228601, 0.190353));
 
     static final ViewTransform view = new ViewTransform();
 
@@ -34,7 +34,7 @@ public class CameraTest {
     public void CameraConstructorTest() {
         double alpha = 810, beta = 815, gamma = 0.2;
         double uc = 300, vc = 200;
-        Camera cam = new Camera(alpha, beta, gamma, uc, vc, new ZhangDistortionModel());
+        Camera cam = new Camera(alpha, beta, gamma, uc, vc, new Radial2TermDistortionModel());
         // ----------------------------------------------------
         assertEquals(alpha, cam.getAlpha(), tol);
         assertEquals(beta, cam.getBeta(), tol);
@@ -72,7 +72,7 @@ public class CameraTest {
                 {832.5, 0.204494, 303.959},
                 {  0.0, 832.53, 206.585},
                 {  0.0,   0.0,     1.0}});
-        Camera camera2 = new Camera(A, new ZhangDistortionModel(-0.2, 0.190353));
+        Camera camera2 = new Camera(A, new Radial2TermDistortionModel(-0.2, 0.190353));
         // System.out.println("Camera 2: " + camera2.toString());
         double[] XYZ2 = {40, 70, 800};
         double[] uv2 = camera2.project(view, XYZ2);
