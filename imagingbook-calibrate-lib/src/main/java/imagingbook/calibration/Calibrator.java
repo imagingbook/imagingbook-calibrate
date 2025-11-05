@@ -9,6 +9,7 @@ package imagingbook.calibration;
 import imagingbook.calibration.distortion.LensDistortionModel;
 import imagingbook.calibration.distortion.ZhangDistortionModel;
 import imagingbook.calibration.util.MathUtil;
+import imagingbook.calibration.zhang.HomographyEstimator;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.util.ParameterBundle;
 
@@ -98,7 +99,7 @@ public class Calibrator {
 		
 		// Step 1: Calculate the homographies for each of the given N views:
 		//Homography hest = new Homography(params.normalizePointCoordinates, true);
-        Homography[] H_init = Homography.estimateHomographies(modelPts, obsPts, true, true);
+        Homography[] H_init = HomographyEstimator.estimateHomographies(modelPts, obsPts, true, true);
 		
 		// Step 2: Estimate the intrinsic parameters by linear optimization:
 		CameraIntrinsicsEstimator cis = new CameraIntrinsicsEstimator();

@@ -23,34 +23,13 @@ import static org.junit.Assert.assertTrue;
 
 public class HomographyTest {
 
-    // static Random rand = new Random(17);  // use fixed random seed!
-    // static Random rand = new DeterministicRandom(17);
-
     static final double tol = 1e-6;
     static double NOISE = 0.1;
 
     static final RealMatrix Hreal = MatrixUtils.createRealMatrix(new double[][] {
-            {3, 2, -1},
-            {5, -3, 2},
-            {4, 4, 1}});
-    static final double Dreal = Matrix.determinant(Hreal);
-
-    // static List<Pnt2d> pntlistA = new ArrayList<>();
-    // static List<Pnt2d> pntlistB = new ArrayList<>();
-    //
-    // static {
-    //     PrintPrecision.set(6);
-    //     pntlistA.add(Pnt2d.from(10, 7));
-    //     pntlistA.add(Pnt2d.from(3, -1));
-    //     pntlistA.add(Pnt2d.from(5, 5));
-    //     pntlistA.add(Pnt2d.from(-6, 13));
-    //     pntlistA.add(Pnt2d.from(0, 1));
-    //     pntlistA.add(Pnt2d.from(2, 3));
-    //
-    //     for (Pnt2d a : pntlistA) {
-    //         pntlistB.add(mapPointWithNoise(Hreal, a, NOISE));
-    //     }
-    // }
+            {3,  2, -1},
+            {5, -3,  2},
+            {4,  4,  1}});
 
     static final Pnt2d[] POINTS_A = new Pnt2d[] {
             Pnt2d.from(10, 7),
@@ -60,237 +39,94 @@ public class HomographyTest {
             Pnt2d.from(0, 1),
             Pnt2d.from(2, 3)
     };
-    static final Pnt2d[] POINTS_B = mapPoints(Hreal, POINTS_A);
 
-    // static Pnt2d[] pntsA = pntlistA.toArray(new Pnt2d[0]);
-    // static Pnt2d[] pntsB = pntlistB.toArray(new Pnt2d[0]);
+    static final Pnt2d[] POINTS_B = new Homography(Hreal).applyTo(POINTS_A);
 
     // -----------------------------------------------------------------------
 
+    @Test // assumes Hral[2,2] = 1 (normalized)
+    public void normalizeHomographyTest1() {
+        Homography H1 = new Homography(Hreal);
+        Homography H2 = new Homography(Hreal.scalarMultiply(2.5));
+        NumericTestUtils.assert2dArrayEquals(Hreal.getData(), H1.getData(), tol);
+        NumericTestUtils.assert2dArrayEquals(Hreal.getData(), H2.getData(), tol);
+        NumericTestUtils.assert2dArrayEquals(H1.getData(), H2.getData(), tol);
+    }
+
     @Test
-    public void normalizeHomographyNormalizeTest() {
-        RealMatrix Hnorm = Homography.normalizeHomography(Hreal);
-        assertEquals(1, Hnorm.getEntry(2, 2), tol);
-        // System.out.println("Matrix.determinant(Hnorm) =" + Matrix.determinant(Hnorm));
-        System.out.println("Matrix.determinant(Hreal) =" + Dreal);
-
+    public void normalizeHomographyTest2() {
+        Homography H = new Homography();
+        NumericTestUtils.assert2dArrayEquals(Matrix.idMatrix(3), H.getData(), tol);
     }
 
-    @Test   // scaled homographies perform the same mapping
-    public void normalizeHomographyTestNormalized() {
-        RealMatrix Hnorm = Homography.normalizeHomography(Hreal);
-        for (Pnt2d p : POINTS_A) {
-            double[] q1 = Homography.transform(p.toDoubleArray(), Hreal);
-            double[] q2 = Homography.transform(p.toDoubleArray(), Hnorm);
-            assertArrayEquals(q1, q2, tol);
-        }
-        for (Pnt2d p : POINTS_B) {
-            double[] q1 = Homography.transform(p.toDoubleArray(), Hreal);
-            double[] q2 = Homography.transform(p.toDoubleArray(), Hnorm);
-            assertArrayEquals(q1, q2, tol);
+    @Test   // trivial test checking identity map
+    public void homographyTestIdentity() {
+        Homography H = new Homography();
+        Pnt2d[] PB = H.applyTo(POINTS_A);
+        assertEquals(POINTS_A.length, PB.length);
+        // check if points are unchanged:
+        for (int i = 0; i < PB.length; i++) {
+            assertArrayEquals(POINTS_A[i].toDoubleArray(), PB[i].toDoubleArray(), tol);
         }
     }
 
-    @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal (with optimization)
-    public void HomographyEstimatorTestEstimate00() {
+    // check homography estimate from perfect match works regardless of options used:
+
+    @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
+    public void HomographyTestEstimate00() {
         RealMatrix Hestm = Homography.from(POINTS_A, POINTS_B, false, false);
-        Matrix.determinant(Hestm);
-        // System.out.println("He = \n" + Matrix.toString(Hestm));
-        // estimated homography must have the same determinant as the original
-        // assertEquals(Matrix.determinant(Hreal), Matrix.determinant(Hestm), tol);
-        // normalize both and check if both are the same (after normalizing)
-        RealMatrix HrealN = Homography.normalizeHomography(Hreal);
-        RealMatrix HestmN = Homography.normalizeHomography(Hestm);
-        NumericTestUtils.assert2dArrayEquals(HrealN.getData(), HestmN.getData(), tol);
+        // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
+        NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
     }
 
-//    @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal (with optimization)
-//    public void HomographyEstimatorTestEstimate01() {
-//        Homography he = new Homography(false, true);
-//        RealMatrix Hestm = he.estimateHomography(POINTS_A, POINTS_B);
-//        // System.out.println("He = \n" + Matrix.toString(Hestm));
-//        // estimated homography must have the same determinant as the original
-//        assertEquals(Matrix.determinant(Hreal), Matrix.determinant(Hestm), tol);
-//        // normalize both and check if both are the same (after normalizing)
-//        RealMatrix HrealN = Homography.normalizeHomography(Hreal);
-//        RealMatrix HestmN = Homography.normalizeHomography(Hestm);
-//        NumericTestUtils.assert2dArrayEquals(HrealN.getData(), HestmN.getData(), tol);
-//    }
-//
-//    @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal (no optimization)
-//    public void HomographyEstimatorTestEstimate10() {
-//        Homography he = new Homography(true, false);
-//        RealMatrix Hestm = he.estimateHomography(POINTS_A, POINTS_B);
-//        // System.out.println("He = \n" + Matrix.toString(Hestm));
-//        // estimated homography must have the same determinant as the original
-//        assertEquals(Matrix.determinant(Hreal), Matrix.determinant(Hestm), tol);
-//        // normalize both and check if both are the same (after normalizing)
-//        RealMatrix HrealN = Homography.normalizeHomography(Hreal);
-//        RealMatrix HestmN = Homography.normalizeHomography(Hestm);
-//        NumericTestUtils.assert2dArrayEquals(HrealN.getData(), HestmN.getData(), tol);
-//    }
-//
-//    @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal (with optimization)
-//    public void HomographyEstimatorTestEstimate11() {
-//        Homography he = new Homography(true, true);
-//        RealMatrix Hestm = he.estimateHomography(POINTS_A, POINTS_B);
-//        // System.out.println("He = \n" + Matrix.toString(Hestm));
-//        // estimated homography must have the same determinant as the original
-//        assertEquals(Matrix.determinant(Hreal), Matrix.determinant(Hestm), tol);
-//        // normalize both and check if both are the same (after normalizing)
-//        RealMatrix HrealN = Homography.normalizeHomography(Hreal);
-//        RealMatrix HestmN = Homography.normalizeHomography(Hestm);
-//        NumericTestUtils.assert2dArrayEquals(HrealN.getData(), HestmN.getData(), tol);
-//    }
-//
-//    // -------------------------------------------------------------------------
-//
-//    @Test   // estimate homography from a noisy point set
-//    public void HomographyEstimatorTestNoise10() {
-//        // System.out.println("\n*************** WITHOUT NONLINEAR REFINEMENT *****************");
-//        Homography he = new Homography(true, false);
-//        Pnt2d[] POINTS_Bn = mapPointsNoisy(Hreal, POINTS_A, 0.01);
-//        RealMatrix Hestm = he.estimateHomography(POINTS_A, POINTS_Bn);
-//        PrintPrecision.set(6); System.out.println("Hestm = \n" + Matrix.toString(Hestm));
-//        System.out.println("Matrix.determinant(Hestm) =" + Matrix.determinant(Hestm));
-//        assertTrue(Math.abs(Matrix.determinant(Hestm)) > 15);
-//    }
-//
-//    @Test   // estimate homography from a noisy point set
-//    public void HomographyEstimatorTestNoise11() {
-//        // System.out.println("\n************** WITH NONLINEAR REFINEMENT *****************");
-//        Homography he = new Homography(true, true);
-//        Pnt2d[] POINTS_Bn = mapPointsNoisy(Hreal, POINTS_A, 0.01);
-//        RealMatrix Hestm = he.estimateHomography(POINTS_A, POINTS_Bn);
-//        PrintPrecision.set(6); System.out.println("Hestm = \n" + Matrix.toString(Hestm));
-//        System.out.println("Matrix.determinant(Hestm) =" + Matrix.determinant(Hestm));
-//        assertTrue(Math.abs(Matrix.determinant(Hestm)) > 50);
-//    }
-
-
-    // @Test
-    // public void HomographyEstimatorTestNois00() {
-    //     // System.out.println("\n*************** WITHOUT NONLINEAR REFINEMENT *****************");
-    //     Homography he = new Homography(false, false);
-    //     Pnt2d[] POINTS_Bn = mapPointsNoisy(Hreal, POINTS_A, 0.5);
-    //     RealMatrix Hestm = he.estimateHomography(POINTS_A, POINTS_Bn);
-    //     PrintPrecision.set(6); System.out.println("Hestm = \n" + Matrix.toString(Hestm));
-    //     double[][] Hexpd = {
-    //             {-0.057000, 0.011172, 0.534589},
-    //             {0.021708, -0.105175, 0.702193},
-    //             {-0.105258, 0.016770, 1.000000}};
-    //     NumericTestUtils.assert2dArrayEquals(Hexpd, Hestm.getData(), tol);
-    // }
-    //
-    // @Test
-    // public void HomographyEstimatorTestNoise11() {
-    //     // System.out.println("\n*************** WITHOUT NONLINEAR REFINEMENT *****************");
-    //     Homography he = new Homography(true, true);
-    //     Pnt2d[] POINTS_Bn = mapPointsNoisy(Hreal, POINTS_A, 0.5);
-    //     RealMatrix Hestm = he.estimateHomography(POINTS_A, POINTS_Bn);
-    //     PrintPrecision.set(6); System.out.println("Hestm = \n" + Matrix.toString(Hestm));
-    //     double[][] Hexpd = {
-    //             {0.371007, 0.445814, 0.196152},
-    //             {0.853196, 0.185271, 0.133509},
-    //             {0.462759, 0.611521, 1.000000}};
-    //     NumericTestUtils.assert2dArrayEquals(Hexpd, Hestm.getData(), tol);
-    // }
-
-    // @Test
-    // public void HomographyEstimatorTestRefined() {
-    //     // System.out.println("\n*************** WITH NONLINEAR REFINEMENT *****************");
-    //     Homography he = new Homography(true, true);
-    //     double[][] Hexpd = {
-    //             {0.647555, 0.447761, -0.185451},
-    //             {1.157419, 0.194929, 0.049175},
-    //             {0.957998, 0.853874, 1.000000}};
-    //     runHomographyTest(he, pntsA, pntsB, Hexpd, 0.183310, 0.131740);
-    // }
-    //
-    // private static void runHomographyTest(Homography he,
-    //                                       Pnt2d[] pntsA, Pnt2d[] pntsB,
-    //                                       double[][] Hexpd, double errExpd, double maxErrExpd) {
-    //
-    //     // estimate homography from pntsA -> pntsB
-    //     RealMatrix Hest = he.estimateHomography(pntsA, pntsB);
-    //    // System.out.println("H (estim.) = ");
-    //    // System.out.println(Matrix.toString(Hest.getData()));
-    //
-    //     // check if estimated Hest matrix agrees with expected Hexpd
-    //     for (int i = 0; i < Hexpd.length; i++) {
-    //         assertArrayEquals(Hexpd[i], Hest.getData()[i], 1e-4);
-    //     }
-    //
-    //     // apply Hest to point set pntsA -> pntsC
-    //     Pnt2d[] pntsC = new Pnt2d[pntsA.length];
-    //     for (int i = 0; i < pntsA.length; i++) {
-    //         pntsC[i] = mapPointWithNoise(Hest, pntsA[i], 0.0);
-    //     }
-    //
-    //     // analyze distances between pntsB and pntsC
-    //     double sumDist2 = 0;
-    //     double maxDist2 = Double.NEGATIVE_INFINITY;
-    //     for (int i = 0; i < pntsA.length; i++) {
-    //         Pnt2d b = pntsB[i];
-    //         Pnt2d c = pntsC[i];
-    //         double dist2 = b.distanceSq(c);
-    //         sumDist2 += dist2;
-    //         maxDist2 = Math.max(maxDist2, dist2);
-    //         // System.out.format("(%.3f, %.3f) -> (%.3f, %.3f) d=%.4f\n", a.getX(), a.getY(), c.getX(), c.getY(), dist2);
-    //     }
-    //     // System.out.format("\nTotal error = %.6f\n", Math.sqrt(sumDist2));
-    //     // System.out.format("Max. dist = %.6f\n", Math.sqrt(maxDist2));
-    //     assertEquals(errExpd, Math.sqrt(sumDist2), 1e-4);
-    //     assertEquals(maxErrExpd, Math.sqrt(maxDist2), 1e-4);
-    // }
-
-    // --------------------------------------------------
-
-    private static Pnt2d[] mapPoints(RealMatrix H, Pnt2d[] P) {
-        Pnt2d[] Q = new Pnt2d[P.length];
-        for (int i = 0; i < P.length; i++) {
-            double[] xa = P[i].toDoubleArray();
-            double[] xb = Homography.transform(xa, H);
-            Q[i] = Pnt2d.from(xb);
-        }
-        return Q;
+    @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
+    public void HomographyTestEstimate10() {
+        RealMatrix Hestm = Homography.from(POINTS_A, POINTS_B, true, false);
+        // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
+        NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
     }
 
-    private static Pnt2d[] mapPointsNoisy(RealMatrix H, Pnt2d[] P, double noise) {
+    @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
+    public void HomographyTestEstimate01() {
+        RealMatrix Hestm = Homography.from(POINTS_A, POINTS_B, false, true);
+        // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
+        NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
+    }
+
+    @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
+    public void HomographyTestEstimate11() {
+        RealMatrix Hestm = Homography.from(POINTS_A, POINTS_B, true, true);
+        // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
+        NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
+    }
+
+    // ----------------------------------------------------------------------------------
+
+    @Test   // check homography under noise added to POINTS_B
+    public void HomographyTestEstimateNoisy() {
+        double noise = 0.5;     // noise magnitude
+        Pnt2d[] PBnoisy = new Pnt2d[POINTS_B.length];
         Random rand = new DeterministicRandom(17);
-        Pnt2d[] Q = new Pnt2d[P.length];
-        for (int i = 0; i < P.length; i++) {
-            double[] xa = P[i].toDoubleArray();
-            double[] xb = Homography.transform(xa, H);
-            System.out.format("xb = %.6f -> ", xb[0]);
-            xb[0] += noise * rand.nextDouble(1.0);
-            System.out.format(" %.6f\n", xb[0]);
-            xb[1] += noise * rand.nextDouble(1.0);
-            Q[i] = Pnt2d.from(xb);
+        for (int i = 0; i < POINTS_B.length; i++) {
+            PBnoisy[i] = POINTS_B[i].plus(noise * rand.nextDouble(), noise * rand.nextDouble());    // add uniform noise
         }
-        return Q;
+        Homography Hestm = Homography.from(POINTS_A, PBnoisy, true, true);  // TODO: check without num. refinement!
+        // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
+
+        // check if points are unchanged:
+        double dsum = 0;
+        double dmax = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < PBnoisy.length; i++) {
+            Pnt2d pMapped = Hestm.applyTo(POINTS_A[i]); // apply estimated homography
+            double di = PBnoisy[i].distance(pMapped);
+            dsum = dsum + di;
+            dmax = Math.max(dmax, di);
+        }
+        double davg = dsum / PBnoisy.length;
+        // System.out.println("davg = " + davg);
+        // System.out.println("dmax = " + dmax);
+        assertTrue(davg < 0.5 * noise);
+        assertTrue(dmax < 0.5 * noise);
     }
-
-    private static Pnt2d mapPointWithNoise(RealMatrix H, Pnt2d p, double noise) {
-        Random rand = new DeterministicRandom(17);
-        //Random rand = new Random(17);  // use fixed random seed!
-        double[] xa = {p.getX(), p.getY()};
-        double[] xb = Homography.transform(xa, H);
-        double xn = noise * rand.nextGaussian();
-        double yn = noise * rand.nextGaussian();
-        return Pnt2d.from(xb[0] + xn, xb[1] + yn);
-    }
-
-
-    // private static Pnt2d mapPointsWithNoise(RealMatrix H, Pnt2d[] p, double noise) {
-    //     Random rand = new DeterministicRandom(17);
-    //     //Random rand = new Random(17);  // use fixed random seed!
-    //     double[] xa = {p.getX(), p.getY()};
-    //     double[] xb = Homography.transform(xa, H);
-    //     double xn = noise * rand.nextGaussian();
-    //     double yn = noise * rand.nextGaussian();
-    //     return Pnt2d.from(xb[0] + xn, xb[1] + yn);
-    // }
-
 
 }
