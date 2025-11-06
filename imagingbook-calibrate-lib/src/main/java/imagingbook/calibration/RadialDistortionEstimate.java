@@ -20,11 +20,11 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
  */
 public class RadialDistortionEstimate {
 
-    private final LensDistortionModel estimate;
+    private final LensDistortionModel distortion;
     private final double[] errors;
 
-    private RadialDistortionEstimate(LensDistortionModel estimate, double... errors) {
-        this.estimate = estimate;
+    private RadialDistortionEstimate(LensDistortionModel distortion, double... errors) {
+        this.distortion = distortion;
         this.errors = errors;
     }
 
@@ -99,7 +99,7 @@ public class RadialDistortionEstimate {
         LensDistortionModel model = dstrt.copyOf(kopt.toArray());
 
 
-        double err1 = D.operate(new ArrayRealVector(new double[] {0,0})).subtract(d).getNorm();
+        double err1 = D.operate(new ArrayRealVector(new double[P])).subtract(d).getNorm();
 		double err2 = D.operate(kopt).subtract(d).getNorm();
 		// System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
@@ -111,7 +111,7 @@ public class RadialDistortionEstimate {
     // }
 
     public LensDistortionModel getDistortion() {
-        return this.estimate;
+        return this.distortion;
     }
 
     public double getError() {

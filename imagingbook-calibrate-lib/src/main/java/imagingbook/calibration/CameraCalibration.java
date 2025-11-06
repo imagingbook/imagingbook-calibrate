@@ -36,21 +36,19 @@ import static imagingbook.calibration.HomographyEstimator.estimateHomographies;
  * @author W. Burger
  * @version 2018/12/29
  */
-public class Calibrator {
+public class CameraCalibration {
 
 	/**
-	 * Inner class representing a set of parameters for instantiating new objects of type of {@link Calibrator}.
+	 * Inner class representing a set of parameters for instantiating new objects of type of {@link CameraCalibration}.
 	 * Parameters can be specified by setting the associated public fields.
 	 */
-	public static class Parameters implements ParameterBundle<Calibrator> {
+	public static class Parameters implements ParameterBundle<CameraCalibration> {
 		/** Normalize point coordinates for numerical stability in {@link Homography}. */
-		public boolean normalizePointCoordinates = true;
-		/** Assume that the camera has no skew (currently not used). */
+		public boolean normalizePointSets = true;
+        /** Assume that the camera has no skew (currently not used). */
 		public boolean assumeZeroSkew = false;
 		/** Use numeric (instead of analytic) calculation of the Jacobian in {@link NonlinearOptimizer}. */
 		public boolean useNumericJacobian = false;
-		/** Number of lens distortion coefficients (2 = simple polynomial model). */
-		public int lensDistortionKoeffients = 2;
 		/** Turn on debugging output. */
 		public boolean debug = false;					
 	}
@@ -72,7 +70,7 @@ public class Calibrator {
 	 * @param model a sequence of 2D points specifying the x/y coordinates of the planar calibration pattern (assuming
 	 * zero z-coordinates)
 	 */
-	public Calibrator(Parameters params, Pnt2d[] model) {
+	public CameraCalibration(Parameters params, Pnt2d[] model) {
 		this.params = (params != null) ? params : new Parameters();
 		this.modelPts = model;
 		this.imgPntSet = new ArrayList<>();
@@ -100,7 +98,7 @@ public class Calibrator {
 		
 		// Step 1: Calculate the homographies for each of the given N views:
 		//Homography hest = new Homography(params.normalizePointCoordinates, true);
-        Homography[] H_init = estimateHomographies(modelPts, obsPts, true, true);
+        Homography[] H_init = estimateHomographies(modelPts, obsPts, params.normalizePointSets, true);
 		
 		// Step 2: Estimate the intrinsic parameters by linear optimization:
 		CameraIntrinsicsEstimator cis = new CameraIntrinsicsEstimator();

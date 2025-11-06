@@ -6,7 +6,6 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import ij.IJ;
 import imagingbook.calibration.zhang.data.CalibrationImage;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -16,35 +15,34 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class CalibratorTest {
+public class CameraCalibrationTest {
 
     static ImageResource resource = CalibrationImage.CalibImageStack;
 
 
 
     @Test
-    public void calibrateTest() {
+    public void calibrateTestZhangCam() {
         Pnt2d[] modelPoints = ZhangData.getModelPoints();
         Pnt2d[][] obsPoints = ZhangData.getAllObservedPoints();
         int M = obsPoints.length;    // number of views
 
-        // Set up the calibrator ------------------------------------------
+        // Set up the cameraCalibration ------------------------------------------
 
-        Calibrator.Parameters params = new Calibrator.Parameters();
-        params.normalizePointCoordinates = true;
-        params.lensDistortionKoeffients = 2;
+        CameraCalibration.Parameters params = new CameraCalibration.Parameters();
+        params.normalizePointSets = true;
         params.useNumericJacobian = true;
         params.debug = false;
 
-        Calibrator zcalib = new Calibrator(params, modelPoints);
-        assertNotNull(zcalib);
+        CameraCalibration cameraCalibration = new CameraCalibration(params, modelPoints);
+        assertNotNull(cameraCalibration);
         for (int i = 0; i < M; i++) {
-            zcalib.addView(obsPoints[i]);
+            cameraCalibration.addView(obsPoints[i]);
         }
 
         // Perform calibration ------------------------------------------
 
-        Camera finCam = zcalib.calibrate();
+        Camera finCam = cameraCalibration.calibrate();
         assertNotNull(finCam);
         Camera refCam = ZhangData.getCamera();  // reference camera
         assertNotNull(refCam);
@@ -53,7 +51,7 @@ public class CalibratorTest {
         double[] pr = refCam.getParameterVector();
         assertArrayEquals(pr, pf, 1e-3);
 
-        ViewTransform[] finViews = zcalib.getFinalViews();
+        ViewTransform[] finViews = cameraCalibration.getFinalViews();
         ViewTransform[] refViews = ZhangData.getAllViewTransforms();
         assertEquals(refViews.length, finViews.length);
         for (int i = 0; i < refViews.length; i++) {
