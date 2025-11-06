@@ -36,13 +36,13 @@ import static imagingbook.calibration.HomographyEstimator.estimateHomographies;
  * @author W. Burger
  * @version 2018/12/29
  */
-public class CameraCalibration {
+public class Calibrator {
 
 	/**
-	 * Inner class representing a set of parameters for instantiating new objects of type of {@link CameraCalibration}.
+	 * Inner class representing a set of parameters for instantiating new objects of type of {@link Calibrator}.
 	 * Parameters can be specified by setting the associated public fields.
 	 */
-	public static class Parameters implements ParameterBundle<CameraCalibration> {
+	public static class Parameters implements ParameterBundle<Calibrator> {
 		/** Normalize point coordinates for numerical stability in {@link Homography}. */
 		public boolean normalizePointSets = true;
         /** Assume that the camera has no skew (currently not used). */
@@ -70,7 +70,7 @@ public class CameraCalibration {
 	 * @param model a sequence of 2D points specifying the x/y coordinates of the planar calibration pattern (assuming
 	 * zero z-coordinates)
 	 */
-	public CameraCalibration(Parameters params, Pnt2d[] model) {
+	public Calibrator(Parameters params, Pnt2d[] model) {
 		this.params = (params != null) ? params : new Parameters();
 		this.modelPts = model;
 		this.imgPntSet = new ArrayList<>();
