@@ -117,19 +117,17 @@ public class Calibrator {
 		RealMatrix A_init = CameraIntrinsics.from(homographies);
 		initCam = new Camera(A_init, params.distortionModel);
 		
-		// Step 3: calculate the extrinsic view parameters:
-		//ExtrinsicView extEst = new ExtrinsicView(A_init);
+		// Step 3: calculate the extrinsic view parameters (3D view transforms)
         initViews = new ViewTransform[M];
         for (int i = 0; i < M; i++) {
             initViews[i] = ViewTransform.from(A_init, homographies[i]);
         }
 		
 		// Step 4: Determine the lens distortion from initial estimates:
-		RadialDistortionEstimate rde = RadialDistortionEstimate.from(initCam, initViews, modelPts, obsPts);
+		LensDistortionEstimate rde = LensDistortionEstimate.from(initCam, initViews, modelPts, obsPts);
         LensDistortionModel distParams = rde.getDistortion();
-        System.out.println("initial distortion = " + Arrays.toString(distParams.getParameters()));
-        double err = rde.getError();
-        // System.out.println("Distortion estimate error = " + err);
+        // System.out.println("initial distortion = " + Arrays.toString(distParams.getParameters()));
+        // System.out.println("Distortion estimate error = " + rde.getError());
 		Camera improvedCam = new Camera(A_init, distParams);
 		
 		// Step 5: Refine all parameters by non-linear optimization

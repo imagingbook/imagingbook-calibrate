@@ -18,12 +18,12 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
 /**
  *  Class for estimating radial distortion parameters.
  */
-public class RadialDistortionEstimate {
+public class LensDistortionEstimate {
 
     private final LensDistortionModel distortion;
     private final double[] errors;
 
-    private RadialDistortionEstimate(LensDistortionModel distortion, double... errors) {
+    private LensDistortionEstimate(LensDistortionModel distortion, double... errors) {
         this.distortion = distortion;
         this.errors = errors;
     }
@@ -43,7 +43,7 @@ public class RadialDistortionEstimate {
      *  @param modelPts the set of 2D model points (on the planar calibration target)
      *  @param obsPts a sequence of 2D image point sets, one set for each view
      */
-    public static RadialDistortionEstimate from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+    public static LensDistortionEstimate from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
 		final int M = views.length;		// the number of views
 		final int N = modelPts.length;	// the number of model points
 
@@ -103,7 +103,7 @@ public class RadialDistortionEstimate {
 		double err2 = D.operate(kopt).subtract(d).getNorm();
 		// System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
-        return new RadialDistortionEstimate(model, err1, err2);
+        return new LensDistortionEstimate(model, err1, err2);
 	}
 
     // public double[] getParameters() {
