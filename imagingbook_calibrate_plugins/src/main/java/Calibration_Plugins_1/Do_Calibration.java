@@ -42,7 +42,7 @@ import static imagingbook.common.ij.DialogUtils.formatText;
  */
 public class Do_Calibration implements PlugIn, JavaDocHelp {
 
-	private static ImageResource resource = CalibrationImage.CalibImageStack;
+	private static ImageResource testImResource = CalibrationImage.CalibImageStack;
 
 	private static boolean ListCameraIntrinsics = true;
 	private static boolean ListCameraViews = true;
@@ -56,7 +56,7 @@ public class Do_Calibration implements PlugIn, JavaDocHelp {
 	private static double StrokeWidth  = 0.5;
 	
 	public void run(String arg0) {
-		ImagePlus testIm = resource.getImagePlus();
+		ImagePlus testIm = testImResource.getImagePlus();
 		if (testIm == null) {
 			IJ.error("Could not open calibration images!");
 			return;
@@ -80,8 +80,7 @@ public class Do_Calibration implements PlugIn, JavaDocHelp {
 		// Set up the calibrator ------------------------------------------
 
 		Parameters params = new Calibrator.Parameters();
-		params.normalizePointCoordinates = true;
-		params.lensDistortionKoeffients = 2;
+		params.normalizePointSets = true;
 		params.useNumericJacobian = true;
 		params.debug = false;
 
