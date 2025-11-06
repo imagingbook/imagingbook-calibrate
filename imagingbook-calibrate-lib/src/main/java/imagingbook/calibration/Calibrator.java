@@ -15,6 +15,7 @@ import imagingbook.common.util.ParameterBundle;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static imagingbook.calibration.HomographyEstimator.estimateHomographies;
@@ -113,6 +114,7 @@ public class Calibrator {
 		// Step 4: Determine the lens distortion from initial estimates:
 		RadialDistortionEstimate rde = RadialDistortionEstimate.from(initCam, initViews, modelPts, obsPts);
         LensDistortionModel distParams = rde.getDistortion();
+        System.out.println("initial distortion = " + Arrays.toString(distParams.getParameters()));
         double err = rde.getError();
         // System.out.println("Distortion estimate error = " + err);
 		Camera improvedCam = new Camera(A_init, distParams);

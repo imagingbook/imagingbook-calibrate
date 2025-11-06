@@ -13,6 +13,8 @@ import imagingbook.core.resource.ImageResource;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 public class CalibratorTest {
@@ -46,6 +48,9 @@ public class CalibratorTest {
         assertNotNull(finCam);
         Camera refCam = ZhangData.getCamera();  // reference camera
         assertNotNull(refCam);
+
+        System.out.println("Initial camera = " + Arrays.toString(calibrator.getInitialCamera().getParameterVector()));
+
 
         double[] pf = finCam.getParameterVector();
         double[] pr = refCam.getParameterVector();
