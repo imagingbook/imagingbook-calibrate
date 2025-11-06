@@ -80,7 +80,7 @@ public class Do_Calibration implements PlugIn, JavaDocHelp {
 		// Set up the calibrator ------------------------------------------
 
 		Parameters params = new Calibrator.Parameters();
-		params.normalizePointSets = true;
+		params.normalizePoints = true;
 		params.useNumericJacobian = true;
 		params.debug = false;
 
