@@ -56,11 +56,11 @@ public class CameraTest {
     public void radialDistortionTest() {
         RadialDistortionModel dist = (RadialDistortionModel) camera1.getDistortion();
         double r1 = 0.95;
-        double rr = dist.warp(r1);
+        double rr = dist.fRad(r1);
         System.out.format("radial distortion: r1=%.6f -> rr=%.6f\n", r1, rr);
         assertEquals(0.901295, rr, tol);
 
-        double r2 = dist.unwarp(rr);
+        double r2 = dist.fRadInv(rr);
         System.out.format("inv. radial distortion: rr=%.6f -> r2=%.6f\n", rr, r2);
         assertEquals(r1, r2, tol);
     }

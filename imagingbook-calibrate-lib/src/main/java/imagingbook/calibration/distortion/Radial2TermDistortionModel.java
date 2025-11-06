@@ -94,7 +94,7 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
      * @return the distorted radius
      */
     @Override
-    public double warp(final double r) {
+    public double fRad(final double r) {
         final double r2 = r * r;
         double D = r2 * (k0 + k1 * r2);		// D(r) = k0 * r^2 + k1 * r^4
         return r * (1 + D);
@@ -110,7 +110,7 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
      * @return the undistorted radius
      */
     @Override
-    public double unwarp(final double R) {
+    public double fRadInv(final double R) {
         double[] coefficients = {-R, 1, 0, k0, 0, k1};
         PolynomialFunction p = new PolynomialFunction(coefficients);
         UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();

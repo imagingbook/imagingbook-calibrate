@@ -18,7 +18,7 @@ public interface RadialDistortionModel extends LensDistortionModel {
      * @param r the original radius of a point in the ideal projection plane
      * @return the distorted radius
      */
-    double warp(double r);
+    double fRad(double r);
 
     /**
      * Inverse radial distortion function. Returns the original (undistorted)
@@ -27,7 +27,7 @@ public interface RadialDistortionModel extends LensDistortionModel {
      * @param R the distorted radius of a point in the ideal projection plane
      * @return the undistorted radius
      */
-    double unwarp(double R);
+    double fRadInv(double R);
 
     @Override
     default double[] warp(double[] xy) {
@@ -37,7 +37,7 @@ public interface RadialDistortionModel extends LensDistortionModel {
         if (r < 1e-6)
             return new double[] {0, 0};
         // final double R = warp(r);        // distorted radius
-        final double s = warp(r) / r;
+        final double s = fRad(r) / r;
         return new double[] {s * x, s* y};
     }
 
@@ -49,7 +49,7 @@ public interface RadialDistortionModel extends LensDistortionModel {
         if (R < 1e-6)
             return new double[] {0, 0};
         // final double r = unwarp(R);					// undistorted radius
-        final double s = unwarp(R) / R;
+        final double s = fRadInv(R) / R;
         return new double[] {s * xd, s * yd};
     }
 

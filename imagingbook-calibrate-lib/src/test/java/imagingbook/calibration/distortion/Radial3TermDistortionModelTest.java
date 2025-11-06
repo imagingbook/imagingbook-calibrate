@@ -82,49 +82,49 @@ public class Radial3TermDistortionModelTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void warpTest() {
+    public void fRadTest() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
         double r1 = 0.35;
-        double r2 = ldm.warp(r1);
+        double r2 = ldm.fRad(r1);
         assertEquals(0.358325, r2, tol);
-        double r3 = ldm.unwarp(r2);
+        double r3 = ldm.fRadInv(r2);
         assertEquals(r1, r3, tol);
     }
 
     @Test
-    public void warpTestZero() {
+    public void fRadTestZero() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
-        double r0 = ldm.warp(0.0);
+        double r0 = ldm.fRad(0.0);
         assertEquals(0.0, r0, tol);
     }
 
     @Test
-    public void unwarpTest() {
+    public void fRadInvTest() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
         double r1 = 0.35;
-        double r2 = ldm.unwarp(r1);
+        double r2 = ldm.fRadInv(r1);
         assertEquals(0.3422086, r2, tol);
-        double r3 = ldm.warp(r2);
+        double r3 = ldm.fRad(r2);
         assertEquals(r1, r3, tol);
     }
 
     @Test
-    public void unwarpTestZero() {
+    public void fRadInvTestZero() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
-        double r0 = ldm.unwarp(0.0);
+        double r0 = ldm.fRadInv(0.0);
         assertEquals(0.0, r0, tol);
     }
 
     // -------------------------------------------------------------------------
 
     @Test
-    public void warpTestRandom() {
+    public void fRadTestRandom() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
         Random rand = new DeterministicRandom(37);
         for (int i = 0; i < 100; i++) {
             double r1 = rand.nextDouble();
-            double r2 = ldm.warp(r1);
-            double r3 = ldm.unwarp(r2);
+            double r2 = ldm.fRad(r1);
+            double r3 = ldm.fRadInv(r2);
             assertEquals(r1, r3, tol);
         }
     }
@@ -132,7 +132,7 @@ public class Radial3TermDistortionModelTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void warpXyTest() {
+    public void fRadXyTest() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
         double[] xy1 = {0.3, -0.4};
         double[] xy2 = ldm.warp(xy1);
@@ -144,7 +144,7 @@ public class Radial3TermDistortionModelTest {
     }
 
     @Test
-    public void unwarpXyTest() {
+    public void fRadInvXyTest() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
         double[] xy1 = {0.3, -0.4};
         double[] xy2 = ldm.unwarp(xy1);
@@ -154,21 +154,21 @@ public class Radial3TermDistortionModelTest {
     }
 
     @Test
-    public void warpXyTestZero() {
+    public void fRadXyTestZero() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
         double[] xy0 = ldm.warp(new double[] {0, 0});
         assertArrayEquals(new double[] {0, 0}, xy0, tol);
     }
 
     @Test
-    public void unwarpXyTestZero() {
+    public void fRadInvXyTestZero() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
         double[] xy0 = ldm.unwarp(new double[] {0, 0});
         assertArrayEquals(new double[] {0, 0}, xy0, tol);
     }
 
     @Test
-    public void warpXyTestRandom() {
+    public void fRadXyTestRandom() {
         RadialDistortionModel ldm = new Radial3TermDistortionModel(k0, k1, k2);
         Random rand = new DeterministicRandom(37);
         for (int i = 0; i < 100; i++) {
