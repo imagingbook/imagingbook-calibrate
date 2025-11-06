@@ -62,9 +62,9 @@ public class HomographyEstimator {
 
         final int n = ptsA.length;
         AffineMapping2D Na = (normalizePoints) ?
-                PointStatistics.getNormalisationMatrix(ptsA) : new AffineMapping2D();
+                PointStatistics.getNormalisationMapping(ptsA) : new AffineMapping2D();
         AffineMapping2D Nb = (normalizePoints) ?
-                PointStatistics.getNormalisationMatrix(ptsB) : new AffineMapping2D();
+                PointStatistics.getNormalisationMapping(ptsB) : new AffineMapping2D();
 
         RealMatrix MM = createRealMatrix(n * 2, 9);
         for (int j = 0, r = 0; j < ptsA.length; j++) {

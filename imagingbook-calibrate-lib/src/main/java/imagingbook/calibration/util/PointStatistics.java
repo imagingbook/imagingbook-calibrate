@@ -14,13 +14,13 @@ public abstract class PointStatistics {
     private PointStatistics() {}
 
     /**
-     * Calculates and returns a normalization matrix for the specified 2D
-     * point set. Applying this matrix to the same point set will create
-     * a new point set with mean = (0,0) and variance = 1 in x,y.
+     * Calculates and returns a normalization mapping (affine transformation)
+     * for the specified 2D point set. Applying this matrix to the same point
+     * set will create a new point set with mean = (0,0) and variance = 1 in x,y.
      * @param pnts the input point set
      * @return an affine 2D transformation (2x3)
      */
-	public static AffineMapping2D getNormalisationMatrix(Pnt2d[] pnts) {
+	public static AffineMapping2D getNormalisationMapping(Pnt2d[] pnts) {
 		final int N = pnts.length;
 		double[] x = new double[N];
 		double[] y = new double[N];
@@ -40,6 +40,9 @@ public abstract class PointStatistics {
 
 		double sx = Math.sqrt(2 / varx);
 		double sy = Math.sqrt(2 / vary);
+
+        if (!Double.isFinite(sx)) sx = 1;
+        if (!Double.isFinite(sy)) sy = 1;
 
         return new AffineMapping2D(new double[][]{
                 {sx, 0, -sx * meanx},
