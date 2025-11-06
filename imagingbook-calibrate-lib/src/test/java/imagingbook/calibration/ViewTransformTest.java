@@ -25,7 +25,7 @@ public class ViewTransformTest {
         ViewTransform vt = new ViewTransform();
         double[][] rot = vt.getRotation().getMatrix();    // = vt.getRotationMatrix().getData();
         assert2dArrayEquals(Matrix.idMatrix(3), rot);
-        double[] trans = vt.getTranslation();
+        double[] trans = vt.getTranslationVector().toArray();
         assertArrayEquals(Matrix.zeroVector(3), trans, 1e-6);
     }
 

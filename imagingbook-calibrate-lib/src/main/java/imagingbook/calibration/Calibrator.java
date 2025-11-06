@@ -124,12 +124,11 @@ public class Calibrator {
         }
 		
 		// Step 4: Determine the lens distortion from initial estimates:
-		LensDistortionEstimate rde = LensDistortionEstimate.from(initCam, initViews, modelPts, obsPts);
-        LensDistortionModel distParams = rde.getDistortion();
-        // System.out.println("initial distortion = " + Arrays.toString(distParams.getParameters()));
-        // System.out.println("Distortion estimate error = " + rde.getError());
-		Camera improvedCam = new Camera(A_init, distParams);
-		
+        LensDistortionModel distortion =
+                LensDistortionEstimate.from(initCam, initViews, modelPts, obsPts).getDistortion();
+        // System.out.println("initial distortion = " + Arrays.toString(distortion.getParameters()));
+		Camera improvedCam = new Camera(A_init, distortion);
+
 		// Step 5: Refine all parameters by non-linear optimization
 		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?
 				new NonlinearOptimizerNumeric(improvedCam, modelPts, obsPts) :
@@ -139,8 +138,8 @@ public class Calibrator {
 		finalViews = optimizer.getFinalViews();
 		return finalCam;
 	}
-	
-	
+
+
 	//---------------------------------------------------------------------------
 	
 	// @SuppressWarnings("unused")

@@ -62,7 +62,6 @@ public class ZhangDataTest {
             ViewTransform view = ZhangData.getViewTransform(i);
             assertNotNull(view);
             assertNotNull(view.getTranslationVector());
-            assertNotNull(view.getTranslation());
             assertNotNull(view.getRotation());
             assertNotNull(view.getRotationMatrix());
         }

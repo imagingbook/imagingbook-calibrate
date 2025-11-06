@@ -27,7 +27,6 @@ public class ViewTransform {
     private static final double OrthogonalityThreshold = 0.01;
     private final Rotation rotation;
     private final double[] translation;
-
     public static final int PARAMETER_COUNT = 6;    // 3 rotation + 3 translation parameters
 
     // ----------------------------------------------------------------------------------
@@ -66,18 +65,26 @@ public class ViewTransform {
      * w = (r0, r1, r2, t0, t1, t2), where
      * (r0, r1, r2) is a 3D (Rodrigues) rotation vector and
      * (t0, t1, t2) is a 3D translation vector.
-     * @param w
+     * @param w a vector with 6 view parameters
      */
     public ViewTransform(double[] w) {
         this(w[0], w[1], w[2], w[3], w[4], w[5]);
     }
 
+    /**
+     * Calculates and returns the view transform for given
+     * camera intrinsics (A) and a homography between
+     * model points and observed sensor points (H).
+     * @param A intrinsic camera parameters
+     * @param H homography
+     * @return a new ViewTransform instance
+     */
     public static ViewTransform from(RealMatrix A, Homography H) {
-        final RealMatrix A_inv = MatrixUtils.inverse(A);
         RealVector h0 = H.getColumnVector(0);
         RealVector h1 = H.getColumnVector(1);
         RealVector h2 = H.getColumnVector(2);
 
+        RealMatrix A_inv = MatrixUtils.inverse(A);    // a bit wasteful to invert for every view
         double lambda = 1 / A_inv.operate(h0).getNorm();
         // System.out.format("lambda = %f\n", lambda);
 
@@ -86,26 +93,23 @@ public class ViewTransform {
         RealVector r1 = A_inv.operate(h1).mapMultiplyToSelf(lambda);
         RealVector r2 = MathUtil.crossProduct3x3(r0, r1);
         RealVector t = A_inv.operate(h2).mapMultiplyToSelf(lambda);
-
-        // System.out.println("r1 = " + Matrix.toString(r0.toArray()));
-        // System.out.println("r2 = " + Matrix.toString(r1.toArray()));
+        // System.out.println("r0 = " + Matrix.toString(r0.toArray()));
+        // System.out.println("r1 = " + Matrix.toString(r1.toArray()));
+        // System.out.println("r2 = " + Matrix.toString(r2.toArray()));
         // System.out.println("t = " + Matrix.toString(t.toArray()));
-
         RealMatrix R = MatrixUtils.createRealMatrix(3, 3);
         R.setColumnVector(0, r0);
         R.setColumnVector(1, r1);
         R.setColumnVector(2, r2);
         // System.out.println("Rinit = \n" + Matrix.toString(R.getData()));
-
-        // the R matrix is probably not a real rotation matrix. So find
+        // Matrix R is probably not a proper rotation matrix. So find
         // the closest real rotation matrix (ViewTransform takes care of this):
         return new ViewTransform(R, t);
     }
 
-
     // ----------------------------------------------------------------------------------
 
-    private Rotation makeRotation(double[] w) {
+    private static Rotation makeRotation(double[] w) {
         Vector3D axis = Vector3D.of(w[0], w[1], w[2]);
         double angle = axis.norm();
         //return new Rotation(axis, angle);
@@ -114,17 +118,15 @@ public class ViewTransform {
 
     public double[] getParameters() {
         //double[] rotAxis = rotation.getAxis().toArray();
-        double[] rotAxis = rotation.getAxis(RotationConvention.DEFAULT).toArray();
-        double rotAngle = rotation.getAngle();
+        double[] axis = rotation.getAxis(RotationConvention.DEFAULT).toArray();
+        double angle = rotation.getAngle();
         return new double[] {
-                rotAxis[0] * rotAngle,
-                rotAxis[1] * rotAngle,
-                rotAxis[2] * rotAngle,
+                axis[0] * angle, axis[1] * angle, axis[2] * angle,
                 translation[0], translation[1], translation[2]};
     }
 
     public Rotation getRotation() {
-        return rotation;
+        return this.rotation;
     }
 
     // public double[] getRotationAxis() {
@@ -137,15 +139,26 @@ public class ViewTransform {
     //     return rotAxis;
     // }
 
+    /**
+     * Returns the rotation part of this ViewTransform as a 3x3 matrix.
+     * @return a 3x3 rotation matrix
+     */
     public RealMatrix getRotationMatrix() {
-        double[][] R = rotation.getMatrix();
-        return MatrixUtils.createRealMatrix(R);
+        return MatrixUtils.createRealMatrix(this.rotation.getMatrix());
     }
 
+    /**
+     * Returns the translation part of this ViewTransform.
+     * @return a 3-element translation vector
+     */
     public double[] getTranslation() {
-        return translation;
+        return this.translation;
     }
 
+    /**
+     * Returns the translation part of this ViewTransform.
+     * @return a 3-element translation vector
+     */
     public RealVector getTranslationVector() {
         return MatrixUtils.createRealVector(translation);
     }

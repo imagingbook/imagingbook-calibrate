@@ -46,14 +46,12 @@ public class LensDistortionEstimate {
     public static LensDistortionEstimate from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
 		final int M = views.length;		// the number of views
 		final int N = modelPts.length;	// the number of model points
-
         final LensDistortionModel dstrt = cam.getDistortion();
         final int P = dstrt.getParameterCount();    // number of distortion parameters
 
         // the estimated projection center on the sensor plane
 		final double uc = cam.getUc();
 		final double vc = cam.getVc();
-
 		final RealMatrix D = MatrixUtils.createRealMatrix(2 * M * N, P);
 		final RealVector d = new ArrayRealVector(2 * M * N);
 
@@ -66,16 +64,14 @@ public class LensDistortionEstimate {
                 final Pnt2d mpt = modelPts[j];    // model point
 				// get point positions in the ideal image plane (normalized projection, f=1)
 				double[] xy = cam.projectNormalized(vt, mpt);
-				double x = xy[0];
-				double y = xy[1];
+				double x = xy[0], y = xy[1];
 
 				// project 3D model point j to the sensor image, using view transform i
 				double[] uv = cam.project(vt, mpt);
 				double u = uv[0];
 				double v = uv[1];
-				double du = u - uc;	// distance to estim. sensor projection center
+				double du = u-  uc;	// distance to estim. sensor projection center
 				double dv = v - vc;
-
                 // insert one pair of rows into matrix D:
                 final int l0 = l;
                 final int l1 = l + 1;
@@ -98,28 +94,38 @@ public class LensDistortionEstimate {
 		RealVector kopt = solver.solve(d);  // optimal distortion parameter
         LensDistortionModel model = dstrt.copyOf(kopt.toArray());
 
-
+        // keep errors for later use (optional)
         double err1 = D.operate(new ArrayRealVector(new double[P])).subtract(d).getNorm();
 		double err2 = D.operate(kopt).subtract(d).getNorm();
 		// System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
-
         return new LensDistortionEstimate(model, err1, err2);
 	}
 
-    // public double[] getParameters() {
-    //     return 	kopt;
-    // }
-
+    /**
+     * Returns the lens distortion model obtained by this LensDistortionEstimate.
+     * @return the lens distortion model
+     */
     public LensDistortionModel getDistortion() {
         return this.distortion;
     }
 
+    /**
+     * Returns the first error value if it exists, otherwise throws an exception.
+     * @return the first error value
+     */
     public double getError() {
         return getError(0);
     }
 
+    /**
+     * Returns the i-th error value if it exists, otherwise throws an exception.
+     * @return the i-th error value
+     */
     public double getError(int i) {
-        return errors[i];
+        if (errors.length > i)
+            return errors[i];
+        else
+            throw new RuntimeException("no error registered with index " + i);
     }
 
 }
