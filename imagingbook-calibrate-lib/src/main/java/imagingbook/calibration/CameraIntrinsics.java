@@ -16,19 +16,27 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 /**
  * This class defines methods for estimating the intrinsic camera parameters from multiple homographies. Alternative
  * versions are provided (only one is actually used though).
- *
  * @author WB
  */
-public class CameraIntrinsicsEstimator {
+public abstract class CameraIntrinsics {
+
+    /**
+     * Estimates intrinsic camera parameters from multiple homographies.
+     * @param homographies a set of homography matrices
+     * @return the estimated 3 x 3 intrinsic transformation matrix
+     */
+    public static RealMatrix from(Homography[] homographies) {
+        return getCameraIntrinsics(homographies);
+    }
 
 	/**
-	 * Version 1 (Zhang's original closed form solution). Estimates the the intrinsic camera parameters from multiple
+	 * Version 1 (Zhang's original closed form solution). Estimates intrinsic camera parameters from multiple
 	 * homographies.
 	 *
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */
-	protected RealMatrix getCameraIntrinsicsZhang1(RealMatrix[] homographies) {
+	private static RealMatrix getCameraIntrinsicsZhang1(RealMatrix[] homographies) {
 		final int M = homographies.length;
 		int rows = 2 * M;
 		double[][] V = new double[rows][];
@@ -65,13 +73,13 @@ public class CameraIntrinsicsEstimator {
 	}
 
 	/**
-	 * Version 2 (Zhang's corrected closed form solution). Estimates the the intrinsic camera parameters from multiple
+	 * Version 2 (Zhang's corrected closed form solution). Estimates intrinsic camera parameters from multiple
 	 * homographies.
 	 *
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */
-	protected RealMatrix getCameraIntrinsicsZhang2(RealMatrix[] homographies) {
+	private static RealMatrix getCameraIntrinsicsZhang2(RealMatrix[] homographies) {
 		final int M = homographies.length;
 		int rows = 2 * M;
 		double[][] V = new double[rows][];
@@ -106,12 +114,12 @@ public class CameraIntrinsicsEstimator {
 	}
 
 	/**
-	 * Version 3 (WB's closed form solution). Estimates the the intrinsic camera parameters from multiple homographies.
+	 * Version 3 (WB's closed form solution). Estimates intrinsic camera parameters from multiple homographies.
 	 *
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */
-	protected RealMatrix getCameraIntrinsicsZhang3(RealMatrix[] homographies) {
+    private static RealMatrix getCameraIntrinsicsZhang3(RealMatrix[] homographies) {
 		final int M = homographies.length;
 		int rows = 2 * M;
 		double[][] V = new double[rows][];
@@ -154,13 +162,13 @@ public class CameraIntrinsicsEstimator {
 
 
 	/**
-	 * Final version by WB (this version is used by default). Estimates the intrinsic camera parameters from multiple
+	 * Final version by WB (this version is used by default). Estimates intrinsic camera parameters from multiple
 	 * homographies using a Cholesky decomposition.
 	 *
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */
-	protected RealMatrix getCameraIntrinsics(Homography[] homographies) {
+    private static RealMatrix getCameraIntrinsics(Homography[] homographies) {
 		final int M = homographies.length;
 		int rows = 2 * M;
 		double[][] V = new double[rows][];
@@ -176,7 +184,6 @@ public class CameraIntrinsicsEstimator {
 		}
 		
 		RealMatrix VM = MatrixUtils.createRealMatrix(V);
-//		MathUtil.print("estimateIntrinsics: V = ", VM);//WB
 		
 		double[] b = MathUtil.solveHomogeneousSystem(VM).toArray();	// solve VM.b=0
 		
@@ -209,7 +216,7 @@ public class CameraIntrinsicsEstimator {
 //	}
 	
 	// version without transpose
-	private double[] getVpq(RealMatrix H, int p, int q) {
+	private static double[] getVpq(RealMatrix H, int p, int q) {
 		final double[] vpq = new double[] {
 				H.getEntry(0, p) * H.getEntry(0, q),
 				H.getEntry(0, p) * H.getEntry(1, q) + H.getEntry(1, p) * H.getEntry(0, q),

@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static imagingbook.calibration.HomographyEstimator.estimateHomographies;
-
 
 /**
  * This is an implementation of the camera calibration method 
@@ -44,8 +42,10 @@ public class Calibrator {
 	 * Parameters can be specified by setting the associated public fields.
 	 */
 	public static class Parameters implements ParameterBundle<Calibrator> {
+        /** Lens distortion model to be used. */
+        public LensDistortionModel distortionModel = Radial2TermDistortionModel.INSTANCE;
 		/** Normalize point coordinates for numerical stability in {@link Homography}. */
-		public boolean normalizePointSets = true;
+		public boolean normalizePoints = true;
         /** Assume that the camera has no skew (currently not used). */
 		public boolean assumeZeroSkew = false;
 		/** Use numeric (instead of analytic) calculation of the Jacobian in {@link NonlinearOptimizer}. */
@@ -57,11 +57,13 @@ public class Calibrator {
 	private int M;							// the number of camera views
 	private final Pnt2d[] modelPts;			// the sequence of 2D points in the planar model
 	private final List<Pnt2d[]> imgPntSet; 	// list of vectors containing observed 2D image points for each view
-	
-	private Pnt2d[][] obsPts = null;
 	private final Parameters params;
 	private Camera initCam, finalCam;
 	private ViewTransform[] initViews, finalViews;
+
+    // private boolean normalizePointSets = true;
+    // private boolean useNumericJacobian = false;
+    // private boolean debug = false;
 	
 	// ------- constructors ------------------------------
 
@@ -75,15 +77,23 @@ public class Calibrator {
 		this.params = (params != null) ? params : new Parameters();
 		this.modelPts = model;
 		this.imgPntSet = new ArrayList<>();
+        assert params != null;
+        // this.normalizePointSets = params.normalizePointSets;
+        // this.useNumericJacobian = params.useNumericJacobian;
+        // this.debug = params.debug;
 	}
 
-	/**
-	 * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
-	 * @param pts a sequence of 2D image points
-	 */
-	public void addView(Pnt2d[] pts) {
-		imgPntSet.add(pts);
-	}
+    // ------------ setup methods ----------------------------------------
+
+    /**
+     * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
+     * @param pts a sequence of 2D image points
+     */
+    public void addView(Pnt2d[] pts) {
+        imgPntSet.add(pts);
+    }
+
+    // -------------------------------------------------------------------
 
 	/**
 	 * Performs the actual camera calibration based on the provided sequence of views.
@@ -94,22 +104,22 @@ public class Calibrator {
 		if (M < 2) {
 			throw new IllegalStateException("Calibration: at least two views needed");
 		}
-		
-		obsPts = imgPntSet.toArray(new Pnt2d[0][]);
+        // M views with N observed points each
+        Pnt2d[][] obsPts = imgPntSet.toArray(new Pnt2d[0][]);
 		
 		// Step 1: Calculate the homographies for each of the given N views:
-		//Homography hest = new Homography(params.normalizePointCoordinates, true);
-        Homography[] H_init = estimateHomographies(modelPts, obsPts, params.normalizePointSets, true);
+        Homography[] homographies = new Homography[M];
+        for(int i = 0; i < M; i++) {
+            homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, true);
+        }
 		
 		// Step 2: Estimate the intrinsic parameters by linear optimization:
-		CameraIntrinsicsEstimator cis = new CameraIntrinsicsEstimator();
-		
-		RealMatrix A_init = cis.getCameraIntrinsics(H_init);
-		initCam = new Camera(A_init, Radial2TermDistortionModel.INSTANCE);  // TODO: select lens distortion model!
+		RealMatrix A_init = CameraIntrinsics.from(homographies);
+		initCam = new Camera(A_init, params.distortionModel);
 		
 		// Step 3: calculate the extrinsic view parameters:
 		ExtrinsicViewEstimator eve = new ExtrinsicViewEstimator(A_init);
-		initViews = eve.getExtrinsics(H_init);
+		initViews = eve.getExtrinsics(homographies);
 		
 		// Step 4: Determine the lens distortion from initial estimates:
 		RadialDistortionEstimate rde = RadialDistortionEstimate.from(initCam, initViews, modelPts, obsPts);

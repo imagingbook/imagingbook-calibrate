@@ -6,22 +6,15 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.zhang.data.CalibrationImage;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.core.resource.ImageResource;
-
 import org.junit.Test;
-
 import java.util.Arrays;
-
 import static org.junit.Assert.*;
 
 public class CalibratorTest {
 
-    static ImageResource resource = CalibrationImage.CalibImageStack;
-
-
+    // static ImageResource resource = CalibrationImage.CalibImageStack;
 
     @Test
     public void calibrateTestZhangCam() {
@@ -32,7 +25,7 @@ public class CalibratorTest {
         // Set up the calibrator ------------------------------------------
 
         Calibrator.Parameters params = new Calibrator.Parameters();
-        params.normalizePointSets = true;
+        params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.debug = false;
 
