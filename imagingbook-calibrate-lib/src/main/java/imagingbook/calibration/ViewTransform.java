@@ -8,6 +8,7 @@ package imagingbook.calibration;
 
 import imagingbook.calibration.math3legacy.Rotation;
 import imagingbook.calibration.math3legacy.RotationConvention;
+import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.math.Matrix;
 
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
@@ -19,7 +20,6 @@ import java.io.StringWriter;
 
 /**
  * Instances of this class represent extrinsic camera (view) parameters.
- *
  * @author WB
  */
 public class ViewTransform {
@@ -70,6 +70,36 @@ public class ViewTransform {
      */
     public ViewTransform(double[] w) {
         this(w[0], w[1], w[2], w[3], w[4], w[5]);
+    }
+
+    public static ViewTransform from(RealMatrix A, Homography H) {
+        final RealMatrix A_inv = MatrixUtils.inverse(A);
+        RealVector h0 = H.getColumnVector(0);
+        RealVector h1 = H.getColumnVector(1);
+        RealVector h2 = H.getColumnVector(2);
+
+        double lambda = 1 / A_inv.operate(h0).getNorm();
+        // System.out.format("lambda = %f\n", lambda);
+
+        // compute the columns in the rotation matrix
+        RealVector r0 = A_inv.operate(h0).mapMultiplyToSelf(lambda);
+        RealVector r1 = A_inv.operate(h1).mapMultiplyToSelf(lambda);
+        RealVector r2 = MathUtil.crossProduct3x3(r0, r1);
+        RealVector t = A_inv.operate(h2).mapMultiplyToSelf(lambda);
+
+        // System.out.println("r1 = " + Matrix.toString(r0.toArray()));
+        // System.out.println("r2 = " + Matrix.toString(r1.toArray()));
+        // System.out.println("t = " + Matrix.toString(t.toArray()));
+
+        RealMatrix R = MatrixUtils.createRealMatrix(3, 3);
+        R.setColumnVector(0, r0);
+        R.setColumnVector(1, r1);
+        R.setColumnVector(2, r2);
+        // System.out.println("Rinit = \n" + Matrix.toString(R.getData()));
+
+        // the R matrix is probably not a real rotation matrix. So find
+        // the closest real rotation matrix (ViewTransform takes care of this):
+        return new ViewTransform(R, t);
     }
 
 

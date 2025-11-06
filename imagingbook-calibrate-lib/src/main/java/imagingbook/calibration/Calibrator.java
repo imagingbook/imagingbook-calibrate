@@ -118,8 +118,11 @@ public class Calibrator {
 		initCam = new Camera(A_init, params.distortionModel);
 		
 		// Step 3: calculate the extrinsic view parameters:
-		ExtrinsicViewEstimator eve = new ExtrinsicViewEstimator(A_init);
-		initViews = eve.getExtrinsics(homographies);
+		//ExtrinsicView extEst = new ExtrinsicView(A_init);
+        initViews = new ViewTransform[M];
+        for (int i = 0; i < M; i++) {
+            initViews[i] = ViewTransform.from(A_init, homographies[i]);
+        }
 		
 		// Step 4: Determine the lens distortion from initial estimates:
 		RadialDistortionEstimate rde = RadialDistortionEstimate.from(initCam, initViews, modelPts, obsPts);
