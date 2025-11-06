@@ -188,21 +188,22 @@ public class HomographyEstimator {
         return MathUtil.toCartesian(pAt); // need to de-homogenize, since pAt[2] == 1?
     }
 
-    /**
-     * Estimate homographies for a single sequence of model points but multiple sequence
-     * of observed points. All point sequences must be in correspondence and of same length.
-     * @param modelPts
-     * @param obsPoints
-     * @param normalizePoints
-     * @param doRefinement
-     * @return
-     */
-    public static Homography[] estimateHomographies(Pnt2d[] modelPts, Pnt2d[][] obsPoints, boolean normalizePoints, boolean doRefinement) {
-        final int M = obsPoints.length;
-        Homography[] homographies = new Homography[M];
-            for(int i = 0; i < M; i++) {
-                homographies[i] = Homography.from(modelPts, obsPoints[i], normalizePoints, doRefinement);
-        }
-        return homographies;
-    }
+//    /**
+//     * Estimate homographies for a single sequence of model points but multiple sequence
+//     * of observed points. All point sequences must be in correspondence and of same length.
+//     * @param modelPts
+//     * @param obsPoints
+//     * @param normalizePoints
+//     * @param doRefinement
+//     * @return
+//     */
+//    @Deprecated
+//    public static Homography[] estimateHomographies(Pnt2d[] modelPts, Pnt2d[][] obsPoints, boolean normalizePoints, boolean doRefinement) {
+//        final int M = obsPoints.length;
+//        Homography[] homographies = new Homography[M];
+//            for(int i = 0; i < M; i++) {
+//                homographies[i] = Homography.from(modelPts, obsPoints[i], normalizePoints, doRefinement);
+//        }
+//        return homographies;
+//    }
 }
