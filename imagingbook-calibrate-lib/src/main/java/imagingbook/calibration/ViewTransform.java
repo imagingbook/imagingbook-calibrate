@@ -34,11 +34,10 @@ public class ViewTransform {
 
     public ViewTransform() {
         this.rotation = Rotation.IDENTITY;
-        this.translation = new double[3];
+        this.translation = new double[] {0, 0, 0};
     }
 
     public ViewTransform(double rX, double rY, double rZ, double tX, double tY, double tZ) {
-        // this.rotation = new Rotation(new double[] {rX, rY, rZ});
         double[] r = {rX, rY, rZ};
         this.rotation = new Rotation(Vector3D.of(r), Matrix.normL2(r), RotationConvention.DEFAULT);
         this.translation = new double[] {tX, tY, tZ};
@@ -83,7 +82,7 @@ public class ViewTransform {
         return new Rotation(axis, angle, RotationConvention.DEFAULT);
     }
 
-    protected double[] getParameters() {
+    public double[] getParameters() {
         //double[] rotAxis = rotation.getAxis().toArray();
         double[] rotAxis = rotation.getAxis(RotationConvention.DEFAULT).toArray();
         double rotAngle = rotation.getAngle();
@@ -92,10 +91,6 @@ public class ViewTransform {
                 rotAxis[1] * rotAngle,
                 rotAxis[2] * rotAngle,
                 translation[0], translation[1], translation[2]};
-    }
-
-    protected int getParameterCount() {
-        return PARAMETER_COUNT;
     }
 
     public Rotation getRotation() {
