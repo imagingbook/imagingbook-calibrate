@@ -17,7 +17,7 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.calibration.zhang.HomographyEstimator.estimateHomographies;
+import static imagingbook.calibration.HomographyEstimator.estimateHomographies;
 
 
 /**
@@ -114,9 +114,9 @@ public class Calibrator {
 		
 		// Step 4: Determine the lens distortion from initial estimates:
 		RadialDistortionEstimate rde = RadialDistortionEstimate.from(initCam, initViews, modelPts, obsPts);
-		// double[] distParams = rde.getParameters();
         LensDistortionModel distParams = rde.getDistortion();
-        // double err = rde.getError();
+        double err = rde.getError();
+        // System.out.println("Distortion estimate error = " + err);
 		Camera improvedCam = new Camera(A_init, distParams);
 		
 		// Step 5: Refine all parameters by non-linear optimization

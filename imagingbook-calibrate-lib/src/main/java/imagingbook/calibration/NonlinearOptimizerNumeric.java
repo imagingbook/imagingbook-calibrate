@@ -50,7 +50,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        double[] refValues = new double[2 * M * N];	// values obtained with undisturbed parameters 
 	        
 	        double[] a = Arrays.copyOfRange(params, 0, camParCount);	// camera parameters
-	        Camera camOrig = initCam.fromParameterVector(a);
+	        Camera camOrig = initCam.copyOf(a);
 	        
 	        // Step 0: calculate all 2MN reference output values (for undisturbed parameters)
 	       
@@ -72,7 +72,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        	double ak = a[k];					// keep original parameter value       	
 	        	double delta = estimateDelta(ak);
 	        	a[k] = a[k] + delta;		// modify parameter s_k
-	        	Camera camMod = camOrig.fromParameterVector(a);	// modified camera
+	        	Camera camMod = camOrig.copyOf(a);	// modified camera
 	        	
 		        for (int r = 0, i = 0; i < M; i++) {	// for all views, r = row
 		        	int m = camParCount + i * viewParCount;
@@ -131,7 +131,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        double[] refValues = new double[2 * M * N];	// function values obtained with undisturbed parameters 
 	        
 	        double[] s = Arrays.copyOfRange(params, 0, camParCount);
-	        Camera cam = initCam.fromParameterVector(s);
+	        Camera cam = initCam.copyOf(s);
 	        
 	        // Step 0: calculate all 2MN reference output values (for undisturbed parameters)
 	        
@@ -157,7 +157,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        	params[k] = params[k] + delta;		// modify parameter c_k
 	        	
 	        	double[] smod = Arrays.copyOfRange(params, 0, camParCount);
-	        	Camera camMod = cam.fromParameterVector(smod);	// modified camera
+	        	Camera camMod = cam.copyOf(smod);	// modified camera
 	        	
 		        for (int row = 0, m = 0; m < M; m++) {	// for all views
 		        	int start = camParCount + m * viewParCount;

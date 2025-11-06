@@ -92,7 +92,6 @@ abstract class CameraViews {
 				{r11, r12, r13, t1},
 				{r21, r22, r23, t2},
 				{r31, r32, r33, t3}};
-		
 		return RT;
 	}
 	

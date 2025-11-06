@@ -16,7 +16,6 @@ import org.apache.commons.math4.legacy.linear.MatrixUtils;
 
 /**
  * Supplies all numeric data for Zhang's demo calibration test suite.
- *
  * @author WB
  */
 public abstract class ZhangData {
@@ -36,8 +35,7 @@ public abstract class ZhangData {
 	public static Pnt2d[][] getAllObservedPoints() {
 		Pnt2d obsPoints[][] = new Pnt2d[NumberOfViews][];
 		for (int i = 0; i < NumberOfViews; i++) {
-			int viewNr = i + 1;
-			obsPoints[i] = getObservedPoints(viewNr);
+			obsPoints[i] = getObservedPoints(i);
 		}
 		return obsPoints;
 	}
@@ -67,10 +65,10 @@ public abstract class ZhangData {
         return new Camera(832.5, 832.53, 0.204494, 303.959, 206.585, distortion);
 	}
 		
-	public static int extractViewNumber(String imgShortTitle) {
-//		String imgShortTitle = im.getShortTitle();
-		String num = imgShortTitle.substring(imgShortTitle.length() - 1, imgShortTitle.length());
-		return Integer.decode(num) - 1;
-	}
+// 	public static int extractViewNumber(String imgShortTitle) {
+// //		String imgShortTitle = im.getShortTitle();
+// 		String num = imgShortTitle.substring(imgShortTitle.length() - 1, imgShortTitle.length());
+// 		return Integer.decode(num) - 1;
+// 	}
 
 }

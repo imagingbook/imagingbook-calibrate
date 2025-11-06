@@ -4,9 +4,8 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration.zhang;
+package imagingbook.calibration;
 
-import imagingbook.calibration.Homography;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.calibration.util.PointStatistics;
 import imagingbook.common.geometry.basic.Pnt2d;

@@ -12,7 +12,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class CalibrationImageTest {
 
-	@Test
+	@Test   // checks if all resources in CalibrationImage exist and can be opened as images
 	public void test1() {
 		for (CalibrationImage ir : CalibrationImage.values()) {
 			// System.out.println(ir.getAbsolutePath());

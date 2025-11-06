@@ -63,7 +63,7 @@ public class Camera {
      * @return a new Camera instance with the specified parameters and the same type of lens distortion
      * model as this instance
      */
-    public Camera fromParameterVector(double[] params) {
+    public Camera copyOf(double[] params) {
         final int P = distortion.getParameterCount();
         if (params.length < 5 + P)
             throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
@@ -311,7 +311,6 @@ public class Camera {
 
 	/**
 	 * Returns the homography for the given view as a 3 x 3 matrix.
-	 *
 	 * @param view the extrinsic view parameters
 	 * @return the homography matrix
 	 */

@@ -13,7 +13,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class TextDataResourceTest {
 
-	@Test
+	@Test   // checks existence of all resources listed in TextDataResource
 	public void test1() {
 		for (NamedResource nr : TextDataResource.values()) {
 			assertNotNull("could not find resource " + nr.toString(), nr.getURL());

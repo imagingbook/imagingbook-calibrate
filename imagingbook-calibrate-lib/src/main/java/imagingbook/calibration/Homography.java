@@ -7,22 +7,13 @@
 package imagingbook.calibration;
 
 import imagingbook.calibration.util.MathUtil;
-import imagingbook.calibration.zhang.HomographyEstimator;
 import imagingbook.common.geometry.basic.Pnt2d;
 
 import imagingbook.common.math.Arithmetic;
 import imagingbook.common.math.Matrix;
-import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
-import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
 
-import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresFactory;
-import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
-import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
-import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
-import org.apache.commons.math4.legacy.linear.RealVector;
 
 /**
  * This class represents a homography, i.e., a projective transformation

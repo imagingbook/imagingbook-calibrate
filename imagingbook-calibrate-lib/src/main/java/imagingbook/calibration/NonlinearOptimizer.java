@@ -106,7 +106,7 @@ public abstract class NonlinearOptimizer {
 		@Override
 		public double[] value(double[] params) {
 			final double[] a = Arrays.copyOfRange(params, 0, camParCount);
-			final Camera cam = initCam.fromParameterVector(a);
+			final Camera cam = initCam.copyOf(a);
 			final double[] Y = new double[2 * M * N];
 			int c = 0;
 			for (int m = 0; m < M; m++) {
@@ -164,7 +164,7 @@ public abstract class NonlinearOptimizer {
 	private void updateEstimates(RealVector parameters) {
 		double[] c = parameters.toArray();
 		double[] s = Arrays.copyOfRange(c, 0, camParCount);
-		finalCamera = initCam.fromParameterVector(s);
+		finalCamera = initCam.copyOf(s);
 
 		finalViews = new ViewTransform[M];
 		int start = s.length;

@@ -1318,9 +1318,8 @@ abstract class ObservedPoints {
 	protected static final double[][][] pointData = {data1, data2, data3, data4, data5};
 		
 	protected static Pnt2d[] getPoints(int vn) {	// vn = 1,...,5
-		int i = vn - 1;
-		if (i < 0 || i >= pointData.length) return null;
-		double[][] points = pointData[i];
+		if (vn < 0 || vn >= pointData.length) return null;
+		double[][] points = pointData[vn];
 		Pnt2d[] pts = new Pnt2d[points.length];
 		for (int j = 0; j < points.length; j++) {
 			pts[j] = Pnt2d.from(points[j][0], points[j][1]);

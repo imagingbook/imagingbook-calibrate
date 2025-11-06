@@ -107,8 +107,10 @@ abstract class StandardModel {
 // 		}
 // 		return points.toArray(new Pnt2d[points.size()]);
 // 	}
-	
-	protected static Pnt2d[] getPoints() {
+
+    public static int NumberOfModelPoints = data.length * data[0].length / 2;
+
+	public static Pnt2d[] getPoints() {
 		int n = data.length;
 		List<Pnt2d> points = new ArrayList<>();
 		for (int i = 0; i < n; i++) {
@@ -119,7 +121,7 @@ abstract class StandardModel {
 				points.add(Pnt2d.from(x, y));
 			}
 		}
-		return points.toArray(new Pnt2d[points.size()]);
+		return points.toArray(new Pnt2d[0]);
 	}
 	
 }

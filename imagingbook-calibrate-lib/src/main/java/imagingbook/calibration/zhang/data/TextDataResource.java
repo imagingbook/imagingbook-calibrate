@@ -8,6 +8,10 @@ package imagingbook.calibration.zhang.data;
 
 import imagingbook.core.resource.NamedResource;
 
+/**
+ * This NamedResource pool gives access to a set of text files with calibration
+ * test data and results from Zhang's EasyCalib implementation.
+ */
 public enum TextDataResource implements NamedResource {
 		CalibrationResultZhangWithDistortion_txt("calibration-result-zhang-withdistortion.txt"),
 		Model_txt("Model.txt"),
