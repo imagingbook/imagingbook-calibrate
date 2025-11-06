@@ -29,7 +29,6 @@ public class ViewTransformTest {
         assertArrayEquals(Matrix.zeroVector(3), trans, 1e-6);
     }
 
-
     @Test
     public void testViewTransformConstructor2A() {
         ViewTransform vt = new ViewTransform(1, 1, 1, 4, 5, 6);
@@ -70,5 +69,6 @@ public class ViewTransformTest {
         assertArrayEquals(new double[]{4, 5, 6}, trans, 0.001);
     }
 
+    // TODO: test for 'ViewTransform.from()' method
 
 }

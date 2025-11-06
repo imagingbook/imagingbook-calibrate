@@ -22,7 +22,7 @@ import org.apache.commons.math4.legacy.linear.RealVector;
 
 import static org.apache.commons.math4.legacy.linear.MatrixUtils.createRealMatrix;
 
-public class HomographyEstimator {
+class HomographyEstimator {
 
     /**
      * Maximum number of Levenberg-Marquardt evaluations.
@@ -54,7 +54,7 @@ public class HomographyEstimator {
      * @param ptsB the 1st sequence of 2D points
      * @return
      */
-    public Homography getHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
+    protected Homography getHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
         if (ptsA.length != ptsB.length)
             throw new IllegalArgumentException("point sequences A, B have different lengths");
         if (ptsA.length < 4)

@@ -47,7 +47,7 @@ public class Homography  extends Array2DRowRealMatrix {
 
     /**
      * Scale all elements of H such that H(2,2) = 1.
-     * Used for comparing homography matrices.
+     * Useful for comparing homography matrices.
      * @param H a 3 x 3 homography matrix
      * @return the normalized matrix
      */
@@ -91,13 +91,22 @@ public class Homography  extends Array2DRowRealMatrix {
 
     // ------------------------------------------------------------
 
-    // used anywhere?
+    /**
+     * Applies this homography the supplied 2D point in homogeneous space.
+     * @param p a 2D point
+     * @return the transformed point
+     */
     public Pnt2d applyTo(Pnt2d p) {
         double[] pA = MathUtil.toHomogeneous(p.toDoubleArray());
         double[] pAt = this.operate(pA);
         return Pnt2d.from(MathUtil.toCartesian(pAt));
     }
 
+    /**
+     * Applies this homography the supplied array of 2D points in homogeneous space.
+     * @param P an array of 2D points
+     * @return the array of transformed points
+     */
     public Pnt2d[] applyTo(Pnt2d[] P) {
         final int n = P.length;
         Pnt2d[] Q = new Pnt2d[n];
