@@ -6,102 +6,197 @@
  ******************************************************************************/
 package imagingbook.calibration.distortion;
 
+import imagingbook.testutils.DeterministicRandom;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Random;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class Radial2TermDistortionModelTest {
+    
     static final double tol = 1e-6;
-    static final double k0 = 0.2, k1 = -0.05;
+    static final double k1 = 0.2, k2 = -0.05;
 
     @Test
-    public void copyOfTest1() {
-        Radial2TermDistortionModel m1 = new Radial2TermDistortionModel();
-        assertArrayEquals(new double[] {0, 0}, m1.getParameters(), tol);
-        Radial2TermDistortionModel m2 = m1.copyOf(k0, k1);
-        assertArrayEquals(new double[] {k0, k1}, m2.getParameters(), tol);
-        assertNotEquals(m1, m2);
+    public void constructorTest1() {
+        LensDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double[] params = ldm.getParameters();
+        assertEquals(2, params.length);
+        assertEquals(k1, params[0], tol);
+        assertEquals(k2, params[1], tol);
+        assertEquals(2, ldm.getParameterCount());
+        assertEquals(k1, ldm.getParameter(0), tol);
+        assertEquals(k2, ldm.getParameter(1), tol);
     }
 
     @Test
-    public void getParametersTest() {
-        Radial2TermDistortionModel m1 = new Radial2TermDistortionModel(k0, k1);
-        assertArrayEquals(new double[] {k0, k1}, m1.getParameters(), tol);
-        Radial2TermDistortionModel m2 = new Radial2TermDistortionModel();
-        assertArrayEquals(new double[] {0, 0}, m2.getParameters(), tol);
+    public void constructorTest2() {
+        LensDistortionModel ldm = new Radial2TermDistortionModel();
+        double[] params = ldm.getParameters();
+        assertEquals(2, params.length);
+        assertEquals(0, params[0], tol);
+        assertEquals(0, params[1], tol);
+        assertEquals(2, ldm.getParameterCount());
+        assertEquals(0, ldm.getParameter(0), tol);
+        assertEquals(0, ldm.getParameter(1), tol);
     }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void constructorExceptionTest1() {
+        LensDistortionModel ldm = new Radial2TermDistortionModel(0.1);
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void constructorExceptionTest2() {
+        LensDistortionModel ldm = new Radial2TermDistortionModel(0.1);
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void constructorExceptionTest3() {
+        LensDistortionModel ldm = new Radial2TermDistortionModel(0.1, 0.7, 0);
+    }
+
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void copyOfTest() {
+        LensDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+
+        LensDistortionModel ldm2 = ldm.copyOf();
+        assertNotNull(ldm2);
+        assertEquals(k1, ldm2.getParameter(0), tol);
+        assertEquals(k2, ldm2.getParameter(1), tol);
+
+        LensDistortionModel ldm3 = ldm.copyOf(0.4, -0.1);
+        assertEquals(0.4, ldm3.getParameter(0), tol);
+        assertEquals(-0.1, ldm3.getParameter(1), tol);
+    }
+
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void warpTest() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double r1 = 0.35;
+        double r2 = ldm.warp(r1);
+        assertEquals(0.358312, r2, tol);
+        double r3 = ldm.unwarp(r2);
+        assertEquals(r1, r3, tol);
+    }
+
+    @Test
+    public void warpTestZero() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double r0 = ldm.warp(0.0);
+        assertEquals(0.0, r0, tol);
+    }
+
+    @Test
+    public void unwarpTest() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double r1 = 0.35;
+        double r2 = ldm.unwarp(r1);
+        assertEquals(0.3422189, r2, tol);
+        double r3 = ldm.warp(r2);
+        assertEquals(r1, r3, tol);
+    }
+
+    @Test
+    public void unwarpTestZero() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double r0 = ldm.unwarp(0.0);
+        assertEquals(0.0, r0, tol);
+    }
+
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void warpTestRandom() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        Random rand = new DeterministicRandom(37);
+        for (int i = 0; i < 100; i++) {
+            double r1 = rand.nextDouble();
+            double r2 = ldm.warp(r1);
+            double r3 = ldm.unwarp(r2);
+            assertEquals(r1, r3, tol);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void warpXyTest() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double[] xy1 = {0.3, -0.4};
+        double[] xy2 = ldm.warp(xy1);
+        assertArrayEquals(new double[] {0.314062, -0.41875}, xy2, tol);
+        double[] xy3 = ldm.unwarp(xy2);
+        assertArrayEquals(xy1, xy3, tol);
+        double[] xy0 = ldm.warp(new double[] {0, 0});
+        assertArrayEquals(new double[] {0, 0}, xy0, tol);
+    }
+
+    @Test
+    public void unwarpXyTest() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double[] xy1 = {0.3, -0.4};
+        double[] xy2 = ldm.unwarp(xy1);
+        assertArrayEquals(new double[] {0.287549, -0.383399}, xy2, tol);
+        double[] xy3 = ldm.warp(xy2);
+        assertArrayEquals(xy1, xy3, tol);
+    }
+
+    @Test
+    public void warpXyTestZero() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double[] xy0 = ldm.warp(new double[] {0, 0});
+        assertArrayEquals(new double[] {0, 0}, xy0, tol);
+    }
+
+    @Test
+    public void unwarpXyTestZero() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double[] xy0 = ldm.unwarp(new double[] {0, 0});
+        assertArrayEquals(new double[] {0, 0}, xy0, tol);
+    }
+
+    @Test
+    public void warpXyTestRandom() {
+        RadialDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        Random rand = new DeterministicRandom(37);
+        for (int i = 0; i < 100; i++) {
+            double[] xy1 = {2 * rand.nextDouble() - 1, 2 * rand.nextDouble() - 1};
+            double[] xy2 = ldm.warp(xy1);
+            double[] xy3 = ldm.unwarp(xy2);
+            assertArrayEquals(xy1, xy3, tol);
+        }
+    }
+
+    // -------------------------------------------------------------------------
 
     @Test
     public void getDMatrixRowUTest() {
-        double x = 0.4, y = -0.1, du = 10, dv = -5;
-        LensDistortionModel m1 = new Radial2TermDistortionModel(k0, k1);
-        double[] rowU = m1.getDMatrixRowU(x, y, du, dv);
-        assertArrayEquals(new double[] {1.700000, 0.289000}, rowU, tol);
+        LensDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double x = 0.3, y = -0.6, du = 210, dv = 19;
+        double[] rowU = ldm.getDMatrixRowU(x, y, du, dv);
+        assertEquals(ldm.getParameterCount(), rowU.length);
         // System.out.println(Arrays.toString(rowU));
+        assertArrayEquals(new double[] {94.4999999, 42.5249999}, rowU, tol);
     }
 
     @Test
     public void getDMatrixRowVTest() {
-        double x = 0.4, y = -0.1, du = 10, dv = -5;
-        LensDistortionModel m1 = new Radial2TermDistortionModel(k0, k1);
-        double[] rowV = m1.getDMatrixRowV(x, y, du, dv);
-        assertArrayEquals(new double[] {-0.850000, -0.144500}, rowV, tol);
+        LensDistortionModel ldm = new Radial2TermDistortionModel(k1, k2);
+        double x = 0.3, y = -0.6, du = 210, dv = 19;
+        double[] rowV = ldm.getDMatrixRowV(x, y, du, dv);
+        assertEquals(ldm.getParameterCount(), rowV.length);
         // System.out.println(Arrays.toString(rowV));
+        assertArrayEquals(new double[] {8.5499999, 3.8474999}, rowV, tol);
     }
 
-    @Test
-    public void warpRTest() {
-        double r1 = 0.35;
-        RadialDistortionModel dist = new Radial2TermDistortionModel(k0, k1);
-        double r2 = dist.warp(r1);
-        // System.out.println(r2);
-        assertEquals(0.358312390625, r2, tol);
-        double r3 = dist.unwarp(r2);
-        assertEquals(r1, r3, tol);
-        double r0 = dist.warp(0.0);
-        assertEquals(0.0, r0, tol);
-    }
-
-    @Test
-    public void unwarpRTest() {
-        double r1 = 0.35;
-        RadialDistortionModel dist = new Radial2TermDistortionModel(k0, k1);
-        double r2 = dist.unwarp(r1);
-        // System.out.println(r2);
-        assertEquals(0.3422189, r2, tol);
-        double r3 = dist.warp(r2);
-        assertEquals(r1, r3, tol);
-        double r0 = dist.unwarp(0.0);
-        assertEquals(0.0, r0, tol);
-    }
-
-    @Test
-    public void warpXYTest() {
-        double[] xy1 = {0.4, -0.1};
-        LensDistortionModel m1 = new Radial2TermDistortionModel(k0, k1);
-        double[] xy2 = m1.warp(xy1);
-        // System.out.println(Arrays.toString(xy2));
-        assertArrayEquals(new double[] {0.413022, -0.103255}, xy2, tol);
-        double[] xy3 = m1.unwarp(xy2);
-        assertArrayEquals(xy1, xy3, tol);
-
-        double[] xy0 = {0, 0};
-        assertArrayEquals(xy0, m1.warp(xy0), tol);
-    }
-
-    @Test
-    public void unwarpXYTest() {
-        double[] xy1 = {0.4, -0.1};
-        LensDistortionModel m1 = new Radial2TermDistortionModel(k0, k1);
-        double[] xy2 = m1.unwarp(xy1);
-        // System.out.println(Arrays.toString(xy2));
-        assertArrayEquals(new double[] {0.388077, -0.097019}, xy2, tol);
-        double[] xy3 = m1.warp(xy2);
-        assertArrayEquals(xy1, xy3, tol);
-
-        double[] xy0 = {0, 0};
-        assertArrayEquals(xy0, m1.unwarp(xy0), tol);
-    }
 }

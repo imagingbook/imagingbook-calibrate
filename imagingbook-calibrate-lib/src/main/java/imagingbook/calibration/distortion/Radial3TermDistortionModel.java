@@ -34,7 +34,9 @@ public class Radial3TermDistortionModel  implements RadialDistortionModel {
 
     @Override
     public Radial3TermDistortionModel copyOf(double... params) {
-        return new Radial3TermDistortionModel(params);
+        return (params.length == 0) ?
+            new Radial3TermDistortionModel(this.getParameters()) :
+            new Radial3TermDistortionModel(params);
     }
 
     @Override
