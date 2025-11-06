@@ -12,15 +12,28 @@ package imagingbook.calibration.distortion;
 public interface LensDistortionModel {
 
     /**
-     * Copy an existing distortion model instance from a suitable parameter vector.
+     * Copies an existing distortion model instance.
+     * If the correct number of parameters is supplied, a new instance of
+     * this class with the new parameters is returned.
+     * If no parameters are supplied, the original instance is duplicated.
+     * An exception is thrown if any other number of parameters is supplied.
      * @param params a parameter vector of required length
      * @return
      */
     LensDistortionModel copyOf(double... params);
 
+    /**
+     * Returns the number of parameters required for this distortion model.
+     * @return the number of parameters
+     */
     default int getParameterCount() {
         return getParameters().length;
     }
+
+    /**
+     * Returns a vector with the parameters of this distortion model.
+     * @return a vector of parameters
+     */
     double[] getParameters();
 
     default double getParameter(int i) {
