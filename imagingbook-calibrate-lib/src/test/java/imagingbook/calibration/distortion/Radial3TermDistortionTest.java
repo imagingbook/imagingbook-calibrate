@@ -185,19 +185,11 @@ public class Radial3TermDistortionTest {
     public void getDMatrixRowUTest() {
         LensDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double x = 0.3, y = -0.6, du = 210, dv = 19;
-        double[] rowU = ldm.getDMatrixRowU(x, y, du, dv);
-        assertEquals(ldm.getParameterCount(), rowU.length);
-        // System.out.println(Arrays.toString(rowU));
-        assertArrayEquals(new double[] {94.4999999, 42.5249999, 19.1362499}, rowU, tol);
-    }
-
-    @Test
-    public void getDMatrixRowVTest() {
-        LensDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
-        double x = 0.3, y = -0.6, du = 210, dv = 19;
-        double[] rowV = ldm.getDMatrixRowV(x, y, du, dv);
-        assertEquals(ldm.getParameterCount(), rowV.length);
-        // System.out.println(Arrays.toString(rowV));
-        assertArrayEquals(new double[] {8.5499999, 3.8474999, 1.7313749}, rowV, tol);
+        double[][] rowsUV = ldm.getDMatrixRowsUV(x, y, du, dv);
+        assertEquals(2, rowsUV.length);
+        assertEquals(ldm.getParameterCount(), rowsUV[0].length);
+        assertEquals(ldm.getParameterCount(), rowsUV[1].length);
+        assertArrayEquals(new double[] {94.4999999, 42.5249999, 19.1362499}, rowsUV[0], tol);
+        assertArrayEquals(new double[] {8.5499999, 3.8474999, 1.7313749}, rowsUV[1], tol);
     }
 }

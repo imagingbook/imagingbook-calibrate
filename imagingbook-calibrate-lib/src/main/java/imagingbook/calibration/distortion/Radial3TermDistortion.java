@@ -96,19 +96,15 @@ public class Radial3TermDistortion implements RadialDistortion {
     // -------------------------------------------------------------------------
 
     @Override
-    public double[] getDMatrixRowU(double x, double y, double du, double dv) {
-        final double r2 = x * x + y * y;
+    public double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {
+        final double xx = x * x;
+        final double yy = y * y;
+        final double r2 = xx + yy;
         final double r4 = r2 * r2;
         final double r6 = r2 * r4;
-        return new double[] {du * r2, du * r4, du * r6};
-    }
-
-    @Override
-    public double[] getDMatrixRowV(double x, double y, double du, double dv) {
-        final double r2 = x * x + y * y;
-        final double r4 = r2 * r2;
-        final double r6 = r2 * r4;
-        return new double[] {dv * r2, dv * r4, dv * r6};
+        return new double[][] {
+                {du * r2, du * r4, du * r6},
+                {dv * r2, dv * r4, dv * r6}};
     }
 
     // -------------------------------------------------------------------------

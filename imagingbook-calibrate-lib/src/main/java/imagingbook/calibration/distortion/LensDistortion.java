@@ -62,26 +62,15 @@ public interface LensDistortion {
     }
 
     /**
-     * Returns the first (X) of two rows in matrix D required for each observed
+     * Returns a pair of rows in matrix D required for each observed
      * point (see Eqn. (119) of the documentation).
      * @param x the point's hor. coordinate in normalized image space
      * @param y the point's vert. coordinate in normalized image space
      * @param du the point's hor. distance from the projection center in sensor space
      * @param dv the point's vert. distance from the projection center in sensor space
-     * @return an array of the same length as the number of distortion parameters
+     * @return a 2D matrix with 2 rows and the number of columns equal to the number of distortion parameters
      */
-    double[] getDMatrixRowU(double x, double y, double du, double dv);
-
-    /**
-     * Returns the second (Y) of two rows in matrix D required for each observed
-     * point (see Eqn. (119) of the documentation).
-     * @param x the point's hor. coordinate in normalized image space
-     * @param y the point's vert. coordinate in normalized image space
-     * @param du the point's hor. distance from the projection center in sensor space
-     * @param dv the point's vert. distance from the projection center in sensor space
-     * @return an array of the same length as the number of distortion parameters
-     */
-    double[] getDMatrixRowV(double x, double y, double du, double dv);
+    double[][] getDMatrixRowsUV(double x, double y, double du, double dv);
 
     /**
      * Applies lens distortion to a point in the ideal 2D projection.

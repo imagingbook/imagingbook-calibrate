@@ -75,14 +75,12 @@ class LensDistortionEstimator {
                 // insert one pair of rows into matrix D:
                 final int l0 = l;
                 final int l1 = l + 1;
-                // rowU, rowV are vectors with P elements each:
-                double[] rowU = distortion.getDMatrixRowU(x, y, du, dv);
-                double[] rowV = distortion.getDMatrixRowV(x, y, du, dv);
+                // rowUV is a 2 x P matrix (submatrix of D):
+                double[][] rowsUV = distortion.getDMatrixRowsUV(x, y, du, dv);
                 for (int k = 0; k < P; k++) {
-                    D.setEntry(l0, k, rowU[k]);
-                    D.setEntry(l1, k, rowV[k]);
+                    D.setEntry(l0, k, rowsUV[0][k]);
+                    D.setEntry(l1, k, rowsUV[1][k]);
                 }
-
                 // mount vector d with difference between observed and predicted sensor points
                 Pnt2d UV = obs[j];  // observed point
                 d.setEntry(l0, UV.getX() - u);
