@@ -61,7 +61,7 @@ public abstract class ZhangData {
 		// 		832.5,   832.53, 0.204494, 	// alpha, beta, gamma, (!)
 		// 		303.959, 206.585,			// u_c, v_c
 		// 		-0.228601, 0.190353);		// k1, k2
-        LensDistortion distortion = new Radial2TermDistortion(-0.228601, 0.190353);
+        LensDistortion distortion = new Radial2TermDistortion(new double[] {-0.228601, 0.190353});
         return new Camera(832.5, 832.53, 0.204494, 303.959, 206.585, distortion);
 	}
 		

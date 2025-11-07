@@ -19,7 +19,7 @@ public class CalibratorTest {
     static final ViewTransform[] refViews = ZhangData.getAllViewTransforms();
 
     @Test
-    public void calibrateTestZhangCam() {
+    public void calibrateZhangCamTest() {
 
         int M = obsPoints.length;    // number of views
 
@@ -32,12 +32,9 @@ public class CalibratorTest {
 
         Calibrator calibrator = new Calibrator(params, modelPoints);
         assertNotNull(calibrator);
-        for (int i = 0; i < M; i++) {
-            calibrator.addView(obsPoints[i]);
-        }
+        calibrator.addViews(obsPoints);
 
         // Perform calibration ------------------------------------------
-
         Camera finCam = calibrator.calibrate();
         assertNotNull(finCam);
         Camera refCam = ZhangData.getCamera();  // reference camera

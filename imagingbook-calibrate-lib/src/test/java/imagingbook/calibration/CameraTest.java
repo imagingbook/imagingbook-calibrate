@@ -21,7 +21,7 @@ public class CameraTest {
     static final double tol = 1e-6;
     static final Camera cam1 =
             new Camera(832.5, 832.53, 0.204494, 303.959, 206.585,
-            new Radial2TermDistortion(-0.228601, 0.190353));
+            new Radial2TermDistortion(new double[] {-0.228601, 0.190353}));
     static final ViewTransform view = new ViewTransform();
 
     @Test

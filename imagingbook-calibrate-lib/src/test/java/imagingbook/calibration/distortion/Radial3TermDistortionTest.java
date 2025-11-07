@@ -20,7 +20,7 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void constructorTest1() {
-        LensDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        LensDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double[] params = ldm.getParameters();
         assertEquals(3, params.length);
         assertEquals(k0, params[0], tol);
@@ -48,24 +48,24 @@ public class Radial3TermDistortionTest {
 
     @Test (expected = IllegalArgumentException.class)
     public void constructorExceptionTest1() {
-        LensDistortion ldm = new Radial3TermDistortion(0.1);
+        LensDistortion ldm = new Radial3TermDistortion(new double[] {0.1});
     }
 
     @Test (expected = IllegalArgumentException.class)
     public void constructorExceptionTest2() {
-        LensDistortion ldm = new Radial3TermDistortion(0.1, 0.7);
+        LensDistortion ldm = new Radial3TermDistortion(new double[] {0.1, 0.7});
     }
 
     @Test (expected = IllegalArgumentException.class)
     public void constructorExceptionTest3() {
-        LensDistortion ldm = new Radial3TermDistortion(0.1, 0.7, 0, -0.1);
+        LensDistortion ldm = new Radial3TermDistortion(new double[] {0.1, 0.7, 0, -0.1});
     }
 
     // -------------------------------------------------------------------------
 
     @Test
     public void copyOfTest() {
-        LensDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        LensDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
 
         LensDistortion ldm2 = ldm.copyOf();
         assertNotNull(ldm2);
@@ -73,7 +73,7 @@ public class Radial3TermDistortionTest {
         assertEquals(k1, ldm2.getParameter(1), tol);
         assertEquals(k2, ldm2.getParameter(2), tol);
 
-        LensDistortion ldm3 = ldm.copyOf(0.4, -0.1, 0.5);
+        LensDistortion ldm3 = ldm.copyOf(new double[] {0.4, -0.1, 0.5});
         assertEquals(0.4, ldm3.getParameter(0), tol);
         assertEquals(-0.1, ldm3.getParameter(1), tol);
         assertEquals(0.5, ldm3.getParameter(2), tol);
@@ -83,7 +83,7 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void fRadTest() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double r1 = 0.35;
         double r2 = ldm.fRad(r1);
         assertEquals(0.358325, r2, tol);
@@ -93,14 +93,14 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void fRadTestZero() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double r0 = ldm.fRad(0.0);
         assertEquals(0.0, r0, tol);
     }
 
     @Test
     public void fRadInvTest() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double r1 = 0.35;
         double r2 = ldm.fRadInv(r1);
         assertEquals(0.3422086, r2, tol);
@@ -110,7 +110,7 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void fRadInvTestZero() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double r0 = ldm.fRadInv(0.0);
         assertEquals(0.0, r0, tol);
     }
@@ -119,7 +119,7 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void fRadTestRandom() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         Random rand = new DeterministicRandom(37);
         for (int i = 0; i < 100; i++) {
             double r1 = rand.nextDouble();
@@ -133,7 +133,7 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void fRadXyTest() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double[] xy1 = {0.3, -0.4};
         double[] xy2 = ldm.warp(xy1);
         assertArrayEquals(new double[] {0.314156, -0.418875}, xy2, tol);
@@ -145,7 +145,7 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void fRadInvXyTest() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double[] xy1 = {0.3, -0.4};
         double[] xy2 = ldm.unwarp(xy1);
         assertArrayEquals(new double[] {0.287488, -0.383317}, xy2, tol);
@@ -155,21 +155,21 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void fRadXyTestZero() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double[] xy0 = ldm.warp(new double[] {0, 0});
         assertArrayEquals(new double[] {0, 0}, xy0, tol);
     }
 
     @Test
     public void fRadInvXyTestZero() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double[] xy0 = ldm.unwarp(new double[] {0, 0});
         assertArrayEquals(new double[] {0, 0}, xy0, tol);
     }
 
     @Test
     public void fRadXyTestRandom() {
-        RadialDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         Random rand = new DeterministicRandom(37);
         for (int i = 0; i < 100; i++) {
             double[] xy1 = {2 * rand.nextDouble() - 1, 2 * rand.nextDouble() - 1};
@@ -183,7 +183,7 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void getDMatrixRowUTest() {
-        LensDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        LensDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double x = 0.3, y = -0.6, du = 210, dv = 19;
         double[] rowU = ldm.getDMatrixRowU(x, y, du, dv);
         assertEquals(ldm.getParameterCount(), rowU.length);
@@ -193,7 +193,7 @@ public class Radial3TermDistortionTest {
 
     @Test
     public void getDMatrixRowVTest() {
-        LensDistortion ldm = new Radial3TermDistortion(k0, k1, k2);
+        LensDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
         double x = 0.3, y = -0.6, du = 210, dv = 19;
         double[] rowV = ldm.getDMatrixRowV(x, y, du, dv);
         assertEquals(ldm.getParameterCount(), rowV.length);

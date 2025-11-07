@@ -17,7 +17,7 @@ public class LensDistortionTest {
     @Test
     public void copyOfTest1() {
         LensDistortion m1 = new Radial2TermDistortion();
-        LensDistortion m2 = m1.copyOf(k0, k1);
+        LensDistortion m2 = m1.copyOf(new double[] {k0, k1});
         assertArrayEquals(new double[] {k0, k1}, m2.getParameters(), tol);
         assertEquals(Radial2TermDistortion.class, m1.getClass());
         assertEquals(Radial2TermDistortion.class, m2.getClass());
@@ -25,19 +25,19 @@ public class LensDistortionTest {
 
     @Test (expected = IllegalArgumentException.class)
     public void copyOfTest2() {
-        LensDistortion m1 = new Radial2TermDistortion(k0, k1);
-        LensDistortion m2 = m1.copyOf(k0, k1, 0.1);    // too many arguments
+        LensDistortion m1 = new Radial2TermDistortion(new double[] {k0, k1});
+        LensDistortion m2 = m1.copyOf(new double[] {k0, k1, 0.1});    // too many arguments
     }
 
     @Test (expected = IllegalArgumentException.class)
     public void copyOfTest3() {
-        LensDistortion m1 = new Radial2TermDistortion(k0, k1);
-        LensDistortion m2 = m1.copyOf(0.1);    // too few arguments
+        LensDistortion m1 = new Radial2TermDistortion(new double[] {k0, k1});
+        LensDistortion m2 = m1.copyOf(new double[] {0.1});    // too few arguments
     }
 
     @Test
     public void getParameterCountTest() {
-        LensDistortion m1 = new Radial2TermDistortion(k0, k1);
+        LensDistortion m1 = new Radial2TermDistortion(new double[] {k0, k1});
         assertEquals(2, m1.getParameterCount());
         LensDistortion m2 = new Radial2TermDistortion();
         assertEquals(2, m2.getParameterCount());
@@ -45,7 +45,7 @@ public class LensDistortionTest {
 
     @Test
     public void getParametersTest() {
-        LensDistortion m1 = new Radial2TermDistortion(k0, k1);
+        LensDistortion m1 = new Radial2TermDistortion(new double[] {k0, k1});
         assertArrayEquals(new double[] {k0, k1}, m1.getParameters(), tol);
         LensDistortion m2 = new Radial2TermDistortion();
         assertArrayEquals(new double[] {0, 0}, m2.getParameters(), tol);
@@ -53,7 +53,7 @@ public class LensDistortionTest {
 
     @Test
     public void getParameterTest1() {
-        LensDistortion m1 = new Radial2TermDistortion(k0, k1);
+        LensDistortion m1 = new Radial2TermDistortion(new double[] {k0, k1});
         assertEquals(k0, m1.getParameter(0), tol);
         assertEquals(k1, m1.getParameter(1), tol);
         LensDistortion m2 = new Radial2TermDistortion();
@@ -63,13 +63,13 @@ public class LensDistortionTest {
 
     @Test (expected = IllegalArgumentException.class)
     public void getParameterTest2() {
-        LensDistortion m1 = new Radial2TermDistortion(k0, k1);
+        LensDistortion m1 = new Radial2TermDistortion(new double[] {k0, k1});
         m1.getParameter(-1);
     }
 
     @Test (expected = IllegalArgumentException.class)
     public void getParameterTest3() {
-        LensDistortion m1 = new Radial2TermDistortion(k0, k1);
+        LensDistortion m1 = new Radial2TermDistortion(new double[] {k0, k1});
         m1.getParameter(2);
     }
 }

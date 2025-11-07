@@ -21,24 +21,26 @@ public class Radial2TermDistortion implements RadialDistortion {
     // private final double[] parameters; // lens distortion parameters
 
     /**
-     * The only constructor. If no argument is supplied, an instance
-     * with zero-valued parameters is constructed.
+     * Blank constructor. Creates a lens distortion instance with zero parameters.
+     */
+    public Radial2TermDistortion() {
+        this(new double[] {0, 0});
+    }
+
+    /**
+     * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public Radial2TermDistortion(double... parameters) {
-        if (parameters.length == 0)
-            parameters = new double[PARAM_COUNT];
-        else if (parameters.length != PARAM_COUNT)
+    public Radial2TermDistortion(double[] parameters) {
+        if (parameters.length != PARAM_COUNT)
             throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
         this.k0 = parameters[0];
         this.k1 = parameters[1];
     }
 
     @Override
-    public Radial2TermDistortion copyOf(double... params) {
-        return (params.length == 0) ?
-            new Radial2TermDistortion(this.getParameters()) :
-            new Radial2TermDistortion(params);
+    public Radial2TermDistortion copyOf(double[] params) {
+        return new Radial2TermDistortion(params);
     }
 
     // -----------------------------------------

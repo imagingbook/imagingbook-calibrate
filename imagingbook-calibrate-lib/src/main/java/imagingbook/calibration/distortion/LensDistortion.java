@@ -10,21 +10,27 @@ import imagingbook.calibration.Camera;
 import imagingbook.calibration.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 
+import java.lang.reflect.Constructor;
+
 /**
  * The mother of all radial  distortion models.
  */
 public interface LensDistortion {
 
     /**
-     * Copies an existing distortion model instance.
-     * If the correct number of parameters is supplied, a new instance of
-     * this class with the new parameters is returned.
-     * If no parameters are supplied, the original instance is duplicated.
-     * An exception is thrown if any other number of parameters is supplied.
+     * Copies an existing distortion model instance with modifies parameters.
      * @param params a parameter vector of required length
      * @return
      */
-    LensDistortion copyOf(double... params);
+    LensDistortion copyOf(double[] params);
+
+    /**
+     * Copies an existing distortion model instance with unmodified parameters.
+     * @return
+     */
+    default LensDistortion copyOf() {
+        return copyOf(getParameters());
+    }
 
     /**
      * Returns the number of parameters required for this distortion model.
