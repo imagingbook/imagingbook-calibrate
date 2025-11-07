@@ -7,6 +7,7 @@
 package imagingbook.calibration;
 
 import imagingbook.calibration.distortion.LensDistortion;
+import imagingbook.calibration.distortion.LensDistortionEstimator;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -16,7 +17,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
-public class LensDistortionEstimateTest {
+public class LensDistortionEstimatorTest {
 
     @Test
     public void fromTest() {
@@ -28,7 +29,7 @@ public class LensDistortionEstimateTest {
         // Initial camera = [877.1610736944268, 876.8009085961099, 0.17515644031677685, 301.0436734292903, 220.4104056624287, 0.0, 0.0]
         Camera cam1 = new Camera(877.16, 876.80, 0.1751, 301.04, 220.41, Radial2TermDistortion.INSTANCE);
 
-        LensDistortionEstimate estim1 = LensDistortionEstimate.from(cam1, views, modelPts, obsPts);
+        LensDistortionEstimator estim1 = LensDistortionEstimator.from(cam1, views, modelPts, obsPts);
         assertNotNull(estim1);
         LensDistortion dist1 = estim1.getDistortion();
         assertNotNull(dist1);

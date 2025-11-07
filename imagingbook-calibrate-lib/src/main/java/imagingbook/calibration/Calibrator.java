@@ -7,6 +7,7 @@
 package imagingbook.calibration;
 
 import imagingbook.calibration.distortion.LensDistortion;
+import imagingbook.calibration.distortion.LensDistortionEstimator;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -124,7 +125,7 @@ public class Calibrator {
 		
 		// Step 4: Determine the lens distortion from initial estimates:
         LensDistortion distortion =
-                LensDistortionEstimate.from(initCam, initViews, modelPts, obsPts).getDistortion();
+                LensDistortionEstimator.from(initCam, initViews, modelPts, obsPts).getDistortion();
         // System.out.println("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		Camera improvedCam = new Camera(A_init, distortion);
 

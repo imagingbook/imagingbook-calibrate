@@ -4,9 +4,10 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration;
+package imagingbook.calibration.distortion;
 
-import imagingbook.calibration.distortion.LensDistortion;
+import imagingbook.calibration.Camera;
+import imagingbook.calibration.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
@@ -18,12 +19,12 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
 /**
  *  Class for estimating radial distortion parameters.
  */
-public class LensDistortionEstimate {
+public class LensDistortionEstimator {
 
     private final LensDistortion distortion;
     private final double[] errors;
 
-    private LensDistortionEstimate(LensDistortion distortion, double... errors) {
+    private LensDistortionEstimator(LensDistortion distortion, double... errors) {
         this.distortion = distortion;
         this.errors = errors;
     }
@@ -43,7 +44,7 @@ public class LensDistortionEstimate {
      *  @param modelPts the set of 2D model points (on the planar calibration target)
      *  @param obsPts a sequence of 2D image point sets, one set for each view
      */
-    public static LensDistortionEstimate from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+    public static LensDistortionEstimator from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
 		final int M = views.length;		// the number of views
 		final int N = modelPts.length;	// the number of model points
         final LensDistortion dstrt = cam.getDistortion();
@@ -98,11 +99,11 @@ public class LensDistortionEstimate {
         double err1 = D.operate(new ArrayRealVector(new double[P])).subtract(d).getNorm();
 		double err2 = D.operate(kopt).subtract(d).getNorm();
 		// System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
-        return new LensDistortionEstimate(model, err1, err2);
+        return new LensDistortionEstimator(model, err1, err2);
 	}
 
     /**
-     * Returns the lens distortion model obtained by this LensDistortionEstimate.
+     * Returns the lens distortion model obtained by this LensDistortionEstimator.
      * @return the lens distortion model
      */
     public LensDistortion getDistortion() {
