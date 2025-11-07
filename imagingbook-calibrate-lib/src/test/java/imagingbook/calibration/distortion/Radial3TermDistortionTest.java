@@ -73,7 +73,7 @@ public class Radial3TermDistortionTest {
         assertEquals(k1, ldm2.getParameter(1), tol);
         assertEquals(k2, ldm2.getParameter(2), tol);
 
-        LensDistortion ldm3 = ldm.copyOf(new double[] {0.4, -0.1, 0.5});
+        LensDistortion ldm3 = ldm.copyOf(new double[] {0.4, -0.1, 0.5}, 0);
         assertEquals(0.4, ldm3.getParameter(0), tol);
         assertEquals(-0.1, ldm3.getParameter(1), tol);
         assertEquals(0.5, ldm3.getParameter(2), tol);

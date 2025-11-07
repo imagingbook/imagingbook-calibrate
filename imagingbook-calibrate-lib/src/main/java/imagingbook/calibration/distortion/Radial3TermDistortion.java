@@ -16,6 +16,7 @@ public class Radial3TermDistortion implements RadialDistortion {
     public static final Radial3TermDistortion INSTANCE = new Radial3TermDistortion();
     //private final double[] parameters; // lens distortion parameters
     private final double k0, k1, k2;
+    private final double error; // estimation error
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
@@ -29,21 +30,36 @@ public class Radial3TermDistortion implements RadialDistortion {
      * @param parameters vector of distortion parameters
      */
     public Radial3TermDistortion(double[] parameters) {
+        this(parameters, 0.0);
+    }
+
+    /**
+     * Constructor. Creates a lens distortion instance with the specified parameters.
+     * @param parameters vector of distortion parameters
+     * @param error average estimation error
+     */
+    public Radial3TermDistortion(double[] parameters, double error) {
         if (parameters.length != PARAM_COUNT)
             throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
         this.k0 = parameters[0];
         this.k1 = parameters[1];
         this.k2 = parameters[2];
+        this.error = error;
     }
 
     @Override
-    public Radial3TermDistortion copyOf(double[] params) {
-        return new Radial3TermDistortion(params);
+    public Radial3TermDistortion copyOf(double[] params, double error) {
+        return new Radial3TermDistortion(params, error);
     }
 
     @Override
     public double[] getParameters() {
         return new double[] {k0, k1, k2};
+    }
+
+    @Override
+    public double getError() {
+        return this.error;
     }
 
     // -------------------------------------------------------------------------

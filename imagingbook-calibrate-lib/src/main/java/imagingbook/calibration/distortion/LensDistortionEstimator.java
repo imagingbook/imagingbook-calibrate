@@ -98,7 +98,7 @@ class LensDistortionEstimator {
         double err2 = D.operate(kopt).subtract(d).getNorm();
         // System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
-        return distortion.copyOf(kopt.toArray());
+        return distortion.copyOf(kopt.toArray(), err1 / (M * N));   // TODO: check error quantity is avg
     }
 
 }

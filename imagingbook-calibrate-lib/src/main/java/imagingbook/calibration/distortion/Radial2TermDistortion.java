@@ -18,7 +18,7 @@ public class Radial2TermDistortion implements RadialDistortion {
     public static final int PARAM_COUNT = 2;
     public static final Radial2TermDistortion INSTANCE = new Radial2TermDistortion();
     private final double k0, k1;
-    // private final double[] parameters; // lens distortion parameters
+    private final double error; // estimation error
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
@@ -32,15 +32,28 @@ public class Radial2TermDistortion implements RadialDistortion {
      * @param parameters vector of distortion parameters
      */
     public Radial2TermDistortion(double[] parameters) {
+        this(parameters, 0.0);
+    }
+
+
+    /**
+     * Constructor. Creates a lens distortion instance with the specified parameters.
+     * @param parameters vector of distortion parameters
+     * @param error average estimation error
+     */
+    public Radial2TermDistortion(double[] parameters, double error) {
         if (parameters.length != PARAM_COUNT)
             throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
         this.k0 = parameters[0];
         this.k1 = parameters[1];
+        this.error = error;
     }
 
+
+
     @Override
-    public Radial2TermDistortion copyOf(double[] params) {
-        return new Radial2TermDistortion(params);
+    public Radial2TermDistortion copyOf(double[] params,double error) {
+        return new Radial2TermDistortion(params, error);
     }
 
     // -----------------------------------------
@@ -48,6 +61,11 @@ public class Radial2TermDistortion implements RadialDistortion {
     @Override
     public double[] getParameters() {
         return new double[] {k0, k1};
+    }
+
+    @Override
+    public double getError() {
+        return this.error;
     }
 
     @Override

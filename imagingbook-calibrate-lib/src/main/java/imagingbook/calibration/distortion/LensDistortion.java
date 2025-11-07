@@ -22,14 +22,14 @@ public interface LensDistortion {
      * @param params a parameter vector of required length
      * @return
      */
-    LensDistortion copyOf(double[] params);
+    LensDistortion copyOf(double[] params, double error);
 
     /**
      * Copies an existing distortion model instance with unmodified parameters.
      * @return
      */
     default LensDistortion copyOf() {
-        return copyOf(getParameters());
+        return copyOf(getParameters(), getError());
     }
 
     /**
@@ -51,6 +51,14 @@ public interface LensDistortion {
         if (i < 0 || i >= parameters.length)
             throw new IllegalArgumentException("invalid distortion parameter index: " + i);
         return parameters[i];
+    }
+
+    /**
+     * Returns the average estimation error. May not be implemented.
+     * @return the average estimation error
+     */
+    default double getError() {
+        throw new UnsupportedOperationException("getError() not implemented for this type");
     }
 
     /**
