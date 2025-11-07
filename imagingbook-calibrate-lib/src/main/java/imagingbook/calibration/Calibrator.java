@@ -93,6 +93,12 @@ public class Calibrator {
         imgPntSet.add(pts);
     }
 
+    public void addViews(Pnt2d[][] views) {
+        for (Pnt2d[] pts : views) {
+            addView(pts);
+        }
+    }
+
     // -------------------------------------------------------------------
 
 	/**
