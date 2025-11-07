@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration.distortion;
 
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.core.Pair;
 import org.apache.commons.math4.legacy.fitting.leastsquares.GaussNewtonOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
@@ -15,6 +16,10 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOp
 import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealVector;
+
+import java.util.Arrays;
 
 public class RadialLateralDistortion implements LensDistortion {
 
@@ -27,7 +32,7 @@ public class RadialLateralDistortion implements LensDistortion {
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
     public RadialLateralDistortion() {
-        this(new double[] {0, 0});
+        this(new double[] {0, 0, 0, 0, 0});
     }
 
     /**
@@ -99,9 +104,9 @@ public class RadialLateralDistortion implements LensDistortion {
     @Override
     public double[] unwarp(double[] xyD) {
         // Target u,v
-        double[] uv = xyD.clone();
+        double[] uv = xyD;
         // Initial guess (x0, y0)
-        double[] start = xyD.clone();
+        double[] start = xyD;
         // Define F(x,y): (u_calc, v_calc)
 
         MultivariateJacobianFunction model = point -> {
@@ -157,15 +162,23 @@ public class RadialLateralDistortion implements LensDistortion {
                 .maxIterations(1000)
                 .build();
 
+        System.out.println("problem = " + problem);
+
         // Use Levenberg–Marquardt optimizer
-        // LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer();
-        LeastSquaresOptimizer optimizer = new GaussNewtonOptimizer();
+        LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer();
+        //LeastSquaresOptimizer optimizer = new GaussNewtonOptimizer(); // needs a checker!
+        System.out.println("optimizer = " + optimizer);
         LeastSquaresOptimizer.Optimum optimum = optimizer.optimize(problem);
 
-        System.out.println("Converged: " + optimum.getEvaluations());
+        System.out.println("Iterations: " + optimum.getEvaluations());
         System.out.println("x = " + optimum.getPoint().getEntry(0));
         System.out.println("y = " + optimum.getPoint().getEntry(1));
-        System.out.println("Residual: " + optimum.getResiduals().getNorm());
+        System.out.println("Residual: " + Arrays.toString(optimum.getResiduals().toArray()));
+        // System.out.println("Residual: " + optimum.getResiduals().getNorm());
+
+        Pair<RealVector, RealMatrix> pr = model.value(optimum.getPoint());
+        System.out.println("Pair1 = " + Matrix.toString(pr.getFirst()));
+        System.out.println("Pair2 = " + Matrix.toString(pr.getSecond()));
 
         return optimum.getPoint().toArray();
     }
