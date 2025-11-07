@@ -10,10 +10,10 @@ import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
 
-public class Radial3TermDistortionModel  implements RadialDistortionModel {
+public class Radial3TermDistortion implements RadialDistortion {
 
     public static final int PARAM_COUNT = 3;
-    public static final Radial3TermDistortionModel INSTANCE = new Radial3TermDistortionModel();
+    public static final Radial3TermDistortion INSTANCE = new Radial3TermDistortion();
     //private final double[] parameters; // lens distortion parameters
     private final double k0, k1, k2;
 
@@ -22,7 +22,7 @@ public class Radial3TermDistortionModel  implements RadialDistortionModel {
      * with zero-valued parameters is constructed.
      * @param parameters vector of distortion parameters
      */
-    public Radial3TermDistortionModel(double... parameters) {
+    public Radial3TermDistortion(double... parameters) {
         if (parameters.length == 0)
             parameters = new double[PARAM_COUNT];
         else if (parameters.length != PARAM_COUNT)
@@ -33,10 +33,10 @@ public class Radial3TermDistortionModel  implements RadialDistortionModel {
     }
 
     @Override
-    public Radial3TermDistortionModel copyOf(double... params) {
+    public Radial3TermDistortion copyOf(double... params) {
         return (params.length == 0) ?
-            new Radial3TermDistortionModel(this.getParameters()) :
-            new Radial3TermDistortionModel(params);
+            new Radial3TermDistortion(this.getParameters()) :
+            new Radial3TermDistortion(params);
     }
 
     @Override

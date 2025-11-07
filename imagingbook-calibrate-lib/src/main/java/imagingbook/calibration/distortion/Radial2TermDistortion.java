@@ -13,10 +13,10 @@ import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiable
 /**
  * Simplified radial distortion model used in Zhang's EasyCalib implementation.
  */
-public class Radial2TermDistortionModel implements RadialDistortionModel {
+public class Radial2TermDistortion implements RadialDistortion {
 
     public static final int PARAM_COUNT = 2;
-    public static final Radial2TermDistortionModel INSTANCE = new Radial2TermDistortionModel();
+    public static final Radial2TermDistortion INSTANCE = new Radial2TermDistortion();
     private final double k0, k1;
     // private final double[] parameters; // lens distortion parameters
 
@@ -25,7 +25,7 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
      * with zero-valued parameters is constructed.
      * @param parameters vector of distortion parameters
      */
-    public Radial2TermDistortionModel(double... parameters) {
+    public Radial2TermDistortion(double... parameters) {
         if (parameters.length == 0)
             parameters = new double[PARAM_COUNT];
         else if (parameters.length != PARAM_COUNT)
@@ -35,10 +35,10 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
     }
 
     @Override
-    public Radial2TermDistortionModel copyOf(double... params) {
+    public Radial2TermDistortion copyOf(double... params) {
         return (params.length == 0) ?
-            new Radial2TermDistortionModel(this.getParameters()) :
-            new Radial2TermDistortionModel(params);
+            new Radial2TermDistortion(this.getParameters()) :
+            new Radial2TermDistortion(params);
     }
 
     // -----------------------------------------

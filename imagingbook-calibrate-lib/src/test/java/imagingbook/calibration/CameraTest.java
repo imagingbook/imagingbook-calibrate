@@ -6,10 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.distortion.LensDistortionModel;
-import imagingbook.calibration.distortion.Radial2TermDistortionModel;
-import imagingbook.calibration.distortion.RadialDistortionModel;
-import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import imagingbook.calibration.distortion.LensDistortion;
+import imagingbook.calibration.distortion.Radial2TermDistortion;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
 
@@ -23,14 +21,14 @@ public class CameraTest {
     static final double tol = 1e-6;
     static final Camera cam1 =
             new Camera(832.5, 832.53, 0.204494, 303.959, 206.585,
-            new Radial2TermDistortionModel(-0.228601, 0.190353));
+            new Radial2TermDistortion(-0.228601, 0.190353));
     static final ViewTransform view = new ViewTransform();
 
     @Test
     public void CameraConstructorTest() {
         double alpha = 810, beta = 815, gamma = 0.2;
         double uc = 300, vc = 200;
-        Camera cam = new Camera(alpha, beta, gamma, uc, vc, new Radial2TermDistortionModel());
+        Camera cam = new Camera(alpha, beta, gamma, uc, vc, new Radial2TermDistortion());
         // ----------------------------------------------------
         assertEquals(alpha, cam.getAlpha(), tol);
         assertEquals(beta, cam.getBeta(), tol);
@@ -78,9 +76,9 @@ public class CameraTest {
 
     @Test
     public void getDistortion() {
-        LensDistortionModel dist = cam1.getDistortion();
+        LensDistortion dist = cam1.getDistortion();
         assertNotNull(dist);
-        assertTrue(dist instanceof Radial2TermDistortionModel);
+        assertTrue(dist instanceof Radial2TermDistortion);
     }
 
     @Test

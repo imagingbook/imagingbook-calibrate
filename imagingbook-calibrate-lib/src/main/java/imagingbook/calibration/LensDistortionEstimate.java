@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.distortion.LensDistortionModel;
+import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
@@ -20,10 +20,10 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
  */
 public class LensDistortionEstimate {
 
-    private final LensDistortionModel distortion;
+    private final LensDistortion distortion;
     private final double[] errors;
 
-    private LensDistortionEstimate(LensDistortionModel distortion, double... errors) {
+    private LensDistortionEstimate(LensDistortion distortion, double... errors) {
         this.distortion = distortion;
         this.errors = errors;
     }
@@ -46,7 +46,7 @@ public class LensDistortionEstimate {
     public static LensDistortionEstimate from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
 		final int M = views.length;		// the number of views
 		final int N = modelPts.length;	// the number of model points
-        final LensDistortionModel dstrt = cam.getDistortion();
+        final LensDistortion dstrt = cam.getDistortion();
         final int P = dstrt.getParameterCount();    // number of distortion parameters
 
         // the estimated projection center on the sensor plane
@@ -92,7 +92,7 @@ public class LensDistortionEstimate {
 		
 		DecompositionSolver solver = new SingularValueDecomposition(D).getSolver();
 		RealVector kopt = solver.solve(d);  // optimal distortion parameter
-        LensDistortionModel model = dstrt.copyOf(kopt.toArray());
+        LensDistortion model = dstrt.copyOf(kopt.toArray());
 
         // keep errors for later use (optional)
         double err1 = D.operate(new ArrayRealVector(new double[P])).subtract(d).getNorm();
@@ -105,7 +105,7 @@ public class LensDistortionEstimate {
      * Returns the lens distortion model obtained by this LensDistortionEstimate.
      * @return the lens distortion model
      */
-    public LensDistortionModel getDistortion() {
+    public LensDistortion getDistortion() {
         return this.distortion;
     }
 

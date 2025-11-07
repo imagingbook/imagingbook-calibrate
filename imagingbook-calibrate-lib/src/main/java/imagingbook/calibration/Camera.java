@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.distortion.LensDistortionModel;
+import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
@@ -32,7 +32,7 @@ public class Camera {
 	 * </pre>
 	 */
 	private final double[][] A;		// 2 x 3 2D affine transformation matrix
-    private final LensDistortionModel distortion;
+    private final LensDistortion distortion;
 
     /**
      * Basic constructor.
@@ -43,7 +43,7 @@ public class Camera {
      * @param vc
      * @param distortion
      */
-    public Camera(double alpha, double beta, double gamma, double uc, double vc, LensDistortionModel distortion) {
+    public Camera(double alpha, double beta, double gamma, double uc, double vc, LensDistortion distortion) {
         this.A = makeAffineCameraMatrix(alpha, beta, gamma, uc, vc);
         this.distortion = distortion;
     }
@@ -53,7 +53,7 @@ public class Camera {
      * @param a vector of linear camera parameters
      * @param distortion instance of lens distortion model
      */
-    private Camera(double[] a, LensDistortionModel distortion) {
+    private Camera(double[] a, LensDistortion distortion) {
         this(a[0], a[1], a[2], a[3], a[4], distortion);
     }
 		
@@ -78,14 +78,14 @@ public class Camera {
 	 * @param A the (min.) 2 x 3 matrix holding the intrinsic camera parameters
 	 * @param distortion a lens distortion model instance
 	 */
-	public Camera(RealMatrix A, LensDistortionModel distortion) {
-        this.distortion = distortion; // ? new Radial2TermDistortionModel(0, 0) : new Radial2TermDistortionModel(K);
+	public Camera(RealMatrix A, LensDistortion distortion) {
+        this.distortion = distortion; // ? new Radial2TermDistortion(0, 0) : new Radial2TermDistortion(K);
         this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 	}
 
 	// --------------------------------------------------------------------------
 
-    public LensDistortionModel getDistortion() {
+    public LensDistortion getDistortion() {
         return this.distortion;
     }
 

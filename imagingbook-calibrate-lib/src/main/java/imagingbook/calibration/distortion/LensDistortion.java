@@ -9,7 +9,7 @@ package imagingbook.calibration.distortion;
 /**
  * The mother of all radial  distortion models.
  */
-public interface LensDistortionModel {
+public interface LensDistortion {
 
     /**
      * Copies an existing distortion model instance.
@@ -20,7 +20,7 @@ public interface LensDistortionModel {
      * @param params a parameter vector of required length
      * @return
      */
-    LensDistortionModel copyOf(double... params);
+    LensDistortion copyOf(double... params);
 
     /**
      * Returns the number of parameters required for this distortion model.
