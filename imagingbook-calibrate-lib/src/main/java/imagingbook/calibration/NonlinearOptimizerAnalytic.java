@@ -19,6 +19,8 @@ import static java.lang.Math.sqrt;
  * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix
  * is calculated analytically, with the first partial derivatives derived from the calibration model.
  * As an alternative see {@link NonlinearOptimizerNumeric} which uses numeric differentiation.
+ * Note: This is a dedicated numerical optimizer for Zhang's 2-term distortion model with
+ * only 2 distortion coefficients. It does NOT work with other distortion models!
  *
  * @author WB
  */
@@ -26,6 +28,8 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 
 	NonlinearOptimizerAnalytic(Camera initCam, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
 		super(initCam, modelPts, obsPts);
+        if (camParCount > 7)
+            throw new IllegalArgumentException("analytic optimizer cannot handle more than 7 parameters");
 	}
 
 	@Override
@@ -73,6 +77,7 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 			final double X = modelPts[j].getX();
 			final double Y = modelPts[j].getY();
 
+            // extract internal camera parameters:
 			final double alpha = params[0];
 			final double beta  = params[1];
 			final double gamma = params[2];
@@ -81,6 +86,7 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 			final double k0 = params[5];
 			final double k1 = params[6];
 
+            // extract external view parameters:
 			final double wx = params[i * viewParCount + camParCount + 0];
 			final double wy = params[i * viewParCount + camParCount + 1];
 			final double wz = params[i * viewParCount + camParCount + 2];

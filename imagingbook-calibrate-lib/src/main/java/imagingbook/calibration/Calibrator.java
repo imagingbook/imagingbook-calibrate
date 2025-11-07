@@ -49,7 +49,7 @@ public class Calibrator {
         /** Assume that the camera has no skew (currently not used). */
 		public boolean assumeZeroSkew = false;
 		/** Use numeric (instead of analytic) calculation of the Jacobian in {@link NonlinearOptimizer}. */
-		public boolean useNumericJacobian = false;
+		public boolean useNumericJacobian = true;
 		/** Turn on debugging output. */
 		public boolean debug = false;					
 	}
@@ -134,13 +134,16 @@ public class Calibrator {
         LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPts, obsPts);
         System.out.println("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		Camera improvedCam = new Camera(Ainit, distortion);
+        System.out.println("improved camera = " + improvedCam);
 
 		// Step 5: Refine all parameters by non-linear optimization
+        System.out.println("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
 		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?
 				new NonlinearOptimizerNumeric(improvedCam, modelPts, obsPts) :
 				new NonlinearOptimizerAnalytic(improvedCam, modelPts, obsPts);
 		optimizer.optimize(initViews);
 		finalCam = optimizer.getFinalCamera();
+        System.out.println("final camera = " + finalCam);
 		finalViews = optimizer.getFinalViews();
 		return finalCam;
 	}
