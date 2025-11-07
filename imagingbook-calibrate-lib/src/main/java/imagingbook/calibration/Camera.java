@@ -53,7 +53,7 @@ public class Camera {
      * @param a vector of linear camera parameters
      * @param distortion instance of lens distortion model
      */
-    private Camera(double[] a, LensDistortion distortion) {
+    public Camera(double[] a, LensDistortion distortion) {
         this(a[0], a[1], a[2], a[3], a[4], distortion);
     }
 		

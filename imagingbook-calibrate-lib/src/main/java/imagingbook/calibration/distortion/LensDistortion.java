@@ -6,6 +6,10 @@
  ******************************************************************************/
 package imagingbook.calibration.distortion;
 
+import imagingbook.calibration.Camera;
+import imagingbook.calibration.ViewTransform;
+import imagingbook.common.geometry.basic.Pnt2d;
+
 /**
  * The mother of all radial  distortion models.
  */
@@ -78,6 +82,48 @@ public interface LensDistortion {
      * @return the undistorted point
      */
     double[] unwarp(double[] xyd);
+
+    // -------------------------------------------------------------------------
+
+    /**
+     * Stores the average mapping error that occurred when this distortion
+     * model was estimated (mainly for debugging).
+     * Note: this method may not be implemented.
+     * @param error the average error
+     */
+    default void setAvgError(double error) { }
+
+    /**
+     * Retrieves the average error that occurred when this distortion
+     * model was estimated (mainly for debugging).
+     * Note: this method may not be implemented.
+     * @return the average error
+     */
+    default double getAvgError() {
+        return 0;
+    }
+
+    // -------------------------------------------------------------------------
+
+    /**
+     *  Estimates lens distortion from multiple views, starting from an initial (linear) camera model.
+     *  Given an initial estimate of the camera intrinsics (without lens distortion),
+     *  the task is to find the optimal distortion parameter vector k = (k0, k1)
+     *  by minimum least-squares optimization of
+     *  <pre>
+     *    D * k = d ,
+     *  </pre>
+     *  where matrix D is of size 2MN x 2, vector k of size 2, and vector d of size 2MN
+     *  (M views with N observed points).
+     *  @param cam the initial (linear) camera model
+     *  @param views a sequence of extrinsic view transformations
+     *  @param modelPts the set of 2D model points (on the planar calibration target)
+     *  @param obsPts a sequence of 2D image point sets, one set for each view
+     */
+    public static LensDistortion from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+        LensDistortionEstimator estimator = new LensDistortionEstimator(views, modelPts, obsPts);
+        return estimator.getEstimate(cam);
+    }
 }
 
 /*

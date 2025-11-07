@@ -7,7 +7,6 @@
 package imagingbook.calibration;
 
 import imagingbook.calibration.distortion.LensDistortion;
-import imagingbook.calibration.distortion.LensDistortionEstimator;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -16,6 +15,7 @@ import imagingbook.common.util.ParameterBundle;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -113,21 +113,21 @@ public class Calibrator {
             homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, true);
         }
 		
-		// Step 2: Estimate the intrinsic parameters by linear optimization:
-		RealMatrix A_init = CameraIntrinsics.from(homographies);
-		initCam = new Camera(A_init, params.distortionModel);
+		// Step 2: Estimate intrinsic camera parameters by linear optimization:
+		RealMatrix Ainit = CameraIntrinsics.from(homographies);
+		initCam = new Camera(Ainit, params.distortionModel);
+        System.out.println("initial camera = " + initCam);
 		
 		// Step 3: calculate the extrinsic view parameters (3D view transforms)
         initViews = new ViewTransform[M];
         for (int i = 0; i < M; i++) {
-            initViews[i] = ViewTransform.from(A_init, homographies[i]);
+            initViews[i] = ViewTransform.from(Ainit, homographies[i]);
         }
 		
 		// Step 4: Determine the lens distortion from initial estimates:
-        LensDistortion distortion =
-                LensDistortionEstimator.from(initCam, initViews, modelPts, obsPts).getDistortion();
-        // System.out.println("initial distortion = " + Arrays.toString(distortion.getParameters()));
-		Camera improvedCam = new Camera(A_init, distortion);
+        LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPts, obsPts);
+        System.out.println("initial distortion = " + Arrays.toString(distortion.getParameters()));
+		Camera improvedCam = new Camera(Ainit, distortion);
 
 		// Step 5: Refine all parameters by non-linear optimization
 		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?

@@ -14,12 +14,13 @@ import static org.junit.Assert.*;
 
 public class CalibratorTest {
 
-    // static ImageResource resource = CalibrationImage.CalibImageStack;
+    static final Pnt2d[] modelPoints = ZhangData.getModelPoints();
+    static final Pnt2d[][] obsPoints = ZhangData.getAllObservedPoints();
+    static final ViewTransform[] refViews = ZhangData.getAllViewTransforms();
 
     @Test
     public void calibrateTestZhangCam() {
-        Pnt2d[] modelPoints = ZhangData.getModelPoints();
-        Pnt2d[][] obsPoints = ZhangData.getAllObservedPoints();
+
         int M = obsPoints.length;    // number of views
 
         // Set up the calibrator ------------------------------------------
@@ -49,9 +50,9 @@ public class CalibratorTest {
         assertArrayEquals(pr, pf, 1e-3);
 
         ViewTransform[] finViews = calibrator.getFinalViews();
-        ViewTransform[] refViews = ZhangData.getAllViewTransforms();
-        assertEquals(refViews.length, finViews.length);
-        for (int i = 0; i < refViews.length; i++) {
+        assertEquals(M, finViews.length);
+        assertEquals(M, refViews.length);
+        for (int i = 0; i < M; i++) {
             assertArrayEquals(refViews[i].getParameters(), finViews[i].getParameters(), 1e-3);
         }
     }

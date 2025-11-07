@@ -7,8 +7,8 @@
 package imagingbook.calibration;
 
 import imagingbook.calibration.distortion.LensDistortion;
-import imagingbook.calibration.distortion.LensDistortionEstimator;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
+import imagingbook.calibration.distortion.Radial3TermDistortion;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.junit.Test;
@@ -19,32 +19,40 @@ import static org.junit.Assert.*;
 
 public class LensDistortionEstimatorTest {
 
+    static Pnt2d[] modelPts = ZhangData.getModelPoints();
+    static Pnt2d[][] obsPts = ZhangData.getAllObservedPoints();
+    static ViewTransform[] views = ZhangData.getAllViewTransforms();   // cheating a bit, using final views from Zhang
+    // initial estimate obtained from Calibrator
+    static double[] camIntrinsics = {877.16, 876.80, 0.1751, 301.04, 220.41};
+
+
     @Test
-    public void fromTest() {
-        Pnt2d[] modelPts = ZhangData.getModelPoints();
-        Pnt2d[][] obsPts = ZhangData.getAllObservedPoints();
-        ViewTransform[] views = ZhangData.getAllViewTransforms();   // cheating a bit, using final views from Zhang
-        int M = obsPts.length;    // number of views
-
-        // Initial camera = [877.1610736944268, 876.8009085961099, 0.17515644031677685, 301.0436734292903, 220.4104056624287, 0.0, 0.0]
-        Camera cam1 = new Camera(877.16, 876.80, 0.1751, 301.04, 220.41, Radial2TermDistortion.INSTANCE);
-
-        LensDistortionEstimator estim1 = LensDistortionEstimator.from(cam1, views, modelPts, obsPts);
-        assertNotNull(estim1);
-        LensDistortion dist1 = estim1.getDistortion();
-        assertNotNull(dist1);
-        System.out.println(Arrays.toString(dist1.getParameters()));
+    public void getEstimateRadial2TermTest() {
+        Camera cam1 = new Camera(camIntrinsics, Radial2TermDistortion.INSTANCE);
+        LensDistortion dist = LensDistortion.from(cam1, views, modelPts, obsPts);
+        assertNotNull(dist);
+        // System.out.println(Arrays.toString(dist.getParameters()));
+        assertArrayEquals(new double[] {-1.6129, 6.5133}, dist.getParameters(), 1e-3);
     }
 
     @Test
-    public void getDistortion() {
+    public void getEstimateRadial3TermTest() {
+        Camera cam1 = new Camera(camIntrinsics, Radial3TermDistortion.INSTANCE);
+        LensDistortion dist = LensDistortion.from(cam1, views, modelPts, obsPts);
+        assertNotNull(dist);
+        // System.out.println(Arrays.toString(dist.getParameters()));
+        assertArrayEquals(new double[] {-2.1701, 18.4892, -57.64063}, dist.getParameters(), 1e-3);
     }
 
-    @Test
-    public void getError() {
-    }
-
-    @Test
-    public void testGetError() {
-    }
+    // @Test
+    // public void getDistortion() {
+    // }
+    //
+    // @Test
+    // public void getError() {
+    // }
+    //
+    // @Test
+    // public void testGetError() {
+    // }
 }
