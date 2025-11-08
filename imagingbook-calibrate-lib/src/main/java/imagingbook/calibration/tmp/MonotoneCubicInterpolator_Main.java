@@ -25,7 +25,7 @@ public class MonotoneCubicInterpolator_Main {
 
     public static void main (String[]args){
         double Xmax = 1.8;
-        int n = 60; // number of nodes (tune as desired)
+        int n = 50; // number of nodes (tune as desired)
         double[] xNodes = new double[n];
         double[] yNodes = new double[n];
 
@@ -39,9 +39,16 @@ public class MonotoneCubicInterpolator_Main {
         MonotoneCubicInterpolator inv = new MonotoneCubicInterpolator(yNodes, xNodes);
 
         // Test evaluate some y values
-        for (double y = 0.0; y <= f(Xmax); y += 0.2) {
+//        for (double y = 0.0; y <= f(Xmax); y += 0.2) {
+//            double xApprox = inv.evaluate(y);
+//            System.out.printf("y=%.6f -> x≈%.8f%n", y, xApprox);
+//        }
+
+        for (double x = 0.0; x < Xmax; x += 0.05) {
+            double y = f(x);
             double xApprox = inv.evaluate(y);
-            System.out.printf("y=%.6f -> x≈%.8f%n", y, xApprox);
+            double error = Math.abs(x - xApprox);
+            System.out.printf("x=%.6f -> y=%.6f -> x'=%.6f err=%.8f%n", x, y, xApprox, error);
         }
     }
 }

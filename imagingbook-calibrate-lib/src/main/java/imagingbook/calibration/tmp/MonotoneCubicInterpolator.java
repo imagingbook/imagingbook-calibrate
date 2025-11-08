@@ -80,10 +80,12 @@ public class MonotoneCubicInterpolator {
         double t = (yq - y[i]) / h;
 
         // Hermite basis functions
-        double h00 = 2 * t * t * t - 3 * t * t + 1;
-        double h10 = -2 * t * t * t + 3 * t * t;
-        double h01 = t * t * t - 2 * t * t + t;
-        double h11 = t * t * t - t * t;
+        double t2 = t * t;
+        double t3 = t2 * t;
+        double h00 = 2 * t3 - 3 * t2 + 1;
+        double h10 = -2 * t3 + 3 * t2;
+        double h01 = t3 - 2 * t2 + t;
+        double h11 = t3 - t2;
 
         return x[i] * h00 + x[i + 1] * h10 + h * (d[i] * h01 + d[i + 1] * h11);
     }
