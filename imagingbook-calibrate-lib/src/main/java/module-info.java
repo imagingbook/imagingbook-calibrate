@@ -8,6 +8,7 @@ module imagingbook.calibrate.lib {
     requires org.apache.commons.numbers.arrays;
     requires org.apache.commons.geometry.euclidean;
     requires org.apache.commons.math4.legacy.core;
+    requires org.apache.commons.math4.legacy.exception;
 
     exports imagingbook.calibration.zhang.data;
     exports imagingbook.calibration.util;
