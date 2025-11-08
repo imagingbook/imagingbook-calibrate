@@ -6,12 +6,10 @@
  ******************************************************************************/
 package imagingbook.calibration.distortion;
 
-import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.core.Pair;
 import org.apache.commons.math4.legacy.exception.TooManyEvaluationsException;
 import org.apache.commons.math4.legacy.exception.TooManyIterationsException;
 import org.apache.commons.math4.legacy.fitting.leastsquares.EvaluationRmsChecker;
-import org.apache.commons.math4.legacy.fitting.leastsquares.GaussNewtonOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
@@ -19,12 +17,6 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOp
 import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
-import org.apache.commons.math4.legacy.linear.RealMatrix;
-import org.apache.commons.math4.legacy.linear.RealVector;
-import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
-import org.apache.commons.math4.legacy.optim.SimpleVectorValueChecker;
-
-import java.util.Arrays;
 
 public class RadialLateralDistortion implements LensDistortion {
 
@@ -74,6 +66,11 @@ public class RadialLateralDistortion implements LensDistortion {
     @Override
     public double[] getParameters() {
         return new double[] {k0, k1, k2, p1, p2};
+    }
+
+    @Override
+    public double getError() {
+        return this.error;
     }
 
     @Override

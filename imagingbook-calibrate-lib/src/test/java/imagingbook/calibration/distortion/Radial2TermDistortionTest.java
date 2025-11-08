@@ -9,6 +9,7 @@ package imagingbook.calibration.distortion;
 import imagingbook.testutils.DeterministicRandom;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -183,6 +184,49 @@ public class Radial2TermDistortionTest {
         assertEquals(ldm.getParameterCount(), rowsUV[1].length);
         assertArrayEquals(new double[] {94.4999999, 42.5249999}, rowsUV[0], tol);
         assertArrayEquals(new double[] {8.5499999, 3.8474999}, rowsUV[1], tol);
+    }
+
+    // -------------------------------------------------------------------------
+    @Test
+    public void estimateInverseFunction2Test2() {
+        double[] k = new double[] {k0, k1};
+        System.out.println("k = " + Arrays.toString(k));
+        Radial2TermDistortion ldm = new Radial2TermDistortion(k);
+        double[] q = ldm.estimateInverseFunction2();
+        System.out.println("q = " + Arrays.toString(q));
+    }
+
+    @Test
+    public void estimateInverseFunction2Test3() {
+        double[] k = new double[] {k0, k1};
+        System.out.println("k = " + Arrays.toString(k));
+        Radial2TermDistortion ldm = new Radial2TermDistortion(k);
+        double[] q = ldm.estimateInverseFunction3();
+        System.out.println("q = " + Arrays.toString(q));
+    }
+
+    @Test
+    public void checkPolynomialInverse() {
+        // f^-1(r') = r' - k0 y^3 + (3 k0^2 - k1) r'^5 + higher order terms
+        RadialDistortion ldm = new Radial2TermDistortion(new double[] {k0, k1});
+        Random rand = new DeterministicRandom(37);
+        for (int i = 0; i < 10; i++) {
+            double r1 = rand.nextDouble();
+            // System.out.println("r1 = " + r1);
+            double r2 = ldm.fRad(r1);
+            // System.out.println("r2 = " + r2);
+            double r3 = inverseRad(r2);
+            // System.out.println("r3 = " + r3);
+            System.out.format("r1=%4f r2=%4f r3=%4f \n", r1, r2, r3);
+
+        }
+    }
+
+    static double inverseRad(double rr) {
+        // r' - k0 y^3 + (3 k0^2 - k1) r'^5;
+        double rr3 = rr * rr * rr;
+        double rr5 = rr3 * rr * rr;
+        return rr -k0 * rr3 + (3 * k0 * k0 - k1) * rr5;
     }
 
 }

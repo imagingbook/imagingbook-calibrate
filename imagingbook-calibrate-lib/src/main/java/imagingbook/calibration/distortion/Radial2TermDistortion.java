@@ -9,9 +9,19 @@ package imagingbook.calibration.distortion;
 import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
+import org.apache.commons.math4.legacy.linear.ArrayRealVector;
+import org.apache.commons.math4.legacy.linear.DecompositionSolver;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.QRDecomposition;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealVector;
+
+import java.util.Random;
 
 /**
  * Simplified radial distortion model used in Zhang's EasyCalib implementation.
+ * Distortion is modeled by
+ * function r' = warp(r) = r * (1 + k0 * r^2 + k1 * r^4) .
  */
 public class Radial2TermDistortion implements RadialDistortion {
 
@@ -81,30 +91,6 @@ public class Radial2TermDistortion implements RadialDistortion {
 
     // -----------------------------------------
 
-    // @Override
-    // public double[] warp(double[] xy) {
-    //     final double x = xy[0];
-    //     final double y = xy[1];
-    //     final double r = Math.sqrt(x * x + y * y);  // undistorted radius
-    //     if (r < 1e-6)
-    //         return new double[] {0, 0};
-    //     // final double R = warp(r);        // distorted radius
-    //     final double s = warp(r) / r;
-    //     return new double[] {s * x, s* y};
-    // }
-
-    // @Override
-    // public double[] unwarp(double[] xyd) {
-    //     final double xd = xyd[0];
-    //     final double yd = xyd[1];
-    //     final double R = Math.sqrt(xd * xd + yd * yd);	// distorted radius
-    //     if (R < 1e-6)
-    //         return new double[] {0, 0};
-    //     // final double r = unwarp(R);					// undistorted radius
-    //     final double s = unwarp(R) / R;
-    //     return new double[] {s * xd, s * yd};
-    // }
-
     /**
      * Forward radial distortion function.
      * @param r the original radius of a point in the ideal projection plane
@@ -139,18 +125,67 @@ public class Radial2TermDistortion implements RadialDistortion {
 
     // ------------------------------------------------------------------------
 
-    // /**
-    //  * Radial distortion function, to be applied in the form
-    //  * <pre>r' = r * (1 + D(r))</pre>
-    //  * to points in the ideal projection plane. Distortion coefficients k0, k1.
-    //  *
-    //  * @param r the original radius of a point in the ideal projection plane
-    //  * @return the pos/neg deviation for the given radius
-    //  */
-    // private double D(double r) {
-    //     final double r2 = r * r;
-    //     final double k0 = parameters[0];
-    //     final double k1 = parameters[1];
-    //     return (k0 + k1 * r2) * r2;		// D(r) = k0 * r^2 + k1 * r^4
-    // }
+    /**
+     * Find an approximate inverse function for
+     *  fRad(r) = r' =r * (1 + k0 * r^2 + k1 * r^4)
+     *  using the same form of polynomial
+     *  fRadInv(r') = r = r' * (1 + q0 * r'^2 + q1 * r'^4)
+     *
+     * @return
+     */
+    public double[] estimateInverseFunction2() {
+        int N = 1000;   // number of samples
+        Random rand = new Random();
+        RealMatrix A = MatrixUtils.createRealMatrix(N, 2);
+        RealVector d = new ArrayRealVector(N);
+        for (int i = 0; i < N; i++) {
+            double r = rand.nextDouble();
+            double rr = fRad(r);
+            double rr3 = rr * rr * rr;
+            double rr5 = rr3 * rr * rr;
+            A.setEntry(i, 0, rr3);
+            A.setEntry(i, 1, rr5);
+            d.setEntry(i, r - rr);
+        }
+
+        DecompositionSolver solver = new QRDecomposition(A).getSolver();
+        RealVector q = solver.solve(d);
+
+        RealVector residual = d.subtract(A.operate(q));
+        double maxres = residual.getMaxValue();
+        double avgres = residual.getNorm() / N;
+        System.out.println("max residual = " + maxres);
+        System.out.println("avg residual = " + avgres);
+        return q.toArray();
+    }
+
+    public double[] estimateInverseFunction3() {
+        int N = 1000;   // number of samples
+        Random rand = new Random();
+        RealMatrix A = MatrixUtils.createRealMatrix(N, 3);
+        RealVector d = new ArrayRealVector(N);
+        for (int i = 0; i < N; i++) {
+            double r = rand.nextDouble();
+            double rr = fRad(r);
+            double rr3 = rr * rr * rr;
+            double rr5 = rr3 * rr * rr;
+            double rr7 = rr5 * rr * rr;
+            A.setEntry(i, 0, rr3);
+            A.setEntry(i, 1, rr5);
+            A.setEntry(i, 2, rr7);
+            d.setEntry(i, r - rr);
+        }
+
+        DecompositionSolver solver = new QRDecomposition(A).getSolver();
+        RealVector q = solver.solve(d);
+
+        RealVector residual = d.subtract(A.operate(q));
+        double maxres = residual.getMaxValue();
+        double avgres = residual.getNorm() / N;
+        double rmserr = Math.sqrt(avgres);
+        System.out.println("max residual = " + maxres);
+        System.out.println("avg residual = " + avgres);
+        System.out.println("rms residual = " + rmserr);
+        return q.toArray();
+    }
 }
