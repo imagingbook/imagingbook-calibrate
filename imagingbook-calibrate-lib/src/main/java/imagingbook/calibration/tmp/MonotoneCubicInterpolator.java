@@ -15,18 +15,20 @@ import java.util.Arrays;
  * Given strictly increasing y[i] and corresponding x[i],
  * builds a monotone cubic spline x(y).
  *
+ * Monotone Piecewise Cubic Interpolation, Fritsch, F. N. and Carlson, R. E., SIAM Journal on Numerical Analysis 17(2), 1980
  * Kahaner, David, Cleve Moler, Stephen Nash. Numerical Methods and Software (1989)
  * SIAM Numerical Analysis: Theory and Experiments (Chapter 7: Interpolation on a piecewise-uniform grid)
  * https://matthodges.com/posts/2024-08-08-spline-pchip/?utm_source=chatgpt.com
  * https://jacobwilliams.github.io/PCHIP/
- *
- *
  * https://www.cs.usask.ca/~spiteri/M211/notes/chapter3.pdf
  * https://chatgpt.com/share/690f7f22-53cc-8006-876c-d2f0c65a733c
- *
  * https://de.mathworks.com/help/matlab/ref/pchip.html
  *
+ * See also https://commons.apache.org/proper/commons-math/commons-math-docs/apidocs/org/apache/commons/math4/legacy/analysis/interpolation/UnivariateInterpolator.html
  *
+ *
+ * Modifications: sample y = f(x) at regular intervals and use linear lookup on y.
+ * In this case tha y-array is not even needed.
  */
 public class MonotoneCubicInterpolator {
     private final double[] y;

@@ -7,6 +7,10 @@
 package imagingbook.calibration.distortion;
 
 import imagingbook.testutils.DeterministicRandom;
+import org.apache.commons.math4.legacy.analysis.solvers.LaguerreSolver;
+import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
+import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
+import org.apache.commons.numbers.complex.Complex;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -187,6 +191,9 @@ public class Radial2TermDistortionTest {
     }
 
     // -------------------------------------------------------------------------
+    //      EXPERIMENTAL!!!
+    // -------------------------------------------------------------------------
+
     @Test
     public void estimateInverseFunction2Test2() {
         double[] k = new double[] {k0, k1};
@@ -228,5 +235,39 @@ public class Radial2TermDistortionTest {
         double rr5 = rr3 * rr * rr;
         return rr -k0 * rr3 + (3 * k0 * k0 - k1) * rr5;
     }
+
+    // -------------------------------------------------------------------------
+
+    //@Test // check if f(r) is invertible for r in [a, b]
+    public void checkIsMonotonicPolynomial() {
+        /*
+        We want to check if polynomial f(r) = r + k0 * r^3 + k1 * r^5 is monotonic.
+        First deriv. is f'(c) = 1 + 3 k0 r^2 + 5 k1 r^4
+        for r in [0, rmax]
+         */
+        double a = 0, b = 2;
+        double[] coefficients = {1, 0, 3 * k0, 0, 5 * k1 };
+        double rmx = 2;
+        // UnivariateDifferentiableSolver inverseSolver = new NewtonRaphsonSolver();
+        LaguerreSolver solver =  new LaguerreSolver();
+        Complex[] roots = solver.solveAllComplex(coefficients, 0);
+        System.out.println("Complex roots found: " + roots.length);
+        int count = 0;
+        for (Complex c : roots) {
+            if (c.getReal() > a && c.getReal() < b && c.getImaginary() < tol) {
+                count++;
+                System.out.printf("  found real root at r = %.4f\n", c.getReal());
+            }
+        }
+        if (count == 0) {
+            System.out.printf("  f(r) is invertible in [%.2f, %.2f]\n", a, b);
+        }
+        else {
+            System.out.printf("  f(r) is NOT invertible in [%.2f, %.2f]\n", a, b);
+        }
+
+    }
+
+
 
 }

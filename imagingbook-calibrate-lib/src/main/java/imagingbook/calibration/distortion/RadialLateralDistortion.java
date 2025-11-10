@@ -10,6 +10,7 @@ import org.apache.commons.math4.legacy.core.Pair;
 import org.apache.commons.math4.legacy.exception.TooManyEvaluationsException;
 import org.apache.commons.math4.legacy.exception.TooManyIterationsException;
 import org.apache.commons.math4.legacy.fitting.leastsquares.EvaluationRmsChecker;
+import org.apache.commons.math4.legacy.fitting.leastsquares.GaussNewtonOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
@@ -103,7 +104,7 @@ public class RadialLateralDistortion implements LensDistortion {
         return new double[] {x * (1 + Dr) + dx, y * (1 + Dr) + dy};
     }
 
-    @Override
+    @Override   // this will fail for large p1, p2 coefficients!
     public double[] unwarp(double[] XY) {
 
         MultivariateJacobianFunction model = point -> {
@@ -149,7 +150,8 @@ public class RadialLateralDistortion implements LensDistortion {
                 .checker(new EvaluationRmsChecker(1e-8))
                 .build();
 
-        LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer();    // new GaussNewtonOptimizer() - alternatively
+        // LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer();    // new GaussNewtonOptimizer() - alternatively
+        LeastSquaresOptimizer optimizer = new GaussNewtonOptimizer();
 
         try {
             LeastSquaresOptimizer.Optimum optimum = optimizer.optimize(problem);

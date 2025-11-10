@@ -17,6 +17,7 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.Random;
+import java.util.function.Supplier;
 
 /**
  * Simplified radial distortion model used in Zhang's EasyCalib implementation.
@@ -103,11 +104,12 @@ public class Radial2TermDistortion implements RadialDistortion {
         return r * (1 + D);
     }
 
+
     /**
      * Inverse radial distortion function. Finds the original (undistorted) radius r from the distorted radius R, both
      * measured from the center = (0,0) of the ideal projection. Finds r as the root of the polynomial
-     * <pre>p(r) = - R + r + k0 * r^3 + k1 * r^5,</pre>
-     * where R is constant, by using a Newton-Raphson solver.
+     * <pre>p(r) = -R + r + k0 * r^3 + k1 * r^5,</pre>
+     * where R is given and fixed, by using a Newton-Raphson solver.
      *
      * @param R the distorted radius
      * @return the undistorted radius
@@ -115,10 +117,10 @@ public class Radial2TermDistortion implements RadialDistortion {
     @Override
     public double fRadInv(final double R) {
         double[] coefficients = {-R, 1, 0, k0, 0, k1};
+        UnivariateDifferentiableSolver inverseSolver = new NewtonRaphsonSolver();
         PolynomialFunction p = new PolynomialFunction(coefficients);
-        UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
         int maxEval = 20;
-        double r = solver.solve(maxEval, p, R); // rInit = R
+        double r = inverseSolver.solve(maxEval, p, R); // rInit = R
         // System.out.format("** solver iterations = %d\n", solver.getEvaluations());
         return r;
     }
@@ -159,6 +161,11 @@ public class Radial2TermDistortion implements RadialDistortion {
         return q.toArray();
     }
 
+    /**
+     * Just an experiment. Find coefficients for a polynomial
+     * to model the inverse function.
+     * @return
+     */
     public double[] estimateInverseFunction3() {
         int N = 1000;   // number of samples
         Random rand = new Random();
