@@ -202,7 +202,7 @@ public class Camera {
 
 	/**
 	 * Returns the camera's inner (linear and distortion parameters as one vector
-     * (alpha, beta, gamma, uc, vc, <distortion-params> ...).
+     * (alpha, beta, gamma, uc, vc, distortion-params ...).
 	 *
 	 * @return the camera's inner parameters
 	 */

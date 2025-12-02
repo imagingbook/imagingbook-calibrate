@@ -11,9 +11,12 @@ module imagingbook.calibrate.lib {
     requires org.apache.commons.math4.legacy.exception;
     requires org.apache.commons.numbers.complex;
 
+    exports imagingbook.calibration;
     exports imagingbook.calibration.zhang.data;
     exports imagingbook.calibration.util;
     exports imagingbook.calibration.math3legacy;
     exports imagingbook.calibration.distortion;
-    exports imagingbook.calibration;
+
+    exports imagingbook.aruco;
+
 }
