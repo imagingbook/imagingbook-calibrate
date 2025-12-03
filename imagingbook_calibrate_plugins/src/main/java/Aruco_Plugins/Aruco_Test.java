@@ -39,8 +39,8 @@ import java.util.List;
 public class Aruco_Test implements PlugIn, JavaDocHelp {
 
     // static String IMG_PATH = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2702_small.jpg";
-    // static String IMG_PATH = "../aruco-images/DSC_2702_small.jpg";
-    static String IMG_PATH = "../aruco-images/DSC_2705_single.jpg";
+    static String IMG_PATH = "../aruco-images/DSC_2702_small.jpg";
+    // static String IMG_PATH = "../aruco-images/DSC_2705_single.jpg";
     static double accuracyRate = 0.03;
 
     @Override
@@ -110,20 +110,22 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
                 print(os, "outer");
             }
         }
-        // only keep inner contours with exactly 4 vertices:
+        // only keep inner contours with exactly 4 vertices (5 because closed):
         for (Contour ic : icsCln) {
             List<Pnt2d> is = ContourSimplifier.simplify(ic, ic.getLength() * accuracyRate, true);
-            if (is.size() >= 4 && is.size() <= 100) {
+            if (is.size() == 5) {
                 icsSmpl.add(is);
                 print(is, "inner");
             }
         }
 
-        for (List<Pnt2d> oc : ocsSmpl) {
-            ColoredStroke stroke = new ColoredStroke(ContourStrokeWidth, cseq.next());
-            ola.addShape(toContour(oc).getPolygonPath(), stroke);
-        }
+        // show simplified outer contours
+        // for (List<Pnt2d> oc : ocsSmpl) {
+        //     ColoredStroke stroke = new ColoredStroke(ContourStrokeWidth, cseq.next());
+        //     ola.addShape(toContour(oc).getPolygonPath(), stroke);
+        // }
 
+        // show simplified inner contours
         for (List<Pnt2d> ic : icsSmpl) {
             ColoredStroke stroke = new ColoredStroke(ContourStrokeWidth, cseq.next());
             ola.addShape(toContour(ic).getPolygonPath(), stroke);
