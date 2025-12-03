@@ -8,6 +8,7 @@ package Aruco_Plugins;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
@@ -24,6 +25,7 @@ import imagingbook.common.regions.RegionContourSegmentation;
 import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.core.jdoc.JavaDocHelp;
 
+import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
@@ -38,13 +40,20 @@ import java.util.List;
  */
 public class Aruco_Test implements PlugIn, JavaDocHelp {
 
+    static {
+        LogStream.redirectSystem();	// redirects System.out and System.err streams to IJ.log
+    }
+
     // static String IMG_PATH = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2702_small.jpg";
-    static String IMG_PATH = "../aruco-images/DSC_2702_small.jpg";
-    // static String IMG_PATH = "../aruco-images/DSC_2705_single.jpg";
-    static double accuracyRate = 0.03;
+    // static String IMG_PATH = "../aruco-images/DSC_2702_small.jpg";
+    static String IMG_PATH = "../aruco-images/DSC_2705_singleB.jpg";
+    static double accuracyRate = 0.03; //0.03;
 
     @Override
     public void run(String args) {
+
+        System.out.println("LogStream redirected!");
+
         ImagePlus im = null;
         IJ.log("user path = " + System.getProperty("user.dir"));
         File f = new File(IMG_PATH);
@@ -61,7 +70,7 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
         ByteProcessor gray = ip.convertToByteProcessor();
 
         new OtsuThresholder().threshold(gray);
-        ImagePlus ig = new ImagePlus("gray", gray);
+        ImagePlus ig = new ImagePlus(im.getShortTitle() + "-gray", gray);
 
         ContourTracer ct = new RegionContourSegmentation(gray);
         List<? extends Contour> ocs = ct.getOuterContours();
@@ -105,17 +114,26 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
         // only keep outer contours with exactly 4 vertices:
         for (Contour oc : ocsCln) {
             List<Pnt2d> os = ContourSimplifier.simplify(oc, oc.getLength() * accuracyRate, true);
-            if (os.size() >= 4 && os.size() <= 100) {
+            if (os.size() >= 4) {
                 ocsSmpl.add(os);
-                print(os, "outer");
+                // print(os, "outer");
             }
         }
         // only keep inner contours with exactly 4 vertices (5 because closed):
+        int k = 0;
+
         for (Contour ic : icsCln) {
-            List<Pnt2d> is = ContourSimplifier.simplify(ic, ic.getLength() * accuracyRate, true);
-            if (is.size() == 5) {
-                icsSmpl.add(is);
-                print(is, "inner");
+            double tol = ic.getLength() * accuracyRate;
+            IJ.log("tolerance = " + (ic.getLength() * accuracyRate));
+            List<Pnt2d> is = ContourSimplifier.simplify(ic, tol, true);
+            IJ.log("is: size = " + is.size());
+            List<Pnt2d> iscln = ContourSimplifier.cleanupCollinear(is, tol, true);
+            IJ.log("iscln: size = " + iscln.size());
+            if (iscln.size() >= 4) {   //  && ContourSimplifier.isConvex(is)
+                // print(ic.getPointList(), "inner orig" + k);
+                icsSmpl.add(iscln);
+                print(iscln, "inner simple" + k);
+                k++;
             }
         }
 
@@ -129,6 +147,12 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
         for (List<Pnt2d> ic : icsSmpl) {
             ColoredStroke stroke = new ColoredStroke(ContourStrokeWidth, cseq.next());
             ola.addShape(toContour(ic).getPolygonPath(), stroke);
+            double r = 2;
+            for (Pnt2d p : ic) {
+                double x = p.getX() - r;
+                double y = p.getY() - r;
+                ola.addShape(new Ellipse2D.Double(x, y, 2*r, 2*r), stroke);
+            }
         }
 
 
@@ -152,7 +176,7 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
         IJ.log("Contour " + title + ":");
         int i = 0;
         for (Pnt2d p : points) {
-            IJ.log("   " + i + ": " + p.toString());
+            IJ.log("   " + p.toString()); i++;
         }
 
     }
