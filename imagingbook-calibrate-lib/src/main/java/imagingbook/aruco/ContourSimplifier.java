@@ -7,6 +7,7 @@
 package imagingbook.aruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.math.Arithmetic;
 import imagingbook.common.regions.Contour;
 
 import java.util.ArrayDeque;
@@ -135,8 +136,21 @@ public class ContourSimplifier {
                 continue;
             }
 
-            int iPrev = (i == 0 ? (closed ? n - 1 : 0) : i - 1);
-            int iNext = (i == n - 1 ? (closed ? 0 : n - 1) : i + 1);
+            int iPrev, iNext;
+            if (closed) {
+                iPrev = Arithmetic.mod(i - 1, n);
+                iNext = Arithmetic.mod(i + 1, n);
+            }
+            else {
+                iPrev = Math.max(i - 1, 0);
+                iNext = Math.min(i + 1, n - 1);
+            }
+
+            // int iPrev = closed ? Arithmetic.mod(i - 1, n) : Math.max(i - 1, 0);
+            // int iNext = closed ? Arithmetic.mod(i + 1, n) : Math.min(i + 1, n - 1);
+
+            // int iPrev = (i == 0 ? (closed ? n - 1 : 0) : i - 1);
+            // int iNext = (i == n - 1 ? (closed ? 0 : n - 1) : i + 1);
             Pnt2d A = pts.get(iPrev);
             Pnt2d B = pts.get(i);
             Pnt2d C = pts.get(iNext);

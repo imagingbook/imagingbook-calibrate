@@ -13,6 +13,7 @@ import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.aruco.ContourSimplifier;
+import imagingbook.aruco.ContourSimplifierClosed;
 import imagingbook.common.color.iterate.ColorSequencer;
 import imagingbook.common.color.iterate.CssColorSequencer;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -25,6 +26,7 @@ import imagingbook.common.regions.RegionContourSegmentation;
 import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.core.jdoc.JavaDocHelp;
 
+import java.awt.Color;
 import java.awt.geom.Ellipse2D;
 import java.io.File;
 import java.net.URI;
@@ -45,8 +47,9 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
     }
 
     // static String IMG_PATH = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2702_small.jpg";
-    // static String IMG_PATH = "../aruco-images/DSC_2702_small.jpg";
-    static String IMG_PATH = "../aruco-images/DSC_2705_singleB.jpg";
+    static String IMG_PATH = "../aruco-images/DSC_2702_small.jpg";
+    // static String IMG_PATH = "../aruco-images/DSC_2705_singleC.jpg";
+
     static double accuracyRate = 0.03; //0.03;
 
     @Override
@@ -125,11 +128,15 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
         for (Contour ic : icsCln) {
             double tol = ic.getLength() * accuracyRate;
             IJ.log("tolerance = " + (ic.getLength() * accuracyRate));
-            List<Pnt2d> is = ContourSimplifier.simplify(ic, tol, true);
+            // List<Pnt2d> is = ContourSimplifier.simplify(ic, tol, true);
+            List<Pnt2d> is = ContourSimplifierClosed.simplify(ic, tol);
             IJ.log("is: size = " + is.size());
-            List<Pnt2d> iscln = ContourSimplifier.cleanupCollinear(is, tol, true);
+
+            List<Pnt2d> iscln = is;
+            // iscln = ContourSimplifier.cleanupCollinear(is, tol, true);   // not needed
+
             IJ.log("iscln: size = " + iscln.size());
-            if (iscln.size() >= 4) {   //  && ContourSimplifier.isConvex(is)
+            if (iscln.size() == 4 && ContourSimplifier.isConvex(iscln)) {
                 // print(ic.getPointList(), "inner orig" + k);
                 icsSmpl.add(iscln);
                 print(iscln, "inner simple" + k);
@@ -145,13 +152,17 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
 
         // show simplified inner contours
         for (List<Pnt2d> ic : icsSmpl) {
-            ColoredStroke stroke = new ColoredStroke(ContourStrokeWidth, cseq.next());
+            Color col = cseq.next();
+            ColoredStroke stroke = new ColoredStroke(ContourStrokeWidth, col);
+            ColoredStroke stroke0 = new ColoredStroke(ContourStrokeWidth * 3, col);
             ola.addShape(toContour(ic).getPolygonPath(), stroke);
             double r = 2;
+            int j = 0;
             for (Pnt2d p : ic) {
                 double x = p.getX() - r;
                 double y = p.getY() - r;
-                ola.addShape(new Ellipse2D.Double(x, y, 2*r, 2*r), stroke);
+                ola.addShape(new Ellipse2D.Double(x, y, 2*r, 2*r), j == 0 ? stroke0 : stroke);
+                j++;
             }
         }
 
