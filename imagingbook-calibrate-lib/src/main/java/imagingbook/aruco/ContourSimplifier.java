@@ -1142,7 +1142,7 @@ public class ContourSimplifier {
         System.out.println("Check convex: " + isConvex(spoly));
     }
 
-    private static List<Pnt2d> makePoly(double... coords) {
+    public static List<Pnt2d> makePoly(double... coords) {
         List<Pnt2d> pntList = new ArrayList<>();
         for (int i = 0; i < coords.length; i+=2) {
             pntList.add(Pnt2d.from(coords[i], coords[i+1]));
@@ -1150,7 +1150,7 @@ public class ContourSimplifier {
         return pntList;
     }
 
-    private static List<Pnt2d> makePoly(double[][] coords) {
+    public static List<Pnt2d> makePoly(double[][] coords) {
         List<Pnt2d> pntList = new ArrayList<>();
         for (int i = 0; i < coords.length; i++) {
             pntList.add(Pnt2d.from(coords[i][0], coords[i][1]));
@@ -1158,7 +1158,7 @@ public class ContourSimplifier {
         return pntList;
     }
 
-    private static List<Pnt2d> makePoly(int[][] coords) {
+    public static List<Pnt2d> makePoly(int[][] coords) {
         List<Pnt2d> pntList = new ArrayList<>();
         for (int i = 0; i < coords.length; i++) {
             pntList.add(Pnt2d.from(coords[i][0], coords[i][1]));
@@ -1166,7 +1166,7 @@ public class ContourSimplifier {
         return pntList;
     }
 
-    private static boolean checkSame(List<Pnt2d> poly1, List<Pnt2d> poly2) {
+    public static boolean checkSame(List<Pnt2d> poly1, List<Pnt2d> poly2) {
         if (poly1.size() != poly2.size()) {
             return false;
         }

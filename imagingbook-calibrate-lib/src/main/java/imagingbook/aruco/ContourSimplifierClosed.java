@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import static imagingbook.aruco.ContourSimplifier.makePoly;
+import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Arithmetic.sqr;
 
 /*
@@ -148,6 +150,8 @@ public class ContourSimplifierClosed {
         return sqr(px - projX) + sqr(py - projY);
     }
 
+    // --------------------------------------------------------------------------------
+
      public static boolean isConvex(List<Pnt2d> pts) {
         int n = pts.size();
         // if (n < 4) return true; // triangles always convex (but we may want to know winding rule)
@@ -174,9 +178,69 @@ public class ContourSimplifierClosed {
         return true;
     }
 
+    public static double getLength(List<Pnt2d> poly) {
+        final int n = poly.size();
+        double len = 0;
+        for (int i = 0; i < n; i++) {
+            Pnt2d pi = poly.get(i);
+            Pnt2d pj = poly.get((i + 1) % n);
+            len += pi.distance(pj);
+        }
+
+        return len;
+    }
+
+    /**
+     * Polygon area calculation from vertices (Gaussian formula).
+     *
+     * @param poly
+     * @return
+     */
+    public static double getArea(List<Pnt2d> poly) {
+        final int n = poly.size();
+        double sum = 0;
+        for (int i = 0; i < n; i++) {
+            Pnt2d pi = poly.get(i);
+            Pnt2d pj = poly.get((i + 1) % n);
+            sum += (pi.getX() * pj.getY()) - (pj.getX() * pi.getY());
+        }
+
+        return Math.abs(sum) / 2;
+    }
+
+    public static double getCircularity(List<Pnt2d> poly) {
+        double area = getArea(poly);
+        double len =  getLength(poly);
+        if (isZero(len)) {
+            throw new ArithmeticException("zero polygon length encountered");
+        }
+        return 4 * Math.PI * area / sqr(len);
+    }
+
+    static List<Pnt2d> makeCircle(double radius, int steps) {
+        List<Pnt2d> circle = new ArrayList<>(steps);
+        for (int i = 0; i < steps; i++) {
+            double angle = i * 2 * Math.PI / steps;
+            double x = radius * Math.cos(angle);
+            double y = radius * Math.sin(angle);
+            circle.add(Pnt2d.from(x, y));
+        }
+        return circle;
+    }
+
     // --------------------------------------------------------------------------------
 
     public static void main(String[] args) {
-
+        // List<Pnt2d> poly = makePoly(20, 220, 140, 220, 140, 180, 20, 180);
+        // List<Pnt2d> poly = makePoly(0, 0, 0, 1, 1, 1, 1, 0);     // unit square
+        // List<Pnt2d> poly = makePoly(0, 0, 0, 1, 1, 2, 1, 1);       // diamond
+        List<Pnt2d> poly = makePoly(0, 0, 0, 1, 10, 1, 10, 0);       // flat rectangle
+        // List<Pnt2d> poly = makeCircle(1, 200);
+        double area = getArea(poly);
+        System.out.println("area = " + area);
+        double len = getLength(poly);
+        System.out.println("length = " + len);
+        double ecc = getCircularity(poly);
+        System.out.println("ecc = " + ecc);
     }
 }
