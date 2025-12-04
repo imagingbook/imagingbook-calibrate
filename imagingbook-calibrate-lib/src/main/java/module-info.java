@@ -10,6 +10,7 @@ module imagingbook.calibrate.lib {
     requires org.apache.commons.math4.legacy.core;
     requires org.apache.commons.math4.legacy.exception;
     requires org.apache.commons.numbers.complex;
+    requires com.fasterxml.jackson.databind;
 
     exports imagingbook.calibration;
     exports imagingbook.calibration.zhang.data;
