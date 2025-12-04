@@ -11,15 +11,18 @@ import ij.ImagePlus;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.aruco.ContourSimplifier;
 import imagingbook.aruco.ContourSimplifierClosed;
 import imagingbook.common.color.iterate.ColorSequencer;
 import imagingbook.common.color.iterate.CssColorSequencer;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
+import imagingbook.common.image.ImageMapper;
 import imagingbook.common.regions.Contour;
 import imagingbook.common.regions.ContourTracer;
 import imagingbook.common.regions.RegionContourSegmentation;
@@ -34,6 +37,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static imagingbook.aruco.ContourSimplifierClosed.getCircularity;
+
 /**
  * First test of ArUco functionality.
  *
@@ -47,8 +52,8 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
     }
 
     // static String IMG_PATH = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2702_small.jpg";
-    static String IMG_PATH = "../aruco-images/DSC_2702_small.jpg";
-    // static String IMG_PATH = "../aruco-images/DSC_2705_singleC.jpg";
+    // static String IMG_PATH = "../aruco-images/DSC_2702_small.jpg";
+    static String IMG_PATH = "../aruco-images/DSC_2705_singleC.jpg";
 
     static double accuracyRate = 0.03; //0.03;
 
@@ -110,7 +115,7 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
         //     ola.addShape(ic.getPolygonPath(), stroke);
         // }
 
-        // make polygon approximations --------------------------------------------
+        // make polygon approximations -------------
 
         List<List<Pnt2d>> ocsSmpl = new ArrayList<>();
         List<List<Pnt2d>> icsSmpl = new ArrayList<>();
@@ -136,7 +141,7 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
             // iscln = ContourSimplifier.cleanupCollinear(is, tol, true);   // not needed
 
             IJ.log("iscln: size = " + iscln.size());
-            if (iscln.size() == 4 && ContourSimplifier.isConvex(iscln)) {
+            if (iscln.size() == 4 && ContourSimplifier.isConvex(iscln) && getCircularity(iscln) > 0.5) {
                 // print(ic.getPointList(), "inner orig" + k);
                 icsSmpl.add(iscln);
                 print(iscln, "inner simple" + k);
@@ -166,14 +171,31 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
             }
         }
 
-
         IJ.log("outer contours simplified: " + ocsSmpl.size());
         IJ.log("inner contours simplified: " + icsSmpl.size());
 
-        ig.setOverlay(ola.getOverlay());
-        ig.show();
+        // show thresholded image
+        // ig.setOverlay(ola.getOverlay());
+        // ig.show();
+
+        // show oiginal grayscale image
+        im.setOverlay(ola.getOverlay());
+        im.show();
+
+        // CORNER REFINEMENT should come here!
+
+        // extract a 32 x 32 subimage
+        List<Pnt2d> box1 = icsSmpl.get(0);
+        ByteProcessor markerIp = extractMarkerImage(im.getProcessor(), box1);
+        new OtsuThresholder().threshold(markerIp);
+        new ImagePlus("Marker1", markerIp).show();
+
+
+
 
     }
+
+    // ---------------------------------------------------------------------------
 
     static Contour toContour(List<Pnt2d> points) {
         Contour cont = new Contour(0);
@@ -181,6 +203,21 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
             cont.addPoint(p);
         }
         return cont;
+    }
+
+    static int MARKER_SIZE = 64;
+    static ByteProcessor extractMarkerImage(ImageProcessor origIp, List<Pnt2d> corners) {
+        Pnt2d[] sourcePts = corners.toArray(new Pnt2d[0]);
+        Pnt2d[] targetPts = {
+                Pnt2d.from(0, 0),
+                Pnt2d.from(0, MARKER_SIZE-1),
+                Pnt2d.from(MARKER_SIZE-1, MARKER_SIZE-1),
+                Pnt2d.from(MARKER_SIZE-1, 0)};
+        ProjectiveMapping2D map = ProjectiveMapping2D.fromPoints(targetPts, sourcePts);
+        ByteProcessor targetIp = new ByteProcessor(MARKER_SIZE, MARKER_SIZE);
+        IJ.log("map = " + map.toString());
+        new ImageMapper(map).map(origIp, targetIp);
+        return targetIp;
     }
 
     static void print(List<Pnt2d> points, String title) {
