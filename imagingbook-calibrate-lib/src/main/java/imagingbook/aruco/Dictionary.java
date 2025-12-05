@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.aruco;
 
+import ij.process.ByteProcessor;
 import imagingbook.common.util.bits.BitVector;
 
 import java.util.Arrays;
@@ -160,6 +161,37 @@ public class Dictionary {
         }
 
         return sb.toString();
+    }
+
+    public ByteProcessor bytesToImage(byte[] bytes) {
+        String str01 = markerAsString1D(bytes);
+        char[] ch01 = str01.toCharArray();
+        byte[] b0255 = new byte[ch01.length];
+        for (int i = 0; i < ch01.length; i++) {
+            b0255[i] = (ch01[i] == '0') ? 0 : (byte)0xFF;
+        }
+        ByteProcessor bp = new ByteProcessor(N, N, Arrays.copyOf(b0255, N*N));
+        return bp;
+    }
+
+    public byte[] imageToBytes(ByteProcessor bp) {
+        byte[] b0255 = (byte[]) bp.getPixels();
+        char[] chars = new char[8];
+        int n = (bp.getHeight() * bp.getWidth() + 7) / 8;
+        byte[] bytes = new byte[n];
+        for (int k = 0, start = 0; start < b0255.length; k++, start+=8) {
+            Arrays.fill(chars, '0');
+            for (int i = 0; i < 8; i++) {
+                if (start + i >= b0255.length) break;
+                chars[i] = (b0255[start + i] == 0) ? '0' : '1';
+            }
+            String str = String.valueOf(chars);
+            // System.out.println("str = " + str);
+            int intValue = Integer.parseInt(String.valueOf(chars), 2);
+            // System.out.println("intVal = " + intValue);
+            bytes[k] = (byte) (0xFF & intValue);
+        }
+        return bytes;
     }
 
     // -------------------------------------------------------------
