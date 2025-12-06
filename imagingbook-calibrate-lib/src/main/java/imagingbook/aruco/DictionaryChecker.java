@@ -16,6 +16,10 @@ import static imagingbook.aruco.Dictionary.toStringUnsigned;
 
 public class DictionaryChecker {
 
+    /**
+     * Check dictionaries if all rotated patterns match the canonical pattern.
+     * @param args
+     */
     public static void main(String[] args) {
         // for (PredefiedDictionary pd : PredefiedDictionary.values()) {
         {
@@ -28,22 +32,24 @@ public class DictionaryChecker {
             // check all others!
 
             System.out.println("Dict = " + pd.name());
-            Dictionary d = pd.getDict();
-            System.out.println("Size = " + d.getMarkerSize());
-            System.out.println("Marker bits = " + d.getMarkerSize() * d.getMarkerSize());
-            System.out.println("  codes = " + d.getNumberOfCodes());
-            int errCnt = 0;
-            for (int code = 0; code < d.getNumberOfCodes(); code++) {  // code < d.getNumberOfCodes()
+            Dictionary dict = pd.getDict();
+            System.out.println("Size = " + dict.getMarkerSize());
+            System.out.println("Marker bits = " + dict.getMarkerSize() * dict.getMarkerSize());
+            System.out.println("  codes = " + dict.getNumberOfCodes());
+
+            int[] errCnt = new int[4]; // one for each rotation r
+
+            for (int code = 0; code < dict.getNumberOfCodes(); code++) {  // code < d.getNumberOfCodes()
                 System.out.println("-------------- Code = " + code);
 
-                byte[] br0 = d.getCodeBytes(code, 0);
-                ByteProcessor ip = d.bytesToImage(br0); // canonical image
+                byte[] br0 = dict.getCodeBytes(code, 0);
+                ByteProcessor ip = dict.bytesToImage(br0); // canonical image
 
                 for (int r = 0; r < 4; r++) {
-                    byte[] br1 = d.getCodeBytes(code, r);
+                    byte[] bytes1 = dict.getCodeBytes(code, r);
                     System.out.printf("Code %d / Rotation %d\n", code, r);
-                    System.out.println("br1= " + toStringUnsigned(br1));
-                    String str = d.markerAsString1D(br1);
+                    System.out.println("br1= " + toStringUnsigned(bytes1));
+                    String str = dict.markerAsString1D(bytes1);
                     //System.out.println("br1= " + d.markerAsString1D(br1));
                     // System.out.println();
                     // System.out.println(d.markerAsString2D(br));
@@ -51,18 +57,20 @@ public class DictionaryChecker {
 
                     // ip.invertLut();
                     //new ImagePlus("Rotation r = " + r, ip.resize(50)).show();
-                    byte[] br2 = d.imageToBytes(ip);
-                    System.out.println("br2= " + toStringUnsigned(br2));
+                    byte[] bytes2 = dict.imageToBytes(ip);
+                    System.out.println("br2= " + toStringUnsigned(bytes2));
                     //System.out.println("br2= " + d.markerAsString1D(br2));
                     //System.out.println(d.markerAsString2D(br2));
-                    if (!Arrays.equals(br1, br2)) {
-                        errCnt++;
+
+                    if (!Arrays.equals(bytes1, bytes2)) {
+                        errCnt[r]++;
                         System.out.println("**** error! ****");
                     }
                     ip = (ByteProcessor) ip.rotateLeft();
                 }
             }
-            System.out.println("Errors found: " + errCnt);
+            System.out.println("\nErrors found: " + Arrays.toString(errCnt));
+            System.out.println("Errors total: " + (errCnt[0] + errCnt[1] + errCnt[2] + errCnt[3]));
         }
     }
 }

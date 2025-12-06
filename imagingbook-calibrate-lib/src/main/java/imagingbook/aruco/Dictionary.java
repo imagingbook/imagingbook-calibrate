@@ -124,7 +124,6 @@ public class Dictionary {
         return this.maxCorrectionBits;
     }
 
-
     public static String toStringUnsigned(byte[] bytes) {
         int[] tmp = new int[bytes.length];
         for (int i = 0; i < bytes.length; i++) {
@@ -152,6 +151,18 @@ public class Dictionary {
 
     public String markerAsString2D(byte[] markerBytes) {
         String s1d = markerAsString1D(markerBytes);
+        StringBuilder sb = new StringBuilder();
+        int start = 0;
+        for (int i = 0; i < N; i++) {
+            sb.append(s1d, start, start + N);
+            sb.append("\n");
+            start = start + N;
+        }
+
+        return sb.toString();
+    }
+
+    public String markerAsString2D(String s1d) {
         StringBuilder sb = new StringBuilder();
         int start = 0;
         for (int i = 0; i < N; i++) {
@@ -196,32 +207,94 @@ public class Dictionary {
 
     // -------------------------------------------------------------
 
-    public static void main(String[] args) {
-        // for (PredefiedDictionary pd : PredefiedDictionary.values()) {
-            {PredefiedDictionary pd = PredefiedDictionary.DICT_5X5_1000;
-            System.out.println("Dict = " + pd.name());
-            Dictionary d  = pd.getDict();
-            System.out.println("Size = " + d.getMarkerSize());
-            System.out.println("Marker bits = " + d.getMarkerSize() * d.getMarkerSize());
-            System.out.println("  codes = " + d.getNumberOfCodes());
+        static String reverse(String original) {
+            return new StringBuilder(original).reverse().toString();
+        }
 
-            int code = 0;
+
+    // Bit order in bytes is MSB first (big-endian)
+    static void showMarkerBytesMsbFirst(int markerId) {
+        // for (PredefiedDictionary pd : PredefiedDictionary.values()) {
+        {PredefiedDictionary pd = PredefiedDictionary.DICT_5X5_1000;
+            System.out.println("Dict = " + pd.name());
+            Dictionary dict  = pd.getDict();
+            System.out.println("Size = " + dict.getMarkerSize());
+            System.out.println("Marker bits = " + dict.getMarkerSize() * dict.getMarkerSize());
+            System.out.println("  codes = " + dict.getNumberOfCodes());
+
+            int N = dict.getMarkerSize();
+            // int markerId = 0;
 
             for (int r = 0; r < R; r++) {
-                byte[] br = d.getCodeBytes(code, r);
-                System.out.println("Rotation r = " + r + ": " + Arrays.toString(br));
-                System.out.println("Rotation r = " + r + ": " + toStringUnsigned(br));
+                byte[] br = dict.getCodeBytes(markerId, r);
+                // System.out.println("Rotation r = " + r + ": " + Arrays.toString(br));
+                System.out.printf("ID=%d, r=%d bytes=%s\n", markerId, r, toStringUnsigned(br));
+
+                System.out.print("MSB bytes(orig):  ");
+                StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < br.length; i++) {
                     String s = String.format("%8s", Integer.toBinaryString(br[i] & 0xFF)).replace(' ', '0');
-                    System.out.print(s);
+                    sb.append(s);
                 }
+                String bitsAll = sb.toString();
+                System.out.println(bitsAll);
+
+                String bitsTrunc = bitsAll.substring(0, N * N);
+                System.out.print("MSB bytes(trunc): ");
+                System.out.println(bitsTrunc);
+                // System.out.println(dict.markerAsString1D(br));
+
                 System.out.println();
-                System.out.println(d.markerAsString1D(br));
-                System.out.println();
-                System.out.println(d.markerAsString2D(br));
+                System.out.println(dict.markerAsString2D(bitsTrunc));
+                // System.out.println(dict.markerAsString2D(br));
                 // System.out.println();
             }
         }
+
+    }
+
+    // Bit order in bytes is LSB first (little-endian)
+    static void showMarkerBytesLsbFirst() {
+        // for (PredefiedDictionary pd : PredefiedDictionary.values()) {
+        {PredefiedDictionary pd = PredefiedDictionary.DICT_5X5_1000;
+            System.out.println("Dict = " + pd.name());
+            Dictionary dict  = pd.getDict();
+            System.out.println("Size = " + dict.getMarkerSize());
+            System.out.println("Marker bits = " + dict.getMarkerSize() * dict.getMarkerSize());
+            System.out.println("  codes = " + dict.getNumberOfCodes());
+            int N = dict.getMarkerSize();
+            int markerId = 0;
+
+            for (int r = 0; r < R; r++) {
+                byte[] br = dict.getCodeBytes(markerId, r);
+                // System.out.println("Rotation r = " + r + ": " + Arrays.toString(br));
+                System.out.printf("ID=%d, r=%d bytes=%s\n", markerId, r, toStringUnsigned(br));
+
+                System.out.print("LSB bytes(orig):  ");
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < br.length; i++) {
+                    String s = String.format("%8s", Integer.toBinaryString(br[i] & 0xFF)).replace(' ', '0');
+                    sb.append(reverse(s));
+                }
+                String bitsAll = sb.toString();
+                System.out.println(bitsAll);
+
+                String bitsTrunc = bitsAll.substring(0, N * N);
+                System.out.print("LSB bytes(trunc): ");
+                System.out.println(bitsTrunc);
+                // System.out.println(dict.markerAsString1D(br));
+
+                System.out.println();
+                System.out.println(dict.markerAsString2D(bitsTrunc));
+                // System.out.println();
+            }
+        }
+
+    }
+
+    public static void main(String[] args) {
+        showMarkerBytesMsbFirst(2);
+        // showMarkerBytesLsbFirst();
 
     }
 

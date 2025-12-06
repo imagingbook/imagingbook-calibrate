@@ -11,7 +11,6 @@ import ij.ImagePlus;
 import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.aruco.ContourSimplifier;
 import imagingbook.aruco.ContourSimplifierClosed;
@@ -45,7 +44,7 @@ import static imagingbook.aruco.ContourSimplifierClosed.getCircularity;
  * @author WB
  * @version 2025/12/01
  */
-public class Aruco_Test implements PlugIn, JavaDocHelp {
+public class Aruco_Marker_Check_Plugin implements PlugIn, JavaDocHelp {
 
     static {
         LogStream.redirectSystem();	// redirects System.out and System.err streams to IJ.log
@@ -189,8 +188,6 @@ public class Aruco_Test implements PlugIn, JavaDocHelp {
         ByteProcessor markerIp = extractMarkerImage(im.getProcessor(), box1);
         new OtsuThresholder().threshold(markerIp);
         new ImagePlus("Marker1", markerIp).show();
-
-
 
 
     }
