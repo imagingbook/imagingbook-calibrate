@@ -22,7 +22,7 @@ import java.util.Arrays;
  * in its j-th rotation.
  * Each rotation implies a 90 degree rotation of the marker in anticlockwise direction.
  */
-
+@Deprecated
 public class Dictionary {
 
     static final int R = 4;                     // number of marker rotations

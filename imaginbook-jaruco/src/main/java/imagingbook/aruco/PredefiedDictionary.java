@@ -21,7 +21,7 @@ import java.io.InputStream;
  * "/opencv/modules/objdetect/src/aruco/predefined_dictionaries.hpp"
  * "/opencv/modules/objdetect/src/aruco/apriltag/predefined_dictionaries_apriltag.hpp"
  */
-
+@Deprecated
 public enum PredefiedDictionary {
     DICT_ARUCO_ORIGINAL("DICT_ARUCO_BYTES", 1024, 5, 0),
 

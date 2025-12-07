@@ -360,7 +360,7 @@ public class ArucoDictionary {
         System.out.println("is same = " + Arrays.equals(b, back1d));
     }
 
-    static void openDictionary() {
+    static void showDictionaryMarkersRotated() {
         ArucoDictionary dict = ArucoPredefiedDictionary.DICT_5X5_50.getDictionary();
         for (int r = 0; r < 4; r++) {
             byte[] bytes = dict.getMarkerPattern(2, r);
@@ -371,7 +371,7 @@ public class ArucoDictionary {
 
     public static void main(String[] args) {
         // checkPatterRotation();
-        openDictionary();
+        showDictionaryMarkersRotated();
     }
 
 }
