@@ -42,6 +42,7 @@ public class ArucoDictionary {
     private final int maxCorrectionBits;        // max. number of correction bits
     private final byte[][][] bytedata;          // marker bit patterns, bytedata[m][r] is a 0/1 byte[] for one marker instance
     private final BitSet[][] bitsets;           // compact replacement for bytedata
+    private final BitSet scratch;
 
     /**
      * Constructor
@@ -57,6 +58,7 @@ public class ArucoDictionary {
         this.maxCorrectionBits = maxCorrectionBits;
         this.bytedata = makeByteData(markerStrings);    // TODO: remove!
         this.bitsets = makeBitSets(markerStrings);
+        this.scratch = new BitSet(N*N); // scratch bitset for hamming distance calculation
     }
 
     @Deprecated
@@ -216,6 +218,71 @@ public class ArucoDictionary {
     }
 
     // -------------------------------------------------------------
+    // bool Dictionary::identify(const Mat &onlyBits, int &idx, int &rotation, double maxCorrectionRate) const {
+    //     CV_Assert(onlyBits.rows == markerSize && onlyBits.cols == markerSize);
+
+    /**
+     * Scans the dictionary for the index of the best-fitting marker and
+     * if successful, builds and returns a {@link LookupResult} instance.
+     * Otherwise null is returned.
+     *
+     * @param candidateBits the bit pattern extracted from the candidate region
+     * @return a {@link LookupResult} instance or null if unsuccessful
+     */
+    public LookupResult lookup(BitSet candidateBits, double maxCorrectionRate) {
+        int maxCorrectionRecalculed = (int) (maxCorrectionBits * maxCorrectionRate);
+        int idx = -1; // by default, not found
+        int rotation = -1;
+        int currentMinDistance = 0;
+
+        for (int m = 0; m < this.M; m++) {
+            currentMinDistance = N * N + 1;     // check why initialized here!
+            int currentRotation = -1;
+
+            for (int r = 0; r < 4; r++) {
+                int currentHamming = normHamming(getBitSet(m, r), candidateBits);
+                if(currentHamming < currentMinDistance) {
+                    currentMinDistance = currentHamming;
+                    currentRotation = r;
+                }
+            }
+
+            // if maxCorrection is fulfilled, return this one
+            if (currentMinDistance <= maxCorrectionRecalculed) {
+                idx = m;
+                rotation = currentRotation;
+                break;
+            }
+        }
+
+        return (idx >= 0) ?
+                new LookupResult(idx, rotation, currentMinDistance) : null;
+    }
+
+    // private int normHamming(BitSet a, BitSet b) {
+    //     BitSet x = (BitSet) a.clone();
+    //     x.xor(b);
+    //     return x.cardinality();   // number of bits set to 1
+    // }
+
+    private int normHamming(BitSet a, BitSet b) {
+        scratch.clear();
+        scratch.or(a);   // scratch := a
+        scratch.xor(b);  // scratch := a xor b
+        return scratch.cardinality();
+    }
+
+    public static class LookupResult {
+        final int markerIndex;
+        final int rotation;
+        final int hammingDistance;
+
+        LookupResult(int markerIndex, int rotation, int hammingDistance) {
+            this.markerIndex = markerIndex;
+            this.rotation = rotation;
+            this.hammingDistance = hammingDistance;
+        }
+    }
 
     // /**
     //  * Converts a byte array with 0/1 values (only) to a string with 0/1

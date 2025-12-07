@@ -118,6 +118,7 @@ public class Aruco_Marker_Check_Plugin implements PlugIn, JavaDocHelp {
 
         List<List<Pnt2d>> ocsSmpl = new ArrayList<>();
         List<List<Pnt2d>> icsSmpl = new ArrayList<>();
+
         // only keep outer contours with exactly 4 vertices:
         for (Contour oc : ocsCln) {
             List<Pnt2d> os = ContourSimplifier.simplify(oc, oc.getLength() * accuracyRate, true);
@@ -128,7 +129,6 @@ public class Aruco_Marker_Check_Plugin implements PlugIn, JavaDocHelp {
         }
         // only keep inner contours with exactly 4 vertices (5 because closed):
         int k = 0;
-
         for (Contour ic : icsCln) {
             double tol = ic.getLength() * accuracyRate;
             IJ.log("tolerance = " + (ic.getLength() * accuracyRate));
