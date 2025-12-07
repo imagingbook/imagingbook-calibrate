@@ -4,15 +4,13 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.aruco;
+package imagingbook.jaruco;
 
-import ij.ImagePlus;
 import ij.process.ByteProcessor;
-import ij.process.ImageProcessor;
 
 import java.util.Arrays;
 
-import static imagingbook.aruco.Dictionary.toStringUnsigned;
+import static imagingbook.jaruco.Dictionary.toStringUnsigned;
 
 public class DictionaryChecker {
 
@@ -24,11 +22,11 @@ public class DictionaryChecker {
         // for (PredefiedDictionary pd : PredefiedDictionary.values()) {
         {
             //PredefiedDictionary pd = PredefiedDictionary.DICT_4X4_1000;
-            //PredefiedDictionary pd = PredefiedDictionary.DICT_5X5_1000;
+            PredefiedDictionary pd = PredefiedDictionary.DICT_5X5_1000;
             //PredefiedDictionary pd = PredefiedDictionary.DICT_6X6_1000;
             //PredefiedDictionary pd = PredefiedDictionary.DICT_7X7_1000;
             //PredefiedDictionary pd = PredefiedDictionary.DICT_APRILTAG_16h5;
-            PredefiedDictionary pd = PredefiedDictionary.DICT_APRILTAG_25h9;
+            //PredefiedDictionary pd = PredefiedDictionary.DICT_APRILTAG_25h9;
             // check all others!
 
             System.out.println("Dict = " + pd.name());

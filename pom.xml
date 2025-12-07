@@ -42,7 +42,7 @@
 	<modules>
 		<module>imagingbook-calibrate-lib</module>
 		<module>imagingbook_calibrate_plugins</module>
-        <module>imaginbook-jaruco</module>
+        <module>imagingbook-jaruco</module>
     </modules>
 
 	<properties>

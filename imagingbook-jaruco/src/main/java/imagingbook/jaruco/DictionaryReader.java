@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.aruco;
+package imagingbook.jaruco;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +23,7 @@ import java.io.IOException;
  * in its j-th rotation.
  * Each rotation implies a 90 degree rotation of the marker in anticlockwise direction.
  */
-
+@Deprecated
 public class DictionaryReader {
 
     // static String filePath = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-dicts/DICT_4X4_1000_BYTES.json";

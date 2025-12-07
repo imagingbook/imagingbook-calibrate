@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.aruco;
+package imagingbook.jaruco;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +21,7 @@ import java.util.zip.GZIPInputStream;
  * C:\_GITHUB\opencv-super\opencv\apps\pattern-tools
  * (originally compressed)
  */
+@Deprecated
 public class MarkerData {
     private int nmarkers;
     private int markersize;

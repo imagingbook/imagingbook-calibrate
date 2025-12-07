@@ -12,8 +12,8 @@ import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import imagingbook.aruco.ContourSimplifier;
-import imagingbook.aruco.ContourSimplifierClosed;
+import imagingbook.jaruco.ContourSimplifier;
+import imagingbook.jaruco.ContourSimplifierClosed;
 import imagingbook.common.color.iterate.ColorSequencer;
 import imagingbook.common.color.iterate.CssColorSequencer;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -36,7 +36,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.aruco.ContourSimplifierClosed.getCircularity;
+import static imagingbook.jaruco.ContourSimplifierClosed.getCircularity;
 
 /**
  * First test of ArUco functionality.

@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.aruco;
+package imagingbook.jaruco;
 
 import ij.process.ByteProcessor;
 import imagingbook.common.util.bits.BitVector;

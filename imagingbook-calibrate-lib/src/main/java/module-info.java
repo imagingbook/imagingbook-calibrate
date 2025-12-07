@@ -18,7 +18,4 @@ module imagingbook.calibrate.lib {
     exports imagingbook.calibration.util;
     exports imagingbook.calibration.math3legacy;
     exports imagingbook.calibration.distortion;
-
-    exports imagingbook.aruco;
-
 }

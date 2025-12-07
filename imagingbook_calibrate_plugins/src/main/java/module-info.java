@@ -4,8 +4,9 @@ module imagingbook_calibrate_plugins {
 
     requires ij;
     requires java.desktop;
-    requires imagingbook.calibrate.lib;
-    requires imagingbook.common;
-    requires imagingbook.core;
     requires org.apache.commons.geometry.euclidean;
+    requires imagingbook.core;
+    requires imagingbook.common;
+    requires imagingbook.calibrate.lib;
+    requires imagingbook.jaruco;
 }

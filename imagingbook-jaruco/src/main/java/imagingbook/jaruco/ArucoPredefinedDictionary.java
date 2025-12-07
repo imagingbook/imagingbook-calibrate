@@ -4,7 +4,11 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.aruco;
+package imagingbook.jaruco;
+
+import java.util.BitSet;
+
+import static imagingbook.jaruco.ByteArrayUtils.toString01;
 
 /**
  * Dictionary specs from
@@ -16,7 +20,7 @@ package imagingbook.aruco;
  * "/opencv/modules/objdetect/src/aruco/apriltag/predefined_dictionaries_apriltag.hpp"
  */
 
-public enum ArucoPredefiedDictionary {
+public enum ArucoPredefinedDictionary {
     DICT_ARUCO_ORIGINAL,
 
     DICT_4X4_50,
@@ -66,16 +70,12 @@ public enum ArucoPredefiedDictionary {
     // --------------------------------------------------
 
     public static void main(String[] args) {
-        // open/load all predefined dictionaries:
-        for (ArucoPredefiedDictionary dictname : ArucoPredefiedDictionary.values()) {
-            ArucoDictionary dict = dictname.getDictionary();
-            System.out.println(dictname + ": " + dict);
-
-            // not loaded twice, same instance:
-            ArucoDictionary dict2 = dictname.getDictionary();
-            assert(dict == dict2);
+        ArucoDictionary dict = DICT_ARUCO_ORIGINAL.getDictionary();
+        int N = dict.getMarkerSize();
+        for (int r = 0; r < 4; r++) {
+            BitSet bits = dict.getBitSet(1023, r);
+            System.out.println(toString01(bits, N*N));
         }
-        System.out.println();
 
     }
 

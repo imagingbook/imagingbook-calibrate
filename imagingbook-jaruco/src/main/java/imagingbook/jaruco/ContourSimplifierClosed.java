@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.aruco;
+package imagingbook.jaruco;
 
 import ij.IJ;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-import static imagingbook.aruco.ContourSimplifier.makePoly;
+import static imagingbook.jaruco.ContourSimplifier.makePoly;
 import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Arithmetic.sqr;
 
