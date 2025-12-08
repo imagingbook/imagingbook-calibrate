@@ -30,48 +30,48 @@ public class ArucoPredefinedDictionaryTest {
         }
     }
 
-    @Test   // JUnit5
-    public void dictionaryIntegrityTest1() {
-        for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
-            final ArucoDictionary dict = dictname.getDictionary();
-            int M = dict.getNumberOfCodes();
-            int N = dict.getMarkerSize();
-            int NxN = N * N;
-            // check if all marker patterns exist and have the proper length
-            for (int id = 0; id < M; id++) {
-                for (int r = 0; r < 4; r++) {
-                    byte[] pattern = dict.getMarkerPattern(id, r);
-                    final int finalId = id, finalR = r;
-                    assertEquals(NxN, pattern.length,
-                            () -> String.format("%s: wrong pattern length for marker id=%d, r=%d", dictname, finalId, finalR));
-                }
-            }
-        }
-    }
+    // @Test   // JUnit5
+    // public void dictionaryIntegrityTest1() {
+    //     for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
+    //         final ArucoDictionary dict = dictname.getDictionary();
+    //         int M = dict.getNumberOfCodes();
+    //         int N = dict.getMarkerSize();
+    //         int NxN = N * N;
+    //         // check if all marker patterns exist and have the proper length
+    //         for (int id = 0; id < M; id++) {
+    //             for (int r = 0; r < 4; r++) {
+    //                 byte[] pattern = dict.getMarkerPattern(id, r);
+    //                 final int finalId = id, finalR = r;
+    //                 assertEquals(NxN, pattern.length,
+    //                         () -> String.format("%s: wrong pattern length for marker id=%d, r=%d", dictname, finalId, finalR));
+    //             }
+    //         }
+    //     }
+    // }
 
-    @Test   // JUnit5
-    public void dictionaryIntegrityTest2() {
-        for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
-            final ArucoDictionary dict = dictname.getDictionary();
-            int M = dict.getNumberOfCodes();
-            int N = dict.getMarkerSize();
-            int NxN = N * N;
-            // check if all rotated marker patterns have the same number of 0/1
-            for (int id = 0; id < M; id++) {
-                // reference pattern:
-                byte[] canonical = dict.getMarkerPattern(id, 0);
-                int zeros = countValues(canonical, (byte) 0);
-                int ones = countValues(canonical, (byte) 1);
-                assertEquals(NxN, zeros + ones);
-                // check rotated versions:
-                for (int r = 1; r < 4; r++) {
-                    byte[] pattern = dict.getMarkerPattern(id, r);
-                    assertEquals(zeros, countValues(pattern, (byte) 0));
-                    assertEquals(ones, countValues(pattern, (byte) 1));
-                }
-            }
-        }
-    }
+    // @Test   // JUnit5
+    // public void dictionaryIntegrityTest2() {
+    //     for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
+    //         final ArucoDictionary dict = dictname.getDictionary();
+    //         int M = dict.getNumberOfCodes();
+    //         int N = dict.getMarkerSize();
+    //         int NxN = N * N;
+    //         // check if all rotated marker patterns have the same number of 0/1
+    //         for (int id = 0; id < M; id++) {
+    //             // reference pattern:
+    //             byte[] canonical = dict.getMarkerPattern(id, 0);
+    //             int zeros = countValues(canonical, (byte) 0);
+    //             int ones = countValues(canonical, (byte) 1);
+    //             assertEquals(NxN, zeros + ones);
+    //             // check rotated versions:
+    //             for (int r = 1; r < 4; r++) {
+    //                 byte[] pattern = dict.getMarkerPattern(id, r);
+    //                 assertEquals(zeros, countValues(pattern, (byte) 0));
+    //                 assertEquals(ones, countValues(pattern, (byte) 1));
+    //             }
+    //         }
+    //     }
+    // }
 
 
     @Test   // JUnit5
@@ -151,7 +151,7 @@ public class ArucoPredefinedDictionaryTest {
     @Test   // JUnit5
     public void dictionaryCheckRotatedPatterns() {    // check if rotated markers are unique
         for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
-            if (dictname == ArucoPredefinedDictionary.DICT_ARUCO_ORIGINAL)
+            if (dictname == ArucoPredefinedDictionary.DICT_ARUCO_ORIGINAL)  // skip because problems in id=1023
                 continue;
             // System.out.println("checking dict " + dictname);
             final ArucoDictionary dict = dictname.getDictionary();

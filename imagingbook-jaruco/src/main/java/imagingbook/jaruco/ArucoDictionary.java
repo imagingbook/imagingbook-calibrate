@@ -41,7 +41,7 @@ public class ArucoDictionary {
     private final int M;                        // number of marker codes
     private final int N;                        // number of bits per dimension
     private final int maxCorrectionBits;        // max. number of correction bits
-    private final byte[][][] bytedata;          // marker bit patterns, bytedata[m][r] is a 0/1 byte[] for one marker instance
+    // private final byte[][][] bytedata;          // marker bit patterns, bytedata[m][r] is a 0/1 byte[] for one marker instance
     private final BitSet[][] bitsets;           // compact replacement for bytedata
     private final BitSet scratch;
 
@@ -57,7 +57,7 @@ public class ArucoDictionary {
         this.M = M;
         this.N = N;
         this.maxCorrectionBits = maxCorrectionBits;
-        this.bytedata = makeByteData(markerStrings);    // TODO: remove!
+        // this.bytedata = makeByteData(markerStrings);    // TODO: remove!
         this.bitsets = makeBitSets(markerStrings);
         this.scratch = new BitSet(N*N); // scratch bitset for hamming distance calculation
     }
@@ -67,36 +67,36 @@ public class ArucoDictionary {
         return String.format("%s [M=%d, N=%d, maxCorrectionBits=%d]", getClass().getSimpleName(), M, N, maxCorrectionBits);
     }
 
-    @Deprecated
-    private byte[][][] makeByteData(String[] markerStrings) {
-        if (markerStrings.length != this.M) {
-            throw new IllegalArgumentException("wrong length of markerString[]: "
-                    + markerStrings.length);
-        }
-        int NxN = N * N;
-        byte[][][] bytes = new byte[M][4][];
-        for (int id = 0; id < M; id++) {
-            char[] chars = markerStrings[id].toCharArray();
-            // copy content of chars to bytes (canonical pattern for r = 0)
-            byte[] canonical = new byte[NxN];
-            for (int k = 0; k < NxN; k++) {
-                char c = chars[k];
-                canonical[k] = switch(c) {
-                    case '0' -> 0;
-                    case '1' -> 1;
-                    default -> {throw new RuntimeException("wrong element in 0/1 string: " + c);}
-                };
-            }
-            bytes[id][0] = canonical;
-            byte[][] pattern2d = toMatrix(canonical, N);
-            // make rotated patterns for r = 1, 2, 3
-            for (int r = 1; r < 4; r++) {
-                rotateLeft(pattern2d);
-                bytes[id][r] = flatten(pattern2d);
-            }
-        }
-        return bytes;
-    }
+    // @Deprecated
+    // private byte[][][] makeByteData(String[] markerStrings) {
+    //     if (markerStrings.length != this.M) {
+    //         throw new IllegalArgumentException("wrong length of markerString[]: "
+    //                 + markerStrings.length);
+    //     }
+    //     int NxN = N * N;
+    //     byte[][][] bytes = new byte[M][4][];
+    //     for (int id = 0; id < M; id++) {
+    //         char[] chars = markerStrings[id].toCharArray();
+    //         // copy content of chars to bytes (canonical pattern for r = 0)
+    //         byte[] canonical = new byte[NxN];
+    //         for (int k = 0; k < NxN; k++) {
+    //             char c = chars[k];
+    //             canonical[k] = switch(c) {
+    //                 case '0' -> 0;
+    //                 case '1' -> 1;
+    //                 default -> {throw new RuntimeException("wrong element in 0/1 string: " + c);}
+    //             };
+    //         }
+    //         bytes[id][0] = canonical;
+    //         byte[][] pattern2d = toMatrix(canonical, N);
+    //         // make rotated patterns for r = 1, 2, 3
+    //         for (int r = 1; r < 4; r++) {
+    //             rotateLeft(pattern2d);
+    //             bytes[id][r] = flatten(pattern2d);
+    //         }
+    //     }
+    //     return bytes;
+    // }
 
     // TODO: remove intermediate byte[]s
     // private BitSet[][] makeBitSets(String[] markerStrings) {
@@ -171,7 +171,7 @@ public class ArucoDictionary {
         }
         return bs;
     }
-    
+
     // ----------------------------------------------------------------------
 
     /**
@@ -264,9 +264,9 @@ public class ArucoDictionary {
 
     // ----------------------------------------------------------------------
 
-    public byte[] getMarkerPattern(int id, int rot) {
-        return this.bytedata[id][rot];
-    }
+    // public byte[] getMarkerPattern(int id, int rot) {
+    //     return this.bytedata[id][rot];
+    // }
 
     public BitSet getBitSet(int id, int rot) {
         return this.bitsets[id][rot];
@@ -430,18 +430,18 @@ public class ArucoDictionary {
     //     System.out.println("is same = " + Arrays.equals(b, back1d));
     // }
 
-    static void showDictionaryMarkersRotated() {
-        ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_50.getDictionary();
-        for (int r = 0; r < 4; r++) {
-            byte[] bytes = dict.getMarkerPattern(2, r);
-            byte[][] marker = toMatrix(bytes, 5);
-            System.out.println(r + ":\n" + ByteArrayUtils.toString(marker));
-        }
-    }
+    // static void showDictionaryMarkersRotated() {
+    //     ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_50.getDictionary();
+    //     for (int r = 0; r < 4; r++) {
+    //         byte[] bytes = dict.getMarkerPattern(2, r);
+    //         byte[][] marker = toMatrix(bytes, 5);
+    //         System.out.println(r + ":\n" + ByteArrayUtils.toString(marker));
+    //     }
+    // }
 
     public static void main(String[] args) {
         // checkPatterRotation();
-        showDictionaryMarkersRotated();
+        // showDictionaryMarkersRotated();
     }
 
 }
