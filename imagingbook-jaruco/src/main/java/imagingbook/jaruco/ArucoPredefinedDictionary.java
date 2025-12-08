@@ -51,10 +51,10 @@ public enum ArucoPredefinedDictionary {
     static final String RELATIVE_DIR = "dict-gz/";
     static final String FILE_EXTENSION = ".json.gz";
 
-    private ArucoDictionary dict = null;    // singleton instance, only loaded once
+    private ArucoDictionary instance = null;    // singleton instance, only loaded once
 
     public boolean isLoaded() {
-        return (dict != null);
+        return (instance != null);
     }
 
     // lazy evaluation: data don't get loaded unless needed:
@@ -62,9 +62,9 @@ public enum ArucoPredefinedDictionary {
         if (!isLoaded()) {   // dictionary not yet initialized
             String resourcePath = RELATIVE_DIR + this.name() + FILE_EXTENSION;
             // System.out.println("Loading dictionary from " + resourcePath);
-            dict = ArucoDictionary.fromResource(this.getClass(), resourcePath);
+            instance = ArucoDictionary.fromResource(this.getClass(), resourcePath);
         }
-        return dict;
+        return instance;
     }
 
     // --------------------------------------------------

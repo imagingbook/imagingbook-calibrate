@@ -23,7 +23,8 @@ public class ArucoPredefinedDictionaryTest {
             ArucoDictionary dict = dictname.getDictionary();
             assertNotNull(dict,"could not load dictionary: " + dictname);
 
-            // not loaded twice, same instance:
+            // dictionary must not be loaded twice, getDictionary() always
+            // returns the same instance:
             ArucoDictionary dict2 = dictname.getDictionary();
             assertSame(dict2, dict);
         }

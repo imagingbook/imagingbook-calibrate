@@ -20,6 +20,7 @@ import static imagingbook.jaruco.ByteArrayUtils.rotateLeft;
 import static imagingbook.jaruco.ByteArrayUtils.toBitSet;
 import static imagingbook.jaruco.ByteArrayUtils.toByteArray;
 import static imagingbook.jaruco.ByteArrayUtils.toMatrix;
+import static imagingbook.jaruco.Rotations.makeRotationPermutation;
 
 /**
  * Dictionaries are stored as a list of bytes in its four rotations
@@ -61,6 +62,11 @@ public class ArucoDictionary {
         this.scratch = new BitSet(N*N); // scratch bitset for hamming distance calculation
     }
 
+    @Override
+    public String toString() {
+        return String.format("%s [M=%d, N=%d, maxCorrectionBits=%d]", getClass().getSimpleName(), M, N, maxCorrectionBits);
+    }
+
     @Deprecated
     private byte[][][] makeByteData(String[] markerStrings) {
         if (markerStrings.length != this.M) {
@@ -93,36 +99,79 @@ public class ArucoDictionary {
     }
 
     // TODO: remove intermediate byte[]s
+    // private BitSet[][] makeBitSets(String[] markerStrings) {
+    //     if (markerStrings.length != this.M) {
+    //         throw new IllegalArgumentException("wrong length of markerString[]: "
+    //                 + markerStrings.length);
+    //     }
+    //     int NxN = N * N;
+    //     BitSet[][] bitsets = new BitSet[M][4];
+    //     for (int id = 0; id < M; id++) {
+    //         char[] chars = markerStrings[id].toCharArray();
+    //         // copy content of chars to bytes (canonical pattern for r = 0)
+    //         byte[] canonical = new byte[NxN];
+    //         for (int k = 0; k < NxN; k++) {
+    //             char c = chars[k];
+    //             canonical[k] = switch(c) {
+    //                 case '0' -> 0;
+    //                 case '1' -> 1;
+    //                 default -> {throw new RuntimeException("wrong element in 0/1 string: " + c);}
+    //             };
+    //         }
+    //         bitsets[id][0] = ByteArrayUtils.toBitSet(canonical);
+    //         byte[][] pattern2d = toMatrix(canonical, N);
+    //         // make rotated patterns for r = 1, 2, 3
+    //         for (int r = 1; r < 4; r++) {
+    //             rotateLeft(pattern2d);
+    //             bitsets[id][r] = ByteArrayUtils.toBitSet(flatten(pattern2d));
+    //         }
+    //     }
+    //     return bitsets;
+    // }
+
+    // M, N are assumed to be initialized!
+
+    /**
+     * Converts the 0/1 marker string array to an array of {@link BitSet},
+     * pre-calculating rotated versions too.
+     *
+     * @param markerStrings an array of 0/1 marker strings
+     * @return an 2D array of {@link BitSet} instances, one item for each
+     * marker id and four rotations: {@code bitsets[id][rot]}
+     */
     private BitSet[][] makeBitSets(String[] markerStrings) {
         if (markerStrings.length != this.M) {
-            throw new IllegalArgumentException("wrong length of markerString[]: "
+            throw new IllegalArgumentException("wrong length of markerString array: "
                     + markerStrings.length);
         }
-        int NxN = N * N;
-        BitSet[][] bitsets = new BitSet[M][4];
+        int[] rotperm = makeRotationPermutation(N); // permutation vector for 2D matrix rotation
+        BitSet[][] allbitsets = new BitSet[M][4];
+        // process all marker ids:
         for (int id = 0; id < M; id++) {
-            char[] chars = markerStrings[id].toCharArray();
-            // copy content of chars to bytes (canonical pattern for r = 0)
-            byte[] canonical = new byte[NxN];
-            for (int k = 0; k < NxN; k++) {
-                char c = chars[k];
-                canonical[k] = switch(c) {
-                    case '0' -> 0;
-                    case '1' -> 1;
-                    default -> {throw new RuntimeException("wrong element in 0/1 string: " + c);}
-                };
-            }
-            bitsets[id][0] = toBitSet(canonical);
-            byte[][] pattern2d = toMatrix(canonical, N);
+            char[] markerPattern = markerStrings[id].toCharArray();
+            allbitsets[id][0] = toBitSet(markerPattern);   // r=0: canonical (unrotated)
             // make rotated patterns for r = 1, 2, 3
             for (int r = 1; r < 4; r++) {
-                rotateLeft(pattern2d);
-                bitsets[id][r] = toBitSet(flatten(pattern2d));
+                markerPattern = Rotations.permute(markerPattern, rotperm);  // perform 2D rotation
+                allbitsets[id][r] = toBitSet(markerPattern);
             }
         }
-        return bitsets;
+        return allbitsets;
     }
 
+    /**
+     * Converts a 0/1 char array to a {@link BitSet}.
+     * @param char01 the input char array
+     * @return the corresponding {@link BitSet}
+     */
+    private BitSet toBitSet(char[] char01) {
+        BitSet bs = new BitSet(char01.length);
+        for (int i = 0; i < char01.length; i++) {
+            if (char01[i] == '1') bs.set(i);    // '0' is unchecked/ignored
+        }
+        return bs;
+    }
+    
     // ----------------------------------------------------------------------
 
     /**
@@ -156,9 +205,10 @@ public class ArucoDictionary {
             throw new RuntimeException(e);
         }
 
-        int nmarkers = root.get("nmarkers").asInt();
-        int markersize = root.get("markersize").asInt();
-        int maxCorrectionBits = root.get("maxCorrectionBits").asInt();
+        final int nmarkers = root.get("nmarkers").asInt();
+        final int markersize = root.get("markersize").asInt();
+        final int maxCorrectionBits = root.get("maxCorrectionBits").asInt();
+        final int markerBitCount = markersize * markersize;
 
         // array of string to hold the 0/1 patters, one string for each marker id
         String[] markerStrings = new String[nmarkers];
@@ -177,7 +227,12 @@ public class ArucoDictionary {
                 if (markerStrings[id] != null) {
                     throw new RuntimeException("duplicate marker dictionary id: " + id);
                 }
-                markerStrings[id] = root.get(field).asText();
+
+                String markerStr = root.get(field).asText();
+                if (markerStr.length() != markerBitCount) {
+                    throw new RuntimeException("wrong string length for marker id=" + id);
+                }
+                markerStrings[id] = markerStr;
             }
         }
 
