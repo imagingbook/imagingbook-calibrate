@@ -83,14 +83,15 @@ public class ArucoDetector {
     /**
      * Represents the detection result for a single marker.
      */
-    public static class DetectionResult {
+    public static class MarkerDetection {
         final int markerId;
         final int rotation;
         final int hammingDist;
         final Pnt2d[] corners;
         final Pnt2d[] rejectedPoints;
 
-        public DetectionResult(int markerId, int rotation, int hDist, Pnt2d[] corners, Pnt2d[] rejectedPoints) {
+        // Constructor (private).
+        private MarkerDetection(int markerId, int rotation, int hDist, Pnt2d[] corners, Pnt2d[] rejectedPoints) {
             this.markerId = markerId;
             this.rotation = rotation;
             this.hammingDist = hDist;
@@ -99,17 +100,16 @@ public class ArucoDetector {
         }
 
         /**
-         * Factory method, builds a {@link DetectionResult} from a given
-         * {@link LookupResult} instance, adding the associated corner positions
-         * and rejected points.
+         * Builds a {@link MarkerDetection} from a given {@link LookupResult}
+         * instance, adding the associated corner positions and rejected points.
          *
          * @param lookupR a {@link LookupResult} instance
          * @param corners corner positions for the detected marker
          * @param rejectedPoints
-         * @return a new {@link DetectionResult} instance
+         * @return a new {@link MarkerDetection} instance
          */
-        static DetectionResult from(LookupResult lookupR, Pnt2d[] corners, Pnt2d[] rejectedPoints) {
-            return new DetectionResult(lookupR.markerIndex, lookupR.rotation, lookupR.hammingDistance,
+        static MarkerDetection from(LookupResult lookupR, Pnt2d[] corners, Pnt2d[] rejectedPoints) {
+            return new MarkerDetection(lookupR.markerIndex, lookupR.rotation, lookupR.hammingDistance,
                     corners, rejectedPoints);
         }
 
@@ -119,6 +119,14 @@ public class ArucoDetector {
                     getClass().getSimpleName(), markerId, Arrays.toString(corners));
         }
     }
+
+    // -------------------------------------------------------------------------
+
+    private final class DetectionContext {
+
+    }
+
+    private DetectionContext detContext = null;
 
     // -------------------------------------------------------------------------
 
@@ -156,12 +164,17 @@ public class ArucoDetector {
     }
 
     // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     int CURRENT_THRESHOLD = -1; // TODO: remove from here!
 
-    public List<DetectionResult> detectMarkers(ImagePlus im) {
+    /**
+     * The core method. Tries to locate and identify markers in the given image.
+     * @param ip the input image
+     * @return
+     */
+    public List<MarkerDetection> detectMarkers(ImageProcessor ip) {
         // STEP 1: convert input image to grayscale:
-        ImageProcessor ip = im.getProcessor();
         ByteProcessor gray = ip.convertToByteProcessor();
 
         // STEP 2a: threshold image for region/contour extraction:
@@ -179,18 +192,20 @@ public class ArucoDetector {
         List<List<Pnt2d>> candidateBoxes = simplifyContours(ics);
 
         // STEP 4: Process each candidate box and collect the results
-        List<DetectionResult> detectionResults = new ArrayList<>();
+        List<MarkerDetection> markerDetections = new ArrayList<>();
         int k = 0;
         for (List<Pnt2d> candidateBox : candidateBoxes) {
-            DetectionResult dr = processOneCandidateBox(ip, candidateBox, k++);
+            MarkerDetection dr = processOneCandidateBox(ip, candidateBox, k++);
             if (dr != null) {
-                detectionResults.add(dr);
+                markerDetections.add(dr);
             }
         }
-        return detectionResults;
+        return markerDetections;
     }
 
-    // -------------------------------
+    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+
 
     List<List<Pnt2d>> simplifyContours(List<? extends Contour> icsCln) {
         List<List<Pnt2d>> candidateBoxes = new ArrayList<>();
@@ -212,7 +227,7 @@ public class ArucoDetector {
         return candidateBoxes;
     }
 
-    DetectionResult processOneCandidateBox(ImageProcessor ip, List<Pnt2d> candidateBox, int k) {
+    MarkerDetection processOneCandidateBox(ImageProcessor ip, List<Pnt2d> candidateBox, int k) {
         // System.out.println("processOneCandidateBox " + k);
         // STEP 4a - CORNER REFINEMENT should come here!
 
@@ -235,7 +250,7 @@ public class ArucoDetector {
             // System.out.println("DETECTED: " + result);
             int id = lookup.markerIndex;
             Pnt2d[] corners = candidateBox.toArray(new Pnt2d[4]);
-            return DetectionResult.from(lookup, corners, null);   // TODO: rejectedPoints?
+            return MarkerDetection.from(lookup, corners, null);   // TODO: rejectedPoints?
         }
         else {
             return null;
@@ -315,10 +330,10 @@ public class ArucoDetector {
         ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_1000.getInstance();
 
         ArucoDetector detector = new ArucoDetector(dict);
-        List<DetectionResult> detectionResults = detector.detectMarkers(im);
+        List<MarkerDetection> markerDetections = detector.detectMarkers(im.getProcessor());
 
-        System.out.println("Markers found: " + detectionResults.size());
-        for (DetectionResult res : detectionResults) {
+        System.out.println("Markers found: " + markerDetections.size());
+        for (MarkerDetection res : markerDetections) {
             System.out.println(res);
         }
     }
