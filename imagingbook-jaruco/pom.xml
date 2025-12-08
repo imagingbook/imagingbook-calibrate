@@ -95,6 +95,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- For more elegant test assertions -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.25.3</version> <!-- or latest -->
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>
