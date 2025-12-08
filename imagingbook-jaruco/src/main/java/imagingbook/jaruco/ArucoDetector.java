@@ -1,7 +1,6 @@
 package imagingbook.jaruco;
 
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
@@ -24,6 +23,7 @@ import static imagingbook.jaruco.ArucoDictionary.toBitSet;
 import static imagingbook.jaruco.ByteArrayUtils.toString01;
 import static imagingbook.jaruco.ContourSimplifierClosed.getCircularity;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
+import imagingbook.jaruco.gui.ZoomableImagePlus;
 
 public class ArucoDetector {
 
@@ -126,8 +126,6 @@ public class ArucoDetector {
     private final DetectorParameters detectorParams;
     private final RefineParameters refineParams;
 
-    static int REDUCED_SIZE = 32;
-
     /**
      * Basic constructor, using default parameter settings specified by
      * {@link DetectorParameters} and {@link RefineParameters}.
@@ -159,13 +157,17 @@ public class ArucoDetector {
 
     // -------------------------------------------------------------------------
 
+    int CURRENT_THRESHOLD = -1; // TODO: remove from here!
+
     public List<DetectionResult> detectMarkers(ImagePlus im) {
         // STEP 1: convert input image to grayscale:
         ImageProcessor ip = im.getProcessor();
         ByteProcessor gray = ip.convertToByteProcessor();
 
-        // STEP 2a: threshold image:
-        new OtsuThresholder().threshold(gray);
+        // STEP 2a: threshold image for region/contour extraction:
+        CURRENT_THRESHOLD = Math.round(new OtsuThresholder().getThreshold(gray));
+        gray.threshold(CURRENT_THRESHOLD);
+
 
         // STEP 2b: segment and find closed contours:
         ContourTracer ct = new RegionContourSegmentation(gray);
@@ -188,6 +190,8 @@ public class ArucoDetector {
         return detectionResults;
     }
 
+    // -------------------------------
+
     List<List<Pnt2d>> simplifyContours(List<? extends Contour> icsCln) {
         List<List<Pnt2d>> candidateBoxes = new ArrayList<>();
         for (Contour ic : icsCln) {
@@ -209,12 +213,16 @@ public class ArucoDetector {
     }
 
     DetectionResult processOneCandidateBox(ImageProcessor ip, List<Pnt2d> candidateBox, int k) {
+        // System.out.println("processOneCandidateBox " + k);
         // STEP 4a - CORNER REFINEMENT should come here!
 
-        // STEP 4b - extract a 64 x 64 rectified subimage
-        ByteProcessor markerIp = extractMarkerImage(ip, candidateBox, REDUCED_SIZE); // parameter!
-        new OtsuThresholder().threshold(markerIp);
-        new ImagePlus("Marker " + k, markerIp).show();
+        // STEP 4b - extract a small rectified subimage
+        int targetSize = 5 * (this.dictionary.getMarkerSize() + 2); // fields with 5x5 pixels (parameter!?)
+        ByteProcessor markerIp = extractMarkerImage(ip, candidateBox, targetSize);
+        new ZoomableImagePlus("Marker raw" + k, markerIp.duplicate()).show(20);
+
+        // new OtsuThresholder().threshold(markerIp);
+        // new ZoomableImagePlus("Marker b&w" + k, markerIp.duplicate()).show(20);
 
         // STEP 4c - sample marker fields to generate the 1D marker pattern
         BitSet sampleBits = extractMarkerBits(markerIp);
@@ -237,11 +245,11 @@ public class ArucoDetector {
     //static int MARKER_SIZE = 64;
     ByteProcessor extractMarkerImage(ImageProcessor origIp, List<Pnt2d> corners, int targetSize) {
         Pnt2d[] sourcePts = corners.toArray(new Pnt2d[0]);
-        Pnt2d[] targetPts = {
-                Pnt2d.from(0, 0),
-                Pnt2d.from(0, targetSize - 1),
-                Pnt2d.from(targetSize - 1, targetSize - 1),
-                Pnt2d.from(targetSize - 1, 0)};
+        Pnt2d[] targetPts = {   // enlarge target square by 1/2 pixel
+                Pnt2d.from(-0.5, -0.5),
+                Pnt2d.from(-0.5, targetSize - 1 + 0.5),
+                Pnt2d.from(targetSize - 1 + 0.5, targetSize - 1 + 0.5),
+                Pnt2d.from(targetSize - 1 + 0.5, -0.5)};
         // calculate homography mapping (from target to source):
         ProjectiveMapping2D hom = ProjectiveMapping2D.fromPoints(targetPts, sourcePts);
         ByteProcessor targetIp = new ByteProcessor(targetSize, targetSize);
@@ -250,8 +258,11 @@ public class ArucoDetector {
         return targetIp;
     }
 
-    // TODO next
+
     private BitSet extractMarkerBits(ByteProcessor markerIp) {
+        // optionally wrap markerIp into an ImageAccessor to handle image borders (not strictly needed)
+        // ScalarAccessor ia = ScalarAccessor.create(markerIp,
+        //         OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor);
         int w = markerIp.getWidth();
         int N = dictionary.getMarkerSize();
         double d = (double) w / (N + 2);    // NxN marker + 1 row/ 1 column around on each side
@@ -261,24 +272,42 @@ public class ArucoDetector {
             int y = (int) Math.round((1.5 + i) * d);
             for (int j = 0; j < N; j++) {
                 int x = (int) Math.round((1.5 + j) * d);
-                int g = markerIp.getPixel(x, y);    // todo: get 3x3 median value at x/y
+                // int g = markerIp.getPixel(x, y);    // todo: get 3x3 median value at x/y
+
+                int g = get3x3Median(markerIp, x, y); // use threshold from initial thresholding?
                 // System.out.printf("x=%d y=%d g=%d\n", x, y, g);
-                if (g >= 128) {
+                if (g >= CURRENT_THRESHOLD) {
                     bits.set(k);
                 }
                 k++;
             }
         }
-        // System.out.println("Extracted pattern = " + toString01(bits));
+        // System.out.println("Extracted pattern = " + toString01(bits, 25));
 
         // return toBitSet("1011010000010000001010111");
         return bits;
     }
 
+    int get3x3Median(ByteProcessor ip, int x, int y) {
+        // ScalarAccessor ia = ScalarAccessor.create(ip, OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor);
+        // collect 3x3 values
+        int[] vals = new int[9];
+        int k = 0;
+        for (int v = 0; v < 3; v++) {
+            for (int u = 0; u < 3; u++) {
+                vals[k] = ip.getPixel(x -1 + u, y - 1 + v);
+                k++;
+            }
+        }
+        Arrays.sort(vals);  // calculate median
+        return vals[4];
+    }
+
 
     // ------------------------------------------------------------------------
 
-    static String IMG_PATH = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2705_singleA.jpg";
+    // static String IMG_PATH = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2705_singleA.jpg";
+    static String IMG_PATH = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2702_small.jpg";
 
     public static void main(String[] args) {
         ImagePlus im = IjUtils.openImage(IMG_PATH);
@@ -287,6 +316,8 @@ public class ArucoDetector {
 
         ArucoDetector detector = new ArucoDetector(dict);
         List<DetectionResult> detectionResults = detector.detectMarkers(im);
+
+        System.out.println("Markers found: " + detectionResults.size());
         for (DetectionResult res : detectionResults) {
             System.out.println(res);
         }

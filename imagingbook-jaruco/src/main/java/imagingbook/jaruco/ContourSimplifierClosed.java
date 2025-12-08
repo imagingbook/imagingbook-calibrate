@@ -35,7 +35,7 @@ public class ContourSimplifierClosed {
 
         // Pick optimal starting index
         int start = chooseStart(pts);
-        IJ.log("start = " + start + " = " + pts.get(start));
+        // IJ.log("start = " + start + " = " + pts.get(start));
 
         // Rotate the polygon
         List<Pnt2d> rotated = new ArrayList<>(n + 1);
