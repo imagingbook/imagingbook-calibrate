@@ -58,7 +58,7 @@ public enum ArucoPredefinedDictionary {
     }
 
     // lazy evaluation: data don't get loaded unless needed:
-    public ArucoDictionary getDictionary() {
+    public ArucoDictionary getInstance() {
         if (!isLoaded()) {   // dictionary not yet initialized
             String resourcePath = RELATIVE_DIR + this.name() + FILE_EXTENSION;
             // System.out.println("Loading dictionary from " + resourcePath);
@@ -70,7 +70,7 @@ public enum ArucoPredefinedDictionary {
     // --------------------------------------------------
 
     public static void main(String[] args) {
-        ArucoDictionary dict = DICT_ARUCO_ORIGINAL.getDictionary();
+        ArucoDictionary dict = DICT_ARUCO_ORIGINAL.getInstance();
         int N = dict.getMarkerSize();
         for (int r = 0; r < 4; r++) {
             BitSet bits = dict.getBitSet(1023, r);

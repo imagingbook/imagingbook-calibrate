@@ -3,6 +3,7 @@ package imagingbook.jaruco;
 import java.util.BitSet;
 
 /**
+ * EXPERIMENTAL / UNUSED!
  * An extension of Java's native {@link BitSet} class to represent an
  * immutable bit vector that is aware of its full length;
  */

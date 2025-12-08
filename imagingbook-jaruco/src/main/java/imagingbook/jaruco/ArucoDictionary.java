@@ -13,13 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
-import static imagingbook.jaruco.ByteArrayUtils.flatten;
-import static imagingbook.jaruco.ByteArrayUtils.rotateLeft;
-import static imagingbook.jaruco.ByteArrayUtils.toBitSet;
-import static imagingbook.jaruco.ByteArrayUtils.toByteArray;
-import static imagingbook.jaruco.ByteArrayUtils.toMatrix;
 import static imagingbook.jaruco.Rotations.makeRotationPermutation;
 
 /**
@@ -164,12 +160,16 @@ public class ArucoDictionary {
      * @param char01 the input char array
      * @return the corresponding {@link BitSet}
      */
-    private BitSet toBitSet(char[] char01) {
+    static BitSet toBitSet(char[] char01) {
         BitSet bs = new BitSet(char01.length);
         for (int i = 0; i < char01.length; i++) {
             if (char01[i] == '1') bs.set(i);    // '0' is unchecked/ignored
         }
         return bs;
+    }
+
+    static BitSet toBitSet(String str01) {
+        return toBitSet(str01.toCharArray());
     }
 
     // ----------------------------------------------------------------------
@@ -285,6 +285,7 @@ public class ArucoDictionary {
      * @return a {@link LookupResult} instance or null if unsuccessful
      */
     public LookupResult lookup(BitSet candidateBits, double maxCorrectionRate) {
+        Objects.requireNonNull(candidateBits, "candidateBits must not be null");
         int maxCorrectionRecalculed = (int) (maxCorrectionBits * maxCorrectionRate);
         int idx = -1; // by default, not found
         int rotation = -1;
@@ -295,6 +296,8 @@ public class ArucoDictionary {
             int currentRotation = -1;
 
             for (int r = 0; r < 4; r++) {
+                BitSet ref = getBitSet(m, r);
+                // System.out.printf("id=%d r=%d: a=%s b=%s\n", m, r, ref, candidateBits);
                 int currentHamming = normHamming(getBitSet(m, r), candidateBits);
                 if(currentHamming < currentMinDistance) {
                     currentMinDistance = currentHamming;
@@ -320,11 +323,18 @@ public class ArucoDictionary {
     //     return x.cardinality();   // number of bits set to 1
     // }
 
-    private int normHamming(BitSet a, BitSet b) {
-        scratch.clear();
-        scratch.or(a);   // scratch := a
-        scratch.xor(b);  // scratch := a xor b
-        return scratch.cardinality();
+    // private int normHamming(BitSet a, BitSet b) {
+    //     scratch.clear();
+    //     scratch.or(a);   // scratch := a
+    //     scratch.xor(b);  // scratch := a xor b
+    //     return scratch.cardinality();
+    // }
+
+    static int normHamming(BitSet a, BitSet b) {
+        //System.out.printf("a=%s b=%s\n", toString01(a), toString01(b));
+        BitSet x = (BitSet) a.clone(); // cast needed because clone() returns Object
+        x.xor(b);
+        return x.cardinality();
     }
 
     public static class LookupResult {
@@ -336,6 +346,12 @@ public class ArucoDictionary {
             this.markerIndex = markerIndex;
             this.rotation = rotation;
             this.hammingDistance = hammingDistance;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s [id=%d, r=%d, dist=%d]",
+                    getClass().getSimpleName(), markerIndex, rotation, hammingDistance);
         }
     }
 

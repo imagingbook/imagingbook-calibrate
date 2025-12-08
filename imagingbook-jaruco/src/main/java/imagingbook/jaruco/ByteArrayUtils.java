@@ -135,6 +135,7 @@ public abstract class ByteArrayUtils {
         return bs;
     }
 
+
     /**
      * Converts a {@link BitSet} into a byte array with 0/1 values.
      * @param bs the input {@link BitSet}
