@@ -28,15 +28,14 @@ import imagingbook.jaruco.ArucoDictionary.LookupResult;
 public class ArucoDetector {
 
     public enum CornerRefineMethod {
+        /** Tag and corners detection based on the ArUco approach */
         CORNER_REFINE_NONE,
-        /// < Tag and corners detection based on the ArUco approach
+        /** ArUco approach and refine the corners locations using corner subpixel accuracy */
         CORNER_REFINE_SUBPIX,
-        /// < ArUco approach and refine the corners locations using corner
-        /// subpixel accuracy
+        /** ArUco approach and refine the corners locations using the contour-points line fitting */
         CORNER_REFINE_CONTOUR,
-        /// < ArUco approach and refine the corners locations using the
-        /// contour-points line fitting
-        CORNER_REFINE_APRILTAG, ///< Tag and corners detection based on the AprilTag 2 approach @cite wang2016iros
+        /** Tag and corners detection based on the AprilTag 2 approach @cite wang2016iros */
+        CORNER_REFINE_APRILTAG
     }
 
     public static class DetectorParameters implements ParameterBundle<ArucoDetector> {
@@ -85,14 +84,33 @@ public class ArucoDetector {
      * Represents the detection result for a single marker.
      */
     public static class DetectionResult {
-        int markerId;
-        Pnt2d[] corners;
-        Pnt2d[] rejectedPoints;
+        final int markerId;
+        final int rotation;
+        final int hammingDist;
+        final Pnt2d[] corners;
+        final Pnt2d[] rejectedPoints;
 
-        public DetectionResult(int markerId, Pnt2d[] corners, Pnt2d[] rejectedPoints) {
+        public DetectionResult(int markerId, int rotation, int hDist, Pnt2d[] corners, Pnt2d[] rejectedPoints) {
             this.markerId = markerId;
+            this.rotation = rotation;
+            this.hammingDist = hDist;
             this.corners = corners;
             this.rejectedPoints = rejectedPoints;
+        }
+
+        /**
+         * Factory method, builds a {@link DetectionResult} from a given
+         * {@link LookupResult} instance, adding the associated corner positions
+         * and rejected points.
+         *
+         * @param lookupR a {@link LookupResult} instance
+         * @param corners corner positions for the detected marker
+         * @param rejectedPoints
+         * @return a new {@link DetectionResult} instance
+         */
+        static DetectionResult from(LookupResult lookupR, Pnt2d[] corners, Pnt2d[] rejectedPoints) {
+            return new DetectionResult(lookupR.markerIndex, lookupR.rotation, lookupR.hammingDistance,
+                    corners, rejectedPoints);
         }
 
         @Override
@@ -142,89 +160,79 @@ public class ArucoDetector {
     // -------------------------------------------------------------------------
 
     public List<DetectionResult> detectMarkers(ImagePlus im) {
-
         // STEP 1: convert input image to grayscale:
-
         ImageProcessor ip = im.getProcessor();
         ByteProcessor gray = ip.convertToByteProcessor();
-        List<DetectionResult> detectionResults = new ArrayList<>();
 
-        // STEP 2: threshold image and find closed contours:
+        // STEP 2a: threshold image:
         new OtsuThresholder().threshold(gray);
-        // ImagePlus ig = new ImagePlus(im.getShortTitle() + "-gray", gray);
-        ContourTracer ct = new RegionContourSegmentation(gray);
-        List<? extends Contour> ocs = ct.getOuterContours();
-        List<? extends Contour> ics = ct.getInnerContours();
-        IJ.log("outer contours: " + ocs.size());
-        IJ.log("inner contours: " + ics.size());
 
-        // Keep only contours with more than 50 points (parameter?)
-        List<? extends Contour> ocsCln =
-                ocs.stream().filter(ctr -> ctr.getLength() > 50).toList();
-        List<? extends Contour> icsCln =
-                ics.stream().filter(ctr -> ctr.getLength() > 50).toList();
-        IJ.log("outer contours cleaned: " + ocsCln.size());
-        IJ.log("inner contours cleaned: " + icsCln.size());
+        // STEP 2b: segment and find closed contours:
+        ContourTracer ct = new RegionContourSegmentation(gray);
+        // since white is considered foreground, outer contours
+        // of black regions are actually INNER contours:
+        List<? extends Contour> ics = ct.getInnerContours();
 
         // STEP 3: Simplify inner contours to polygons
+        List<List<Pnt2d>> candidateBoxes = simplifyContours(ics);
 
-        // List<List<Pnt2d>> ocsSmpl = new ArrayList<>();
-        List<List<Pnt2d>> candidateBoxes = new ArrayList<>();
-
-        // only keep inner contours with exactly 4 vertices:
+        // STEP 4: Process each candidate box and collect the results
+        List<DetectionResult> detectionResults = new ArrayList<>();
         int k = 0;
-       // double accuracyRate = detectorParams.polygonalApproxAccuracyRate;
+        for (List<Pnt2d> candidateBox : candidateBoxes) {
+            DetectionResult dr = processOneCandidateBox(ip, candidateBox, k++);
+            if (dr != null) {
+                detectionResults.add(dr);
+            }
+        }
+        return detectionResults;
+    }
+
+    List<List<Pnt2d>> simplifyContours(List<? extends Contour> icsCln) {
+        List<List<Pnt2d>> candidateBoxes = new ArrayList<>();
         for (Contour ic : icsCln) {
+            // keep only contours with more than 50 points (TODO: parameter?)
+            if (ic.getLength() < 50)
+                continue;
             double tol = ic.getLength() * detectorParams.polygonalApproxAccuracyRate;
-            // IJ.log("tolerance = " + tol);
             List<Pnt2d> iscln = ContourSimplifierClosed.simplify(ic, tol);   // simplified polygon
-
             // iscln = ContourSimplifier.cleanupCollinear(is, tol, true);   // optional cleanup, not needed
-
-            IJ.log("iscln: size = " + iscln.size());
             // check if this is a convex 4-corner polygon that is not too elongated:
             if (iscln.size() == 4 &&
                     ContourSimplifier.isConvex(iscln) &&
                     getCircularity(iscln) > 0.5) {
-                // print(ic.getPointList(), "inner orig" + k);
-                // add to candidate marker regions
+                // add to candidate marker boxes
                 candidateBoxes.add(iscln);
-                // print(iscln, "inner simple" + k);
-                k++;
             }
         }
-
-        // STEP 4: Process each candidate box:
-        k = 0;
-        for (List<Pnt2d> candidateBox : candidateBoxes) {
-
-            // STEP 4a - CORNER REFINEMENT should come here!
-
-            // STEP 4b - extract a 64 x 64 rectified subimage
-            ByteProcessor markerIp = extractMarkerImage(ip, candidateBox, REDUCED_SIZE); // parameter!
-            new OtsuThresholder().threshold(markerIp);
-            new ImagePlus("Marker " + k, markerIp).show();
-
-            // STEP 4c - sample marker fields to generate the 1D marker pattern
-            BitSet sampleBits = extractMarkerBits(markerIp);
-
-            // STEP 4d - Lookup marker pattern in dictionary
-            double maxCorrectionRate = 1.0; // TODO: CHECK!!!
-            LookupResult result = dictionary.lookup(sampleBits, maxCorrectionRate);
-
-            if (result != null) {
-                // System.out.println("DETECTED: " + result);
-                int id = result.markerIndex;
-                Pnt2d[] corners = candidateBox.toArray(new Pnt2d[4]);
-                detectionResults.add(new DetectionResult(id, corners, null));   // TODO: rejectedPoints?
-            }
-            k++;
-        }
-
-        return detectionResults;
+        return candidateBoxes;
     }
 
+    DetectionResult processOneCandidateBox(ImageProcessor ip, List<Pnt2d> candidateBox, int k) {
+        // STEP 4a - CORNER REFINEMENT should come here!
 
+        // STEP 4b - extract a 64 x 64 rectified subimage
+        ByteProcessor markerIp = extractMarkerImage(ip, candidateBox, REDUCED_SIZE); // parameter!
+        new OtsuThresholder().threshold(markerIp);
+        new ImagePlus("Marker " + k, markerIp).show();
+
+        // STEP 4c - sample marker fields to generate the 1D marker pattern
+        BitSet sampleBits = extractMarkerBits(markerIp);
+
+        // STEP 4d - Lookup marker pattern in dictionary
+        double maxCorrectionRate = 1.0; // TODO: CHECK!!!
+        LookupResult lookup = dictionary.lookup(sampleBits, maxCorrectionRate);
+
+        if (lookup != null) {
+            // System.out.println("DETECTED: " + result);
+            int id = lookup.markerIndex;
+            Pnt2d[] corners = candidateBox.toArray(new Pnt2d[4]);
+            return DetectionResult.from(lookup, corners, null);   // TODO: rejectedPoints?
+        }
+        else {
+            return null;
+        }
+    }
 
     //static int MARKER_SIZE = 64;
     ByteProcessor extractMarkerImage(ImageProcessor origIp, List<Pnt2d> corners, int targetSize) {
