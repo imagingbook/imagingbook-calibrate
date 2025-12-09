@@ -63,73 +63,10 @@ public class ArucoDictionary {
         return String.format("%s [M=%d, N=%d, maxCorrectionBits=%d]", getClass().getSimpleName(), M, N, maxCorrectionBits);
     }
 
-    // @Deprecated
-    // private byte[][][] makeByteData(String[] markerStrings) {
-    //     if (markerStrings.length != this.M) {
-    //         throw new IllegalArgumentException("wrong length of markerString[]: "
-    //                 + markerStrings.length);
-    //     }
-    //     int NxN = N * N;
-    //     byte[][][] bytes = new byte[M][4][];
-    //     for (int id = 0; id < M; id++) {
-    //         char[] chars = markerStrings[id].toCharArray();
-    //         // copy content of chars to bytes (canonical pattern for r = 0)
-    //         byte[] canonical = new byte[NxN];
-    //         for (int k = 0; k < NxN; k++) {
-    //             char c = chars[k];
-    //             canonical[k] = switch(c) {
-    //                 case '0' -> 0;
-    //                 case '1' -> 1;
-    //                 default -> {throw new RuntimeException("wrong element in 0/1 string: " + c);}
-    //             };
-    //         }
-    //         bytes[id][0] = canonical;
-    //         byte[][] pattern2d = toMatrix(canonical, N);
-    //         // make rotated patterns for r = 1, 2, 3
-    //         for (int r = 1; r < 4; r++) {
-    //             rotateLeft(pattern2d);
-    //             bytes[id][r] = flatten(pattern2d);
-    //         }
-    //     }
-    //     return bytes;
-    // }
-
-    // TODO: remove intermediate byte[]s
-    // private BitSet[][] makeBitSets(String[] markerStrings) {
-    //     if (markerStrings.length != this.M) {
-    //         throw new IllegalArgumentException("wrong length of markerString[]: "
-    //                 + markerStrings.length);
-    //     }
-    //     int NxN = N * N;
-    //     BitSet[][] bitsets = new BitSet[M][4];
-    //     for (int id = 0; id < M; id++) {
-    //         char[] chars = markerStrings[id].toCharArray();
-    //         // copy content of chars to bytes (canonical pattern for r = 0)
-    //         byte[] canonical = new byte[NxN];
-    //         for (int k = 0; k < NxN; k++) {
-    //             char c = chars[k];
-    //             canonical[k] = switch(c) {
-    //                 case '0' -> 0;
-    //                 case '1' -> 1;
-    //                 default -> {throw new RuntimeException("wrong element in 0/1 string: " + c);}
-    //             };
-    //         }
-    //         bitsets[id][0] = ByteArrayUtils.toBitSet(canonical);
-    //         byte[][] pattern2d = toMatrix(canonical, N);
-    //         // make rotated patterns for r = 1, 2, 3
-    //         for (int r = 1; r < 4; r++) {
-    //             rotateLeft(pattern2d);
-    //             bitsets[id][r] = ByteArrayUtils.toBitSet(flatten(pattern2d));
-    //         }
-    //     }
-    //     return bitsets;
-    // }
-
-    // M, N are assumed to be initialized!
-
     /**
      * Converts the 0/1 marker string array to an array of {@link BitSet},
      * pre-calculating rotated versions too.
+     * Note: M, N are assumed to be initialized!
      *
      * @param markerStrings an array of 0/1 marker strings
      * @return an 2D array of {@link BitSet} instances, one item for each
@@ -264,17 +201,11 @@ public class ArucoDictionary {
 
     // ----------------------------------------------------------------------
 
-    // public byte[] getMarkerPattern(int id, int rot) {
-    //     return this.bytedata[id][rot];
-    // }
-
     public BitSet getBitSet(int id, int rot) {
         return this.bitsets[id][rot];
     }
 
     // -------------------------------------------------------------
-    // bool Dictionary::identify(const Mat &onlyBits, int &idx, int &rotation, double maxCorrectionRate) const {
-    //     CV_Assert(onlyBits.rows == markerSize && onlyBits.cols == markerSize);
 
     /**
      * Scans the dictionary for the index of the best-fitting marker and
@@ -286,10 +217,16 @@ public class ArucoDictionary {
      */
     public LookupResult lookup(BitSet candidateBits, double maxCorrectionRate) {
         Objects.requireNonNull(candidateBits, "candidateBits must not be null");
-        int maxCorrectionRecalculed = (int) (maxCorrectionBits * maxCorrectionRate);
+        // TODO: check length of bit vector (abandon BitSet)
+        int maxCorrectionRecalc = (int) (maxCorrectionBits * maxCorrectionRate);
         int idx = -1; // by default, not found
         int rotation = -1;
         int currentMinDistance = 0;
+
+        int oneBitCnt = candidateBits.cardinality();
+        if (oneBitCnt == 0 || oneBitCnt == N*N) {   // bits all zero or all one
+            return null;
+        }
 
         for (int m = 0; m < this.M; m++) {
             currentMinDistance = N * N + 1;     // check why initialized here!
@@ -306,7 +243,7 @@ public class ArucoDictionary {
             }
 
             // if maxCorrection is fulfilled, return this one
-            if (currentMinDistance <= maxCorrectionRecalculed) {
+            if (currentMinDistance <= maxCorrectionRecalc) {
                 idx = m;
                 rotation = currentRotation;
                 break;
@@ -317,21 +254,14 @@ public class ArucoDictionary {
                 new LookupResult(idx, rotation, currentMinDistance) : null;
     }
 
-    // private int normHamming(BitSet a, BitSet b) {
-    //     BitSet x = (BitSet) a.clone();
-    //     x.xor(b);
-    //     return x.cardinality();   // number of bits set to 1
-    // }
-
-    // private int normHamming(BitSet a, BitSet b) {
+    // static int normHamming(BitSet a, BitSet b) {
     //     scratch.clear();
     //     scratch.or(a);   // scratch := a
     //     scratch.xor(b);  // scratch := a xor b
     //     return scratch.cardinality();
     // }
 
-    static int normHamming(BitSet a, BitSet b) {
-        //System.out.printf("a=%s b=%s\n", toString01(a), toString01(b));
+    int normHamming(BitSet a, BitSet b) {
         BitSet x = (BitSet) a.clone(); // cast needed because clone() returns Object
         x.xor(b);
         return x.cardinality();
