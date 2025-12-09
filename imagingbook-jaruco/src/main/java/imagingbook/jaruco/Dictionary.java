@@ -134,7 +134,7 @@ public class Dictionary {
 
     public static String toStringBinary(byte[] bytes) {
         BitVector bv = BitVector.from(bytes);
-        return bv.toString();
+        return bv.asString();
     }
 
     // -------------------------------------------------------------

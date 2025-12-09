@@ -1,7 +1,5 @@
 package imagingbook.jaruco;
 
-import imagingbook.common.util.bits.BitVector;
-
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -15,10 +13,10 @@ public abstract class ByteArrayUtils {
         return Arrays.toString(tmp);
     }
 
-    public static String toStringBinary(byte[] bytes) {
-        BitVector bv = BitVector.from(bytes);
-        return bv.toString();
-    }
+//    public static String toStringBinary(byte[] bytes) {
+//        BitVector bv = BitVector.from(bytes);
+//        return bv.toString();
+//    }
 
     // -------------------------------------------------------------
 
