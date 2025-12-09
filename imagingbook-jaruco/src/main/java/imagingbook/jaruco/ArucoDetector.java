@@ -19,8 +19,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
-import static imagingbook.jaruco.ArucoDictionary.toBitSet;
-import static imagingbook.jaruco.ByteArrayUtils.toString01;
 import static imagingbook.jaruco.ContourSimplifierClosed.getCircularity;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
 import imagingbook.jaruco.gui.ZoomableImagePlus;
