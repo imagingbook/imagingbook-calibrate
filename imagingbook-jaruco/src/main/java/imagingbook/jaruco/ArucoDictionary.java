@@ -31,31 +31,27 @@ import static imagingbook.jaruco.Rotations.makeRotationPermutation;
  */
 
 public class ArucoDictionary {
-
     static final int R = 4;                     // number of marker rotations
-
     private final int M;                        // number of marker codes
     private final int N;                        // number of bits per dimension
     private final int maxCorrectionBits;        // max. number of correction bits
-    // private final byte[][][] bytedata;          // marker bit patterns, bytedata[m][r] is a 0/1 byte[] for one marker instance
-    private final BitSet[][] bitsets;           // compact replacement for bytedata
-    private final BitSet scratch;
+    private final BitSet[][] bitdata;           // marker bit patterns, bitdata[m][r] is a 0/1 bit-pattern for marker m, rotation r
+    private final BitSet scratch;               // scratch BitSet for Hamming distance calculation
 
     /**
      * Constructor
      * @param M number of code id's
      * @param N marker size
-     * @param maxCorrectionBits
+     * @param maxCorrectionBits number of correctable error bits
      * @param markerStrings array of 0/1 strings, one for each marker id,
-     * specifiying its canonical (unrotated) pattern
+     * specifying the marker's canonical (unrotated) pattern
      */
     private ArucoDictionary(int M, int N, int maxCorrectionBits, String[] markerStrings) {
         this.M = M;
         this.N = N;
         this.maxCorrectionBits = maxCorrectionBits;
-        // this.bytedata = makeByteData(markerStrings);    // TODO: remove!
-        this.bitsets = makeBitSets(markerStrings);
-        this.scratch = new BitSet(N*N); // scratch bitset for hamming distance calculation
+        this.bitdata = makeBitSets(markerStrings);  // create canonical and rotated bit patterns
+        this.scratch = new BitSet(N*N);
     }
 
     @Override
@@ -147,7 +143,7 @@ public class ArucoDictionary {
         final int maxCorrectionBits = root.get("maxCorrectionBits").asInt();
         final int markerBitCount = markersize * markersize;
 
-        // array of string to hold the 0/1 patters, one string for each marker id
+        // array of strings to hold the 0/1 patters, one string for each marker id
         String[] markerStrings = new String[nmarkers];
 
         // collect all markers from the JSON tree
@@ -172,7 +168,6 @@ public class ArucoDictionary {
                 markerStrings[id] = markerStr;
             }
         }
-
         return new ArucoDictionary(nmarkers, markersize, maxCorrectionBits, markerStrings);
     }
 
@@ -202,7 +197,7 @@ public class ArucoDictionary {
     // ----------------------------------------------------------------------
 
     public BitSet getBitSet(int id, int rot) {
-        return this.bitsets[id][rot];
+        return this.bitdata[id][rot];
     }
 
     // -------------------------------------------------------------
@@ -254,18 +249,20 @@ public class ArucoDictionary {
                 new LookupResult(idx, rotation, currentMinDistance) : null;
     }
 
-    // static int normHamming(BitSet a, BitSet b) {
-    //     scratch.clear();
-    //     scratch.or(a);   // scratch := a
-    //     scratch.xor(b);  // scratch := a xor b
-    //     return scratch.cardinality();
-    // }
-
+    // Hamming distance using a scratch BitSet (no repeated allocation)
     int normHamming(BitSet a, BitSet b) {
-        BitSet x = (BitSet) a.clone(); // cast needed because clone() returns Object
-        x.xor(b);
-        return x.cardinality();
+        scratch.clear();
+        scratch.or(a);   // scratch := a
+        scratch.xor(b);  // scratch := a xor b
+        return scratch.cardinality();
     }
+
+    // Hamming distance classic (allocates a new BitSet each time)
+    // int normHamming(BitSet a, BitSet b) {
+    //     BitSet x = (BitSet) a.clone(); // cast needed because clone() returns Object
+    //     x.xor(b);
+    //     return x.cardinality();
+    // }
 
     public static class LookupResult {
         final int markerIndex;
