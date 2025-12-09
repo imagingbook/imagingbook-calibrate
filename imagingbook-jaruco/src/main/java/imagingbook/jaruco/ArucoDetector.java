@@ -81,16 +81,36 @@ public class ArucoDetector {
     }
 
     /**
-     * Represents a polygon outlining a candiate marker in the input image.
+     * Represents a polygon outlining a candidate marker in the input image.
      * Originally this is the raw contour which is subsequently simplified.
+     * Instances are immutable.
      */
     static class MarkerOutline {
-        int threshold;    // the gray-level threshold at which this outline was obtained
-        List<Pnt2d> polygon;
+        final int uid;          // each marker has a uid for debugging
+        final int threshold;    // the gray-level threshold at which this outline was obtained
+        final List<Pnt2d> polygon;
 
-        MarkerOutline(int threshold, List<Pnt2d> polygon) {
+        // Full constructor.
+        MarkerOutline(int uid, int threshold, List<Pnt2d> polygon) {
+            this.uid = uid;
             this.threshold = threshold;
             this.polygon = polygon;
+        }
+
+        // Constructor, copies an existing outline with a new polygon.
+        MarkerOutline(MarkerOutline outline, List<Pnt2d> polygon) {
+            this(outline.uid, outline.threshold, polygon);
+        }
+
+        static int MARKER_UID = -1;
+
+        static void resetUid() {
+            MARKER_UID = -1;
+        }
+
+        static int nextUid() {
+            MARKER_UID++;
+            return MARKER_UID;
         }
     }
 
@@ -180,6 +200,7 @@ public class ArucoDetector {
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
         List<MarkerDetection> markerDetections = new ArrayList<>();
+        MarkerOutline.resetUid();
 
         // try different thresholds:
         int initThr = Math.round(new OtsuThresholder().getThreshold(gray));
@@ -195,7 +216,7 @@ public class ArucoDetector {
 
             int k = 0;
             for (MarkerOutline candidateBox : candidateBoxes) {
-                MarkerDetection dr = processOneCandidateBox(ip, candidateBox, k++);
+                MarkerDetection dr = processOneOutline(ip, candidateBox, k++);
                 if (dr != null) {
                     markerDetections.add(dr);
                 }
@@ -219,32 +240,33 @@ public class ArucoDetector {
         List<? extends Contour> ics = ct.getInnerContours();
         List<MarkerOutline> outlines = new ArrayList<>(ics.size());
         for (Contour ctr : ics) {
-            outlines.add(new MarkerOutline(threshold, ctr.getPointList()));
+            int uid = MarkerOutline.nextUid();
+            outlines.add(new MarkerOutline(uid, threshold, ctr.getPointList()));
         }
         return outlines;
     }
 
     List<MarkerOutline> simplifyContours(List<MarkerOutline> outlines) {
-        List<MarkerOutline> candidateBoxes = new ArrayList<>();
-        for (MarkerOutline mol : outlines) {
+        List<MarkerOutline> candidateOutlines = new ArrayList<>();
+        for (MarkerOutline ol : outlines) {
             // keep only contours with more than 50 points (TODO: parameter?)
-            if (mol.polygon.size() < 50)
+            if (ol.polygon.size() < 50)
                 continue;
-            double tol = mol.polygon.size() * detectorParams.polygonalApproxAccuracyRate;
-            List<Pnt2d> smplCtr = ContourSimplifierClosed.simplify(mol.polygon, tol);   // simplified polygon
+            double tol = ol.polygon.size() * detectorParams.polygonalApproxAccuracyRate;
+            List<Pnt2d> smplCtr = ContourSimplifierClosed.simplify(ol.polygon, tol);   // simplified polygon
             // smplCtr = ContourSimplifier.cleanupCollinear(is, tol, true);   // optional cleanup, not needed
             // check if this is a convex 4-corner polygon that is not too elongated:
             if (smplCtr.size() == 4 &&
                     ContourSimplifier.isConvex(smplCtr) &&
                     getCircularity(smplCtr) > 0.5) {
                 // add to candidate marker boxes
-                candidateBoxes.add(new MarkerOutline(mol.threshold, smplCtr));
+                candidateOutlines.add(new MarkerOutline(ol, smplCtr));
             }
         }
-        return candidateBoxes;
+        return candidateOutlines;
     }
 
-    MarkerDetection processOneCandidateBox(ImageProcessor ip, MarkerOutline markerOutline, int k) {
+    MarkerDetection processOneOutline(ImageProcessor ip, MarkerOutline markerOutline, int k) {
         // System.out.println("processOneCandidateBox " + k);
         // STEP 4a - CORNER REFINEMENT should come here!
 
@@ -252,9 +274,6 @@ public class ArucoDetector {
         int targetSize = 5 * (this.dictionary.getMarkerSize() + 2); // fields with 5x5 pixels (parameter!?)
         ByteProcessor markerIp = extractMarkerImage(ip, markerOutline, targetSize);
         new ZoomableImagePlus("Marker raw" + k, markerIp.duplicate()).show(20);
-
-        // new OtsuThresholder().threshold(markerIp);
-        // new ZoomableImagePlus("Marker b&w" + k, markerIp.duplicate()).show(20);
 
         // STEP 4c - sample marker fields to generate the 1D marker pattern
         BitSet sampleBits = extractMarkerBits(markerIp, markerOutline.threshold);
