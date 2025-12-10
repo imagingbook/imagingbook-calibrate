@@ -1,7 +1,7 @@
 package imagingbook.jaruco;
 
 import java.util.Arrays;
-import java.util.BitSet;
+// import java.util.BitSet;
 
 public abstract class ByteArrayUtils {
 
@@ -119,99 +119,99 @@ public abstract class ByteArrayUtils {
 
     // ---------------------------------
 
-    /**
-     * Converts a 0/1 byte array to a {@link BitSet}.
-     * @param arr the input byte array
-     * @return the corresponding {@link BitSet}
-     */
-    public static BitSet toBitSet(byte[] arr) {
-        BitSet bs = new BitSet(arr.length);
-        // System.out.println("bs length = " + bs.length());
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i] == 1) bs.set(i);
-        }
-        return bs;
-    }
+    // /**
+    //  * Converts a 0/1 byte array to a {@link BitSet}.
+    //  * @param arr the input byte array
+    //  * @return the corresponding {@link BitSet}
+    //  */
+    // public static BitSet toBitSet(byte[] arr) {
+    //     BitSet bs = new BitSet(arr.length);
+    //     // System.out.println("bs length = " + bs.length());
+    //     for (int i = 0; i < arr.length; i++) {
+    //         if (arr[i] == 1) bs.set(i);
+    //     }
+    //     return bs;
+    // }
 
 
-    /**
-     * Converts a {@link BitSet} into a byte array with 0/1 values.
-     * @param bs the input {@link BitSet}
-     * @return
-     */
-    public static byte[] toByteArray(BitSet bs) {
-        final int n = bs.length();
-        byte[] bytes01 = new byte[n];
-        StringBuilder sb = new StringBuilder(n);
-        for (int i = 0; i < n; i++) {
-            bytes01[i] =  bs.get(i) ? (byte) 1 : (byte) 0;
-        }
-        return bytes01;
-    }
+    // /**
+    //  * Converts a {@link BitSet} into a byte array with 0/1 values.
+    //  * @param bs the input {@link BitSet}
+    //  * @return
+    //  */
+    // public static byte[] toByteArray(BitSet bs) {
+    //     final int n = bs.length();
+    //     byte[] bytes01 = new byte[n];
+    //     StringBuilder sb = new StringBuilder(n);
+    //     for (int i = 0; i < n; i++) {
+    //         bytes01[i] =  bs.get(i) ? (byte) 1 : (byte) 0;
+    //     }
+    //     return bytes01;
+    // }
 
-    /**
-     * Converts the input {@link BitSet} to a 0/1 character string,
-     * which ends with the last (highest) 1-bit in the {@link BitSet}.
-     * @param bs the input {@link BitSet}
-     * @return a 0/1 character string
-     */
-    public static String toString01(BitSet bs) {
-        return toString01(bs, bs.length());
-    }
+    // /**
+    //  * Converts the input {@link BitSet} to a 0/1 character string,
+    //  * which ends with the last (highest) 1-bit in the {@link BitSet}.
+    //  * @param bs the input {@link BitSet}
+    //  * @return a 0/1 character string
+    //  */
+    // public static String toString01(BitSet bs) {
+    //     return toString01(bs, bs.length());
+    // }
 
-    /**
-     * Converts the input {@link BitSet} to a 0/1 character string
-     * of the specified length. The bit sequence is either truncated
-     * or extended with zeros.
-     * @param bs the input {@link BitSet}
-     * @param n the output length
-     * @return a 0/1 character string
-     */
-    public static String toString01(BitSet bs, int n) {
-        StringBuilder sb = new StringBuilder(n);
-        for (int i = 0; i < n; i++) {
-            sb.append(bs.get(i) ? '1' : '0');
-        }
-//        sb.append(" (");
-//        sb.append(n);
-//        sb.append(")");
-        return sb.toString();
-    }
+//     /**
+//      * Converts the input {@link BitSet} to a 0/1 character string
+//      * of the specified length. The bit sequence is either truncated
+//      * or extended with zeros.
+//      * @param bs the input {@link BitSet}
+//      * @param n the output length
+//      * @return a 0/1 character string
+//      */
+//     public static String toString01(BitSet bs, int n) {
+//         StringBuilder sb = new StringBuilder(n);
+//         for (int i = 0; i < n; i++) {
+//             sb.append(bs.get(i) ? '1' : '0');
+//         }
+// //        sb.append(" (");
+// //        sb.append(n);
+// //        sb.append(")");
+//         return sb.toString();
+//     }
 
-    static void playBitString() {
-        byte[] arr1 = new byte[] {0,0,1,0,1,1,1};
-        System.out.println("arr1 = " + Arrays.toString(arr1));
-        BitSet bs = toBitSet(arr1);
-        System.out.println("bs String  = " + toString01(bs));
-        System.out.println("arr2 = " + Arrays.toString(toByteArray(bs)));
-    }
+    // static void playBitString() {
+    //     byte[] arr1 = new byte[] {0,0,1,0,1,1,1};
+    //     System.out.println("arr1 = " + Arrays.toString(arr1));
+    //     BitSet bs = toBitSet(arr1);
+    //     System.out.println("bs String  = " + toString01(bs));
+    //     System.out.println("arr2 = " + Arrays.toString(toByteArray(bs)));
+    // }
+    //
+    // static void playBitString2() {
+    //     BitSet bs1 = toBitSet(new byte[] {0,0,1,0,1,1,1});
+    //     BitSet bs2 = toBitSet(new byte[] {1,0,1,0,1,0,0});
+    //     int n = bs1.length();
+    //     System.out.println("bs1  = " + toString01(bs1, n));
+    //     System.out.println("bs2  = " + toString01(bs2, n));
+    //
+    //     BitSet bs1d ;
+    //
+    //     bs1d = (BitSet) bs1.clone();
+    //     bs1d.xor(bs2);
+    //     System.out.println("bs1 xor bs2  =  " + toString01(bs1d, n));
+    //
+    //     bs1d = (BitSet) bs1.clone();
+    //     bs1d.and(bs2);
+    //     System.out.println("bs1 and bs2  = " + toString01(bs1d, n));
+    //     System.out.println("card = " + bs1d.cardinality());
+    //
+    //     // bs1d = (BitSet) bs1.clone();
+    //     // bs1d.andNot(bs2);
+    //     // System.out.println("bs1 andnot bs2  = " + toString01(bs1d));
+    //
+    //     BitSet copy = new BitSet() {{ or(bs1); }};
+    // }
 
-    static void playBitString2() {
-        BitSet bs1 = toBitSet(new byte[] {0,0,1,0,1,1,1});
-        BitSet bs2 = toBitSet(new byte[] {1,0,1,0,1,0,0});
-        int n = bs1.length();
-        System.out.println("bs1  = " + toString01(bs1, n));
-        System.out.println("bs2  = " + toString01(bs2, n));
-
-        BitSet bs1d ;
-
-        bs1d = (BitSet) bs1.clone();
-        bs1d.xor(bs2);
-        System.out.println("bs1 xor bs2  =  " + toString01(bs1d, n));
-
-        bs1d = (BitSet) bs1.clone();
-        bs1d.and(bs2);
-        System.out.println("bs1 and bs2  = " + toString01(bs1d, n));
-        System.out.println("card = " + bs1d.cardinality());
-
-        // bs1d = (BitSet) bs1.clone();
-        // bs1d.andNot(bs2);
-        // System.out.println("bs1 andnot bs2  = " + toString01(bs1d));
-
-        BitSet copy = new BitSet() {{ or(bs1); }};
-    }
-
-    public static void main(String[] args) {
-        playBitString2();
-    }
+    // public static void main(String[] args) {
+    //     playBitString2();
+    // }
 }

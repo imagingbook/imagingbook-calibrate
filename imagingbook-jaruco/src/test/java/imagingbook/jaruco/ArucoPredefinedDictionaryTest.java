@@ -1,8 +1,8 @@
 package imagingbook.jaruco;
 
+import imagingbook.common.util.bits.BitVector;
 import org.junit.jupiter.api.Test;  // JUnit5 !!
 
-import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -83,11 +83,11 @@ public class ArucoPredefinedDictionaryTest {
             // check if all rotated marker patterns have the same number of 1s
             for (int id = 0; id < M; id++) {
                 // reference pattern:
-                BitSet canonical = dict.getBitSet(id, 0);
+                BitVector canonical = dict.getBitSet(id, 0);
                 int ones = canonical.cardinality();
                 // check rotated versions:
                 for (int r = 1; r < 4; r++) {
-                    BitSet pattern = dict.getBitSet(id, r);
+                    BitVector pattern = dict.getBitSet(id, r);
                     assertEquals(ones, pattern.cardinality());
                 }
             }
@@ -104,15 +104,15 @@ public class ArucoPredefinedDictionaryTest {
             int M = dict.getNumberOfCodes();
             int N = dict.getMarkerSize();
             int NxN = N * N;
-            Set<BitSet> allMarkers = new HashSet<>();
+            Set<BitVector> allMarkers = new HashSet<>();
             // we incrementally add all marker patterns to a set and check if not already contained:
             for (int id = 0; id < M; id++) {
             // for (int id = M-1; id >= 0; id--) {
-                BitSet canonical = dict.getBitSet(id, 0);
+                BitVector canonical = dict.getBitSet(id, 0);
                 assertFalse(allMarkers.contains(canonical),  "problem canonical id=" + id + " in dictionary " + dictname);
                 allMarkers.add(canonical);
                 for (int r = 1; r < 4; r++) {
-                    BitSet pattern = dict.getBitSet(id, r);
+                    BitVector pattern = dict.getBitSet(id, r);
                     assertFalse(allMarkers.contains(pattern),  "problem rotated id=" + id + " r=" + r + " in dictionary " + dictname);
                     allMarkers.add(pattern);
                 }
@@ -132,13 +132,13 @@ public class ArucoPredefinedDictionaryTest {
     //
     //         for (int id = 0; id < M; id++) {
     //             for (int r = 0; r < 4; r++) {
-    //                 BitSet reference = dict.getBitSet(id, r);
+    //                 BitVector reference = dict.getBitSet(id, r);
     //
     //                 // check against all other id's in this dictionary:
     //                 for  (int i = 0; i < M; i++) {
     //                     if (i == id) continue;
     //                     for (int s = 0; s < 4; s++) {
-    //                         BitSet pattern = dict.getBitSet(i, s);
+    //                         BitVector pattern = dict.getBitSet(i, s);
     //                         assertNotEquals(reference, pattern, "problem rotated id=" + id + " r=" + r + " in dictionary " + dictname);
     //                     }
     //                 }
@@ -159,10 +159,10 @@ public class ArucoPredefinedDictionaryTest {
             int NxN = N * N;
 
             for (int id = 0; id < M; id++) {
-                Set<BitSet> allMarkers = new HashSet<>();
+                Set<BitVector> allMarkers = new HashSet<>();
                 allMarkers.add(dict.getBitSet(id, 0));
                 for (int r = 1; r < 4; r++) {
-                    BitSet pattern = dict.getBitSet(id, r);
+                    BitVector pattern = dict.getBitSet(id, r);
                     int finalId = id;
                     int finalR = r;
                     assertFalse(allMarkers.contains(pattern), // "problem rotated id=" + id + " r=" + r + " in dictionary " + dictname);

@@ -8,10 +8,10 @@ package imagingbook.jaruco;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import imagingbook.common.util.bits.BitVector;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.BitSet;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
@@ -35,8 +35,8 @@ public class ArucoDictionary {
     private final int M;                        // number of marker codes
     private final int N;                        // number of bits per dimension
     private final int maxCorrectionBits;        // max. number of correction bits
-    private final BitSet[][] bitdata;           // marker bit patterns, bitdata[m][r] is a 0/1 bit-pattern for marker m, rotation r
-    private final BitSet scratch;               // scratch BitSet for Hamming distance calculation
+    private final BitVector[][] bitdata;           // marker bit patterns, bitdata[m][r] is a 0/1 bit-pattern for marker m, rotation r
+    private final BitVector scratch;               // scratch BitSet for Hamming distance calculation
 
     /**
      * Constructor
@@ -51,7 +51,7 @@ public class ArucoDictionary {
         this.N = N;
         this.maxCorrectionBits = maxCorrectionBits;
         this.bitdata = makeBitSets(markerStrings);  // create canonical and rotated bit patterns
-        this.scratch = new BitSet(N*N);
+        this.scratch = new BitVector(N*N);
     }
 
     @Override
@@ -60,21 +60,21 @@ public class ArucoDictionary {
     }
 
     /**
-     * Converts the 0/1 marker string array to an array of {@link BitSet},
+     * Converts the 0/1 marker string array to an array of {@link BitVector,
      * pre-calculating rotated versions too.
      * Note: M, N are assumed to be initialized!
      *
      * @param markerStrings an array of 0/1 marker strings
-     * @return an 2D array of {@link BitSet} instances, one item for each
+     * @return an 2D array of {@link BitVector} instances, one item for each
      * marker id and four rotations: {@code bitsets[id][rot]}
      */
-    private BitSet[][] makeBitSets(String[] markerStrings) {
+    private BitVector[][] makeBitSets(String[] markerStrings) {
         if (markerStrings.length != this.M) {
             throw new IllegalArgumentException("wrong length of markerString array: "
                     + markerStrings.length);
         }
         int[] rotperm = makeRotationPermutation(N); // permutation vector for 2D matrix rotation
-        BitSet[][] allbitsets = new BitSet[M][4];
+        BitVector[][] allbitsets = new BitVector[M][4];
         // process all marker ids:
         for (int id = 0; id < M; id++) {
             char[] markerPattern = markerStrings[id].toCharArray();
@@ -89,19 +89,19 @@ public class ArucoDictionary {
     }
 
     /**
-     * Converts a 0/1 char array to a {@link BitSet}.
+     * Converts a 0/1 char array to a {@link BitVector}.
      * @param char01 the input char array
-     * @return the corresponding {@link BitSet}
+     * @return the corresponding {@link BitVector}
      */
-    static BitSet toBitSet(char[] char01) {
-        BitSet bs = new BitSet(char01.length);
+    static BitVector toBitSet(char[] char01) {
+        BitVector bs = new BitVector(char01.length);
         for (int i = 0; i < char01.length; i++) {
             if (char01[i] == '1') bs.set(i);    // '0' is unchecked/ignored
         }
         return bs;
     }
 
-    static BitSet toBitSet(String str01) {
+    static BitVector toBitSet(String str01) {
         return toBitSet(str01.toCharArray());
     }
 
@@ -196,7 +196,7 @@ public class ArucoDictionary {
 
     // ----------------------------------------------------------------------
 
-    public BitSet getBitSet(int id, int rot) {
+    public BitVector getBitSet(int id, int rot) {
         return this.bitdata[id][rot];
     }
 
@@ -210,7 +210,7 @@ public class ArucoDictionary {
      * @param candidateBits the bit pattern extracted from the candidate region
      * @return a {@link LookupResult} instance or null if unsuccessful
      */
-    public LookupResult lookup(BitSet candidateBits, double maxCorrectionRate) {
+    public LookupResult lookup(BitVector candidateBits, double maxCorrectionRate) {
         Objects.requireNonNull(candidateBits, "candidateBits must not be null");
         // TODO: check length of bit vector (abandon BitSet)
         int maxCorrectionRecalc = (int) (maxCorrectionBits * maxCorrectionRate);
@@ -228,9 +228,10 @@ public class ArucoDictionary {
             int currentRotation = -1;
 
             for (int r = 0; r < 4; r++) {
-                BitSet ref = getBitSet(m, r);
+                BitVector ref = getBitSet(m, r);
                 // System.out.printf("id=%d r=%d: a=%s b=%s\n", m, r, ref, candidateBits);
-                int currentHamming = normHamming(getBitSet(m, r), candidateBits);
+                // int currentHamming = normHamming(getBitSet(m, r), candidateBits);
+                int currentHamming = candidateBits.hammingDistance(getBitSet(m, r));
                 if(currentHamming < currentMinDistance) {
                     currentMinDistance = currentHamming;
                     currentRotation = r;
@@ -250,12 +251,12 @@ public class ArucoDictionary {
     }
 
     // Hamming distance using a scratch BitSet (no repeated allocation)
-    int normHamming(BitSet a, BitSet b) {
-        scratch.clear();
-        scratch.or(a);   // scratch := a
-        scratch.xor(b);  // scratch := a xor b
-        return scratch.cardinality();
-    }
+    // int normHamming(BitSet a, BitSet b) {
+    //     scratch.clear();
+    //     scratch.or(a);   // scratch := a
+    //     scratch.xor(b);  // scratch := a xor b
+    //     return scratch.cardinality();
+    // }
 
     // Hamming distance classic (allocates a new BitSet each time)
     // int normHamming(BitSet a, BitSet b) {

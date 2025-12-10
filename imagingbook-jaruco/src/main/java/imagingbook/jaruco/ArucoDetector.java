@@ -16,10 +16,11 @@ import imagingbook.common.util.ParameterBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.List;
 
 import static imagingbook.jaruco.ContourSimplifierClosed.getCircularity;
+
+import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
 import imagingbook.jaruco.gui.ZoomableImagePlus;
 
@@ -274,7 +275,7 @@ public class ArucoDetector {
         new ZoomableImagePlus("Marker raw" + k, markerIp.duplicate()).show(20);
 
         // STEP 4c - sample marker fields to generate the 1D marker pattern
-        BitSet sampleBits = extractMarkerBits(markerIp, markerOutline.threshold);
+        BitVector sampleBits = extractMarkerBits(markerIp, markerOutline.threshold);
 
         // STEP 4d - Lookup marker pattern in dictionary
         double maxCorrectionRate = 1.0; // TODO: CHECK!!!
@@ -308,14 +309,14 @@ public class ArucoDetector {
     }
 
 
-    private BitSet extractMarkerBits(ByteProcessor markerIp, int threshold) {
+    private BitVector extractMarkerBits(ByteProcessor markerIp, int threshold) {
         // optionally wrap markerIp into an ImageAccessor to handle image borders (not strictly needed)
         // ScalarAccessor ia = ScalarAccessor.create(markerIp,
         //         OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor);
         int w = markerIp.getWidth();
         int N = dictionary.getMarkerSize();
         double d = (double) w / (N + 2);    // NxN marker + 1 row/ 1 column around on each side
-        BitSet bits = new BitSet(N * N);
+        BitVector bits = new BitVector(N * N);
         int k = 0;
         for (int i = 0; i < N; i++) {
             int y = (int) Math.round((1.5 + i) * d);

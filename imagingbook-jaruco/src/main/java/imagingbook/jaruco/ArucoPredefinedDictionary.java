@@ -6,10 +6,6 @@
  ******************************************************************************/
 package imagingbook.jaruco;
 
-import java.util.BitSet;
-
-import static imagingbook.jaruco.ByteArrayUtils.toString01;
-
 /**
  * Dictionary specs from
  * "/opencv/modules/objdetect/src/aruco/aruco_dictionary.cpp",
@@ -65,18 +61,6 @@ public enum ArucoPredefinedDictionary {
             instance = ArucoDictionary.fromResource(this.getClass(), resourcePath);
         }
         return instance;
-    }
-
-    // --------------------------------------------------
-
-    public static void main(String[] args) {
-        ArucoDictionary dict = DICT_ARUCO_ORIGINAL.getInstance();
-        int N = dict.getMarkerSize();
-        for (int r = 0; r < 4; r++) {
-            BitSet bits = dict.getBitSet(1023, r);
-            System.out.println(toString01(bits, N*N));
-        }
-
     }
 
 }
