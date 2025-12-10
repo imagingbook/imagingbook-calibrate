@@ -327,7 +327,7 @@ public class ArucoDetector {
                 int g = get3x3Median(markerIp, x, y); // use threshold from initial thresholding?
                 // System.out.printf("x=%d y=%d g=%d\n", x, y, g);
                 if (g >= threshold) {
-                    bits.set(k);
+                    bits.setBit(k);
                 }
                 k++;
             }

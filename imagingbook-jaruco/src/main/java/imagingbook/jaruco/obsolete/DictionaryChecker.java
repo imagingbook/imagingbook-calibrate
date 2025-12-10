@@ -4,13 +4,13 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.jaruco;
+package imagingbook.jaruco.obsolete;
 
 import ij.process.ByteProcessor;
 
 import java.util.Arrays;
 
-import static imagingbook.jaruco.Dictionary.toStringUnsigned;
+import static imagingbook.jaruco.obsolete.Dictionary.toStringUnsigned;
 
 public class DictionaryChecker {
 

@@ -12,11 +12,13 @@ import imagingbook.common.util.bits.BitVector;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Iterator;
+import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
-import static imagingbook.jaruco.Rotations.makeRotationPermutation;
+import static imagingbook.jaruco.RotationUtils.makeRotationPermutation;
 
 /**
  * Dictionaries are stored as a list of bytes in its four rotations
@@ -81,7 +83,7 @@ public class ArucoDictionary {
             allBitVectors[id][0] = toBitVector(markerPattern);   // r=0: canonical (unrotated)
             // make rotated patterns for r = 1, 2, 3
             for (int r = 1; r < 4; r++) {
-                markerPattern = Rotations.permute(markerPattern, rotperm);  // perform 2D rotation
+                markerPattern = RotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
                 allBitVectors[id][r] = toBitVector(markerPattern);
             }
         }
@@ -96,7 +98,7 @@ public class ArucoDictionary {
     static BitVector toBitVector(char[] char01) {
         BitVector bs = new BitVector(char01.length);
         for (int i = 0; i < char01.length; i++) {
-            if (char01[i] == '1') bs.set(i);    // '0' is unchecked/ignored
+            if (char01[i] == '1') bs.setBit(i);    // '0' is unchecked/ignored
         }
         return bs;
     }
@@ -113,18 +115,22 @@ public class ArucoDictionary {
      * not found at the specified location.
      *
      * @param clazz the class at the root of the relative path
-     * @param path the name of the resource file (relative path to class)
+     * @param relPath the name of the resource file (relative path to class)
      * @return the newly created dictionary
      */
-    public static ArucoDictionary fromResource(Class<?> clazz, String path) {
+    public static ArucoDictionary fromResource(Class<?> clazz, String relPath) {
+        String classPath = clazz.getResource("").toExternalForm(); // safe for JARs
+
         ArucoDictionary dict;
-        try (InputStream is = clazz.getResourceAsStream(path)) {
+        try (InputStream is = clazz.getResourceAsStream(relPath)) {
             assert is != null;
             InputStream gzipStream = new GZIPInputStream(is);
             // read and configure this dictionary:
             dict = getDictFromJsonStream(gzipStream);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new MissingResourceException(
+                    "unable to read resource " + classPath + relPath.length(),
+                    clazz.getSimpleName(), relPath);
         }
         return dict;
     }

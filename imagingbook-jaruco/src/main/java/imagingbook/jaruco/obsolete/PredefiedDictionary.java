@@ -4,13 +4,15 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.jaruco;
+package imagingbook.jaruco.obsolete;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 /**
  * Dictionary specs from
@@ -88,6 +90,11 @@ public enum PredefiedDictionary {
         System.out.println("loading dictionary data from " + filename);
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
+
+        URL url = clazz.getResource("");
+        String absolutePath = url.toExternalForm(); // safe for JARs
+        System.out.println("looking for resource: " + absolutePath + filename);
+
 
         InputStream is = getClass().getResourceAsStream(filename);
         if (is == null) {
