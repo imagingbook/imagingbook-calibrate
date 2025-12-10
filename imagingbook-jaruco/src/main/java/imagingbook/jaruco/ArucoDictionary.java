@@ -36,7 +36,7 @@ public class ArucoDictionary {
     private final int N;                        // number of bits per dimension
     private final int maxCorrectionBits;        // max. number of correction bits
     private final BitVector[][] bitdata;           // marker bit patterns, bitdata[m][r] is a 0/1 bit-pattern for marker m, rotation r
-    private final BitVector scratch;               // scratch BitSet for Hamming distance calculation
+    private final BitVector scratch;               // scratch BitVector for Hamming distance calculation
 
     /**
      * Constructor
@@ -50,7 +50,7 @@ public class ArucoDictionary {
         this.M = M;
         this.N = N;
         this.maxCorrectionBits = maxCorrectionBits;
-        this.bitdata = makeBitSets(markerStrings);  // create canonical and rotated bit patterns
+        this.bitdata = makeBitVectors(markerStrings);  // create canonical and rotated bit patterns
         this.scratch = new BitVector(N*N);
     }
 
@@ -66,26 +66,26 @@ public class ArucoDictionary {
      *
      * @param markerStrings an array of 0/1 marker strings
      * @return an 2D array of {@link BitVector} instances, one item for each
-     * marker id and four rotations: {@code bitsets[id][rot]}
+     * marker id and four rotations: {@code BitVectors[id][rot]}
      */
-    private BitVector[][] makeBitSets(String[] markerStrings) {
+    private BitVector[][] makeBitVectors(String[] markerStrings) {
         if (markerStrings.length != this.M) {
             throw new IllegalArgumentException("wrong length of markerString array: "
                     + markerStrings.length);
         }
         int[] rotperm = makeRotationPermutation(N); // permutation vector for 2D matrix rotation
-        BitVector[][] allbitsets = new BitVector[M][4];
+        BitVector[][] allBitVectors = new BitVector[M][4];
         // process all marker ids:
         for (int id = 0; id < M; id++) {
             char[] markerPattern = markerStrings[id].toCharArray();
-            allbitsets[id][0] = toBitSet(markerPattern);   // r=0: canonical (unrotated)
+            allBitVectors[id][0] = toBitVector(markerPattern);   // r=0: canonical (unrotated)
             // make rotated patterns for r = 1, 2, 3
             for (int r = 1; r < 4; r++) {
                 markerPattern = Rotations.permute(markerPattern, rotperm);  // perform 2D rotation
-                allbitsets[id][r] = toBitSet(markerPattern);
+                allBitVectors[id][r] = toBitVector(markerPattern);
             }
         }
-        return allbitsets;
+        return allBitVectors;
     }
 
     /**
@@ -93,7 +93,7 @@ public class ArucoDictionary {
      * @param char01 the input char array
      * @return the corresponding {@link BitVector}
      */
-    static BitVector toBitSet(char[] char01) {
+    static BitVector toBitVector(char[] char01) {
         BitVector bs = new BitVector(char01.length);
         for (int i = 0; i < char01.length; i++) {
             if (char01[i] == '1') bs.set(i);    // '0' is unchecked/ignored
@@ -101,8 +101,8 @@ public class ArucoDictionary {
         return bs;
     }
 
-    static BitVector toBitSet(String str01) {
-        return toBitSet(str01.toCharArray());
+    static BitVector toBitVector(String str01) {
+        return toBitVector(str01.toCharArray());
     }
 
     // ----------------------------------------------------------------------
@@ -196,7 +196,7 @@ public class ArucoDictionary {
 
     // ----------------------------------------------------------------------
 
-    public BitVector getBitSet(int id, int rot) {
+    public BitVector getBits(int id, int rot) {
         return this.bitdata[id][rot];
     }
 
@@ -212,7 +212,7 @@ public class ArucoDictionary {
      */
     public LookupResult lookup(BitVector candidateBits, double maxCorrectionRate) {
         Objects.requireNonNull(candidateBits, "candidateBits must not be null");
-        // TODO: check length of bit vector (abandon BitSet)
+        // TODO: check length of bit vector (abandon BitVector)
         int maxCorrectionRecalc = (int) (maxCorrectionBits * maxCorrectionRate);
         int idx = -1; // by default, not found
         int rotation = -1;
@@ -228,10 +228,10 @@ public class ArucoDictionary {
             int currentRotation = -1;
 
             for (int r = 0; r < 4; r++) {
-                BitVector ref = getBitSet(m, r);
+                BitVector ref = getBits(m, r);
                 // System.out.printf("id=%d r=%d: a=%s b=%s\n", m, r, ref, candidateBits);
-                // int currentHamming = normHamming(getBitSet(m, r), candidateBits);
-                int currentHamming = candidateBits.hammingDistance(getBitSet(m, r));
+                // int currentHamming = normHamming(getBitVector(m, r), candidateBits);
+                int currentHamming = candidateBits.hammingDistance(getBits(m, r));
                 if(currentHamming < currentMinDistance) {
                     currentMinDistance = currentHamming;
                     currentRotation = r;
@@ -250,17 +250,17 @@ public class ArucoDictionary {
                 new LookupResult(idx, rotation, currentMinDistance) : null;
     }
 
-    // Hamming distance using a scratch BitSet (no repeated allocation)
-    // int normHamming(BitSet a, BitSet b) {
+    // Hamming distance using a scratch BitVector (no repeated allocation)
+    // int normHamming(BitVector a, BitVector b) {
     //     scratch.clear();
     //     scratch.or(a);   // scratch := a
     //     scratch.xor(b);  // scratch := a xor b
     //     return scratch.cardinality();
     // }
 
-    // Hamming distance classic (allocates a new BitSet each time)
-    // int normHamming(BitSet a, BitSet b) {
-    //     BitSet x = (BitSet) a.clone(); // cast needed because clone() returns Object
+    // Hamming distance classic (allocates a new BitVector each time)
+    // int normHamming(BitVector a, BitVector b) {
+    //     BitVector x = (BitVector) a.clone(); // cast needed because clone() returns Object
     //     x.xor(b);
     //     return x.cardinality();
     // }
