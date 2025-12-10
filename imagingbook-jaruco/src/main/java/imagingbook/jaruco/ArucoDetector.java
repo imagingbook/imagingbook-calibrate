@@ -147,8 +147,8 @@ public class ArucoDetector {
 
         @Override
         public String toString() {
-            return String.format("%s [id=%d, corners=%s]",
-                    getClass().getSimpleName(), markerId, Arrays.toString(corners.polygon.toArray(new Pnt2d[0])));
+            return String.format("%s [id=%d rot=%d dist=%d corners=%s]",
+                    getClass().getSimpleName(), markerId, rotation, hammingDist, Arrays.toString(corners.polygon.toArray(new Pnt2d[0])));
         }
     }
 
@@ -357,9 +357,13 @@ public class ArucoDetector {
     // ------------------------------------------------------------------------
 
     // static String IMG_PATH = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2705_singleA.jpg";
-    static String IMG_PATH = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2702_small.jpg";
+    // "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2702_small.jpg";
 
-    public static void main(String[] args) {
+    static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
+
+    static void doBigImageTest() {
+        String IMG_PATH = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
+
         ImagePlus im = IjUtils.openImage(IMG_PATH);
         im.show();
         ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_1000.getInstance();
@@ -371,6 +375,38 @@ public class ArucoDetector {
         for (MarkerDetection res : markerDetections) {
             System.out.println(res);
         }
+    }
+
+    static void doSmallImageTest() {
+        String[] paths = {
+                SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
+        };
+
+        ImagePlus[] images = new ImagePlus[paths.length];
+        for (int i = 0; i < paths.length; i++) {
+            images[i] = IjUtils.openImage(paths[i]);
+            images[i].show();
+        }
+
+        ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_1000.getInstance();
+        ArucoDetector detector = new ArucoDetector(dict);
+        for (int i = 0; i < paths.length; i++) {
+            System.out.println("***** Processing image + " + i);
+            List<MarkerDetection> markerDetections = detector.detectMarkers(images[i].getProcessor());
+            System.out.println("Markers found: " + markerDetections.size());
+            for (MarkerDetection res : markerDetections) {
+                System.out.println(res);
+            }
+            System.out.println();
+        }
+    }
+
+    public static void main(String[] args) {
+        // doBigImageTest();
+        doSmallImageTest();
     }
 
 }
