@@ -8,6 +8,7 @@ package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 
+import java.awt.geom.Path2D;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -264,5 +265,25 @@ public class Polygons {
         return missCnt == 0;
     }
 
+    public static Path2D getPolygonPath(List<Pnt2d> contour, double xOffset, double yOffset) {
+        Path2D path = new Path2D.Float();
+        Pnt2d[] pnts = contour.toArray(new Pnt2d[0]);
+        if (pnts.length > 1) {
+            path.moveTo(pnts[0].getX() + xOffset, pnts[0].getY() + yOffset);
+            for (int i = 1; i < pnts.length; i++) {
+                path.lineTo(pnts[i].getX() + xOffset,  pnts[i].getY() + yOffset);
+            }
+            path.closePath();
+        }
+        else {	// special case: mark a single pixel region "X"
+            double x = pnts[0].getX();
+            double y = pnts[0].getY();
+            path.moveTo(x + xOffset - 0.5, y + yOffset - 0.5);
+            path.lineTo(x + xOffset + 0.5, y + yOffset + 0.5);
+            path.moveTo(x + xOffset - 0.5, y + yOffset + 0.5);
+            path.lineTo(x + xOffset + 0.5, y + yOffset - 0.5);
+        }
+        return path;
+    }
 
 }

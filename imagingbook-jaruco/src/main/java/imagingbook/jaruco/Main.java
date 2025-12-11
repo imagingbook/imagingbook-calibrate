@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static imagingbook.jaruco.Polygons.getPolygonPath;
+
 public class Main {
 
     // ------------------------------------------------------------------------
@@ -21,6 +23,9 @@ public class Main {
     // "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook_calibrate_plugins/aruco-images/DSC_2702_small.jpg";
 
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
+
+    private static final Font MarkerFont = new Font(Font.SANS_SERIF, Font.BOLD, 32);
+    private static final Color MarkerColor = Color.magenta;
 
     static void doBigImageTest() {
         String IMG_PATH = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
@@ -40,10 +45,11 @@ public class Main {
 
     static void doSmallImageTest() {
         String[] paths = {
-                SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
+                SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
         };
 
         ImagePlus[] images = new ImagePlus[paths.length];
@@ -64,10 +70,10 @@ public class Main {
             List<ArucoDetector.MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
             System.out.println("Markers found: " + markerDetectionResults.size());
 
+            ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            if (!markerDetectionResults.isEmpty())
-            {
-                ArucoDetector.MarkerDetectionResult res = markerDetectionResults.get(0);
+            for (ArucoDetector.MarkerDetectionResult res : markerDetectionResults) {
+                // ArucoDetector.MarkerDetectionResult res = markerDetectionResults.get(0);
                 System.out.println(res);
                 // create shape overlay
 
@@ -75,7 +81,6 @@ public class Main {
                 // Collections.rotate(corners, res.rotation);
                 //List<Pnt2d> corners = rotateCorners(corners, res.rotation);
 
-                ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
                 ola.addShape(getPolygonPath(corners, 0, 0), stroke);
 
                 double rad = 2;
@@ -87,13 +92,16 @@ public class Main {
                     j++;
                 }
 
-                im.setOverlay(ola.getOverlay());
-                im.setTitle(im.getTitle() + " rot=" + res.rotation);
-                im.updateAndDraw();
+                // draw the marker's id number
+                Pnt2d center = Polygons.getCentroid(corners);
+                ola.setFont(MarkerFont);
+                ola.setTextColor(MarkerColor);
+                ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId));
             }
-            else {
-                System.out.println("Nothing found!");
-            }
+
+            im.setOverlay(ola.getOverlay());
+            // im.setTitle(im.getTitle() + " rot=" + res.rotation);
+            im.updateAndDraw();
         }
     }
 
@@ -106,26 +114,26 @@ public class Main {
         return corners2;
     }
 
-    static Path2D getPolygonPath(List<Pnt2d> contour, double xOffset, double yOffset) {
-        Path2D path = new Path2D.Float();
-        Pnt2d[] pnts = contour.toArray(new Pnt2d[0]);
-        if (pnts.length > 1) {
-            path.moveTo(pnts[0].getX() + xOffset, pnts[0].getY() + yOffset);
-            for (int i = 1; i < pnts.length; i++) {
-                path.lineTo(pnts[i].getX() + xOffset,  pnts[i].getY() + yOffset);
-            }
-            path.closePath();
-        }
-        else {	// special case: mark a single pixel region "X"
-            double x = pnts[0].getX();
-            double y = pnts[0].getY();
-            path.moveTo(x + xOffset - 0.5, y + yOffset - 0.5);
-            path.lineTo(x + xOffset + 0.5, y + yOffset + 0.5);
-            path.moveTo(x + xOffset - 0.5, y + yOffset + 0.5);
-            path.lineTo(x + xOffset + 0.5, y + yOffset - 0.5);
-        }
-        return path;
-    }
+    // static Path2D getPolygonPath(List<Pnt2d> contour, double xOffset, double yOffset) {
+    //     Path2D path = new Path2D.Float();
+    //     Pnt2d[] pnts = contour.toArray(new Pnt2d[0]);
+    //     if (pnts.length > 1) {
+    //         path.moveTo(pnts[0].getX() + xOffset, pnts[0].getY() + yOffset);
+    //         for (int i = 1; i < pnts.length; i++) {
+    //             path.lineTo(pnts[i].getX() + xOffset,  pnts[i].getY() + yOffset);
+    //         }
+    //         path.closePath();
+    //     }
+    //     else {	// special case: mark a single pixel region "X"
+    //         double x = pnts[0].getX();
+    //         double y = pnts[0].getY();
+    //         path.moveTo(x + xOffset - 0.5, y + yOffset - 0.5);
+    //         path.lineTo(x + xOffset + 0.5, y + yOffset + 0.5);
+    //         path.moveTo(x + xOffset - 0.5, y + yOffset + 0.5);
+    //         path.lineTo(x + xOffset + 0.5, y + yOffset - 0.5);
+    //     }
+    //     return path;
+    // }
 
     public static void main(String[] args) {
         // doBigImageTest();

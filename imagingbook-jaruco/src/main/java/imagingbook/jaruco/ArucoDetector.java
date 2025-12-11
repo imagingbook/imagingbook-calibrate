@@ -23,7 +23,6 @@ import static imagingbook.jaruco.Polygons.simplify;
 
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
-import imagingbook.jaruco.gui.ZoomableImagePlus;
 
 public class ArucoDetector {
 
@@ -85,12 +84,12 @@ public class ArucoDetector {
      * Originally this is the raw contour which is subsequently simplified.
      * Instances are immutable.
      */
-    static class MarkerOutline {
+    public static class MarkerOutline {
         static int MARKER_UID = -1;
-
-        final int uid;          // each marker has a uid for debugging
-        final int threshold;    // gray-level threshold at which this outline was obtained
-        final List<Pnt2d> polygon;  // marker corners in original image coordinates
+        // TODO: add getter methods!
+        public final int uid;          // each marker has a uid for debugging
+        public final int threshold;    // gray-level threshold at which this outline was obtained
+        public final List<Pnt2d> polygon;  // marker corners in original image coordinates
 
         // Full constructor.
         MarkerOutline(int uid, int threshold, List<Pnt2d> polygon) {
@@ -122,11 +121,12 @@ public class ArucoDetector {
      * Represents the detection result for a single marker.
      */
     public static class MarkerDetectionResult {
-        final int markerId;
-        final int rotation;
-        final int hammingDist;
-        final MarkerOutline corners;
-        final Pnt2d[] rejectedPoints;
+        // TODO: add getter methods!
+        public final int markerId;
+        public final int rotation;
+        public final int hammingDist;
+        public final MarkerOutline corners;
+        public final Pnt2d[] rejectedPoints;
 
         // Constructor (private).
         private MarkerDetectionResult(int markerId, int rotation, int hDist, MarkerOutline corners, Pnt2d[] rejectedPoints) {
@@ -198,7 +198,7 @@ public class ArucoDetector {
     /**
      * The core method. Tries to locate and identify markers in the given image.
      * @param ip the input image
-     * @return
+     * @return a (possibly empty) list of {@link MarkerDetectionResult} instances
      */
     public List<MarkerDetectionResult> detectMarkers(ImageProcessor ip) {
         // STEP 1: convert input image to grayscale:
@@ -206,21 +206,20 @@ public class ArucoDetector {
         List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
         MarkerOutline.resetUid();
 
-        // try different thresholds:
+        // try different global thresholds (Aruco3) or use adaptive local threshold:
         int initThr = Math.round(new OtsuThresholder().getThreshold(gray));
+
         for (int thr = initThr; thr <= initThr; thr++) {
 
             // STEP 2: Threshold the input image and find candidate outlines
-            List<MarkerOutline> ics = findCandidateOutlines(gray, thr);
+            List<MarkerOutline> contours = findCandidateOutlines(gray, thr);
 
             // STEP 3: Simplify inner contours to polygons
-            List<MarkerOutline> candidateBoxes = simplifyContours(ics);
+            List<MarkerOutline> candidateOutlines = simplifyContours(contours);
 
             // STEP 4: Process each candidate box and collect the results
-
-            int k = 0;
-            for (MarkerOutline candidateBox : candidateBoxes) {
-                MarkerDetectionResult dr = processOneOutline(ip, candidateBox, k++);
+            for (MarkerOutline outline : candidateOutlines) {
+                MarkerDetectionResult dr = processOneOutline(ip, outline);
                 if (dr != null) {
                     markerDetectionResults.add(dr);
                 }
@@ -277,14 +276,14 @@ public class ArucoDetector {
         return candidateOutlines;
     }
 
-    MarkerDetectionResult processOneOutline(ImageProcessor ip, MarkerOutline markerOutline, int k) {
+    MarkerDetectionResult processOneOutline(ImageProcessor ip, MarkerOutline markerOutline) {
         // System.out.println("processOneCandidateBox " + k);
         // STEP 4a - CORNER REFINEMENT should come here!
 
         // STEP 4b - extract a small rectified subimage
         int targetSize = 5 * (this.dictionary.getMarkerSize() + 2); // fields with 5x5 pixels (parameter!?)
         ByteProcessor markerIp = extractMarkerImage(ip, markerOutline, targetSize);
-        new ZoomableImagePlus("Marker raw" + k, markerIp.duplicate()).show(20);
+        // new ZoomableImagePlus("Marker raw" + k, markerIp.duplicate()).show(20);
 
         // STEP 4c - sample marker fields to generate the 1D marker pattern
         BitVector sampleBits = extractMarkerBits(markerIp, markerOutline.threshold);
