@@ -22,6 +22,7 @@ import static imagingbook.common.math.Arithmetic.sqr;
 TODO: Merge into common/geometry classes, make more flexible parameters!
  */
 
+@Deprecated
 public class ContourSimplifier {
 
     public static List<Pnt2d> simplify(Contour contour, double epsilon, boolean closed) {

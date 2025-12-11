@@ -6,16 +6,13 @@
  ******************************************************************************/
 package imagingbook.jaruco;
 
-import ij.IJ;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.regions.Contour;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-import static imagingbook.jaruco.ContourSimplifier.makePoly;
 import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Arithmetic.sqr;
 
@@ -23,19 +20,17 @@ import static imagingbook.common.math.Arithmetic.sqr;
 TODO: Merge into common/geometry classes, make more flexible parameters!
  */
 
-public class ContourSimplifierClosed {
-
-    public static List<Pnt2d> simplify(Contour contour, double epsilon) {
-        return simplify(contour.getPointList(), epsilon);
-    }
+/**
+ * Utility methods dealing with closed polygons.
+ */
+public class Polygons {
 
     public static List<Pnt2d> simplify(List<Pnt2d> pts, double tol) {
         int n = pts.size();
         if (n <= 3) return new ArrayList<>(pts);
 
         // Pick optimal starting index
-        int start = chooseStart(pts);
-        // IJ.log("start = " + start + " = " + pts.get(start));
+        int start = getMostEccentricVertexIndex(pts);
 
         // Rotate the polygon
         List<Pnt2d> rotated = new ArrayList<>(n + 1);
@@ -63,7 +58,7 @@ public class ContourSimplifierClosed {
             int indexMax = -1;
 
             for (int i = i0 + 1; i < i1; i++) {
-                double d2 = perpendicularDistanceSq(rotated.get(i), A, B);
+                double d2 = perpDistSq(rotated.get(i), A, B);
                 if (d2 > maxDist2) {
                     maxDist2 = d2;
                     indexMax = i;
@@ -95,13 +90,21 @@ public class ContourSimplifierClosed {
 
     // --------------------
 
-    static int chooseStart(List<Pnt2d> pts) {
+    public static Pnt2d getCentroid(List<Pnt2d> pts) {
+        int n = pts.size();
         double cx = 0, cy = 0;
         for (var p : pts) {
-            cx += p.getX(); cy += p.getY();
+            cx += p.getX();
+            cy += p.getY();
         }
-        cx /= pts.size();
-        cy /= pts.size();
+
+        return Pnt2d.from(cx / n,  cy / n);
+    }
+
+    public static int getMostEccentricVertexIndex(List<Pnt2d> pts) {
+        Pnt2d ctr = getCentroid(pts);
+        double cx = ctr.getX();
+        double cy = ctr.getX();
 
         int best = 0;
         double maxD2 = -1;
@@ -109,7 +112,8 @@ public class ContourSimplifierClosed {
         for (int i = 0; i < pts.size(); i++) {
             double dx = pts.get(i).getX() - cx;
             double dy = pts.get(i).getY() - cy;
-            double d2 = dx*dx + dy*dy;
+            // double d2 = dx*dx + dy*dy;
+            double d2 = sqr(pts.get(i).getX() - cx) + sqr(pts.get(i).getY() - cy);
             if (d2 > maxD2) {
                 maxD2 = d2;
                 best = i;
@@ -118,25 +122,19 @@ public class ContourSimplifierClosed {
         return best;
     }
 
-
     // Optimized 2D-only perpendicular distance from point P to segment AB
-    private static double perpendicularDistance(Pnt2d P, Pnt2d A, Pnt2d B) {
-        return Math.sqrt(perpendicularDistanceSq(P, A, B));
+    public static double perpDist(Pnt2d P, Pnt2d A, Pnt2d B) {
+        return Math.sqrt(perpDistSq(P, A, B));
     }
 
-
     // Squared perpendicular distance from P to line AB
-    private static double perpendicularDistanceSq(Pnt2d P, Pnt2d A, Pnt2d B) {
+    public static double perpDistSq(Pnt2d P, Pnt2d A, Pnt2d B) {
         final double ax = A.getX(), ay = A.getY();
         final double bx = B.getX(), by = B.getY();
         final double px = P.getX(), py = P.getY();
         double dx = bx - ax;
         double dy = by - ay;
         if (dx == 0 && dy == 0) {
-            // A and B are identical
-            // dx = P.getX() - A.getX();
-            // dy = P.getY() - A.getY();
-            // return Math.hypot(dx, dy);
             return P.distanceSq(A);
         }
         // Project point onto line segment, clamped to [0,1]
@@ -144,18 +142,24 @@ public class ContourSimplifierClosed {
         t = Math.max(0, Math.min(1, t));
         double projX = ax + t * dx;
         double projY = ay + t * dy;
-        // dx = P.getX() - projX;
-        // dy = P.getY() - projY;
         // return Math.hypot(px - projX, py - projY);
         return sqr(px - projX) + sqr(py - projY);
     }
 
     // --------------------------------------------------------------------------------
 
-     public static boolean isConvex(List<Pnt2d> pts) {
+    /**
+     * Checks if the supplied closed polygon is convex.
+     * If not convex, 0 is returned.
+     * If convex the associated winding order is returned, that is,
+     * -1 for CCW and 1 for CW order.
+     * @param pts
+     * @return 0 if non-convex, 1 or -1 otherwise
+     */
+     public static int isConvex(List<Pnt2d> pts) {
         int n = pts.size();
         // if (n < 4) return true; // triangles always convex (but we may want to know winding rule)
-        if (n < 3) return true;    // single points and lines are convex
+        if (n < 2) return 0;    // single points and lines are not convex
 
         double sign = 0;
 
@@ -172,10 +176,10 @@ public class ContourSimplifierClosed {
             if (sign == 0) { // sign still undetermined
                 sign = Math.signum(cross);
             } else if (Math.signum(cross) != sign) {
-                return false; // turn direction changed → concave
+                return 0; // turn direction changed → concave
             }
         }
-        return true;
+        return (int) sign;
     }
 
     public static double getLength(List<Pnt2d> poly) {
@@ -230,17 +234,36 @@ public class ContourSimplifierClosed {
 
     // --------------------------------------------------------------------------------
 
-    public static void main(String[] args) {
-        // List<Pnt2d> poly = makePoly(20, 220, 140, 220, 140, 180, 20, 180);
-        // List<Pnt2d> poly = makePoly(0, 0, 0, 1, 1, 1, 1, 0);     // unit square
-        // List<Pnt2d> poly = makePoly(0, 0, 0, 1, 1, 2, 1, 1);       // diamond
-        List<Pnt2d> poly = makePoly(0, 0, 0, 1, 10, 1, 10, 0);       // flat rectangle
-        // List<Pnt2d> poly = makeCircle(1, 200);
-        double area = getArea(poly);
-        System.out.println("area = " + area);
-        double len = getLength(poly);
-        System.out.println("length = " + len);
-        double ecc = getCircularity(poly);
-        System.out.println("ecc = " + ecc);
+    /**
+     * For testing.
+     * @param coords a sequence of x/y coordinate pairs
+     * @return
+     */
+    public static List<Pnt2d> makePolygon(double... coords) {
+        List<Pnt2d> pntList = new ArrayList<>();
+        for (int i = 0; i < coords.length; i+=2) {
+            pntList.add(Pnt2d.from(coords[i], coords[i + 1]));
+        }
+        return pntList;
     }
+
+    public static boolean checkSame(List<Pnt2d> A, List<Pnt2d> B) {
+        if (A.size() != B.size()) {
+            return false;
+        }
+        int missCnt = 0;
+        for (int i = 0; i < A.size(); i++) {
+            Pnt2d p1 = A.get(i);
+            Pnt2d p2 = B.get(i);
+            if (p1.distanceSq(p2) > 1e-6) {
+                missCnt++;
+                // break;   // iff efficiency is an issue
+            }
+            // String mark = (tooFarOff) ? "*WRONG*" : "ok";
+            // System.out.printf("%d: p1=%s p2=%s %s\n", i, p1, p2, mark);
+        }
+        return missCnt == 0;
+    }
+
+
 }

@@ -1,12 +1,10 @@
 package imagingbook.jaruco;
 
 
-import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
-import imagingbook.common.ij.IjUtils;
 import imagingbook.common.image.ImageMapper;
 import imagingbook.common.regions.Contour;
 import imagingbook.common.regions.ContourTracer;
@@ -18,7 +16,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static imagingbook.jaruco.ContourSimplifierClosed.getCircularity;
+import static imagingbook.jaruco.Polygons.getCircularity;
+import static imagingbook.jaruco.Polygons.isConvex;
 
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
@@ -252,11 +251,11 @@ public class ArucoDetector {
             if (ol.polygon.size() < 50)
                 continue;
             double tol = ol.polygon.size() * detectorParams.polygonalApproxAccuracyRate;
-            List<Pnt2d> smplCtr = ContourSimplifierClosed.simplify(ol.polygon, tol);   // simplified polygon
+            List<Pnt2d> smplCtr = Polygons.simplify(ol.polygon, tol);   // simplified polygon
             // smplCtr = ContourSimplifier.cleanupCollinear(is, tol, true);   // optional cleanup, not needed
             // check if this is a convex 4-corner polygon that is not too elongated:
             if (smplCtr.size() == 4 &&
-                    ContourSimplifier.isConvex(smplCtr) &&
+                    isConvex(smplCtr) != 0 &&
                     getCircularity(smplCtr) > 0.5) {
                 // add to candidate marker boxes
                 candidateOutlines.add(new MarkerOutline(ol, smplCtr));

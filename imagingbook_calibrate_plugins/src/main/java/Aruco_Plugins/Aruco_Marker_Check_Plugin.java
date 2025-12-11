@@ -13,7 +13,7 @@ import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.jaruco.ContourSimplifier;
-import imagingbook.jaruco.ContourSimplifierClosed;
+import imagingbook.jaruco.Polygons;
 import imagingbook.common.color.iterate.ColorSequencer;
 import imagingbook.common.color.iterate.CssColorSequencer;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -36,7 +36,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.jaruco.ContourSimplifierClosed.getCircularity;
+import static imagingbook.jaruco.Polygons.getCircularity;
+import static imagingbook.jaruco.Polygons.isConvex;
 
 /**
  * First test of ArUco functionality.
@@ -133,14 +134,14 @@ public class Aruco_Marker_Check_Plugin implements PlugIn, JavaDocHelp {
             double tol = ic.getLength() * accuracyRate;
             IJ.log("tolerance = " + (ic.getLength() * accuracyRate));
             // List<Pnt2d> is = ContourSimplifier.simplify(ic, tol, true);
-            List<Pnt2d> is = ContourSimplifierClosed.simplify(ic, tol);
+            List<Pnt2d> is = Polygons.simplify(ic.getPointList(), tol);
             IJ.log("is: size = " + is.size());
 
             List<Pnt2d> iscln = is;
             // iscln = ContourSimplifier.cleanupCollinear(is, tol, true);   // not needed
 
             IJ.log("iscln: size = " + iscln.size());
-            if (iscln.size() == 4 && ContourSimplifier.isConvex(iscln) && getCircularity(iscln) > 0.5) {
+            if (iscln.size() == 4 && isConvex(iscln) != 0 && getCircularity(iscln) > 0.5) {
                 // print(ic.getPointList(), "inner orig" + k);
                 icsSmpl.add(iscln);
                 print(iscln, "inner simple" + k);

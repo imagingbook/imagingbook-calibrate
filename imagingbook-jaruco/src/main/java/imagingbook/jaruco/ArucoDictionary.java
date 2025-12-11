@@ -12,7 +12,6 @@ import imagingbook.common.util.bits.BitVector;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.MissingResourceException;
 import java.util.Objects;
@@ -36,30 +35,93 @@ public class ArucoDictionary {
     static final int R = 4;                     // number of marker rotations
     private final int M;                        // number of marker codes
     private final int N;                        // number of bits per dimension
+    private final int markerBitCount;           // number of bits for whole marker
     private final int maxCorrectionBits;        // max. number of correction bits
-    private final BitVector[][] bitdata;           // marker bit patterns, bitdata[m][r] is a 0/1 bit-pattern for marker m, rotation r
-    private final BitVector scratch;               // scratch BitVector for Hamming distance calculation
+    private final BitVector[][] bitdata;        // marker bit patterns, bitdata[m][r] is a 0/1 bit-pattern for marker m, rotation r
+    private final int[] rotperm;                // permutation vector for 2D matrix rotation of size NxN
 
     /**
      * Constructor
      * @param M number of code id's
      * @param N marker size
      * @param maxCorrectionBits number of correctable error bits
-     * @param markerStrings array of 0/1 strings, one for each marker id,
      * specifying the marker's canonical (unrotated) pattern
      */
-    private ArucoDictionary(int M, int N, int maxCorrectionBits, String[] markerStrings) {
+    private ArucoDictionary(int M, int N, int maxCorrectionBits) {
         this.M = M;
         this.N = N;
+        this.markerBitCount = N * N;
         this.maxCorrectionBits = maxCorrectionBits;
-        this.bitdata = makeBitVectors(markerStrings);  // create canonical and rotated bit patterns
-        this.scratch = new BitVector(N*N);
+        this.bitdata = new BitVector[M][]; // not yet initialized, to be filled later
+        this.rotperm = makeRotationPermutation(N);
+    }
+
+    // private ArucoDictionary(int M, int N, int maxCorrectionBits, String[] markerStrings) {
+    //     this.M = M;
+    //     this.N = N;
+    //     this.maxCorrectionBits = maxCorrectionBits;
+    //     this.bitdata = makeBitVectors(markerStrings);  // create canonical and rotated bit patterns
+    //     this.rotperm = makeRotationPermutation(N);
+    // }
+
+    /**
+     * Adds the bit vectors (canonical plus 3 rotated versions) for the specified
+     * marker. Throws an exception if this marker was already initialized.
+     * Converts the 0/1 marker string to an array of four {@link BitVector}
+     * instances, the canonical [0] plus 3 rotated versions.
+     * Note: M, N are assumed to be initialized!
+     * @param id the marker id
+     * @param markerString the marker's bit pattern as a 0/1 string
+     */
+    private void addMarkerPattern(int id, String markerString) {
+        if (id < 0 || id > M) {
+            throw new IndexOutOfBoundsException("out-of-range marker dictionary id: " + id);
+        }
+        if (bitdata[id] != null) {
+            throw new IllegalStateException("bit data already set for marker id " + id);
+        }
+        if (markerString.length() != markerBitCount) {
+            throw new RuntimeException("wrong string length for marker id=" + id);
+        }
+        BitVector[] bitVectors = new BitVector[4];
+        char[] markerPattern = markerString.toCharArray();
+        bitVectors[0] = toBitVector(markerPattern);   // r=0: canonical (unrotated)
+        // make rotated patterns for r = 1, 2, 3
+        for (int r = 1; r < 4; r++) {
+            markerPattern = RotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
+            bitVectors[r] = toBitVector(markerPattern);
+        }
+        this.bitdata[id] = bitVectors;
     }
 
     @Override
     public String toString() {
-        return String.format("%s [M=%d, N=%d, maxCorrectionBits=%d]", getClass().getSimpleName(), M, N, maxCorrectionBits);
+        return String.format("%s [M=%d, N=%d, maxCorrectionBits=%d]",
+                getClass().getSimpleName(), M, N, maxCorrectionBits);
     }
+
+    // /**
+    //  * Converts a 0/1 marker string to an array of four {@link BitVector}
+    //  * instances, the canonical [0] plus 3 rotated versions.
+    //  * Note: M, N are assumed to be initialized!
+    //  *
+    //  * @param markerString the 0/1 pattern string for a single marker
+    //  * @return an 2D array of {@link BitVector} instances
+    //  */
+    // private BitVector[] makeBitVectors(String markerString) {
+    //     BitVector[] bitVectors = new BitVector[4];
+    //     // process all marker ids:
+    //
+    //     char[] markerPattern = markerString.toCharArray();
+    //     bitVectors[0] = toBitVector(markerPattern);   // r=0: canonical (unrotated)
+    //     // make rotated patterns for r = 1, 2, 3
+    //     for (int r = 1; r < 4; r++) {
+    //         markerPattern = RotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
+    //         bitVectors[r] = toBitVector(markerPattern);
+    //     }
+    //
+    //     return bitVectors;
+    // }
 
     /**
      * Converts the 0/1 marker string array to an array of {@link BitVector,
@@ -126,7 +188,7 @@ public class ArucoDictionary {
             assert is != null;
             InputStream gzipStream = new GZIPInputStream(is);
             // read and configure this dictionary:
-            dict = getDictFromJsonStream(gzipStream);
+            dict = readDictFromJsonStream(gzipStream);
         } catch (IOException e) {
             throw new MissingResourceException(
                     "unable to read resource " + classPath + relPath.length(),
@@ -135,7 +197,12 @@ public class ArucoDictionary {
         return dict;
     }
 
-    static ArucoDictionary getDictFromJsonStream(InputStream is) {
+    /**
+     * Reads a JSON-encoded {@link ArucoDictionary} from a stream.
+     * @param is the input stream
+     * @return the newly created dictionary
+     */
+    static ArucoDictionary readDictFromJsonStream(InputStream is) {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root;
         try {
@@ -149,32 +216,46 @@ public class ArucoDictionary {
         final int maxCorrectionBits = root.get("maxCorrectionBits").asInt();
         final int markerBitCount = markersize * markersize;
 
-        // array of strings to hold the 0/1 patters, one string for each marker id
-        String[] markerStrings = new String[nmarkers];
+        // create the initial (unfinished) dictionary
+        ArucoDictionary dict = new ArucoDictionary(nmarkers, markersize, maxCorrectionBits);
 
-        // collect all markers from the JSON tree
+        // collect all markers from the JSON tree and fill bit patterns in dict
         Iterator<String> fieldNames = root.fieldNames();
         while (fieldNames.hasNext()) {
             String field = fieldNames.next();
             if (field.startsWith("marker_")) {
                 int id = Integer.parseInt(field.substring(7));
-                // check marker id for range
-                if (id < 0 || id >= nmarkers) {
-                    throw new IndexOutOfBoundsException("out-of-range marker dictionary id: " + id);
-                }
-                // check marker id for duplicate entries
-                if (markerStrings[id] != null) {
-                    throw new RuntimeException("duplicate marker dictionary id: " + id);
-                }
-
-                String markerStr = root.get(field).asText();
-                if (markerStr.length() != markerBitCount) {
-                    throw new RuntimeException("wrong string length for marker id=" + id);
-                }
-                markerStrings[id] = markerStr;
+                String markerpattern = root.get(field).asText();
+                dict.addMarkerPattern(id, markerpattern);
             }
         }
-        return new ArucoDictionary(nmarkers, markersize, maxCorrectionBits, markerStrings);
+        dict.checkIntegrity();
+        return dict;
+    }
+
+    // ---------------------------------------------------------------
+
+    /**
+     * Verifies that this dictionary is set up correctly.
+     * Exceptions are thrown for any irregularities encountered.
+     */
+    public void checkIntegrity() {
+        if (bitdata.length != M) {
+            throw new IllegalStateException("wrong length of bitdata: " + bitdata.length);
+        }
+        for (int i = 0; i < M; i++) {
+            if (bitdata[i] == null || bitdata[i].length != 4) {
+                throw new IllegalStateException("bitdata[] missing or corrupted for marker id=" + i);
+            }
+            for (int r = 0; r < 4; r++) {
+                if (bitdata[i][r] == null) {
+                    throw new IllegalStateException("bitdata null for marker id=" + i + ", r=" + r);
+                }
+                if (bitdata[i][r].length() != markerBitCount) {
+                    throw new IllegalStateException("wrong bitdata length for marker id=" + i + ", r=" + r);
+                }
+            }
+        }
     }
 
     // ---------------------------------------------------------------
@@ -256,20 +337,7 @@ public class ArucoDictionary {
                 new LookupResult(idx, rotation, currentMinDistance) : null;
     }
 
-    // Hamming distance using a scratch BitVector (no repeated allocation)
-    // int normHamming(BitVector a, BitVector b) {
-    //     scratch.clear();
-    //     scratch.or(a);   // scratch := a
-    //     scratch.xor(b);  // scratch := a xor b
-    //     return scratch.cardinality();
-    // }
-
-    // Hamming distance classic (allocates a new BitVector each time)
-    // int normHamming(BitVector a, BitVector b) {
-    //     BitVector x = (BitVector) a.clone(); // cast needed because clone() returns Object
-    //     x.xor(b);
-    //     return x.cardinality();
-    // }
+    // -------------------------------------------------------------------------
 
     public static class LookupResult {
         final int markerIndex;
@@ -287,111 +355,6 @@ public class ArucoDictionary {
             return String.format("%s [id=%d, r=%d, dist=%d]",
                     getClass().getSimpleName(), markerIndex, rotation, hammingDistance);
         }
-    }
-
-    // /**
-    //  * Converts a byte array with 0/1 values (only) to a string with 0/1
-    //  * characters.
-    //  *
-    //  * @param bytes01
-    //  * @return
-    //  */
-    // String toString01(byte[] bytes01) {
-    //     // create a string of NxN zero/ones:
-    //     StringBuilder sb = new StringBuilder();
-    //     for (int i = 0; i < bytes01.length; i++) {
-    //         String s = String.format("%8s", Integer.toBinaryString(bytes01[i] & 0xFF));
-    //         sb.append(s.replace(' ', '0'));
-    //     }
-    //     return sb.substring(0, N * N);
-    // }
-
-
-
-    // public String markerAsString2D(byte[] markerBytes) {
-    //     String s1d = toString01(markerBytes);
-    //     StringBuilder sb = new StringBuilder();
-    //     int start = 0;
-    //     for (int i = 0; i < N; i++) {
-    //         sb.append(s1d, start, start + N);
-    //         sb.append("\n");
-    //         start = start + N;
-    //     }
-    //
-    //     return sb.toString();
-    // }
-
-    // public String markerAsString2D(String s1d) {
-    //     StringBuilder sb = new StringBuilder();
-    //     int start = 0;
-    //     for (int i = 0; i < N; i++) {
-    //         sb.append(s1d, start, start + N);
-    //         sb.append("\n");
-    //         start = start + N;
-    //     }
-    //
-    //     return sb.toString();
-    // }
-    //
-    //
-    // public ByteProcessor bytesToImage(byte[] bytes) {
-    //     String str01 = toString01(bytes);
-    //     char[] ch01 = str01.toCharArray();
-    //     byte[] b0255 = new byte[ch01.length];
-    //     for (int i = 0; i < ch01.length; i++) {
-    //         b0255[i] = (ch01[i] == '0') ? 0 : (byte)0xFF;
-    //     }
-    //     ByteProcessor bp = new ByteProcessor(N, N, Arrays.copyOf(b0255, N*N));
-    //     return bp;
-    // }
-    //
-    // public byte[] imageToBytes(ByteProcessor bp) {
-    //     byte[] b0255 = (byte[]) bp.getPixels();
-    //     char[] chars = new char[8];
-    //     int n = (bp.getHeight() * bp.getWidth() + 7) / 8;
-    //     byte[] bytes = new byte[n];
-    //     for (int k = 0, start = 0; start < b0255.length; k++, start+=8) {
-    //         Arrays.fill(chars, '0');
-    //         for (int i = 0; i < 8; i++) {
-    //             if (start + i >= b0255.length) break;
-    //             chars[i] = (b0255[start + i] == 0) ? '0' : '1';
-    //         }
-    //         String str = String.valueOf(chars);
-    //         // System.out.println("str = " + str);
-    //         int intValue = Integer.parseInt(String.valueOf(chars), 2);
-    //         // System.out.println("intVal = " + intValue);
-    //         bytes[k] = (byte) (0xFF & intValue);
-    //     }
-    //     return bytes;
-    // }
-
-    // --------------------------------------------------------------
-
-    // static void checkPatterRotation() {
-    //     String s = "1010001011011001010111100";
-    //     byte[] b = toByteArray("1010001011011001010111100");
-    //     System.out.println("string = " + s);
-    //     System.out.println("bytes = " + Arrays.toString(b));
-    //     byte[][] marker = toMatrix(b, 5);
-    //     System.out.println("marker = \n" + toString(marker));
-    //
-    //     byte[] back1d = flatten(marker);
-    //     System.out.println("bytes = " + Arrays.toString(back1d));
-    //     System.out.println("is same = " + Arrays.equals(b, back1d));
-    // }
-
-    // static void showDictionaryMarkersRotated() {
-    //     ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_50.getDictionary();
-    //     for (int r = 0; r < 4; r++) {
-    //         byte[] bytes = dict.getMarkerPattern(2, r);
-    //         byte[][] marker = toMatrix(bytes, 5);
-    //         System.out.println(r + ":\n" + ByteArrayUtils.toString(marker));
-    //     }
-    // }
-
-    public static void main(String[] args) {
-        // checkPatterRotation();
-        // showDictionaryMarkersRotated();
     }
 
 }
