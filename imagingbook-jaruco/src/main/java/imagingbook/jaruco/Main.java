@@ -102,7 +102,6 @@ public class Main {
         return corners2;
     }
 
-
     static Path2D getPolygonPath(List<Pnt2d> contour, double xOffset, double yOffset) {
         Path2D path = new Path2D.Float();
         Pnt2d[] pnts = contour.toArray(new Pnt2d[0]);

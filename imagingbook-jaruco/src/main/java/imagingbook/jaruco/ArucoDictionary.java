@@ -292,49 +292,51 @@ public class ArucoDictionary {
     /**
      * Scans the dictionary for the index of the best-fitting marker and
      * if successful, builds and returns a {@link LookupResult} instance.
-     * Otherwise null is returned.
+     * Otherwise, null is returned.
+     * Different to the OpenCV implementation we potentially scan the entire
+     * dictionary, continuing even if an "acceptable" match was found.
+     * The search stops, however, if a perfect (i.e., zero-distance) match
+     * is encountered, since no more improvement is possible after that.
+     * Scanning the dictionary exhaustively is not a great effort since bitwise
+     * matching (Hamming distance calculation) is very efficient.
      *
-     * @param candidateBits the bit pattern extracted from the candidate region
+     * @param candidate the bit pattern extracted from the candidate region
      * @return a {@link LookupResult} instance or null if unsuccessful
      */
-    public LookupResult lookup(BitVector candidateBits, double maxCorrectionRate) {
-        Objects.requireNonNull(candidateBits, "candidateBits must not be null");
-        // TODO: check length of bit vector (abandon BitVector)
+    public LookupResult lookup(BitVector candidate, double maxCorrectionRate) {
+        Objects.requireNonNull(candidate, "candidate bits must not be null");
         int maxCorrectionRecalc = (int) (maxCorrectionBits * maxCorrectionRate);
-        int idx = -1; // by default, not found
-        int rotation = -1;
-        int currentMinDistance = 0;
 
-        int oneBitCnt = candidateBits.cardinality();
-        if (oneBitCnt == 0 || oneBitCnt == N*N) {   // bits all zero or all one
+        int card = candidate.cardinality();
+        // candidate is blank, all bits either zero or one:
+        if (card == 0 || card == markerBitCount) {
             return null;
         }
 
-        for (int m = 0; m < this.M; m++) {
-            currentMinDistance = N * N + 1;     // check why initialized here!
-            int currentRotation = -1;
+        int minIdx = -1;
+        int minRot = -1;
+        int minDist = Integer.MAX_VALUE;
 
-            for (int r = 0; r < 4; r++) {
-                BitVector ref = getBits(m, r);
-                // System.out.printf("id=%d r=%d: a=%s b=%s\n", m, r, ref, candidateBits);
-                // int currentHamming = normHamming(getBitVector(m, r), candidateBits);
-                int currentHamming = candidateBits.hammingDistance(getBits(m, r));
-                if(currentHamming < currentMinDistance) {
-                    currentMinDistance = currentHamming;
-                    currentRotation = r;
+        // Scan the dictionary for a pattern match at least until a zero-distance
+        // pattern is found:
+        outer:
+        for (int m = 0; m < M; m++) {       // all M marker id's
+            for (int r = 0; r < 4; r++) {   // all 4 rotations
+                int dist = candidate.hammingDistance(bitdata[m][r]);
+                if(dist < minDist) {
+                    minDist = dist;
+                    minIdx = m;
+                    minRot = r;
                 }
-            }
-
-            // if maxCorrection is fulfilled, return this one
-            if (currentMinDistance <= maxCorrectionRecalc) {
-                idx = m;
-                rotation = currentRotation;
-                break;
+                if (minDist == 0) { // perfect match, time to quit ...
+                    break outer;
+                }
             }
         }
 
-        return (idx >= 0) ?
-                new LookupResult(idx, rotation, currentMinDistance) : null;
+        return (minIdx >= 0 &&  minDist <= maxCorrectionRecalc) ?
+                new LookupResult(minIdx, minRot, minDist) :
+                null;
     }
 
     // -------------------------------------------------------------------------
