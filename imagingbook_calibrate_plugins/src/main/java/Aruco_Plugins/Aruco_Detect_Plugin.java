@@ -6,6 +6,7 @@
  ******************************************************************************/
 package Aruco_Plugins;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.io.LogStream;
 import ij.plugin.filter.PlugInFilter;
@@ -60,6 +61,10 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
 
         List<ArucoDetector.MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
         // System.out.println("Markers found: " + markerDetectionResults.size());
+        if (markerDetectionResults.isEmpty()) {
+            IJ.log("No markers found!");
+            return;
+        }
 
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
