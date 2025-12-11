@@ -1,7 +1,6 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.jaruco.util.ListUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -11,7 +10,7 @@ import static imagingbook.jaruco.Polygons.getArea;
 import static imagingbook.jaruco.Polygons.getCircularity;
 import static imagingbook.jaruco.Polygons.getLength;
 import static imagingbook.jaruco.Polygons.getMostEccentricVertexIndex;
-import static imagingbook.jaruco.Polygons.isConvex;
+import static imagingbook.jaruco.Polygons.convexity;
 import static imagingbook.jaruco.Polygons.makePolygon;
 import static imagingbook.jaruco.util.ListUtils.reversedCopy;
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,12 +28,12 @@ class PolygonsTest {
 
 
     @Test
-    void isConvexTest1() {
-        assertEquals(-1, isConvex(unitSquareCW));
-        assertEquals( 1, isConvex(unitSquareCCW));
+    void convexityTest1() {
+        assertEquals(-1, convexity(unitSquareCW));
+        assertEquals( 1, convexity(unitSquareCCW));
 
-        assertEquals(1, isConvex(triangleCCW));
-        assertEquals(-1, isConvex(triangleCW));
+        assertEquals(1, convexity(triangleCCW));
+        assertEquals(-1, convexity(triangleCW));
     }
 
     @Test

@@ -14,10 +14,12 @@ import imagingbook.common.util.ParameterBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static imagingbook.jaruco.Polygons.getCircularity;
-import static imagingbook.jaruco.Polygons.isConvex;
+import static imagingbook.jaruco.Polygons.convexity;
+import static imagingbook.jaruco.Polygons.simplify;
 
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
@@ -84,9 +86,11 @@ public class ArucoDetector {
      * Instances are immutable.
      */
     static class MarkerOutline {
+        static int MARKER_UID = -1;
+
         final int uid;          // each marker has a uid for debugging
-        final int threshold;    // the gray-level threshold at which this outline was obtained
-        final List<Pnt2d> polygon;
+        final int threshold;    // gray-level threshold at which this outline was obtained
+        final List<Pnt2d> polygon;  // marker corners in original image coordinates
 
         // Full constructor.
         MarkerOutline(int uid, int threshold, List<Pnt2d> polygon) {
@@ -100,8 +104,6 @@ public class ArucoDetector {
             this(outline.uid, outline.threshold, polygon);
         }
 
-        static int MARKER_UID = -1;
-
         static void resetUid() {
             MARKER_UID = -1;
         }
@@ -110,12 +112,16 @@ public class ArucoDetector {
             MARKER_UID++;
             return MARKER_UID;
         }
+
+        void rotatePolygon(int steps) {
+            Collections.rotate(this.polygon, steps);
+        }
     }
 
     /**
      * Represents the detection result for a single marker.
      */
-    public static class MarkerDetection {
+    public static class MarkerDetectionResult {
         final int markerId;
         final int rotation;
         final int hammingDist;
@@ -123,7 +129,7 @@ public class ArucoDetector {
         final Pnt2d[] rejectedPoints;
 
         // Constructor (private).
-        private MarkerDetection(int markerId, int rotation, int hDist, MarkerOutline corners, Pnt2d[] rejectedPoints) {
+        private MarkerDetectionResult(int markerId, int rotation, int hDist, MarkerOutline corners, Pnt2d[] rejectedPoints) {
             this.markerId = markerId;
             this.rotation = rotation;
             this.hammingDist = hDist;
@@ -132,15 +138,15 @@ public class ArucoDetector {
         }
 
         /**
-         * Builds a {@link MarkerDetection} from a given {@link LookupResult}
+         * Builds a {@link MarkerDetectionResult} from a given {@link LookupResult}
          * instance, adding the associated corner positions and rejected points.
          *
          * @param lookupR a {@link LookupResult} instance
          * @param corners corner positions for the detected marker
          * @param rejectedPoints
-         * @return a new {@link MarkerDetection} instance
+         * @return a new {@link MarkerDetectionResult} instance
          */
-        MarkerDetection (LookupResult lookupR, MarkerOutline corners, Pnt2d[] rejectedPoints) {
+        MarkerDetectionResult(LookupResult lookupR, MarkerOutline corners, Pnt2d[] rejectedPoints) {
             this(lookupR.markerIndex, lookupR.rotation, lookupR.hammingDistance, corners, rejectedPoints);
         }
 
@@ -194,10 +200,10 @@ public class ArucoDetector {
      * @param ip the input image
      * @return
      */
-    public List<MarkerDetection> detectMarkers(ImageProcessor ip) {
+    public List<MarkerDetectionResult> detectMarkers(ImageProcessor ip) {
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
-        List<MarkerDetection> markerDetections = new ArrayList<>();
+        List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
         MarkerOutline.resetUid();
 
         // try different thresholds:
@@ -214,13 +220,13 @@ public class ArucoDetector {
 
             int k = 0;
             for (MarkerOutline candidateBox : candidateBoxes) {
-                MarkerDetection dr = processOneOutline(ip, candidateBox, k++);
+                MarkerDetectionResult dr = processOneOutline(ip, candidateBox, k++);
                 if (dr != null) {
-                    markerDetections.add(dr);
+                    markerDetectionResults.add(dr);
                 }
             }
         }
-        return markerDetections;
+        return markerDetectionResults;
     }
 
     // -------------------------------------------------------------------------
@@ -248,23 +254,30 @@ public class ArucoDetector {
         List<MarkerOutline> candidateOutlines = new ArrayList<>();
         for (MarkerOutline ol : outlines) {
             // keep only contours with more than 50 points (TODO: parameter?)
-            if (ol.polygon.size() < 50)
+            List<Pnt2d> poly = ol.polygon;
+            if (poly.size() < 50)
                 continue;
-            double tol = ol.polygon.size() * detectorParams.polygonalApproxAccuracyRate;
-            List<Pnt2d> smplCtr = Polygons.simplify(ol.polygon, tol);   // simplified polygon
+            double tol = poly.size() * detectorParams.polygonalApproxAccuracyRate;
+            List<Pnt2d> smplCtr = simplify(poly, tol);   // simplified polygon
+            int convexity =  convexity(smplCtr);
             // smplCtr = ContourSimplifier.cleanupCollinear(is, tol, true);   // optional cleanup, not needed
+
             // check if this is a convex 4-corner polygon that is not too elongated:
             if (smplCtr.size() == 4 &&
-                    isConvex(smplCtr) != 0 &&
+                    convexity != 0 &&
                     getCircularity(smplCtr) > 0.5) {
+                if (convexity == 1) {  // make all contours counter-clockwise
+                    Collections.reverse(smplCtr);
+                }
                 // add to candidate marker boxes
                 candidateOutlines.add(new MarkerOutline(ol, smplCtr));
             }
+
         }
         return candidateOutlines;
     }
 
-    MarkerDetection processOneOutline(ImageProcessor ip, MarkerOutline markerOutline, int k) {
+    MarkerDetectionResult processOneOutline(ImageProcessor ip, MarkerOutline markerOutline, int k) {
         // System.out.println("processOneCandidateBox " + k);
         // STEP 4a - CORNER REFINEMENT should come here!
 
@@ -281,17 +294,26 @@ public class ArucoDetector {
         LookupResult lookup = dictionary.lookup(sampleBits, maxCorrectionRate);
 
         if (lookup != null) {
-            // System.out.println("DETECTED: " + result);
-            // int id = lookup.markerIndex;
-            // Pnt2d[] corners = markerOutline.polygon.toArray(new Pnt2d[4]);
-            return new MarkerDetection(lookup, markerOutline, null);   // TODO: rejectedPoints?
+            // Collections.rotate(markerOutline.polygon, lookup.rotation);
+            markerOutline.rotatePolygon(lookup.rotation);   // rotate vertices to canonical state
+            return new MarkerDetectionResult(lookup, markerOutline, null);   // TODO: rejectedPoints?
         }
         else {
             return null;
         }
     }
 
-    //static int MARKER_SIZE = 64;
+    /**
+     * Extracts the outlined 4-corner patch from the original image into a
+     * new square image of the specified size.
+     * The vertices in {@code outline} must be in counter-clockwise order (i.e.
+     * the result of {@link Polygons#convexity(List)} must be 1).
+     *
+     * @param origIp the source image to extract from
+     * @param outline the polygon (plus additional data) outlining the marker patch
+     * @param targetSize the size (width and height) of the square marker patch image
+     * @return the extracted marker patch image
+     */
     ByteProcessor extractMarkerImage(ImageProcessor origIp, MarkerOutline outline, int targetSize) {
         Pnt2d[] sourcePts = outline.polygon.toArray(new Pnt2d[0]);
         Pnt2d[] targetPts = {   // enlarge target square by 1/2 pixel
@@ -307,12 +329,27 @@ public class ArucoDetector {
         return targetIp;
     }
 
-
-    private BitVector extractMarkerBits(ByteProcessor markerIp, int threshold) {
+    /**
+     * Takes a square marker patch image and extracts the bit pattern assuming
+     * the marker structure specified by the current directory.
+     * This is done by sampling the greyscale {@code markerPatch} image at the
+     * associated N x N grid positions.
+     * Each sample value is taken as the median of a 3x3 neighborhood around its
+     * grid position. The size of the marker patch is assumed large enough
+     * that each marker field has at least 5 x 5 pixels.
+     * The median sample value for each field is then compared to
+     * {@code threshold}, which is typically the threshold applied to obtain
+     * the binary image for region and contour extraction.
+     *
+     * @param markerPatch
+     * @param threshold
+     * @return a {@link BitVector} holding the extracted bit sequence
+     */
+    BitVector extractMarkerBits(ByteProcessor markerPatch, int threshold) {
         // optionally wrap markerIp into an ImageAccessor to handle image borders (not strictly needed)
         // ScalarAccessor ia = ScalarAccessor.create(markerIp,
         //         OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor);
-        int w = markerIp.getWidth();
+        int w = markerPatch.getWidth();
         int N = dictionary.getMarkerSize();
         double d = (double) w / (N + 2);    // NxN marker + 1 row/ 1 column around on each side
         BitVector bits = new BitVector(N * N);
@@ -321,24 +358,17 @@ public class ArucoDetector {
             int y = (int) Math.round((1.5 + i) * d);
             for (int j = 0; j < N; j++) {
                 int x = (int) Math.round((1.5 + j) * d);
-                // int g = markerIp.getPixel(x, y);    // todo: get 3x3 median value at x/y
-
-                int g = get3x3Median(markerIp, x, y); // use threshold from initial thresholding?
-                // System.out.printf("x=%d y=%d g=%d\n", x, y, g);
-                if (g >= threshold) {
+                int g = get3x3Median(markerPatch, x, y);
+                if (g >= threshold) {    // use threshold from initial thresholding
                     bits.setBit(k);
                 }
                 k++;
             }
         }
-        // System.out.println("Extracted pattern = " + toString01(bits, 25));
-
-        // return toBitSet("1011010000010000001010111");
         return bits;
     }
 
     int get3x3Median(ByteProcessor ip, int x, int y) {
-        // ScalarAccessor ia = ScalarAccessor.create(ip, OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor);
         // collect 3x3 values
         int[] vals = new int[9];
         int k = 0;

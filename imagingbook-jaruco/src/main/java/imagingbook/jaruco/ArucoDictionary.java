@@ -334,9 +334,12 @@ public class ArucoDictionary {
             }
         }
 
-        return (minIdx >= 0 &&  minDist <= maxCorrectionRecalc) ?
-                new LookupResult(minIdx, minRot, minDist) :
-                null;
+        if (minIdx >= 0 &&  minDist <= maxCorrectionRecalc) {
+            return new LookupResult(minIdx, minRot, minDist);
+        }
+        else {
+            return null;
+        }
     }
 
     // -------------------------------------------------------------------------

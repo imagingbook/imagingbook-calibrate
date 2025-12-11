@@ -21,7 +21,7 @@ TODO: Merge into common/geometry classes, make more flexible parameters!
  */
 
 /**
- * Utility methods dealing with closed polygons.
+ * Static utility methods for dealing with closed polygons.
  */
 public class Polygons {
 
@@ -150,23 +150,22 @@ public class Polygons {
 
     /**
      * Checks if the supplied closed polygon is convex.
-     * If not convex, 0 is returned.
-     * If convex the associated winding order is returned, that is,
-     * -1 for CCW and 1 for CW order.
-     * @param pts
+     * If not convex, 0 is returned. Otherwise, the associated winding order is
+     * returned, that is, -1 for CCW and 1 for CW order.
+     * @param polygon the polygon
      * @return 0 if non-convex, 1 or -1 otherwise
      */
-     public static int isConvex(List<Pnt2d> pts) {
-        int n = pts.size();
+     public static int convexity(List<Pnt2d> polygon) {
+        int n = polygon.size();
         // if (n < 4) return true; // triangles always convex (but we may want to know winding rule)
         if (n < 2) return 0;    // single points and lines are not convex
 
         double sign = 0;
 
         for (int i = 0; i < n; i++) {
-            Pnt2d a = pts.get(i);
-            Pnt2d b = pts.get((i + 1) % n);
-            Pnt2d c = pts.get((i + 2) % n);
+            Pnt2d a = polygon.get(i);
+            Pnt2d b = polygon.get((i + 1) % n);
+            Pnt2d c = polygon.get((i + 2) % n);
             double cross =
                     (b.getX() - a.getX()) * (c.getY() - b.getY()) -
                     (b.getY() - a.getY()) * (c.getX() - b.getX());
