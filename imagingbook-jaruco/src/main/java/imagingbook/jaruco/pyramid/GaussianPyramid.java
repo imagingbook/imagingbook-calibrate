@@ -3,6 +3,9 @@ package imagingbook.jaruco.pyramid;
 import ij.ImagePlus;
 import ij.plugin.filter.Convolver;
 import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
+import imagingbook.common.corners.GradientCornerDetector;
+import imagingbook.common.corners.ShiTomasiCornerDetector;
 import imagingbook.common.filter.linear.Kernel1D;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.IjUtils;
@@ -16,11 +19,17 @@ import java.util.Locale;
  */
 public class GaussianPyramid {
 
+    static boolean ADD_CORNERS = true;
+
     /*
     It’s cheap to compute (integer arithmetic possible) and is exactly the 4th
     row of Pascal’s triangle — i.e. convolving twice with [1,2,1]/4 yields this kernel:
      */
     static final float[] H = Kernel1D.normalize(new float[] {1, 4, 6, 4, 1});
+
+    public int getLevelCount() {
+        return levels.length;
+    }
 
     public PyramidLevel getLevel(int level) {
         return levels[level];
@@ -39,32 +48,42 @@ public class GaussianPyramid {
     }
 
     private void buildFrom(ByteProcessor ip) {
-        int w = ip.getWidth();
-        int h = ip.getHeight();
         levels[0] = new PyramidLevel(0, (ByteProcessor) ip.duplicate());
         for (int k = 1; k < levels.length; k++) {
             levels[k] = levels[k - 1].createNext();
         }
+        if (ADD_CORNERS) {
+            for (int k = 0; k < levels.length; k++) {
+                levels[k].makeCorners();
+            }
+        }
     }
 
     /**
-     * Converts the level-based pixel coordinate to the corresponding
-     * position in the original image.
-     * @param uv point in local level coordinates
+     * Calculates the original image position (x, y) for the specified in-level
+     * position (u, v).
+     * @param levelPos point in local level coordinates
      * @param level pyramid level index
-     * @return
+     * @return the corresponding original image position
      */
-    public Pnt2d getRealPosition(Pnt2d uv, int level) {
+    public Pnt2d getOriginalPosition(Pnt2d levelPos, int level) {
         double scale = getLevel(level).scale;
-        double x = uv.getX() / scale;
-        double y = uv.getY() / scale;
+        double x = levelPos.getX() / scale;
+        double y = levelPos.getY() / scale;
         return Pnt2d.from(x, y);
     }
 
-    public Pnt2d getLevelPosition(Pnt2d xy, int level) {
+    /**
+     * Calculates the in-level position (u, v) that corresponds to the specified
+     * position in the original image (x, y).
+     * @param origPos
+     * @param level
+     * @return the corresponding in-level position
+     */
+    public Pnt2d getLevelPosition(Pnt2d origPos, int level) {
         double scale = getLevel(level).scale;
-        double u = xy.getX() * scale;
-        double v = xy.getY() * scale;
+        double u = origPos.getX() * scale;
+        double v = origPos.getY() * scale;
         return Pnt2d.from(u, v);
     }
 
@@ -79,6 +98,7 @@ public class GaussianPyramid {
         final int width, height;
         final double scale;
         final ByteProcessor levelIp;
+        FloatProcessor cornersIp = null;
 
         public int getId() {
             return id;
@@ -100,6 +120,10 @@ public class GaussianPyramid {
             return levelIp;
         }
 
+        public FloatProcessor getCornerScore() {
+            return cornersIp;
+        }
+
         public GaussianPyramid getPyramid() {
             return GaussianPyramid.this;
         }
@@ -116,13 +140,23 @@ public class GaussianPyramid {
             ByteProcessor tmpIp = (ByteProcessor) levelIp.duplicate();
             // apply a Gaussian filter
             // IjUtils.convolveXY(tmpIp, H);
-            Convolver conv = new Convolver();   // TODO: find more efficient (integer) implementation
+            Convolver conv = new Convolver();   // TODO: find more efficient (integer) implementation?
+            // NOTE: We only use every other pixel, i.e., 1/4th of all spixels
+            // in the smoothes image. Why calculate the rest too?
             conv.setNormalize(false);   // kernel H is already normalized
             conv.convolve(tmpIp, H, H.length, 1);
             conv.convolve(tmpIp, H, 1, H.length);
             // subsample 2:1
             ByteProcessor nextIp = decimate(tmpIp);
             return new PyramidLevel(id + 1, nextIp);
+        }
+
+        private void makeCorners() {
+            GradientCornerDetector.Parameters params = new GradientCornerDetector.Parameters();
+            for (int k = 0; k < levels.length; k++) {
+                GradientCornerDetector cornerDetector = new ShiTomasiCornerDetector(levelIp, params);
+                this.cornersIp = cornerDetector.getQ();
+            }
         }
 
         @Override
@@ -160,7 +194,8 @@ public class GaussianPyramid {
     // ---------------------------------------------------------
 
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
-    static String SAMPLE_IMAGE = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
+    // static String SAMPLE_IMAGE = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
+    static String SAMPLE_IMAGE = SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg";
 
     public static void main(String[] args) {
         System.out.println("kernel = " + Arrays.toString(H));
@@ -173,27 +208,9 @@ public class GaussianPyramid {
         GaussianPyramid pyramid = new GaussianPyramid(ip, K);
         for (int k = 0; k < K; k++) {
             new ImagePlus("Level" + k, pyramid.getLevel(k).getImage()).show();
+            if (pyramid.getLevel(k).getCornerScore() != null)
+                new ImagePlus("Corners" + k, pyramid.getLevel(k).getCornerScore()).show();
             System.out.println(pyramid.getLevel(k).toString());
-        }
-
-        for (int k = 0; k < K; k++) {
-            Pnt2d p = Pnt2d.from(0, 0);
-            System.out.printf("Level %d: %s <-- %s\n", k, pyramid.getRealPosition(p, k), p);
-        }
-
-        for (int k = 0; k < K; k++) {
-            Pnt2d p = Pnt2d.from(16, 16);
-            System.out.printf("Level %d: %s <-- %s\n", k, pyramid.getRealPosition(p, k), p);
-        }
-
-        for (int k = 0; k < K; k++) {
-            Pnt2d p = Pnt2d.from(0, 0);
-            System.out.printf("Level %d: %s --> %s\n", k, p, pyramid.getLevelPosition(p, k));
-        }
-
-        for (int k = 0; k < K; k++) {
-            Pnt2d p = Pnt2d.from(1024, 1024);
-            System.out.printf("Level %d: %s --> %s\n", k, p, pyramid.getLevelPosition(p, k));
         }
 
     }

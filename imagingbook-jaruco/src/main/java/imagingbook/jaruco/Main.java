@@ -29,6 +29,7 @@ public class Main {
 
     static void doBigImageTest() {
         String IMG_PATH = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
+        // String IMG_PATH = SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg";
 
         ImagePlus im = IjUtils.openImage(IMG_PATH);
         im.show();
@@ -45,11 +46,11 @@ public class Main {
 
     static void doSmallImageTest() {
         String[] paths = {
-                // SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
-                SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
+                // SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
         };
 
         ImagePlus[] images = new ImagePlus[paths.length];

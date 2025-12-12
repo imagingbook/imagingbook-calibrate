@@ -2,7 +2,10 @@ package imagingbook.jaruco;
 
 
 import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
+import imagingbook.common.corners.Corner;
+import imagingbook.common.corners.SubpixelMaxInterpolator;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.image.ImageMapper;
@@ -23,8 +26,13 @@ import static imagingbook.jaruco.Polygons.simplify;
 
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
+import imagingbook.jaruco.pyramid.GaussianPyramid;
 
 public class ArucoDetector {
+
+    static int PYRAMID_LEVELS = 5;
+    static double CORNER_SCORE_THRESHOLD = 100;
+
 
     public enum CornerRefineMethod {
         /** Tag and corners detection based on the ArUco approach */
@@ -206,6 +214,8 @@ public class ArucoDetector {
         List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
         MarkerOutline.resetUid();
 
+        GaussianPyramid pyramid = new GaussianPyramid(gray, PYRAMID_LEVELS); // TODO: levels = 5, adapt!!
+
         // try different global thresholds (Aruco3) or use adaptive local threshold:
         int initThr = Math.round(new OtsuThresholder().getThreshold(gray));
 
@@ -217,6 +227,10 @@ public class ArucoDetector {
             // STEP 3: Simplify inner contours to polygons
             List<MarkerOutline> candidateOutlines = simplifyContours(contours);
 
+            for (MarkerOutline outline : candidateOutlines) {
+                refineOutlineCorners(outline, pyramid);
+            }
+
             // STEP 4: Process each candidate box and collect the results
             for (MarkerOutline outline : candidateOutlines) {
                 MarkerDetectionResult dr = processOneOutline(ip, outline);
@@ -227,6 +241,127 @@ public class ArucoDetector {
         }
         return markerDetectionResults;
     }
+
+    /**
+     * Use the corner score in pyramid to adjust the corner positions of the
+     * given outline.
+     * @param outline
+     * @param pyramid
+     */
+    private void refineOutlineCorners(MarkerOutline outline, GaussianPyramid pyramid) {
+        System.out.println("refineOutlineCorners: refine outline " + outline.uid);
+        for (int i = 0; i < outline.polygon.size(); i++) {
+            System.out.println("corner: " + i);
+            Pnt2d p = outline.polygon.get(i);
+            Pnt2d pp = refineOneCorner(p, pyramid);
+            if (pp != null) {
+                // replace this corner vertex with the refined one
+                outline.polygon.set(i, pp);
+            }
+            else {
+                // System.out.println("   ***** keeping ********: " + p);
+            }
+        }
+    }
+
+    private Pnt2d refineOneCorner(Pnt2d xy, GaussianPyramid pyramid) {
+        // find the coarsest level (kstart) with an acceptable corner score at this position:
+        // System.out.printf("    refining corner %s\n", xy);
+        int K = pyramid.getLevelCount();
+        // System.out.printf("    K = %d\n", K);
+        int kstart = -1;
+        int u = -1, v = -1;
+        float q = 0;
+        float[] neighborhood = null;
+
+        for (int k = K - 1; k >= 0; k--) {
+            Pnt2d uv = pyramid.getLevelPosition(xy, k);
+            u = (int) Math.round(uv.getX());
+            v = (int) Math.round(uv.getY());
+            // get the corner score:
+            FloatProcessor Q = pyramid.getLevel(k).getCornerScore();
+            q = pyramid.getLevel(k).getCornerScore().getf(u, v);
+            // System.out.printf("    checking level %d, q=%.2f\n", k, q);
+            if (q > CORNER_SCORE_THRESHOLD) {
+                neighborhood = getNeighborhood(pyramid.getLevel(k).getCornerScore(),u, v);
+                if (isLocalMax(neighborhood)) {
+                    kstart = k;
+                    break;
+                }
+            }
+        }
+        if (kstart == -1) {
+            System.out.println("   *** found no suitable corner for: " + xy + " q=" + q);
+            return null;    // could not refine
+        }
+
+        // SubpixelMaxInterpolator interpolator = SubpixelMaxInterpolator.QuadraticTaylor.getInstance();
+        SubpixelMaxInterpolator interpolator = SubpixelMaxInterpolator.QuadraticLeastSquares.getInstance();
+        // (u, v, kstart) is the first position to check
+        // float[] neighborhood = getNeighborhood(pyramid.getLevel(kstart).getCornerScore(),u, v);
+        //if (isLocalMax(neighborhood)) {
+
+        float[] xyz = interpolator.getMax(neighborhood);
+        if (xyz != null) {
+            Pnt2d xyR = Pnt2d.from(u + xyz[0], v + xyz[1]);
+            System.out.println("   Refined corner: " + xy + " --> " + xyR + " at level " + kstart);
+            return pyramid.getOriginalPosition(xyR, kstart);
+        }
+        else {
+            System.out.println("   *** interpolator failed : " + xy + " at level " + kstart);
+        }
+
+        // }
+        // else {
+        //     System.out.println("   *** no local max, for : " + xy + " at level " + kstart);
+        // }
+        return null;
+    }
+
+    /*
+     * Returned samples are arranged as follows:
+     * 	s4 s3 s2
+     *  s5 s0 s1
+     *  s6 s7 s8
+     */
+    private float[] getNeighborhood(FloatProcessor Q, int u, int v) {
+        int M = Q.getWidth();
+        int N = Q.getHeight();
+        if (u <= 0 || u >= M - 1 || v <= 0 || v >= N - 1) {
+            return null;
+        }
+        else {
+            final float[] q = (float[]) Q.getPixels();
+            float[] s = new float[9];
+            final int i0 = (v - 1) * M + u;
+            final int i1 = v * M + u;
+            final int i2 = (v + 1) * M + u;
+            s[0] = q[i1];
+            s[1] = q[i1 + 1];
+            s[2] = q[i0 + 1];
+            s[3] = q[i0];
+            s[4] = q[i0 - 1];
+            s[5] = q[i1 - 1];
+            s[6] = q[i2 - 1];
+            s[7] = q[i2];
+            s[8] = q[i2 + 1];
+            return s;
+        }
+    }
+
+    private boolean isLocalMax(float[] s) {
+        if (s == null) {
+            return false;
+        }
+        else {
+            final float s0 = s[0];
+            return	// check 8 neighbors of q0
+                    s0 > s[4] && s0 > s[3] && s0 > s[2] &&
+                            s0 > s[5] &&              s0 > s[1] &&
+                            s0 > s[6] && s0 > s[7] && s0 > s[8] ;
+        }
+    }
+
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------

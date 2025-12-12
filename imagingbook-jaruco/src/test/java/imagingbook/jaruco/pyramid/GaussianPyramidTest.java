@@ -63,7 +63,7 @@ class GaussianPyramidTest {
     }
 
     @Test
-    void getRealPositionTest() {
+    void getOriginalPositionTest() {
     }
 
     @Test
