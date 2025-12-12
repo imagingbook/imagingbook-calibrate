@@ -4,5 +4,6 @@ module imagingbook.jaruco {
     requires ij;
 
     exports imagingbook.jaruco;
+    exports imagingbook.jaruco.pyramid;
     exports imagingbook.jaruco.obsolete;
 }

@@ -36,7 +36,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.jaruco.Polygons.getCircularity;
+import static imagingbook.jaruco.Polygons.circularity;
 import static imagingbook.jaruco.Polygons.convexity;
 
 /**
@@ -141,7 +141,7 @@ public class Aruco_Marker_Check_Plugin implements PlugIn, JavaDocHelp {
             // iscln = ContourSimplifier.cleanupCollinear(is, tol, true);   // not needed
 
             IJ.log("iscln: size = " + iscln.size());
-            if (iscln.size() == 4 && convexity(iscln) != 0 && getCircularity(iscln) > 0.5) {
+            if (iscln.size() == 4 && convexity(iscln) != 0 && circularity(iscln) > 0.5) {
                 // print(ic.getPointList(), "inner orig" + k);
                 icsSmpl.add(iscln);
                 print(iscln, "inner simple" + k);

@@ -2,10 +2,7 @@ package imagingbook.jaruco;
 
 
 import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
-import imagingbook.common.corners.Corner;
-import imagingbook.common.corners.SubpixelMaxInterpolator;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.image.ImageMapper;
@@ -20,9 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static imagingbook.jaruco.Polygons.getCircularity;
-import static imagingbook.jaruco.Polygons.convexity;
-import static imagingbook.jaruco.Polygons.simplify;
+
 
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
@@ -31,7 +26,7 @@ import imagingbook.jaruco.pyramid.GaussianPyramid;
 public class ArucoDetector {
 
     static int PYRAMID_LEVELS = 5;
-    static double CORNER_SCORE_THRESHOLD = 100;
+
 
 
     public enum CornerRefineMethod {
@@ -87,84 +82,6 @@ public class ArucoDetector {
         public boolean checkAllOrders = true;
     }
 
-    /**
-     * Represents a polygon outlining a candidate marker in the input image.
-     * Originally this is the raw contour which is subsequently simplified.
-     * Instances are immutable.
-     */
-    public static class MarkerOutline {
-        static int MARKER_UID = -1;
-        // TODO: add getter methods!
-        public final int uid;          // each marker has a uid for debugging
-        public final int threshold;    // gray-level threshold at which this outline was obtained
-        public final List<Pnt2d> polygon;  // marker corners in original image coordinates
-
-        // Full constructor.
-        MarkerOutline(int uid, int threshold, List<Pnt2d> polygon) {
-            this.uid = uid;
-            this.threshold = threshold;
-            this.polygon = polygon;
-        }
-
-        // Constructor, copies an existing outline with a new polygon.
-        MarkerOutline(MarkerOutline outline, List<Pnt2d> polygon) {
-            this(outline.uid, outline.threshold, polygon);
-        }
-
-        static void resetUid() {
-            MARKER_UID = -1;
-        }
-
-        static int nextUid() {
-            MARKER_UID++;
-            return MARKER_UID;
-        }
-
-        void rotatePolygon(int steps) {
-            Collections.rotate(this.polygon, steps);
-        }
-    }
-
-    /**
-     * Represents the detection result for a single marker.
-     */
-    public static class MarkerDetectionResult {
-        // TODO: add getter methods!
-        public final int markerId;
-        public final int rotation;
-        public final int hammingDist;
-        public final MarkerOutline corners;
-        public final Pnt2d[] rejectedPoints;
-
-        // Constructor (private).
-        private MarkerDetectionResult(int markerId, int rotation, int hDist, MarkerOutline corners, Pnt2d[] rejectedPoints) {
-            this.markerId = markerId;
-            this.rotation = rotation;
-            this.hammingDist = hDist;
-            this.corners = corners;
-            this.rejectedPoints = rejectedPoints;
-        }
-
-        /**
-         * Builds a {@link MarkerDetectionResult} from a given {@link LookupResult}
-         * instance, adding the associated corner positions and rejected points.
-         *
-         * @param lookupR a {@link LookupResult} instance
-         * @param corners corner positions for the detected marker
-         * @param rejectedPoints
-         * @return a new {@link MarkerDetectionResult} instance
-         */
-        MarkerDetectionResult(LookupResult lookupR, MarkerOutline corners, Pnt2d[] rejectedPoints) {
-            this(lookupR.markerIndex, lookupR.rotation, lookupR.hammingDistance, corners, rejectedPoints);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s [id=%d rot=%d dist=%d corners=%s]",
-                    getClass().getSimpleName(), markerId, rotation, hammingDist, Arrays.toString(corners.polygon.toArray(new Pnt2d[0])));
-        }
-    }
-
     // -------------------------------------------------------------------------
 
     private final ArucoDictionary dictionary;
@@ -206,15 +123,15 @@ public class ArucoDetector {
     /**
      * The core method. Tries to locate and identify markers in the given image.
      * @param ip the input image
-     * @return a (possibly empty) list of {@link MarkerDetectionResult} instances
+     * @return a (possibly empty) list of {@link MarkerDetection} instances
      */
-    public List<MarkerDetectionResult> detectMarkers(ImageProcessor ip) {
+    public List<MarkerDetection> detectMarkers(ImageProcessor ip) {
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
-        List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
         MarkerOutline.resetUid();
 
         GaussianPyramid pyramid = new GaussianPyramid(gray, PYRAMID_LEVELS); // TODO: levels = 5, adapt!!
+        List<MarkerDetection> markerDetections = new ArrayList<>();
 
         // try different global thresholds (Aruco3) or use adaptive local threshold:
         int initThr = Math.round(new OtsuThresholder().getThreshold(gray));
@@ -227,141 +144,22 @@ public class ArucoDetector {
             // STEP 3: Simplify inner contours to polygons
             List<MarkerOutline> candidateOutlines = simplifyContours(contours);
 
-            for (MarkerOutline outline : candidateOutlines) {
-                refineOutlineCorners(outline, pyramid);
-            }
-
             // STEP 4: Process each candidate box and collect the results
             for (MarkerOutline outline : candidateOutlines) {
-                MarkerDetectionResult dr = processOneOutline(ip, outline);
+                MarkerDetection dr = processOneOutline(ip, outline);
                 if (dr != null) {
-                    markerDetectionResults.add(dr);
+                    markerDetections.add(dr);
                 }
             }
-        }
-        return markerDetectionResults;
-    }
 
-    /**
-     * Use the corner score in pyramid to adjust the corner positions of the
-     * given outline.
-     * @param outline
-     * @param pyramid
-     */
-    private void refineOutlineCorners(MarkerOutline outline, GaussianPyramid pyramid) {
-        System.out.println("refineOutlineCorners: refine outline " + outline.uid);
-        for (int i = 0; i < outline.polygon.size(); i++) {
-            System.out.println("corner: " + i);
-            Pnt2d p = outline.polygon.get(i);
-            Pnt2d pp = refineOneCorner(p, pyramid);
-            if (pp != null) {
-                // replace this corner vertex with the refined one
-                outline.polygon.set(i, pp);
-            }
-            else {
-                // System.out.println("   ***** keeping ********: " + p);
+            // STEP 5: Refine corners
+            CornerRefiner refiner = new CornerRefiner(pyramid);
+            for (MarkerOutline outline : candidateOutlines) {
+                refiner.refineCorners(outline);
             }
         }
+        return markerDetections;
     }
-
-    private Pnt2d refineOneCorner(Pnt2d xy, GaussianPyramid pyramid) {
-        // find the coarsest level (kstart) with an acceptable corner score at this position:
-        // System.out.printf("    refining corner %s\n", xy);
-        int K = pyramid.getLevelCount();
-        // System.out.printf("    K = %d\n", K);
-        int kstart = -1;
-        int u = -1, v = -1;
-        float q = 0;
-        float[] neighborhood = null;
-
-        for (int k = K - 1; k >= 0; k--) {
-            Pnt2d uv = pyramid.getLevelPosition(xy, k);
-            u = (int) Math.round(uv.getX());
-            v = (int) Math.round(uv.getY());
-            // get the corner score:
-            FloatProcessor Q = pyramid.getLevel(k).getCornerScore();
-            q = pyramid.getLevel(k).getCornerScore().getf(u, v);
-            // System.out.printf("    checking level %d, q=%.2f\n", k, q);
-            if (q > CORNER_SCORE_THRESHOLD) {
-                neighborhood = getNeighborhood(pyramid.getLevel(k).getCornerScore(),u, v);
-                if (isLocalMax(neighborhood)) {
-                    kstart = k;
-                    break;
-                }
-            }
-        }
-        if (kstart == -1) {
-            System.out.println("   *** found no suitable corner for: " + xy + " q=" + q);
-            return null;    // could not refine
-        }
-
-        // SubpixelMaxInterpolator interpolator = SubpixelMaxInterpolator.QuadraticTaylor.getInstance();
-        SubpixelMaxInterpolator interpolator = SubpixelMaxInterpolator.QuadraticLeastSquares.getInstance();
-        // (u, v, kstart) is the first position to check
-        // float[] neighborhood = getNeighborhood(pyramid.getLevel(kstart).getCornerScore(),u, v);
-        //if (isLocalMax(neighborhood)) {
-
-        float[] xyz = interpolator.getMax(neighborhood);
-        if (xyz != null) {
-            Pnt2d xyR = Pnt2d.from(u + xyz[0], v + xyz[1]);
-            System.out.println("   Refined corner: " + xy + " --> " + xyR + " at level " + kstart);
-            return pyramid.getOriginalPosition(xyR, kstart);
-        }
-        else {
-            System.out.println("   *** interpolator failed : " + xy + " at level " + kstart);
-        }
-
-        // }
-        // else {
-        //     System.out.println("   *** no local max, for : " + xy + " at level " + kstart);
-        // }
-        return null;
-    }
-
-    /*
-     * Returned samples are arranged as follows:
-     * 	s4 s3 s2
-     *  s5 s0 s1
-     *  s6 s7 s8
-     */
-    private float[] getNeighborhood(FloatProcessor Q, int u, int v) {
-        int M = Q.getWidth();
-        int N = Q.getHeight();
-        if (u <= 0 || u >= M - 1 || v <= 0 || v >= N - 1) {
-            return null;
-        }
-        else {
-            final float[] q = (float[]) Q.getPixels();
-            float[] s = new float[9];
-            final int i0 = (v - 1) * M + u;
-            final int i1 = v * M + u;
-            final int i2 = (v + 1) * M + u;
-            s[0] = q[i1];
-            s[1] = q[i1 + 1];
-            s[2] = q[i0 + 1];
-            s[3] = q[i0];
-            s[4] = q[i0 - 1];
-            s[5] = q[i1 - 1];
-            s[6] = q[i2 - 1];
-            s[7] = q[i2];
-            s[8] = q[i2 + 1];
-            return s;
-        }
-    }
-
-    private boolean isLocalMax(float[] s) {
-        if (s == null) {
-            return false;
-        }
-        else {
-            final float s0 = s[0];
-            return	// check 8 neighbors of q0
-                    s0 > s[4] && s0 > s[3] && s0 > s[2] &&
-                            s0 > s[5] &&              s0 > s[1] &&
-                            s0 > s[6] && s0 > s[7] && s0 > s[8] ;
-        }
-    }
-
 
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
@@ -392,14 +190,14 @@ public class ArucoDetector {
             if (poly.size() < 50)
                 continue;
             double tol = poly.size() * detectorParams.polygonalApproxAccuracyRate;
-            List<Pnt2d> smplCtr = simplify(poly, tol);   // simplified polygon
-            int convexity =  convexity(smplCtr);
+            List<Pnt2d> smplCtr = Polygons.simplify(poly, tol);   // simplified polygon
+            int convexity =  Polygons.convexity(smplCtr);
             // smplCtr = ContourSimplifier.cleanupCollinear(is, tol, true);   // optional cleanup, not needed
 
             // check if this is a convex 4-corner polygon that is not too elongated:
             if (smplCtr.size() == 4 &&
                     convexity != 0 &&
-                    getCircularity(smplCtr) > 0.5) {
+                    Polygons.circularity(smplCtr) > 0.5) {
                 if (convexity == 1) {  // make all contours counter-clockwise
                     Collections.reverse(smplCtr);
                 }
@@ -411,7 +209,7 @@ public class ArucoDetector {
         return candidateOutlines;
     }
 
-    MarkerDetectionResult processOneOutline(ImageProcessor ip, MarkerOutline markerOutline) {
+    MarkerDetection processOneOutline(ImageProcessor ip, MarkerOutline markerOutline) {
         // System.out.println("processOneCandidateBox " + k);
         // STEP 4a - CORNER REFINEMENT should come here!
 
@@ -430,7 +228,7 @@ public class ArucoDetector {
         if (lookup != null) {
             // Collections.rotate(markerOutline.polygon, lookup.rotation);
             markerOutline.rotatePolygon(lookup.rotation);   // rotate vertices to canonical state
-            return new MarkerDetectionResult(lookup, markerOutline, null);   // TODO: rejectedPoints?
+            return new MarkerDetection(lookup, markerOutline, null);   // TODO: rejectedPoints?
         }
         else {
             return null;

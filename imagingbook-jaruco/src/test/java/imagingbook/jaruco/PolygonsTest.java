@@ -7,7 +7,7 @@ import java.util.List;
 
 import static imagingbook.jaruco.Polygons.checkSame;
 import static imagingbook.jaruco.Polygons.getArea;
-import static imagingbook.jaruco.Polygons.getCircularity;
+import static imagingbook.jaruco.Polygons.circularity;
 import static imagingbook.jaruco.Polygons.getLength;
 import static imagingbook.jaruco.Polygons.getMostEccentricVertexIndex;
 import static imagingbook.jaruco.Polygons.convexity;
@@ -52,12 +52,12 @@ class PolygonsTest {
     }
 
     @Test
-    void getCircularityTest() {
-        assertEquals(0.78539816, getCircularity(unitSquareCW), 1e-6);
-        assertEquals(0.78539816, getCircularity(unitSquareCCW), 1e-6);
+    void circularityTest() {
+        assertEquals(0.78539816, circularity(unitSquareCW), 1e-6);
+        assertEquals(0.78539816, circularity(unitSquareCCW), 1e-6);
 
-        assertEquals(0.57626363, getCircularity(triangleCW), 1e-6);
-        assertEquals(0.57626363, getCircularity(triangleCCW), 1e-6);
+        assertEquals(0.57626363, circularity(triangleCW), 1e-6);
+        assertEquals(0.57626363, circularity(triangleCCW), 1e-6);
     }
 
     @Test

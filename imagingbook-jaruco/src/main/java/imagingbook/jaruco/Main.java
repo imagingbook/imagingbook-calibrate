@@ -8,9 +8,7 @@ import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.Path2D;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static imagingbook.jaruco.Polygons.getPolygonPath;
@@ -36,10 +34,10 @@ public class Main {
         ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_1000.getInstance();
 
         ArucoDetector detector = new ArucoDetector(dict);
-        List<ArucoDetector.MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
+        List<MarkerDetection> markerDetections = detector.detectMarkers(im.getProcessor());
 
-        System.out.println("Markers found: " + markerDetectionResults.size());
-        for (ArucoDetector.MarkerDetectionResult res : markerDetectionResults) {
+        System.out.println("Markers found: " + markerDetections.size());
+        for (MarkerDetection res : markerDetections) {
             System.out.println(res);
         }
     }
@@ -68,13 +66,13 @@ public class Main {
         for (int i = 0; i < paths.length; i++) {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
-            List<ArucoDetector.MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
-            System.out.println("Markers found: " + markerDetectionResults.size());
+            List<MarkerDetection> markerDetections = detector.detectMarkers(im.getProcessor());
+            System.out.println("Markers found: " + markerDetections.size());
 
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            for (ArucoDetector.MarkerDetectionResult res : markerDetectionResults) {
-                // ArucoDetector.MarkerDetectionResult res = markerDetectionResults.get(0);
+            for (MarkerDetection res : markerDetections) {
+                // ArucoDetector.MarkerDetection res = markerDetections.get(0);
                 System.out.println(res);
                 // create shape overlay
 

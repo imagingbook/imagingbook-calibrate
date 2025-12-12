@@ -14,10 +14,7 @@ import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
-import imagingbook.jaruco.ArucoDetector;
-import imagingbook.jaruco.ArucoDictionary;
-import imagingbook.jaruco.ArucoPredefinedDictionary;
-import imagingbook.jaruco.Polygons;
+import imagingbook.jaruco.*;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -59,16 +56,16 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
         ColoredStroke stroke0 = new ColoredStroke(1.0 * 3, Color.red);
 
 
-        List<ArucoDetector.MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
-        // System.out.println("Markers found: " + markerDetectionResults.size());
-        if (markerDetectionResults.isEmpty()) {
+        List<MarkerDetection> markerDetections = detector.detectMarkers(im.getProcessor());
+        // System.out.println("Markers found: " + markerDetections.size());
+        if (markerDetections.isEmpty()) {
             IJ.log("No markers found!");
             return;
         }
 
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-        for (ArucoDetector.MarkerDetectionResult res : markerDetectionResults) {
+        for (MarkerDetection res : markerDetections) {
             List<Pnt2d> corners = res.corners.polygon;
             ola.addShape(getPolygonPath(corners, 0, 0), stroke);
 

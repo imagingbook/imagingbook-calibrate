@@ -212,7 +212,7 @@ public class Polygons {
         return Math.abs(sum) / 2;
     }
 
-    public static double getCircularity(List<Pnt2d> poly) {
+    public static double circularity(List<Pnt2d> poly) {
         double area = getArea(poly);
         double len =  getLength(poly);
         if (isZero(len)) {
