@@ -7,7 +7,6 @@ import imagingbook.common.image.OutOfBoundsStrategy;
 import imagingbook.common.image.access.ByteAccessor;
 import imagingbook.common.image.interpolation.InterpolationMethod;
 import imagingbook.common.math.Matrix;
-import imagingbook.common.util.Timing;
 
 import static imagingbook.common.math.Arithmetic.sqr;
 
@@ -43,9 +42,9 @@ public class ByteConvolver {
         ByteProcessor ip2 = (ByteProcessor) ip1.duplicate();
 
         ByteAccessor ba1 = new
-                ByteAccessor(ip1, OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor);
+                ByteAccessor(ip1, OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor, 0, 0);
         ByteAccessor ba2 = new
-                ByteAccessor(ip2, OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor);
+                ByteAccessor(ip2, OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor, 0, 0);
 
         // visit all pixels
         for (int v = 0; v < height; v++) {

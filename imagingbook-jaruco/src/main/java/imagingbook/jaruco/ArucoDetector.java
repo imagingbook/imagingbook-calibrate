@@ -153,7 +153,7 @@ public class ArucoDetector {
             }
 
             // STEP 5: Refine corners
-            CornerRefiner refiner = new CornerRefiner(pyramid);
+            CornerTuner refiner = new CornerTuner(pyramid);
             for (MarkerOutline outline : candidateOutlines) {
                 refiner.refineCorners(outline);
             }
