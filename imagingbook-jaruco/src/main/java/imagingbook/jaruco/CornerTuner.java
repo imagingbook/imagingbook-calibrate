@@ -24,20 +24,37 @@ public class CornerTuner {
         for (int i = 0; i < outline.polygon.size(); i++) {
             Pnt2d p = outline.polygon.get(i);
             System.out.printf("corner %d: %s\n", i, p);
-            findNearbyCorner(p);
-//            Pnt2d pp = refineOneCorner(p);
-//            if (pp != null) {
-//                // replace this corner vertex with the refined one
-//                outline.polygon.set(i, pp);
-//            }
-//            else {
-//                // System.out.println("   ***** keeping ********: " + p);
-//            }
+            // A. Locate potential corner location in pyramid:
+            CornerLocalMax lcm = findNearbyCorner(p);
+            if (lcm != null) {
+                // B. Refine corner position down the pyramid
+                // C. Update contour vertex if successful
+                // outline.polygon.set(i, pp);
+            }
+
         }
     }
 
     // ---------------------------------------------------
-    private record CornerLocalMax(int u, int v, int level, float score) {}
+
+    /**
+     * Represents a detected local maximum in the grey-level pyramid.
+     * The attached 3x3 neighborhood {@code s} contains the corner scores
+     * values at and around the local maximum position arranged in the form
+     * <pre>
+     *     s4 s3 s2
+     *     s5 s0 s1
+     *     s6 s7 s8
+     * </pre>
+     * The value at the center is {@code s0 = q(uc, vc)}.
+     * @param uc center x-position (in level coordinates)
+     * @param vc center y-position (in level coordinates)
+     * @param level pyramid level
+     * @param neighborhood the 3x3 neighborhood of corner scores
+     */
+    private record CornerLocalMax(
+            int uc, int vc, int level, float[] neighborhood) {}
+
     // ---------------------------------------------------
 
     /**
@@ -45,7 +62,7 @@ public class CornerTuner {
      * @param xy
      * @return
      */
-    private Pnt2d findNearbyCorner(Pnt2d xy) {
+    private CornerLocalMax findNearbyCorner(Pnt2d xy) {
         int K = pyramid.getLevelCount();
 
         CornerLocalMax lmax = null;
@@ -64,11 +81,42 @@ public class CornerTuner {
             return null;
         }
         System.out.println("CornerLocalMax found: " + lmax);
-
-        return null;    // TODO:
+        return lmax;
     }
 
-    // static int NEIGHBORHOOD_SEARCH_SIZE = 5;
+    // -------------------------------------
+
+    // Find a local maximum corner score in surrounding pixels
+    private CornerLocalMax findMaxCornerInNeighborhood(int u0, int v0, int level) {
+        FloatProcessor Q = pyramid.getLevel(level).getCornerScore();
+        float[][] N5 = getNeighborhood5x5(Q, u0, v0);;
+        // search the inner 3x3 neighborhood of the 5x5 NH for a maximum score value
+        int m = -1, n = -1;
+        float qm = Float.NEGATIVE_INFINITY;
+        for (int i = 1; i < 4; i++) {
+            for (int j = 1; j < 4; j++) {
+                float q = N5[i][j];
+                if (q > qm) {
+                    qm = q;
+                    m = i;
+                    n = j;
+                }
+            }
+        }
+
+        // extract 3x3 neigborhood around (m,n)
+        float[] S3 = get3x3(N5, m, n);
+        // TODO: check also if minimum score is reached!
+        if (isLocalMax3x3(S3)) {
+            int umax = u0 + m - 2;  // level coordinates
+            int vmax = v0 + n - 2;
+            System.out.printf("  max corner for (%d,%d) k=%d at (%d,%d) q=%.2f dist=(%d,%d) locMax=%b\n",
+                    u0, v0, level, umax, vmax, qm, umax-u0, vmax-v0, true);
+            return new CornerLocalMax(umax, vmax, level, S3);
+        }
+
+        return null; // found no corner to refine
+    }
 
     private final float[][] scratch5x5 = new float[5][5];
 
@@ -91,61 +139,35 @@ public class CornerTuner {
         return scratch5x5;
     }
 
-    // Find
-    CornerLocalMax findMaxCornerInNeighborhood(int u0, int v0, int level) {
-        FloatProcessor Q = pyramid.getLevel(level).getCornerScore();
-        float[][] S = getNeighborhood5x5(Q, u0, v0);;
-        // search the inner 3x3 neighborhood of the 5x5 NH for a maximum score value
-        int m = -1, n = -1;
-        float qm = Float.NEGATIVE_INFINITY;
-        for (int i = 1; i < 4; i++) {
-            for (int j = 1; j < 4; j++) {
-                float q = S[i][j];
-                if (q > qm) {
-                    qm = q;
-                    m = i;
-                    n = j;
-                }
-            }
-        }
-        // scratch[m][n] = qmax is the max value, with m,n in {1,2,3}
-        // check if scratch[m][n] is a local maximum
-        // TODO: check also if minimum score is reached!
-        boolean isLocalMax = isLocalMax8(S, m, n);
-
-        int umax = u0 + m - 2;  // level coordinates
-        int vmax = v0 + n - 2;
-        System.out.printf("  max corner for (%d,%d) k=%d at (%d,%d) q=%.2f dist=(%d,%d) locMax=%b\n",
-                u0, v0, level, umax, vmax, qm, umax-u0, vmax-v0, isLocalMax);
-
-        return isLocalMax ? new CornerLocalMax(umax, vmax, level, qm) : null;
-    }
-
     /**
-     * Checks if {@code S[m][n]} is a local maximum (over all its 8
-     * neighbors).
+     * Extracts 3x3 values centered at (m,n) from a 5x5 neighborhood,
+     * with <= m,n <= 3. Values are placed in a 1D array
+     * S = (s0,...,s8) in the following order, with s0 = N5[m][n].
+     *  <pre>
+     *  s4 s3 s2
+     *  s5 s0 s1
+     *  s6 s7 s8
+     *  </pre>
      */
-    private static boolean isLocalMax8(float[][] S, int m, int n) {
-        float qm = S[m][n];
-        return
-                qm > S[m-1][n-1] && qm > S[m][n-1] && qm > S[m+1][n-1] &&
-                qm > S[m-1][n]   &&                   qm > S[m+1][n]   &&
-                qm > S[m-1][n+1] && qm > S[m][n+1] && qm > S[m+1][n+1] ;
+    private static float[] get3x3(float[][] N5, int m, int n) {
+        return new float[] {
+                N5[m][n], N5[m+1][n], N5[m+1][n-1],
+                N5[m][n-1], N5[m-1][n-1], N5[m-1][n],
+                N5[m-1][n+1], N5[m][n+1], N5[m+1][n+1]};
+
     }
 
-    /**
-     * Checks if {@code S[m][n]} is a local maximum (over only 4
-     * neighbors).
-     */
-    private static boolean isLocalMax4(float[][] S, int m, int n) {
-        float qm = S[m][n];
-        return
-                                    qm > S[m][n-1] &&
-                qm > S[m-1][n]   &&                   qm > S[m+1][n]   &&
-                                    qm > S[m][n+1] ;
+    private static boolean isLocalMax3x3(float[] s) {
+        final float c = s[0];
+        return	// check 8 neighbors of c
+                c > s[4] && c > s[3] && c > s[2] &&
+                c > s[5] &&             c > s[1] &&
+                c > s[6] && c > s[7] && c > s[8] ;
     }
 
-    // -----------------------------------------------------------------------
+
+
+    // CORNER REFINEMENT ----------------------------------------------------
 
     void refineCorner(CornerLocalMax lmax, float[][] S) {
         // TODO: CONTINUE HERE, watch for coordinates in lmax & S!
@@ -190,8 +212,8 @@ public class CornerTuner {
 
         // SubpixelMaxInterpolator interpolator = SubpixelMaxInterpolator.QuadraticTaylor.getInstance();
         SubpixelMaxInterpolator interpolator = SubpixelMaxInterpolator.QuadraticLeastSquares.getInstance();
-        // (u, v, kstart) is the first position to check
-        // float[] neighborhood = getNeighborhood(pyramid.getLevel(kstart).getCornerScore(),u, v);
+        // (uc, vc, kstart) is the first position to check
+        // float[] neighborhood = getNeighborhood(pyramid.getLevel(kstart).getCornerScore(),uc, vc);
         //if (isLocalMax(neighborhood)) {
 
         float[] xyz = interpolator.getMax(neighborhood);
@@ -217,6 +239,7 @@ public class CornerTuner {
      *  s5 qm s1
      *  s6 s7 s8
      */
+    @Deprecated
     private static float[] getNeighborhood(FloatProcessor Q, int u, int v) {
         int M = Q.getWidth();
         int N = Q.getHeight();
@@ -241,18 +264,4 @@ public class CornerTuner {
             return s;
         }
     }
-
-    private static boolean isLocalMax3x3(float[] s) {
-        if (s == null) {
-            return false;
-        }
-        else {
-            final float qm = s[0];
-            return	// check 8 neighbors of q0
-                    qm > s[4] && qm > s[3] && qm > s[2] &&
-                    qm > s[5] &&              qm > s[1] &&
-                    qm > s[6] && qm > s[7] && qm > s[8] ;
-        }
-    }
-
 }
