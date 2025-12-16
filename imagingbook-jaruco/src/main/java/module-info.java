@@ -7,4 +7,5 @@ module imagingbook.jaruco {
     exports imagingbook.jaruco;
     exports imagingbook.jaruco.pyramid;
     exports imagingbook.jaruco.obsolete;
+    exports imagingbook.jaruco.util;
 }
