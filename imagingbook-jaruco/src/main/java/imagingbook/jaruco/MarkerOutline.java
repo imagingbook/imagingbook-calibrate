@@ -33,6 +33,10 @@ public class MarkerOutline {
 
     // ----------------------------------------------------------------------
 
+    public List<Pnt2d> getPolygon() {
+        return polygon;
+    }
+
     static void resetUid() {
         MARKER_UID = -1;
     }

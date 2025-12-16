@@ -3,6 +3,7 @@ module imagingbook.jaruco {
     requires imagingbook.common;
     requires ij;
     requires org.apache.commons.math4.legacy;
+    requires org.apache.commons.math4.legacy.core;
 
     exports imagingbook.jaruco;
     exports imagingbook.jaruco.pyramid;

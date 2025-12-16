@@ -10,8 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Represents a closed, convex contour (sequence of image points) that has been
- * simplified and segmented to 4 corners and associated segments.
+ * Represents a closed, convex 4-corner polygon extracted from a sequence of image
+ * points. The original (full set) of contour points is preserved for quad
+ * fitting.
  */
 public class QuadContour {
 
@@ -20,16 +21,15 @@ public class QuadContour {
     private int N;
     private List<Pnt2d>[] segments = null; //new List<>[4];
 
-
-
-    public QuadContour(MarkerOutline mol, List<Pnt2d> smplCtr) {
-    }
-
-    public QuadContour(Pnt2d[] contourPoints, int[] cornerIndexes) {
-        this.contourPoints = contourPoints;
+    /**
+     * Constructor.
+     * @param contour the original sequence of contour points
+     * @param cornerIndexes the indexes of the corners in {@code contourPoints}
+     */
+    public QuadContour(List<Pnt2d> contour, int[] cornerIndexes) {
+        this.contourPoints = contour.toArray(new Pnt2d[0]);
         this.cornerIndexes = cornerIndexes;
-        this.N = cornerIndexes.length;
-        //this.segments = new List<>[4];
+        this.N = contourPoints.length;
 
         List<Pnt2d> allPnts = Arrays.asList(this.contourPoints);
         segments[0] = allPnts.subList(cornerIndexes[0] + 1, cornerIndexes[1]);
@@ -38,8 +38,6 @@ public class QuadContour {
         segments[3] = allPnts.subList(cornerIndexes[3] + 1, N);
         // use Simplifier at this stage or accept only segmented contours?
     }
-
-
 
     public Pnt2d getContourPoint(int i) {
         return contourPoints[i];

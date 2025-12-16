@@ -17,7 +17,6 @@ import imagingbook.jaruco.pyramid.GaussianPyramid;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class ArucoDetector {
@@ -141,7 +140,7 @@ public class ArucoDetector {
 
 
             // STEP 3: Simplify inner contours to 4-corner convex polygons
-            List<MarkerOutline> candidateOutlines = simplifyContours(contours);
+            List<MarkerOutline> candidateOutlines = extractMarkerQuads(contours);
             // System.out.println(candidateOutlines.get(0).toString());
 
             // STEP 4: Process each candidate box and collect the results
@@ -192,40 +191,53 @@ public class ArucoDetector {
     }
 
     /**
-     * Takes a list of raw {@link MarkerOutline} instances and tries
+     * Takes a list of raw contours ({@link MarkerOutline} instances) and tries
      * to segment each to a convex four-corner polygon (quad) with sufficient area to
-     * boundary length ratio. Quad vertices are checked to run
+     * boundary length ratio. Resulting corner vertices are checked to run
      * in counter-clockwise order and reversed if needed.
      * Surviving quads are returned as a list of ???.
-     * @param outlines
+     * @param outlines a list of rwa contours
      * @return
      */
-    List<MarkerOutline> simplifyContours(List<MarkerOutline> outlines) {
+    List<MarkerOutline> extractMarkerQuads(List<MarkerOutline> outlines) {
         List<MarkerOutline> quads = new ArrayList<>();
+        QuadFInder quadFInder = new QuadFInder();
         for (MarkerOutline mol : outlines) {
-            // keep only contours with more than 50 points (TODO: parameter?)
-            List<Pnt2d> poly = mol.polygon;
-            if (poly.size() < 50)
-                continue;
-            double tol = poly.size() * detectorParams.polygonalApproxAccuracyRate;
-            List<Pnt2d> smplCtr = Polygons.simplify(poly, tol);   // simplified polygon
-            int convexity =  Polygons.convexity(smplCtr);
-            // smplCtr = ContourSimplifier.cleanupCollinear(is, tol, true);   // optional cleanup, not needed
+            MarkerOutline quad = quadFInder.extractQuad(mol);
+            if (quad != null) {
+                quads.add(quad);
 
-            // check if this is a convex 4-corner polygon that is not too elongated:
-            if (smplCtr.size() == 4 &&
-                    convexity != 0 &&
-                    Polygons.circularity(smplCtr) > 0.5) {
-                if (convexity == 1) {  // make all contours counter-clockwise
-                    Collections.reverse(smplCtr);
-                }
-                // add to candidate marker boxes
-                quads.add(new MarkerOutline(mol, smplCtr));
             }
-
         }
         return quads;
     }
+
+    // List<MarkerOutline> simplifyContours(List<MarkerOutline> outlines) {
+    //     List<MarkerOutline> quads = new ArrayList<>();
+    //     for (MarkerOutline mol : outlines) {
+    //         // keep only contours with more than 50 points (TODO: parameter?)
+    //         List<Pnt2d> poly = mol.polygon;
+    //         if (poly.size() < 50)
+    //             continue;
+    //         double tol = poly.size() * detectorParams.polygonalApproxAccuracyRate;
+    //         List<Pnt2d> smplCtr = Polygons.simplify(poly, tol);   // simplified polygon
+    //         int convexity =  Polygons.convexity(smplCtr);
+    //         // smplCtr = ContourSimplifier.cleanupCollinear(is, tol, true);   // optional cleanup, not needed
+    //
+    //         // check if this is a convex 4-corner polygon that is not too elongated:
+    //         if (smplCtr.size() == 4 &&
+    //                 convexity != 0 &&
+    //                 Polygons.circularity(smplCtr) > 0.5) {
+    //             if (convexity == 1) {  // make all contours counter-clockwise
+    //                 Collections.reverse(smplCtr);
+    //             }
+    //             // add to candidate marker boxes
+    //             quads.add(new MarkerOutline(mol, smplCtr));
+    //         }
+    //
+    //     }
+    //     return quads;
+    // }
 
     MarkerDetectionResult processOneOutline(ImageProcessor ip, MarkerOutline markerOutline) {
         // System.out.println("processOneCandidateBox " + k);

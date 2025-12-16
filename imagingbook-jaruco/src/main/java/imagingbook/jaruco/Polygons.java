@@ -11,6 +11,7 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import java.awt.geom.Path2D;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
@@ -37,9 +38,9 @@ public class Polygons {
         int startPt = getMostEccentricVertexIndex(pts);
 
         // Rotate the polygon such that most eccentric point comes first:
-        List<Pnt2d> rotated = new ArrayList<>(n + 1);
+        List<Pnt2d> rotatedPoly = new ArrayList<>(n + 1);
         for (int i = 0; i < n; i++)
-            rotated.add(pts.get((startPt + i) % n));
+            rotatedPoly.add(pts.get((startPt + i) % n));
 
         // Standard DP stack
         boolean[] keep = new boolean[n];
@@ -53,14 +54,14 @@ public class Polygons {
             int[] seg = stack.pop();
             int i0 = seg[0], i1 = seg[1];
 
-            Pnt2d A = rotated.get(i0);
-            Pnt2d B = rotated.get(i1);
+            Pnt2d A = rotatedPoly.get(i0);
+            Pnt2d B = rotatedPoly.get(i1);
 
             double maxDist2 = -1;
             int indexMax = -1;
 
             for (int i = i0 + 1; i < i1; i++) {
-                double d2 = perpDistSq(rotated.get(i), A, B);
+                double d2 = perpDistSq(rotatedPoly.get(i), A, B);
                 if (d2 > maxDist2) {
                     maxDist2 = d2;
                     indexMax = i;
@@ -74,16 +75,21 @@ public class Polygons {
             }
         }
 
-        // Build simplified rotated polygon
+        // Assemble the simplified rotated polygon
         List<Pnt2d> simp = new ArrayList<>();
         for (int i = 0; i < n; i++)
-            if (keep[i]) simp.add(rotated.get(i));
+            if (keep[i]) {
+                simp.add(rotatedPoly.get(i));
+            }
+
+        // At this moment the first point on the contour is likely a corner,
+        // but this is not guaranteed.
 
         // Rotate back
         List<Pnt2d> out = new ArrayList<>();
 
         // find index of first corner in original point sequence
-        int offset = simp.indexOf(rotated.get(0));
+        int offset = simp.indexOf(rotatedPoly.get(0));
 
         int m = simp.size();
         for (int i = 0; i < m; i++) {
