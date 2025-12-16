@@ -35,14 +35,15 @@ class QuadFInderTest {
         double[][] contour = (double[][]) loadObject(this.getClass(), contourPath, double[][].class);
         double[][] corners1 = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
         // List<Pnt2d> cornerList2 = simplifyPolygon(makePolygon(contour), contour.length * polygonalApproxAccuracyRate);
-        QuadFInder.MyPair result = simplifyPolygon(makePolygon(contour), contour.length * polygonalApproxAccuracyRate);
 
-        List<Integer> cornerIdx = result.indxs();
-        List<Pnt2d> cornerListAll = result.poly();
+        QuadContour result = simplifyPolygon(makePolygon(contour), contour.length * polygonalApproxAccuracyRate);
+
+        //List<Integer> cornerIdx = result.indxs();
+        // List<Pnt2d> cornerListAll = result.poly();
         // System.out.println("cornerListAll.length =  " + cornerListAll.size());
         List<Pnt2d> cornerList2 = new ArrayList<>(4);
-        for (int i : cornerIdx) {
-            cornerList2.add(cornerListAll.get(i));
+        for (int i = 0; i < 4; i++) {
+            cornerList2.add(result.getCorner(i));
             // System.out.println("added corner " + i + " = " + cornerListAll.get(i));
         }
         // System.out.println("corners1 = " + Polygons.toString(makePolygon(corners1)));

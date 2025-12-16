@@ -2,7 +2,6 @@ package imagingbook.jaruco;
 
 
 import imagingbook.common.geometry.basic.Pnt2d;
-import org.apache.commons.math4.legacy.core.Pair;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -40,25 +39,22 @@ public class QuadFInder {
 
         // Step 1: Simplify the contour outline
         double tol = poly.size() * polygonalApproxAccuracyRate;
-        // List<Pnt2d> smplCtr = Polygons.simplify(poly, tol);
-        // List<Pnt2d> smplCtr = simplifyPolygon(poly, tol);
-
-        MyPair result = simplifyPolygon(poly, tol);
-        List<Integer> cornerIdx = result.indxs();
-        List<Pnt2d> cornerListAll = result.poly();
+        QuadContour result = simplifyPolygon(poly, tol);
+        // List<Integer> cornerIdx = result.;
+        //List<Pnt2d> cornerListAll = result.poly();
 
         // collect the four corners from the adjusted point list:
         List<Pnt2d> smplCtr = new ArrayList<>();
-        for (int i : cornerIdx) {
-            smplCtr.add(cornerListAll.get(i));
+        for (int i = 0; i < 4; i++) {
+            smplCtr.add(result.getCorner(i));
         }
-
 
         // Step 2: Check result for corner count and area
         if (smplCtr.size() != 4) {
             return null;
         }
 
+        // TODO: needs fixing!
         if (Polygons.circularity(smplCtr) < minCircularity) {
             return null;
         }
@@ -72,7 +68,7 @@ public class QuadFInder {
         }
 
         // Step 3: Build the composite output object
-        QuadContour qc = new QuadContour(mol.getPolygon(), null) ;
+        QuadContour qc = new QuadContour(null, mol.getPolygon()) ;
 
 
         return new MarkerOutline(mol, smplCtr);
@@ -83,7 +79,7 @@ public class QuadFInder {
 
     record MyPair(List<Integer> indxs, List<Pnt2d> poly) {} // Pair<List<Integer>, List<Pnt2d>>
 
-    static MyPair simplifyPolygon(List<Pnt2d> pts, double tol) {
+    static QuadContour simplifyPolygon(List<Pnt2d> pts, double tol) {
         final double tol2 = tol * tol;
         final int n = pts.size();
         if (n <= 3) {
@@ -156,7 +152,7 @@ public class QuadFInder {
         // Pair<List<Integer>, List<Pnt2d>> result =
 
         // return new Pair<>(cornerIndexes, rotatedPoly);
-        return new MyPair(cornerIndexes, rotatedPoly);
+        return new QuadContour(cornerIndexes, rotatedPoly);
 
 
         // // Rotate back
