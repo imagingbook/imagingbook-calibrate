@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.jaruco;
+package imagingbook.jaruco.obsolete;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Arithmetic;

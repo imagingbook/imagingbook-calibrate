@@ -1,8 +1,9 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.obsolete;
 
 import ij.process.FloatProcessor;
 import imagingbook.common.corners.SubpixelMaxInterpolator;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.jaruco.MarkerOutline;
 import imagingbook.jaruco.pyramid.GaussianPyramid;
 
 public class CornerTuner {

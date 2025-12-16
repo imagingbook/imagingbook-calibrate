@@ -11,17 +11,14 @@ import imagingbook.common.regions.ContourTracer;
 import imagingbook.common.regions.RegionContourSegmentation;
 import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.common.util.ParameterBundle;
+import imagingbook.common.util.bits.BitVector;
+import imagingbook.jaruco.ArucoDictionary.LookupResult;
+import imagingbook.jaruco.pyramid.GaussianPyramid;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-
-
-import imagingbook.common.util.bits.BitVector;
-import imagingbook.jaruco.ArucoDictionary.LookupResult;
-import imagingbook.jaruco.pyramid.GaussianPyramid;
 
 public class ArucoDetector {
 
@@ -123,15 +120,15 @@ public class ArucoDetector {
     /**
      * The core method. Tries to locate and identify markers in the given image.
      * @param ip the input image
-     * @return a (possibly empty) list of {@link MarkerDetection} instances
+     * @return a (possibly empty) list of {@link MarkerDetectionResult} instances
      */
-    public List<MarkerDetection> detectMarkers(ImageProcessor ip) {
+    public List<MarkerDetectionResult> detectMarkers(ImageProcessor ip) {
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
         MarkerOutline.resetUid();
 
         GaussianPyramid pyramid = new GaussianPyramid(gray, PYRAMID_LEVELS); // TODO: levels = 5, adapt!!
-        List<MarkerDetection> markerDetections = new ArrayList<>();
+        List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
 
         // try different global thresholds (Aruco3) or use adaptive local threshold:
         int initThr = Math.round(new OtsuThresholder().getThreshold(gray));
@@ -145,23 +142,23 @@ public class ArucoDetector {
 
             // STEP 3: Simplify inner contours to 4-corner convex polygons
             List<MarkerOutline> candidateOutlines = simplifyContours(contours);
-            System.out.println(candidateOutlines.get(0).toString());
+            // System.out.println(candidateOutlines.get(0).toString());
 
             // STEP 4: Process each candidate box and collect the results
             for (MarkerOutline outline : candidateOutlines) {
-                MarkerDetection dr = processOneOutline(ip, outline);
+                MarkerDetectionResult dr = processOneOutline(ip, outline);
                 if (dr != null) {
-                    markerDetections.add(dr);
+                    markerDetectionResults.add(dr);
                 }
             }
 
             // STEP 5: Refine corners
-            CornerTuner refiner = new CornerTuner(pyramid);
-            for (MarkerOutline outline : candidateOutlines) {
-                refiner.refineCorners(outline);
-            }
+            // CornerTuner refiner = new CornerTuner(pyramid);
+            // for (MarkerOutline outline : candidateOutlines) {
+            //     refiner.refineCorners(outline);
+            // }
         }
-        return markerDetections;
+        return markerDetectionResults;
     }
 
     // -------------------------------------------------------------------------
@@ -230,7 +227,7 @@ public class ArucoDetector {
         return quads;
     }
 
-    MarkerDetection processOneOutline(ImageProcessor ip, MarkerOutline markerOutline) {
+    MarkerDetectionResult processOneOutline(ImageProcessor ip, MarkerOutline markerOutline) {
         // System.out.println("processOneCandidateBox " + k);
         // STEP 4a - CORNER REFINEMENT should come here!
 
@@ -249,7 +246,7 @@ public class ArucoDetector {
         if (lookup != null) {
             // Collections.rotate(markerOutline.polygon, lookup.rotation);
             markerOutline.rotatePolygon(lookup.rotation);   // rotate vertices to canonical state
-            return new MarkerDetection(lookup, markerOutline, null);   // TODO: rejectedPoints?
+            return new MarkerDetectionResult(lookup, markerOutline, null);   // TODO: rejectedPoints?
         }
         else {
             return null;

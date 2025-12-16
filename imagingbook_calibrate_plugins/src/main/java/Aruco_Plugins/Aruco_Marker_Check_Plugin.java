@@ -12,7 +12,7 @@ import ij.io.LogStream;
 import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import imagingbook.jaruco.ContourSimplifier;
+import imagingbook.jaruco.obsolete.ContourSimplifier;
 import imagingbook.jaruco.Polygons;
 import imagingbook.common.color.iterate.ColorSequencer;
 import imagingbook.common.color.iterate.CssColorSequencer;

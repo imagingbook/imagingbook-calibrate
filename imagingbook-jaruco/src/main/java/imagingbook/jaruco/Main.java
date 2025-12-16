@@ -34,10 +34,10 @@ public class Main {
         ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_1000.getInstance();
 
         ArucoDetector detector = new ArucoDetector(dict);
-        List<MarkerDetection> markerDetections = detector.detectMarkers(im.getProcessor());
+        List<MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
 
-        System.out.println("Markers found: " + markerDetections.size());
-        for (MarkerDetection res : markerDetections) {
+        System.out.println("Markers found: " + markerDetectionResults.size());
+        for (MarkerDetectionResult res : markerDetectionResults) {
             System.out.println(res);
         }
     }
@@ -67,13 +67,13 @@ public class Main {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
 
-            List<MarkerDetection> markerDetections = detector.detectMarkers(im.getProcessor());
-            System.out.println("Markers found: " + markerDetections.size());
+            List<MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
+            System.out.println("Markers found: " + markerDetectionResults.size());
 
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            for (MarkerDetection res : markerDetections) {
-                // ArucoDetector.MarkerDetection res = markerDetections.get(0);
+            for (MarkerDetectionResult res : markerDetectionResults) {
+                // ArucoDetector.MarkerDetectionResult res = markerDetectionResults.get(0);
                 System.out.println(res);
                 // create shape overlay
 
