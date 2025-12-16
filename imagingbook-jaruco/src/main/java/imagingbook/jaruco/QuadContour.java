@@ -15,12 +15,17 @@ import java.util.List;
  */
 public class QuadContour {
 
-    private final Pnt2d[] contourPoints;
-    private final int[] cornerIndexes;
-    private final int N;
-    private final List<Pnt2d>[] segments = new List<>[4];
+    private Pnt2d[] contourPoints;
+    private int[] cornerIndexes;
+    private int N;
+    private List<Pnt2d>[] segments = null; //new List<>[4];
 
-    public QuadContour(Pnt2d[] contourPoints, int[]  cornerIndexes) {
+
+
+    public QuadContour(MarkerOutline mol, List<Pnt2d> smplCtr) {
+    }
+
+    public QuadContour(Pnt2d[] contourPoints, int[] cornerIndexes) {
         this.contourPoints = contourPoints;
         this.cornerIndexes = cornerIndexes;
         this.N = cornerIndexes.length;
@@ -35,10 +40,6 @@ public class QuadContour {
     }
 
 
-    RealVector getTargetVector() {
-        RealVector b = new ArrayRealVector(N + 4);
-        return b;
-    }
 
     public Pnt2d getContourPoint(int i) {
         return contourPoints[i];
@@ -55,6 +56,5 @@ public class QuadContour {
     public double getDistance(int segIdx, int pntIdx) { // return value t_i
         return 0;
     }
-
 
 }

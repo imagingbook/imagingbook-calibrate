@@ -140,9 +140,12 @@ public class ArucoDetector {
 
             // STEP 2: Threshold the input image and find candidate outlines
             List<MarkerOutline> contours = findCandidateOutlines(gray, thr);
+            //System.out.println(contours.get(0).toString());
 
-            // STEP 3: Simplify inner contours to polygons
+
+            // STEP 3: Simplify inner contours to 4-corner convex polygons
             List<MarkerOutline> candidateOutlines = simplifyContours(contours);
+            System.out.println(candidateOutlines.get(0).toString());
 
             // STEP 4: Process each candidate box and collect the results
             for (MarkerOutline outline : candidateOutlines) {
@@ -164,6 +167,14 @@ public class ArucoDetector {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
+    /**
+     * Applies global thresholding to the input image, performs region
+     * segmentation on the resulting binary image and returns the detected
+     * (inner) contours as a list of raw {@link MarkerOutline} instances.
+     * @param gray
+     * @param threshold
+     * @return
+     */
     List<MarkerOutline> findCandidateOutlines(ByteProcessor gray, int threshold) {
         // STEP 2a: threshold image for region/contour extraction:
         ByteProcessor binary = (ByteProcessor) gray.duplicate();
@@ -177,16 +188,26 @@ public class ArucoDetector {
         List<MarkerOutline> outlines = new ArrayList<>(ics.size());
         for (Contour ctr : ics) {
             int uid = MarkerOutline.nextUid();
+            // TODO: eliminate unworthy contours right here!
             outlines.add(new MarkerOutline(uid, threshold, ctr.getPointList()));
         }
         return outlines;
     }
 
+    /**
+     * Takes a list of raw {@link MarkerOutline} instances and tries
+     * to segment each to a convex four-corner polygon (quad) with sufficient area to
+     * boundary length ratio. Quad vertices are checked to run
+     * in counter-clockwise order and reversed if needed.
+     * Surviving quads are returned as a list of ???.
+     * @param outlines
+     * @return
+     */
     List<MarkerOutline> simplifyContours(List<MarkerOutline> outlines) {
-        List<MarkerOutline> candidateOutlines = new ArrayList<>();
-        for (MarkerOutline ol : outlines) {
+        List<MarkerOutline> quads = new ArrayList<>();
+        for (MarkerOutline mol : outlines) {
             // keep only contours with more than 50 points (TODO: parameter?)
-            List<Pnt2d> poly = ol.polygon;
+            List<Pnt2d> poly = mol.polygon;
             if (poly.size() < 50)
                 continue;
             double tol = poly.size() * detectorParams.polygonalApproxAccuracyRate;
@@ -202,11 +223,11 @@ public class ArucoDetector {
                     Collections.reverse(smplCtr);
                 }
                 // add to candidate marker boxes
-                candidateOutlines.add(new MarkerOutline(ol, smplCtr));
+                quads.add(new MarkerOutline(mol, smplCtr));
             }
 
         }
-        return candidateOutlines;
+        return quads;
     }
 
     MarkerDetection processOneOutline(ImageProcessor ip, MarkerOutline markerOutline) {

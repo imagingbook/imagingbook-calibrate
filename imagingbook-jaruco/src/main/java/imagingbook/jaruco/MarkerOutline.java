@@ -2,13 +2,14 @@ package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents a polygon outlining a candidate marker in the input image.
- * Originally this is the raw contour which is subsequently simplified.
- * Instances are immutable.
+ * Represents a raw polygon outlining a potential candidate marker in the input
+ * image. Instances have a unique ID for debugging and record the image
+ * threshold value used to extract the contour points.
  */
 public class MarkerOutline {
     static int MARKER_UID = -1;
@@ -25,9 +26,12 @@ public class MarkerOutline {
     }
 
     // Constructor, copies an existing outline with a new polygon.
+    @Deprecated
     MarkerOutline(MarkerOutline outline, List<Pnt2d> polygon) {
         this(outline.uid, outline.threshold, polygon);
     }
+
+    // ----------------------------------------------------------------------
 
     static void resetUid() {
         MARKER_UID = -1;
@@ -38,7 +42,24 @@ public class MarkerOutline {
         return MARKER_UID;
     }
 
+    // ----------------------------------------------------------------------
+
     void rotatePolygon(int steps) {
         Collections.rotate(this.polygon, steps);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("% --------------------------------------------------\n");
+        sb.append("double[][] contourPoints = {\n");
+        for (Pnt2d pt : polygon) {
+            double x = pt.getX();
+            double y = pt.getY();
+            sb.append(String.format("{%.1f, %.1f},\n", x, y));
+        }
+        sb.append("};\n");
+        sb.append("% --------------------------------------------------\n");
+        return sb.toString();
     }
 }

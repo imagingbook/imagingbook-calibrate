@@ -27,23 +27,22 @@ TODO: Merge into common/geometry classes, make more flexible parameters!
 public class Polygons {
 
     public static List<Pnt2d> simplify(List<Pnt2d> pts, double tol) {
-        int n = pts.size();
+        final double tol2 = tol * tol;
+        final int n = pts.size();
         if (n <= 3) return new ArrayList<>(pts);
 
         // Pick optimal starting index
-        int start = getMostEccentricVertexIndex(pts);
+        int startPt = getMostEccentricVertexIndex(pts);
 
-        // Rotate the polygon
+        // Rotate the polygon such that most eccentric point comes first:
         List<Pnt2d> rotated = new ArrayList<>(n + 1);
         for (int i = 0; i < n; i++)
-            rotated.add(pts.get((start + i) % n));
+            rotated.add(pts.get((startPt + i) % n));
 
         // Standard DP stack
         boolean[] keep = new boolean[n];
         keep[0] = true;
         // keep[0] = keep[n - 1] = true;
-
-        double tol2 = tol * tol;
 
         Deque<int[]> stack = new ArrayDeque<>();
         stack.push(new int[]{0, n - 1});
@@ -80,11 +79,14 @@ public class Polygons {
 
         // Rotate back
         List<Pnt2d> out = new ArrayList<>();
-        int m = simp.size();
-        int offset = simp.indexOf(rotated.get(0)); // original rotated start
 
-        for (int i = 0; i < m; i++)
+        // find index of first corner in original point sequence
+        int offset = simp.indexOf(rotated.get(0));
+
+        int m = simp.size();
+        for (int i = 0; i < m; i++) {
             out.add(simp.get((offset + i) % m));
+        }
 
         return out;
     }

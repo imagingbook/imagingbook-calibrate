@@ -44,10 +44,10 @@ public class Main {
 
     static void doSmallImageTest() {
         String[] paths = {
-                SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
-                // SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
                 // SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
         };
 
@@ -66,6 +66,7 @@ public class Main {
         for (int i = 0; i < paths.length; i++) {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
+
             List<MarkerDetection> markerDetections = detector.detectMarkers(im.getProcessor());
             System.out.println("Markers found: " + markerDetections.size());
 
