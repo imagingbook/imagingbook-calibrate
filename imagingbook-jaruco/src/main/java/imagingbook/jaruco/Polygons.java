@@ -13,6 +13,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import static imagingbook.common.math.Arithmetic.isZero;
 import static imagingbook.common.math.Arithmetic.sqr;
@@ -248,6 +250,18 @@ public class Polygons {
         }
         return pntList;
     }
+    /**
+     * For testing.
+     * @param coords a Nx2 array of x/y coordinate pairs
+     * @return
+     */
+    public static List<Pnt2d> makePolygon(double[][] coords) {
+        List<Pnt2d> pntList = new ArrayList<>();
+        for (int i = 0; i < coords.length; i++) {
+            pntList.add(Pnt2d.from(coords[i][0], coords[i][1]));
+        }
+        return pntList;
+    }
 
     public static boolean checkSame(List<Pnt2d> A, List<Pnt2d> B) {
         if (A.size() != B.size()) {
@@ -286,6 +300,19 @@ public class Polygons {
             path.lineTo(x + xOffset + 0.5, y + yOffset - 0.5);
         }
         return path;
+    }
+
+    public static String toString(List<Pnt2d>  poly) {
+        if (poly == null) {
+            return Objects.toString(null);
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Polygon [");
+        for (Pnt2d p : poly) {
+            sb.append(String.format(Locale.US, "[%.2f, %.2f], ", p.getX(), p.getY()));
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
 }
