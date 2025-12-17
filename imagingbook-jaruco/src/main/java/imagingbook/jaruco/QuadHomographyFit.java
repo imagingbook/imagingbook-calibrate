@@ -2,11 +2,14 @@ package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.points.LinearFit2d;
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.QRDecomposition;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
+
+import java.util.Arrays;
 
 /**
  * A special fitter, which calculates the optimal projective transformation
@@ -32,6 +35,10 @@ public class QuadHomographyFit implements LinearFit2d {
 
     // TODO: currently no weighting, add point weighting policy
     public QuadHomographyFit(SegmentedContour quad) {
+        if (quad.getSegmentCount() != 4) {
+            throw new IllegalArgumentException("quad does not have 4 segments but "
+                    + quad.getSegmentCount());
+        }
         this.quad = quad;
         doFit();
     }
@@ -41,7 +48,7 @@ public class QuadHomographyFit implements LinearFit2d {
     private void doFit() {
         int n = quad.length();
         // set up vector b and matrix M as arrays, each with n + 4 rows:
-        double[] bb = new double[n + 4];
+        double[] bb = new double[n + 4]; Arrays.fill(bb, Double.NaN);
         double[][] MM = new double[n + 4][];
 
         // corner 0 -> (0,0)
@@ -49,9 +56,10 @@ public class QuadHomographyFit implements LinearFit2d {
         // corner 2 -> (1,1)
         // corner 3 -> (0,1)
 
-        // process each of the 4 segments
+        // Mount matrix M and vector b:
+
         int row = 0;    // row counter
-        for (int k = 0; k < n; k++) {
+        for (int k = 0; k < 4; k++) {   // process each of the 4 segments
             Pnt2d[] segmentPnts = quad.getSegment(k);
 
             // insert 2 rows for the corner (first point)
@@ -81,27 +89,42 @@ public class QuadHomographyFit implements LinearFit2d {
                 }
                 row++;
             }
-
-            this.M = MatrixUtils.createRealMatrix(MM);
-            this.b = MatrixUtils.createRealVector(bb);
-
-            DecompositionSolver solver = new QRDecomposition(M).getSolver();
-            this.a = solver.solve(b);
-
-            // populate projective transformation matrix A from vector a
-            A = MatrixUtils.createRealMatrix(3, 3);
-            A.setEntry(0, 0, a.getEntry(0));
-            A.setEntry(0, 1, a.getEntry(1));
-            A.setEntry(0, 2, a.getEntry(2));
-            A.setEntry(1, 0, a.getEntry(3));
-            A.setEntry(1, 1, a.getEntry(4));
-            A.setEntry(1, 2, a.getEntry(5));
-            A.setEntry(2, 0, a.getEntry(6));
-            A.setEntry(2, 1, a.getEntry(7));
-            A.setEntry(2, 2, 1.0);
-
-            // err = Math.sqrt(LinearFit2d.getSquaredError(P, Q, A.getData()));
         }
+
+        // check if all rows are filled;
+        for (int i = 0; i < bb.length; i++) {
+            if (bb[i] == Double.NaN) {
+                throw new IllegalStateException("problem in bb row " + i);
+            }
+            if (MM[i] == null || MM[i].length != 8) {
+                throw new IllegalStateException("problem in MM row " + i);
+            }
+
+        }
+
+        // System.out.println("MM =" + Matrix.toString(MM));
+        // System.out.println("bb =" + Matrix.toString(bb));
+
+        this.M = MatrixUtils.createRealMatrix(MM);
+        this.b = MatrixUtils.createRealVector(bb);
+
+        DecompositionSolver solver = new QRDecomposition(M).getSolver();
+        this.a = solver.solve(b);
+
+        // populate projective transformation matrix A from vector a
+        A = MatrixUtils.createRealMatrix(3, 3);
+        A.setEntry(0, 0, a.getEntry(0));
+        A.setEntry(0, 1, a.getEntry(1));
+        A.setEntry(0, 2, a.getEntry(2));
+        A.setEntry(1, 0, a.getEntry(3));
+        A.setEntry(1, 1, a.getEntry(4));
+        A.setEntry(1, 2, a.getEntry(5));
+        A.setEntry(2, 0, a.getEntry(6));
+        A.setEntry(2, 1, a.getEntry(7));
+        A.setEntry(2, 2, 1.0);
+
+        // err = Math.sqrt(LinearFit2d.getSquaredError(P, Q, A.getData()));
+
     }
 
 
@@ -110,7 +133,7 @@ public class QuadHomographyFit implements LinearFit2d {
 
     @Override
     public double[][] getTransformationMatrix() {
-        return new double[0][];
+        return A.getData();
     }
 
     @Override
