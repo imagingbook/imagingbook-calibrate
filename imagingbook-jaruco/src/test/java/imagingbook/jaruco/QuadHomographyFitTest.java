@@ -67,8 +67,8 @@ class QuadHomographyFitTest {
         double[][] A = fit.getTransformationMatrix();
         assertNotNull(A);
         PrintPrecision.set(8);
-        System.out.println("A = \n" + Matrix.toString(A));
-        System.out.println("A projective error = " + fit.getError());
+        System.out.println("A quadFit = \n" + Matrix.toString(A));
+        System.out.println("A quadFit error = " + fit.getError());
 
         // -------------------------------------------
 
@@ -77,6 +77,19 @@ class QuadHomographyFitTest {
         System.out.println("A projective error = " + fitP.getError());
 
     }
+
+    /*
+    A  quadFit =
+    {{-0.00515487, -0.00027217, 1.46992790},
+    {-0.00015717, 0.00509512, -0.12120253},
+    {0.00001732, 0.00002034, 1.00000000}}
+    A projective error = 0.04938862118838941
+
+    A projective =
+    {{-0.00523378, -0.00023790, 1.48353823},
+    {-0.00013493, 0.00518130, -0.12775133},
+    {0.00004991, 0.00005863, 1.00000000}}
+    */
 
 
 

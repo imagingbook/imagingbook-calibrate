@@ -3,6 +3,8 @@ package imagingbook.jaruco;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.points.LinearFit2d;
 import imagingbook.common.math.Matrix;
+import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.QRDecomposition;
@@ -36,7 +38,7 @@ public class QuadHomographyFit implements LinearFit2d {
     // TODO: currently no weighting, add point weighting policy
     public QuadHomographyFit(SegmentedContour quad) {
         if (quad.getSegmentCount() != 4) {
-            throw new IllegalArgumentException("quad does not have 4 segments but "
+            throw new IllegalArgumentException("quad must have 4 segments but has "
                     + quad.getSegmentCount());
         }
         this.quad = quad;
@@ -57,7 +59,6 @@ public class QuadHomographyFit implements LinearFit2d {
         // corner 3 -> (0,1)
 
         // Mount matrix M and vector b:
-
         int row = 0;    // row counter
         for (int k = 0; k < 4; k++) {   // process each of the 4 segments
             Pnt2d[] segmentPnts = quad.getSegment(k);
@@ -105,8 +106,8 @@ public class QuadHomographyFit implements LinearFit2d {
         // System.out.println("MM =" + Matrix.toString(MM));
         // System.out.println("bb =" + Matrix.toString(bb));
 
-        this.M = MatrixUtils.createRealMatrix(MM);
-        this.b = MatrixUtils.createRealVector(bb);
+        this.M = new Array2DRowRealMatrix(MM, false);
+        this.b = new ArrayRealVector(bb, false);
 
         DecompositionSolver solver = new QRDecomposition(M).getSolver();
         this.a = solver.solve(b);

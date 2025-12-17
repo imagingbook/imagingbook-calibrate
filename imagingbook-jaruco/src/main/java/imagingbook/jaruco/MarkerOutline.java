@@ -33,6 +33,10 @@ public class MarkerOutline {
 
     // ----------------------------------------------------------------------
 
+    public int length() {
+        return polygon.size();
+    }
+
     public List<Pnt2d> getPolygon() {
         return polygon;
     }

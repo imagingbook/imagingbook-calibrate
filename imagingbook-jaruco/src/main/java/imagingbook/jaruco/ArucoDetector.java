@@ -192,7 +192,7 @@ public class ArucoDetector {
      * @param threshold
      * @return
      */
-    List<MarkerOutline> extractContours(ByteProcessor gray, int threshold) {
+    public static List<MarkerOutline> extractContours(ByteProcessor gray, int threshold) {
         // STEP 2a: threshold image for region/contour extraction:
         ByteProcessor binary = (ByteProcessor) gray.duplicate();
         binary.threshold(threshold);

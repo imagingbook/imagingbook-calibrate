@@ -212,6 +212,7 @@ public class Aruco_Marker_Check_Plugin implements PlugIn, JavaDocHelp {
                 Pnt2d.from(MARKER_SIZE-1, MARKER_SIZE-1),
                 Pnt2d.from(MARKER_SIZE-1, 0)};
         ProjectiveMapping2D map = ProjectiveMapping2D.fromPoints(targetPts, sourcePts);
+        IJ.log("map = " + map);
         ByteProcessor targetIp = new ByteProcessor(MARKER_SIZE, MARKER_SIZE);
         IJ.log("map = " + map.toString());
         new ImageMapper(map).map(origIp, targetIp);

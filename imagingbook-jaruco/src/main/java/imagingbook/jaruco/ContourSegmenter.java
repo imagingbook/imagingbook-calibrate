@@ -78,9 +78,9 @@ public class ContourSegmenter {
     // -------------------------------------------------------------------------
     // -------------------------------------------------------------------------
 
-    record MyPair(List<Integer> indxs, List<Pnt2d> poly) {} // Pair<List<Integer>, List<Pnt2d>>
+    // record MyPair(List<Integer> indxs, List<Pnt2d> poly) {} // Pair<List<Integer>, List<Pnt2d>>
 
-    SegmentedContour segment(List<Pnt2d> contour, double tol) {
+    public SegmentedContour segment(List<Pnt2d> contour, double tol) {
         final double tol2 = tol * tol;
         final int n = contour.size();
         if (n <= 3) {
