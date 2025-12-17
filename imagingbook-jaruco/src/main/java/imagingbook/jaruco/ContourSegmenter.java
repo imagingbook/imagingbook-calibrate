@@ -17,19 +17,20 @@ import static imagingbook.jaruco.Polygons.perpDistSq;
  * Processes raw contours (lists of contour points) and tries to extract
  * a proper quad from each.
  */
-public class QuadFInder {
+public class ContourSegmenter {
 
     private int minContourLength = 50;
     private double polygonalApproxAccuracyRate = 0.03;   //detectorParams.polygonalApproxAccuracyRate;
     private double minCircularity = 0.5;
 
     // Processing parameters to be added
-    public QuadFInder() {
+    public ContourSegmenter() {
 
     }
 
     // ----------------------------------------------------------------------
 
+    @Deprecated
     public MarkerOutline extractQuad(MarkerOutline mol) {
         List<Pnt2d> poly = mol.getPolygon();
 
@@ -39,7 +40,7 @@ public class QuadFInder {
 
         // Step 1: Simplify the contour outline
         double tol = poly.size() * polygonalApproxAccuracyRate;
-        QuadContour result = simplifyPolygon(poly, tol);
+        SegmentedContour result = segment(poly, tol);
         // List<Integer> cornerIdx = result.;
         //List<Pnt2d> cornerListAll = result.poly();
 
@@ -68,7 +69,7 @@ public class QuadFInder {
         }
 
         // Step 3: Build the composite output object
-        QuadContour qc = new QuadContour(null, mol.getPolygon()) ;
+        // SegmentedContour qc = new SegmentedContour(null, mol.getPolygon()) ;
 
 
         return new MarkerOutline(mol, smplCtr);
@@ -79,21 +80,21 @@ public class QuadFInder {
 
     record MyPair(List<Integer> indxs, List<Pnt2d> poly) {} // Pair<List<Integer>, List<Pnt2d>>
 
-    static QuadContour simplifyPolygon(List<Pnt2d> pts, double tol) {
+    SegmentedContour segment(List<Pnt2d> contour, double tol) {
         final double tol2 = tol * tol;
-        final int n = pts.size();
+        final int n = contour.size();
         if (n <= 3) {
             // return new ArrayList<>(pts);
             return null; // TODO: to be fixed!
         }
 
-        System.out.println("simplifyPolygon:  pts.size() = " + pts.size());
+        System.out.println("simplifyPolygon:  pts.size() = " + contour.size());
 
         // Pick optimal starting index
-        int startPt = getMostEccentricVertexIndex(pts);
+        int startPt = getMostEccentricVertexIndex(contour);
 
         // Rotate the polygon such that most eccentric point comes first:
-        List<Pnt2d> rotatedPoly = new ArrayList<>(pts);
+        List<Pnt2d> rotatedPoly = new ArrayList<>(contour);
         Collections.rotate(rotatedPoly, -startPt);
 
         System.out.println("simplifyPolygon:  rotatedPoly.size() = " + rotatedPoly.size());
@@ -152,7 +153,7 @@ public class QuadFInder {
         // Pair<List<Integer>, List<Pnt2d>> result =
 
         // return new Pair<>(cornerIndexes, rotatedPoly);
-        return new QuadContour(cornerIndexes, rotatedPoly);
+        return new SegmentedContour(cornerIndexes, rotatedPoly);
 
 
         // // Rotate back

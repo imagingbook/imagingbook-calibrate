@@ -13,7 +13,6 @@ import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.common.util.ParameterBundle;
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
-import imagingbook.jaruco.pyramid.GaussianPyramid;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,22 +121,17 @@ public class ArucoDetector {
      * @return a (possibly empty) list of {@link MarkerDetectionResult} instances
      */
     public List<MarkerDetectionResult> detectMarkers(ImageProcessor ip) {
-        // STEP 1: convert input image to grayscale:
-        ByteProcessor gray = ip.convertToByteProcessor();
         MarkerOutline.resetUid();
-
-        GaussianPyramid pyramid = new GaussianPyramid(gray, PYRAMID_LEVELS); // TODO: levels = 5, adapt!!
         List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
 
-        // try different global thresholds (Aruco3) or use adaptive local threshold:
-        int initThr = Math.round(new OtsuThresholder().getThreshold(gray));
+        // STEP 1: convert input image to grayscale:
+        ByteProcessor gray = ip.convertToByteProcessor();
 
+        int initThr = Math.round(new OtsuThresholder().getThreshold(gray));
         for (int thr = initThr; thr <= initThr; thr++) {
 
             // STEP 2: Threshold the input image and find candidate outlines
-            List<MarkerOutline> contours = findCandidateOutlines(gray, thr);
-            //System.out.println(contours.get(0).toString());
-
+            List<MarkerOutline> contours = extractContours(gray, thr);
 
             // STEP 3: Simplify inner contours to 4-corner convex polygons
             List<MarkerOutline> candidateOutlines = extractMarkerQuads(contours);
@@ -150,12 +144,39 @@ public class ArucoDetector {
                     markerDetectionResults.add(dr);
                 }
             }
+        }
+        return markerDetectionResults;
+    }
 
-            // STEP 5: Refine corners
-            // CornerTuner refiner = new CornerTuner(pyramid);
-            // for (MarkerOutline outline : candidateOutlines) {
-            //     refiner.refineCorners(outline);
-            // }
+
+    public List<MarkerDetectionResult> detectMarkers2(ImageProcessor ip) {
+        MarkerOutline.resetUid();
+        List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
+
+        // STEP 1: convert input image to grayscale:
+        ByteProcessor gray = ip.convertToByteProcessor();
+
+        int initThr = Math.round(new OtsuThresholder().getThreshold(gray));
+        for (int thr = initThr; thr <= initThr; thr++) {
+
+            // STEP 2: Threshold the input image and find candidate outlines
+            List<MarkerOutline> contours = extractContours(gray, thr);
+
+            for (MarkerOutline contour : contours) {
+                // A. Segment contour and extract quad
+                MarkerOutline quad = new ContourSegmenter().extractQuad(contour);
+                if (quad == null) {break;}
+
+                // B: Estimate homography from quad
+                //new QuadHomographyFit(quad);
+
+                // C: Extract canonical image and lookup in marker dictionary
+                MarkerDetectionResult dr = processOneOutline(ip, contour);
+                if (dr != null) {
+                    markerDetectionResults.add(dr);
+                }
+            }
+
         }
         return markerDetectionResults;
     }
@@ -171,7 +192,7 @@ public class ArucoDetector {
      * @param threshold
      * @return
      */
-    List<MarkerOutline> findCandidateOutlines(ByteProcessor gray, int threshold) {
+    List<MarkerOutline> extractContours(ByteProcessor gray, int threshold) {
         // STEP 2a: threshold image for region/contour extraction:
         ByteProcessor binary = (ByteProcessor) gray.duplicate();
         binary.threshold(threshold);
@@ -201,9 +222,9 @@ public class ArucoDetector {
      */
     List<MarkerOutline> extractMarkerQuads(List<MarkerOutline> outlines) {
         List<MarkerOutline> quads = new ArrayList<>();
-        QuadFInder quadFInder = new QuadFInder();
+        ContourSegmenter contourSegmenter = new ContourSegmenter();
         for (MarkerOutline mol : outlines) {
-            MarkerOutline quad = quadFInder.extractQuad(mol);
+            MarkerOutline quad = contourSegmenter.extractQuad(mol);
             if (quad != null) {
                 quads.add(quad);
 
