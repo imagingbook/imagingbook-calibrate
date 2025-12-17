@@ -17,6 +17,11 @@ class ContourSegmenterTest {
     void extractQuadTest() {
     }
 
+    // cIdx = [0, 199, 406, 607, 816]
+    // cIdx = [0, 203, 411, 613, 820]
+    // cIdx = [0, 197, 404, 605, 814]
+    // cIdx = [0, 200, 407, 608, 816]
+
     @Test
     void segmentTest() {
         String RES_PATH = "test-contours/";     // these are long contours!
@@ -28,29 +33,25 @@ class ContourSegmenterTest {
 
     static final double polygonalApproxAccuracyRate =  0.03;  // from ArUco parameters
 
-    /**
-     * Checks if corners of segmented contours are as expected
-     * @param contourPath
-     * @param cornersPath
-     */
+    // Checks if corners of segmented contours are as expected
     void runSegmentTest(String contourPath, String cornersPath) {
         double[][] contour = (double[][]) loadObject(this.getClass(), contourPath, double[][].class);
         double[][] corners = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
-        // List<Pnt2d> cornerList2 = simplifyPolygon(makePolygon(contour), contour.length * polygonalApproxAccuracyRate);
+        SegmentedContour segCtr = new ContourSegmenter().segment(makePolygon(contour), contour.length * polygonalApproxAccuracyRate);
 
-        SegmentedContour result = new ContourSegmenter().segment(makePolygon(contour), contour.length * polygonalApproxAccuracyRate);
+        // check if 4 corners exactly
+        assertEquals(4, segCtr.getSegmentCount());
 
-        //List<Integer> cornerIdx = result.indxs();
-        // List<Pnt2d> cornerListAll = result.poly();
-        // System.out.println("cornerListAll.length =  " + cornerListAll.size());
-        List<Pnt2d> cornerList2 = new ArrayList<>(4);
-        for (int i = 0; i < 4; i++) {
-            cornerList2.add(result.getCorner(i));
-            // System.out.println("added corner " + i + " = " + cornerListAll.get(i));
-        }
-        // System.out.println("corners1 = " + Polygons.toString(makePolygon(corners1)));
-        // System.out.println("corners2 = " + Polygons.toString(cornerList2));
+        // check all corner points
+        List<Pnt2d> cornerList2 = segCtr.getCorners();
         assertTrue(checkSame(makePolygon(corners), cornerList2));
+
+        // check if the segments' point count adds up to the contour's point count
+        int pntCnt = 0;
+        for (int k = 0; k < segCtr.getSegmentCount(); k++) {
+            pntCnt += segCtr.getSegment(k).length;
+        }
+        assertEquals(contour.length, pntCnt);
     }
 
 }

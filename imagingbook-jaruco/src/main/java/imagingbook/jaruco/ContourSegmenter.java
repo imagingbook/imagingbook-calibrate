@@ -88,7 +88,7 @@ public class ContourSegmenter {
             return null; // TODO: to be fixed!
         }
 
-        System.out.println("simplifyPolygon:  pts.size() = " + contour.size());
+        // System.out.println("ContourSegmenter#segment:  pts.size() = " + contour.size());
 
         // Pick optimal starting index
         int startPt = getMostEccentricVertexIndex(contour);
@@ -97,8 +97,8 @@ public class ContourSegmenter {
         List<Pnt2d> rotatedPoly = new ArrayList<>(contour);
         Collections.rotate(rotatedPoly, -startPt);
 
-        System.out.println("simplifyPolygon:  rotatedPoly.size() = " + rotatedPoly.size());
-        System.out.println("simplifyPolygon:  rotatedPoly(0) = " + rotatedPoly.get(0));
+        // System.out.println("ContourSegmenter#segment:  rotatedPoly.size() = " + rotatedPoly.size());
+        // System.out.println("ContourSegmenter#segment:  rotatedPoly(0) = " + rotatedPoly.get(0));
 
         // Standard DP stack
         boolean[] keep = new boolean[n];
@@ -142,7 +142,7 @@ public class ContourSegmenter {
             }
         }
 
-        System.out.println("simplifyPolygon: cornerIndexes = " + Arrays.toString(cornerIndexes.toArray()));
+        // System.out.println("ContourSegmenter#segment: cornerIndexes = " + Arrays.toString(cornerIndexes.toArray()));
 
         // At this place the first point on the contour should be a corner,
         // but we better check:

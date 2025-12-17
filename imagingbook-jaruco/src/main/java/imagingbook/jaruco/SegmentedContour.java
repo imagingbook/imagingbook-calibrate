@@ -2,6 +2,7 @@ package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,9 +44,9 @@ public class SegmentedContour {
         }
         cIdx[cornerIdxs.size()] = N;    // additional corner index for last segment
 
-        System.out.println("cIdx = " + Arrays.toString(cIdx));
+        // System.out.println("cIdx = " + Arrays.toString(cIdx));
 
-        segments = new Pnt2d[cIdx.length][];
+        segments = new Pnt2d[cornerIdxs.size()][];
         for (int i = 0; i < cornerIdxs.size(); i++) {
             segments[i] = allPoints.subList(cIdx[i], cIdx[i+1]).toArray(new Pnt2d[0]);
         }
@@ -71,6 +72,15 @@ public class SegmentedContour {
         return segments[k][0];
     }
 
+
+    public List<Pnt2d> getCorners() {
+        List<Pnt2d> cornerList = new ArrayList<>(segments.length);
+        for (int k = 0; k < segments.length; k++) {
+            cornerList.add(segments[k][0]);
+        }
+        return cornerList;
+    }
+
     /**
      * Returns the points inside the specified quad segment, corner
      * points not included. Segment 0 contains the points between
@@ -80,6 +90,10 @@ public class SegmentedContour {
      */
     public Pnt2d[] getSegment(int k) {
         return segments[k];
+    }
+
+    public int getSegmentCount() {
+        return segments.length;
     }
 
     // /**
