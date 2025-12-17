@@ -81,7 +81,8 @@ public class ArucoDetector {
 
     private static int minContourLength = 50;
     private static double minCircularity = 0.5;
-    private static int markerSize = 64;
+    private static int markerImageSize = 64;
+    private static double maxCorrectionRate = 1.0; // TODO: CHECK!!!
 
 
     private final ArucoDictionary dictionary;
@@ -155,9 +156,9 @@ public class ArucoDetector {
 
     // ------------------ NEW VERSION !! --------------------------------------
 
-    public List<MarkerDetectionResult> detectMarkers2(ImageProcessor ip) {
+    public List<MarkerDetectionResult2> detectMarkers2(ImageProcessor ip) {
         MarkerOutline.resetUid();
-        List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
+        List<MarkerDetectionResult2> markerDetectionResults = new ArrayList<>();
 
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
@@ -186,19 +187,24 @@ public class ArucoDetector {
                 continue;
             }
 
-            // B: Find the transformation and extract the canonical marker image
-            ByteProcessor canonical = new MarkerExtractor(ip, markerSize).extractMarker(poly);
+            // Estimate homograpy:
+            QuadHomographyFit fit = new QuadHomographyFit(poly);
+            double[][] A = fit.getTransformationMatrix(); // maps image quad to unut square
 
-            // C: Extract marker bitvector and lookup in dictionary (all rotations)
-            MarkerDetectionResult dr = new MarkerChecker(ip, dictionary).checkMarker(canonical, thr);
+            // B: Extract the canonical marker image and read its bitcode
+            ByteProcessor canonical = new MarkerExtractor(ip, markerImageSize).getCanonicalImage(ip, A);
+
+            // Find the markers bitcode
+            BitVector bitCode = new MarkerParser(dictionary.getMarkerSize()).parseImage(canonical, thr);
+
+            // C: Lookup the bitcode in the dictionary (all rotations)
+            LookupResult lookup = dictionary.lookup(bitCode, maxCorrectionRate);
 
             // take care of rotation! Extract exact patch corner positions
             // by projecting the unit square.
-
-            // MarkerDetectionResult dr = processOneOutline(ip, contour);
-            // if (dr != null) {
-            //     markerDetectionResults.add(dr);
-            // }
+            if (lookup != null) {
+                markerDetectionResults.add(new MarkerDetectionResult2(lookup, poly));
+            }
         }
 
         return markerDetectionResults;

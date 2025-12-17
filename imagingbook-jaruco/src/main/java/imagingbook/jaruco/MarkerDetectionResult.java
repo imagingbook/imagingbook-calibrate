@@ -7,8 +7,13 @@ import java.util.Arrays;
 /**
  * Represents the detection result for a single marker.
  */
-public record MarkerDetectionResult(int markerId, int rotation, int hDist,
-                                    MarkerOutline corners, Pnt2d[] rejectedPoints) {}
+public record MarkerDetectionResult(
+        int markerId,
+        int rotation,
+        int hDist,
+        MarkerOutline corners,
+        Pnt2d[] rejectedPoints) {
+}
 
 
 // public class MarkerDetectionResult {

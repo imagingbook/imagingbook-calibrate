@@ -66,7 +66,7 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
         for (MarkerDetectionResult res : markerDetectionResults) {
-            List<Pnt2d> corners = res.corners.polygon;
+            List<Pnt2d> corners = res.corners().polygon;
             ola.addShape(getPolygonPath(corners, 0, 0), stroke);
 
             double rad = 2;
@@ -82,7 +82,7 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
             Pnt2d center = Polygons.getCentroid(corners);
             ola.setFont(MarkerFont);
             ola.setTextColor(MarkerColor);
-            ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId));
+            ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId()));
         }
 
         im.setOverlay(ola.getOverlay());

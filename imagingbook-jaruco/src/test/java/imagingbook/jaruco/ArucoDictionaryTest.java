@@ -16,9 +16,9 @@ class ArucoDictionaryTest {
         ArucoDictionary.LookupResult result = dict.lookup(pattern0, 2);
         // System.out.println(result);
         assertNotNull(result);
-        assertEquals(5, result.markerIndex);
-        assertEquals(2, result.rotation);
-        assertEquals(0, result.hammingDistance);
+        assertEquals(5, result.markerIndex());
+        assertEquals(2, result.rotation());
+        assertEquals(0, result.hammingDistance());
     }
 
     @Test
@@ -35,8 +35,8 @@ class ArucoDictionaryTest {
             ArucoDictionary.LookupResult result = dict.lookup(toBitVector(patterns[r]), 2);
             assertNotNull(result);
             // System.out.println(result);
-            assertEquals(5, result.markerIndex);
-            assertEquals(0, result.hammingDistance);
+            assertEquals(5, result.markerIndex());
+            assertEquals(0, result.hammingDistance());
         }
     }
 }
