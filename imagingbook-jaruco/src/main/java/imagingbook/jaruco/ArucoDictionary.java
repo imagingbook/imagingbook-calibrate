@@ -9,6 +9,7 @@ package imagingbook.jaruco;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import imagingbook.common.util.bits.BitVector;
+import imagingbook.jaruco.util.RotationUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +18,7 @@ import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
-import static imagingbook.jaruco.RotationUtils.makeRotationPermutation;
+import static imagingbook.jaruco.util.RotationUtils.makeRotationPermutation;
 
 /**
  * Dictionaries are stored as a list of bytes in its four rotations

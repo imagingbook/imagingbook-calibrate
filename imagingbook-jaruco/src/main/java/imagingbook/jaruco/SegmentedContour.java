@@ -3,7 +3,6 @@ package imagingbook.jaruco;
 import imagingbook.common.geometry.basic.Pnt2d;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -24,7 +23,6 @@ public class SegmentedContour {
      */
     public SegmentedContour(List<Integer> cornerIdxs, List<Pnt2d> allPoints) {
         this.N = allPoints.size();
-
         if (cornerIdxs.get(0) != 0) {
             throw new IllegalArgumentException("first corner index must be 0 but is " +
                     cornerIdxs.get(0));
@@ -35,26 +33,16 @@ public class SegmentedContour {
                 throw new IllegalArgumentException("out-of-bounds corner index: " + cIdx);
             }
         }
-
         // initialize quad segments (sets of segment points, corner is first)
-        //int[] cIdx = cornerIdxs.stream().mapToInt(Integer::intValue).toArray();
         int[] cIdx = new int[cornerIdxs.size() + 1];
         for (int i = 0; i < cornerIdxs.size(); i++) {
             cIdx[i] = cornerIdxs.get(i);
         }
         cIdx[cornerIdxs.size()] = N;    // additional corner index for last segment
-
-        // System.out.println("cIdx = " + Arrays.toString(cIdx));
-
         segments = new Pnt2d[cornerIdxs.size()][];
         for (int i = 0; i < cornerIdxs.size(); i++) {
             segments[i] = allPoints.subList(cIdx[i], cIdx[i+1]).toArray(new Pnt2d[0]);
         }
-
-        // segments[0] = fullContour.subList(cIdx[0], cIdx[1]).toArray(new Pnt2d[0]);
-        // segments[1] = fullContour.subList(cIdx[1], cIdx[2]).toArray(new Pnt2d[0]);
-        // segments[2] = fullContour.subList(cIdx[2], cIdx[3]).toArray(new Pnt2d[0]);
-        // segments[3] = fullContour.subList(cIdx[3], N).toArray(new Pnt2d[0]);
     }
 
     // -----------------------------------------------------------------------------------
@@ -71,7 +59,6 @@ public class SegmentedContour {
     public Pnt2d getCorner(int k) {
         return segments[k][0];
     }
-
 
     public List<Pnt2d> getCorners() {
         List<Pnt2d> cornerList = new ArrayList<>(segments.length);

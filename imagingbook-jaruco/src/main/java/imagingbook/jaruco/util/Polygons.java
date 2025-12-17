@@ -4,14 +4,13 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.jaruco;
+package imagingbook.jaruco.util;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 
 import java.awt.geom.Path2D;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;

@@ -1,17 +1,16 @@
 package imagingbook.jaruco;
-
-
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.jaruco.obsolete.MarkerOutline;
+import imagingbook.jaruco.util.Polygons;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
-import static imagingbook.jaruco.Polygons.getMostEccentricVertexIndex;
-import static imagingbook.jaruco.Polygons.perpDistSq;
+import static imagingbook.jaruco.util.Polygons.getMostEccentricVertexIndex;
+import static imagingbook.jaruco.util.Polygons.perpDistSq;
 
 /**
  * Processes raw contours (lists of contour points) and tries to extract
@@ -24,73 +23,16 @@ public class ContourSegmenter {
     private double minCircularity = 0.5;
 
     // Processing parameters to be added
-    public ContourSegmenter() {
-
-    }
-
-    // ----------------------------------------------------------------------
-
-    @Deprecated
-    public MarkerOutline extractQuad(MarkerOutline mol) {
-        List<Pnt2d> poly = mol.getPolygon();
-
-        if (poly.size() < minContourLength) {
-            return null;
-        }
-
-        // Step 1: Simplify the contour outline
-        double tol = poly.size() * polygonalApproxAccuracyRate;
-        SegmentedContour result = segment(poly);
-        // List<Integer> cornerIdx = result.;
-        //List<Pnt2d> cornerListAll = result.poly();
-
-        // collect the four corners from the adjusted point list:
-        List<Pnt2d> smplCtr = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            smplCtr.add(result.getCorner(i));
-        }
-
-        // Step 2: Check result for corner count and area
-        if (smplCtr.size() != 4) {
-            return null;
-        }
-
-        // TODO: needs fixing!
-        if (Polygons.circularity(smplCtr) < minCircularity) {
-            return null;
-        }
-
-        int convexity =  Polygons.convexity(smplCtr);
-        switch (convexity) {
-            case  0 -> { return null; }                     // non-convex contour
-            case  1 -> { Collections.reverse(smplCtr); }    // CW contour - reverse!
-            case -1 -> { }                                  // CCW contour is OK
-            default -> throw new IllegalArgumentException("illegal convexity result: " + convexity);
-        }
-
-        // Step 3: Build the composite output object
-        // SegmentedContour qc = new SegmentedContour(null, mol.getPolygon()) ;
-
-
-        return new MarkerOutline(mol, smplCtr);
-    }
-
-    // -------------------------------------------------------------------------
-    // -------------------------------------------------------------------------
-
-    // record MyPair(List<Integer> indxs, List<Pnt2d> poly) {} // Pair<List<Integer>, List<Pnt2d>>
+    public ContourSegmenter() { }
 
     public SegmentedContour segment(List<Pnt2d> contour) {
-
         final int n = contour.size();
         if (n <= 3) {
-            // return new ArrayList<>(pts);
-            return null; // TODO: to be fixed!
+            // return new ArrayList<>(pts); // TODO: to be fixed!
+            throw new IllegalArgumentException("SegmentedContour() not ready for n<4 points yet");
         }
         final double tol = n * polygonalApproxAccuracyRate; // parameters!!
         final double tol2 = tol * tol;
-
-        // System.out.println("ContourSegmenter#segment:  pts.size() = " + contour.size());
 
         // Pick optimal starting index
         int startPt = getMostEccentricVertexIndex(contour);
@@ -98,9 +40,6 @@ public class ContourSegmenter {
         // Rotate the polygon such that most eccentric point comes first:
         List<Pnt2d> rotatedPoly = new ArrayList<>(contour);
         Collections.rotate(rotatedPoly, -startPt);
-
-        // System.out.println("ContourSegmenter#segment:  rotatedPoly.size() = " + rotatedPoly.size());
-        // System.out.println("ContourSegmenter#segment:  rotatedPoly(0) = " + rotatedPoly.get(0));
 
         // Standard DP stack
         boolean[] keep = new boolean[n];
@@ -135,42 +74,62 @@ public class ContourSegmenter {
         }
 
         // Assemble the simplified rotated polygon
-        // List<Pnt2d> simplPoly = new ArrayList<>();
         List<Integer> cornerIndexes = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             if (keep[i]) {
                 cornerIndexes.add(i);
-                // simplPoly.add(rotatedPoly.get(i));
             }
         }
 
-        // System.out.println("ContourSegmenter#segment: cornerIndexes = " + Arrays.toString(cornerIndexes.toArray()));
-
-        // At this place the first point on the contour should be a corner,
-        // but we better check:
+        // At this place the first point on the contour should be a corner, but we better check:
         if (cornerIndexes.get(0) != 0) {
             throw new IllegalStateException("first point on simplified contour is not a corner");
         }
-
-        // Pair<List<Integer>, List<Pnt2d>> result =
-
-        // return new Pair<>(cornerIndexes, rotatedPoly);
         return new SegmentedContour(cornerIndexes, rotatedPoly);
+    }
 
+    // to be removed ----------------------------------------------------------------------
 
-        // // Rotate back
-        // List<Pnt2d> out = new ArrayList<>();
-        //
-        // // find index of first corner in original point sequence
-        // int offset = simplPoly.indexOf(rotatedPoly.get(0));
-        //
-        // int m = simplPoly.size();
-        // for (int i = 0; i < m; i++) {
-        //     out.add(simplPoly.get((offset + i) % m));
-        // }
-        //
-        // return out;
-        // return simplPoly;
+    @Deprecated
+    public MarkerOutline extractQuad(MarkerOutline mol) {
+        List<Pnt2d> poly = mol.getPolygon();
+
+        if (poly.size() < minContourLength) {
+            return null;
+        }
+
+        // Step 1: Simplify the contour outline
+        double tol = poly.size() * polygonalApproxAccuracyRate;
+        SegmentedContour result = segment(poly);
+
+        // collect the  corners from the adjusted point list:
+        List<Pnt2d> smplCtr = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            smplCtr.add(result.getCorner(i));
+        }
+
+        // Step 2: Check result for corner count and area
+        if (smplCtr.size() != 4) {
+            return null;
+        }
+
+        // TODO: needs fixing!
+        if (Polygons.circularity(smplCtr) < minCircularity) {
+            return null;
+        }
+
+        int convexity =  Polygons.convexity(smplCtr);
+        switch (convexity) {
+            case  0 -> { return null; }                     // non-convex contour
+            case  1 -> { Collections.reverse(smplCtr); }    // CW contour - reverse!
+            case -1 -> { }                                  // CCW contour is OK
+            default -> throw new IllegalArgumentException("illegal convexity result: " + convexity);
+        }
+
+        // Step 3: Build the composite output object
+        // SegmentedContour qc = new SegmentedContour(null, mol.getPolygon()) ;
+
+        return new MarkerOutline(mol, smplCtr);
     }
 
 }

@@ -128,8 +128,6 @@ public class QuadHomographyFit implements LinearFit2d {
 
     }
 
-
-
     // --------------------------------------------------------
 
     @Override

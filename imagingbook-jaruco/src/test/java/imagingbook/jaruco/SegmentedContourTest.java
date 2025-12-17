@@ -1,6 +1,7 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.jaruco.util.Polygons;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

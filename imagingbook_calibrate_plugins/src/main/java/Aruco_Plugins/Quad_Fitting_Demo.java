@@ -28,7 +28,7 @@ import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.core.jdoc.JavaDocHelp;
 import imagingbook.jaruco.ArucoDetector;
 import imagingbook.jaruco.ContourSegmenter;
-import imagingbook.jaruco.MarkerOutline;
+import imagingbook.jaruco.obsolete.MarkerOutline;
 import imagingbook.jaruco.QuadHomographyFit;
 import imagingbook.jaruco.SegmentedContour;
 
@@ -39,7 +39,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.jaruco.Polygons.getPolygonPath;
+import static imagingbook.jaruco.util.Polygons.getPolygonPath;
 
 /**
  * Shows the difference between the simple 4-point homography (red) and

@@ -3,11 +3,10 @@ package imagingbook.jaruco;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.jaruco.Polygons.checkSame;
-import static imagingbook.jaruco.Polygons.makePolygon;
+import static imagingbook.jaruco.util.Polygons.checkSame;
+import static imagingbook.jaruco.util.Polygons.makePolygon;
 import static imagingbook.jaruco.util.JsonUtils.loadObject;
 import static org.junit.jupiter.api.Assertions.*;
 

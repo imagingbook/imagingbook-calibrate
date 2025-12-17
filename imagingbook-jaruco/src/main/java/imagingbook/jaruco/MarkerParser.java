@@ -5,8 +5,11 @@ import imagingbook.common.util.bits.BitVector;
 
 import java.util.Arrays;
 
+/**
+ * Performs analysis of the extracted marker image to recover the
+ * markers bit code.
+ */
 public class MarkerParser {
-
     private final int markerSize;
 
     public MarkerParser(int markerSize) {
@@ -25,24 +28,24 @@ public class MarkerParser {
      * {@code threshold}, which is typically the threshold applied to obtain
      * the binary image for region and contour extraction.
      *
-     * @param canonical
-     * @param threshold
+     * @param canonical the canonical image taken from the original (gray) image
+     * @param threshold the threshold to decide 0/1 contents
      * @return a {@link BitVector} holding the extracted bit sequence
      */
     public BitVector parseImage(ByteProcessor canonical, int threshold) {
         // optionally wrap markerIp into an ImageAccessor to handle image borders (not strictly needed)
         // ScalarAccessor ia = ScalarAccessor.create(markerIp,
-        //         OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor);
+        // OutOfBoundsStrategy.NearestBorder, InterpolationMethod.NearestNeighbor);
         int w = canonical.getWidth();
         int N = this.markerSize;
         double d = (double) w / (N + 2);    // NxN marker + 1 row/ 1 column around on each side
         BitVector bits = new BitVector(N * N);
         int k = 0;
         for (int i = 0; i < N; i++) {
-            int y = (int) Math.round((1.5 + i) * d);
+            int v = (int) Math.round((1.5 + i) * d);
             for (int j = 0; j < N; j++) {
-                int x = (int) Math.round((1.5 + j) * d);
-                int g = get3x3Median(canonical, x, y);
+                int u = (int) Math.round((1.5 + j) * d);
+                int g = get3x3Median(canonical, u, v);
                 if (g >= threshold) {    // use threshold from initial thresholding
                     bits.setBit(k);
                 }

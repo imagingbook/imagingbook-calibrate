@@ -5,13 +5,15 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
+import imagingbook.jaruco.obsolete.MarkerDetectionResult_obsolete;
+import imagingbook.jaruco.util.Polygons;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.jaruco.Polygons.getPolygonPath;
+import static imagingbook.jaruco.util.Polygons.getPolygonPath;
 
 public class Main {
 
@@ -31,13 +33,13 @@ public class Main {
 
         ImagePlus im = IjUtils.openImage(IMG_PATH);
         im.show();
-        ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_1000.getInstance();
+        ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
 
         ArucoDetector detector = new ArucoDetector(dict);
-        List<MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
+        List<MarkerDetectionResult_obsolete> markerDetectionResultObsoletes = detector.detectMarkers(im.getProcessor());
 
-        System.out.println("Markers found: " + markerDetectionResults.size());
-        for (MarkerDetectionResult res : markerDetectionResults) {
+        System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
+        for (MarkerDetectionResult_obsolete res : markerDetectionResultObsoletes) {
             System.out.println(res);
         }
     }
@@ -57,7 +59,7 @@ public class Main {
             images[i].show();
         }
 
-        ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_1000.getInstance();
+        ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
         ArucoDetector detector = new ArucoDetector(dict);
 
         ColoredStroke stroke = new ColoredStroke(1.0, Color.blue);
@@ -67,13 +69,13 @@ public class Main {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
 
-            List<MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
-            System.out.println("Markers found: " + markerDetectionResults.size());
+            List<MarkerDetectionResult_obsolete> markerDetectionResultObsoletes = detector.detectMarkers(im.getProcessor());
+            System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
 
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            for (MarkerDetectionResult res : markerDetectionResults) {
-                // ArucoDetector.MarkerDetectionResult res = markerDetectionResults.get(0);
+            for (MarkerDetectionResult_obsolete res : markerDetectionResultObsoletes) {
+                // ArucoDetector.MarkerDetectionResult_obsolete res = markerDetectionResultObsoletes.get(0);
                 System.out.println(res);
                 // create shape overlay
 

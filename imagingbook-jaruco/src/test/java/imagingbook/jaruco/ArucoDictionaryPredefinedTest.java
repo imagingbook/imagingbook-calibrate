@@ -11,12 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-public class ArucoPredefinedDictionaryTest {
+public class ArucoDictionaryPredefinedTest {
 
     @Test   // JUnit5
     public void getInstanceTest1() {
         // open/load all predefined dictionaries:
-        for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
+        for (ArucoDictionaryPredefined dictname : ArucoDictionaryPredefined.values()) {
             // assertFalse(dictname.isLoaded());    // this is not guaranteed
 
             ArucoDictionary dict = dictname.getInstance();
@@ -31,7 +31,7 @@ public class ArucoPredefinedDictionaryTest {
 
     // @Test   // JUnit5
     // public void dictionaryIntegrityTest1() {
-    //     for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
+    //     for (ArucoDictionaryPredefined dictname : ArucoDictionaryPredefined.values()) {
     //         final ArucoDictionary dict = dictname.getDictionary();
     //         int M = dict.getNumberOfCodes();
     //         int N = dict.getMarkerSize();
@@ -50,7 +50,7 @@ public class ArucoPredefinedDictionaryTest {
 
     // @Test   // JUnit5
     // public void dictionaryIntegrityTest2() {
-    //     for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
+    //     for (ArucoDictionaryPredefined dictname : ArucoDictionaryPredefined.values()) {
     //         final ArucoDictionary dict = dictname.getDictionary();
     //         int M = dict.getNumberOfCodes();
     //         int N = dict.getMarkerSize();
@@ -75,7 +75,7 @@ public class ArucoPredefinedDictionaryTest {
 
     @Test   // JUnit5
     public void dictionaryIntegrityTest3() {    // checking BitVectors
-        for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
+        for (ArucoDictionaryPredefined dictname : ArucoDictionaryPredefined.values()) {
             final ArucoDictionary dict = dictname.getInstance();
             int M = dict.getNumberOfCodes();
             int N = dict.getMarkerSize();
@@ -97,8 +97,8 @@ public class ArucoPredefinedDictionaryTest {
 
     @Test   // JUnit5
     public void dictionaryCheckDuplicates() {    // checking duplicate pattern entries
-        for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
-            if (dictname == ArucoPredefinedDictionary.DICT_ARUCO_ORIGINAL)
+        for (ArucoDictionaryPredefined dictname : ArucoDictionaryPredefined.values()) {
+            if (dictname == ArucoDictionaryPredefined.DICT_ARUCO_ORIGINAL)
                 continue;
             final ArucoDictionary dict = dictname.getInstance();
             int M = dict.getNumberOfCodes();
@@ -123,7 +123,7 @@ public class ArucoPredefinedDictionaryTest {
 
     // @Test   // JUnit5
     // public void dictionaryCheckDuplicatesFull() {    // checking duplicate pattern entries exhaustively!
-    //     for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
+    //     for (ArucoDictionaryPredefined dictname : ArucoDictionaryPredefined.values()) {
     //         System.out.println("checking dict " + dictname);
     //         final ArucoDictionary dict = dictname.getDictionary();
     //         int M = dict.getNumberOfCodes();
@@ -149,8 +149,8 @@ public class ArucoPredefinedDictionaryTest {
 
     @Test   // JUnit5
     public void dictionaryCheckRotatedPatterns() {    // check if rotated markers are unique
-        for (ArucoPredefinedDictionary dictname : ArucoPredefinedDictionary.values()) {
-            if (dictname == ArucoPredefinedDictionary.DICT_ARUCO_ORIGINAL)  // skip because problems in id=1023
+        for (ArucoDictionaryPredefined dictname : ArucoDictionaryPredefined.values()) {
+            if (dictname == ArucoDictionaryPredefined.DICT_ARUCO_ORIGINAL)  // skip because problems in id=1023
                 continue;
             // System.out.println("checking dict " + dictname);
             final ArucoDictionary dict = dictname.getInstance();

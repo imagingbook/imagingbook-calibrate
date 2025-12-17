@@ -1,6 +1,6 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.util;
 
-final class RotationUtils {
+public final class RotationUtils {
 
     private RotationUtils() {}
 
@@ -12,7 +12,7 @@ final class RotationUtils {
      * @param N size of the matrix (NxN)
      * @return the 1D  vector
      */
-    static int[] makeRotationPermutation(int N) {
+    public static int[] makeRotationPermutation(int N) {
         // create a NxN matrix with row-major indices:
         int[][] mat = new int[N][N];
         int k = 0;
@@ -43,7 +43,7 @@ final class RotationUtils {
      * Rotates the given square 2D array left (in-place).
      * @param m a 2D square array
      */
-    static void matrixRotateLeft(int[][] m) {
+    public static void matrixRotateLeft(int[][] m) {
         int n = m.length;
         // Transpose (swap m[i][j] with m[j][i])
         for (int i = 0; i < n; i++) {
@@ -69,7 +69,7 @@ final class RotationUtils {
 
     // ----------------------------------------------------------
 
-    static char[] permute(char[] data, int[] perm) {
+    public static char[] permute(char[] data, int[] perm) {
         if (data.length != perm.length)
             throw new IllegalArgumentException(
                     String.format("data and permutation vector not of same length: %d vs. %d", data.length, perm.length));
@@ -79,7 +79,5 @@ final class RotationUtils {
         }
         return datap;
     }
-
-
 
 }

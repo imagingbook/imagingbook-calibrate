@@ -16,7 +16,7 @@ package imagingbook.jaruco;
  * "/opencv/modules/objdetect/src/aruco/apriltag/predefined_dictionaries_apriltag.hpp"
  */
 
-public enum ArucoPredefinedDictionary {
+public enum ArucoDictionaryPredefined {
     DICT_ARUCO_ORIGINAL,
 
     DICT_4X4_50,

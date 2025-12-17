@@ -4,12 +4,13 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.points.ProjectiveFit2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
+import imagingbook.jaruco.util.Polygons;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static imagingbook.jaruco.JUnit5TestUtils.assert2dArrayEquals;
-import static imagingbook.jaruco.Polygons.makePolygon;
+import static imagingbook.jaruco.util.Polygons.makePolygon;
 import static imagingbook.jaruco.util.JsonUtils.loadObject;
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -13,7 +13,7 @@ import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.jaruco.obsolete.ContourSimplifier;
-import imagingbook.jaruco.Polygons;
+import imagingbook.jaruco.util.Polygons;
 import imagingbook.common.color.iterate.ColorSequencer;
 import imagingbook.common.color.iterate.CssColorSequencer;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -36,8 +36,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.jaruco.Polygons.circularity;
-import static imagingbook.jaruco.Polygons.convexity;
+import static imagingbook.jaruco.util.Polygons.circularity;
+import static imagingbook.jaruco.util.Polygons.convexity;
 
 /**
  * First test of ArUco functionality.

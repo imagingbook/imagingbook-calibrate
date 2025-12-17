@@ -13,6 +13,9 @@ import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.common.util.ParameterBundle;
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
+import imagingbook.jaruco.obsolete.MarkerDetectionResult_obsolete;
+import imagingbook.jaruco.obsolete.MarkerOutline;
+import imagingbook.jaruco.util.Polygons;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -124,11 +127,11 @@ public class ArucoDetector {
     /**
      * The core method. Tries to locate and identify markers in the given image.
      * @param ip the input image
-     * @return a (possibly empty) list of {@link MarkerDetectionResult} instances
+     * @return a (possibly empty) list of {@link MarkerDetectionResult_obsolete} instances
      */
-    public List<MarkerDetectionResult> detectMarkers(ImageProcessor ip) {
+    public List<MarkerDetectionResult_obsolete> detectMarkers(ImageProcessor ip) {
         MarkerOutline.resetUid();
-        List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
+        List<MarkerDetectionResult_obsolete> markerDetectionResultObsoletes = new ArrayList<>();
 
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
@@ -145,20 +148,20 @@ public class ArucoDetector {
 
             // STEP 4: Process each candidate box and collect the results
             for (MarkerOutline outline : candidateOutlines) {
-                MarkerDetectionResult dr = processOneOutline(ip, outline);
+                MarkerDetectionResult_obsolete dr = processOneOutline(ip, outline);
                 if (dr != null) {
-                    markerDetectionResults.add(dr);
+                    markerDetectionResultObsoletes.add(dr);
                 }
             }
         }
-        return markerDetectionResults;
+        return markerDetectionResultObsoletes;
     }
 
     // ------------------ NEW VERSION !! --------------------------------------
 
-    public List<MarkerDetectionResult2> detectMarkers2(ImageProcessor ip) {
+    public List<MarkerDetectionResult> detectMarkers2(ImageProcessor ip) {
         MarkerOutline.resetUid();
-        List<MarkerDetectionResult2> markerDetectionResults = new ArrayList<>();
+        List<MarkerDetectionResult> markerDetectionResults = new ArrayList<>();
 
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
@@ -203,7 +206,7 @@ public class ArucoDetector {
             // take care of rotation! Extract exact patch corner positions
             // by projecting the unit square.
             if (lookup != null) {
-                markerDetectionResults.add(new MarkerDetectionResult2(lookup, poly));
+                markerDetectionResults.add(new MarkerDetectionResult(lookup, poly));
             }
         }
 
@@ -262,34 +265,7 @@ public class ArucoDetector {
         return quads;
     }
 
-    // List<MarkerOutline> simplifyContours(List<MarkerOutline> outlines) {
-    //     List<MarkerOutline> quads = new ArrayList<>();
-    //     for (MarkerOutline mol : outlines) {
-    //         // keep only contours with more than 50 points (TODO: parameter?)
-    //         List<Pnt2d> poly = mol.polygon;
-    //         if (poly.size() < 50)
-    //             continue;
-    //         double tol = poly.size() * detectorParams.polygonalApproxAccuracyRate;
-    //         List<Pnt2d> smplCtr = Polygons.simplify(poly, tol);   // simplified polygon
-    //         int convexity =  Polygons.convexity(smplCtr);
-    //         // smplCtr = ContourSimplifier.cleanupCollinear(is, tol, true);   // optional cleanup, not needed
-    //
-    //         // check if this is a convex 4-corner polygon that is not too elongated:
-    //         if (smplCtr.size() == 4 &&
-    //                 convexity != 0 &&
-    //                 Polygons.circularity(smplCtr) > 0.5) {
-    //             if (convexity == 1) {  // make all contours counter-clockwise
-    //                 Collections.reverse(smplCtr);
-    //             }
-    //             // add to candidate marker boxes
-    //             quads.add(new MarkerOutline(mol, smplCtr));
-    //         }
-    //
-    //     }
-    //     return quads;
-    // }
-
-    MarkerDetectionResult processOneOutline(ImageProcessor ip, MarkerOutline markerOutline) {
+    MarkerDetectionResult_obsolete processOneOutline(ImageProcessor ip, MarkerOutline markerOutline) {
         // System.out.println("processOneCandidateBox " + k);
         // STEP 4a - CORNER REFINEMENT should come here!
 
@@ -308,8 +284,8 @@ public class ArucoDetector {
         if (lookup != null) {
             // Collections.rotate(markerOutline.polygon, lookup.rotation);
             markerOutline.rotatePolygon(lookup.rotation());   // rotate vertices to canonical state
-            // return new MarkerDetectionResult(lookup, markerOutline, null);   // TODO: rejectedPoints?
-            return new MarkerDetectionResult(lookup.markerIndex(), lookup.rotation(),
+            // return new MarkerDetectionResult_obsolete(lookup, markerOutline, null);   // TODO: rejectedPoints?
+            return new MarkerDetectionResult_obsolete(lookup.markerIndex(), lookup.rotation(),
                     lookup.hammingDistance(), markerOutline, null);
         }
         else {

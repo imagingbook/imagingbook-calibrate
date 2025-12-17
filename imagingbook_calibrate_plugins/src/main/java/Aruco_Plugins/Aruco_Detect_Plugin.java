@@ -15,13 +15,15 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.jaruco.*;
+import imagingbook.jaruco.obsolete.MarkerDetectionResult_obsolete;
+import imagingbook.jaruco.util.Polygons;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Ellipse2D;
 import java.util.List;
 
-import static imagingbook.jaruco.Polygons.getPolygonPath;
+import static imagingbook.jaruco.util.Polygons.getPolygonPath;
 
 /**
  * First test of ArUco functionality.
@@ -49,23 +51,23 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
 
     @Override
     public void run(ImageProcessor imageProcessor) {
-        ArucoDictionary dict = ArucoPredefinedDictionary.DICT_5X5_1000.getInstance();
+        ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
         ArucoDetector detector = new ArucoDetector(dict);
 
         ColoredStroke stroke = new ColoredStroke(1.0, Color.blue);
         ColoredStroke stroke0 = new ColoredStroke(1.0 * 3, Color.red);
 
 
-        List<MarkerDetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
-        // System.out.println("Markers found: " + markerDetectionResults.size());
-        if (markerDetectionResults.isEmpty()) {
+        List<MarkerDetectionResult_obsolete> markerDetectionResultObsoletes = detector.detectMarkers(im.getProcessor());
+        // System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
+        if (markerDetectionResultObsoletes.isEmpty()) {
             IJ.log("No markers found!");
             return;
         }
 
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-        for (MarkerDetectionResult res : markerDetectionResults) {
+        for (MarkerDetectionResult_obsolete res : markerDetectionResultObsoletes) {
             List<Pnt2d> corners = res.corners().polygon;
             ola.addShape(getPolygonPath(corners, 0, 0), stroke);
 

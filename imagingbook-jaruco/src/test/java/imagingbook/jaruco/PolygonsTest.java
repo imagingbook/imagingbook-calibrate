@@ -1,21 +1,22 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.jaruco.util.Polygons;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static imagingbook.jaruco.Polygons.checkSame;
-import static imagingbook.jaruco.Polygons.getArea;
-import static imagingbook.jaruco.Polygons.circularity;
-import static imagingbook.jaruco.Polygons.getCentroid;
-import static imagingbook.jaruco.Polygons.getLength;
-import static imagingbook.jaruco.Polygons.getMostEccentricVertexIndex;
-import static imagingbook.jaruco.Polygons.convexity;
-import static imagingbook.jaruco.Polygons.makePolygon;
-import static imagingbook.jaruco.Polygons.perpDist;
-import static imagingbook.jaruco.Polygons.perpDistSq;
-import static imagingbook.jaruco.Polygons.simplify;
+import static imagingbook.jaruco.util.Polygons.checkSame;
+import static imagingbook.jaruco.util.Polygons.getArea;
+import static imagingbook.jaruco.util.Polygons.circularity;
+import static imagingbook.jaruco.util.Polygons.getCentroid;
+import static imagingbook.jaruco.util.Polygons.getLength;
+import static imagingbook.jaruco.util.Polygons.getMostEccentricVertexIndex;
+import static imagingbook.jaruco.util.Polygons.convexity;
+import static imagingbook.jaruco.util.Polygons.makePolygon;
+import static imagingbook.jaruco.util.Polygons.perpDist;
+import static imagingbook.jaruco.util.Polygons.perpDistSq;
+import static imagingbook.jaruco.util.Polygons.simplify;
 import static imagingbook.jaruco.util.JsonUtils.loadObject;
 import static imagingbook.jaruco.util.ListUtils.reversedCopy;
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,8 +1,7 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.obsolete;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -11,6 +10,7 @@ import java.util.List;
  * image. Instances have a unique ID for debugging and record the image
  * threshold value used to extract the contour points.
  */
+@Deprecated
 public class MarkerOutline {
     static int MARKER_UID = -1;
     // TODO: add getter methods!
@@ -19,7 +19,7 @@ public class MarkerOutline {
     public final List<Pnt2d> polygon;  // marker corners in original image coordinates
 
     // Full constructor.
-    MarkerOutline(int uid, int threshold, List<Pnt2d> polygon) {
+    public MarkerOutline(int uid, int threshold, List<Pnt2d> polygon) {
         this.uid = uid;
         this.threshold = threshold;
         this.polygon = polygon;
@@ -27,7 +27,7 @@ public class MarkerOutline {
 
     // Constructor, copies an existing outline with a new polygon.
     @Deprecated
-    MarkerOutline(MarkerOutline outline, List<Pnt2d> polygon) {
+    public MarkerOutline(MarkerOutline outline, List<Pnt2d> polygon) {
         this(outline.uid, outline.threshold, polygon);
     }
 
@@ -41,18 +41,18 @@ public class MarkerOutline {
         return polygon;
     }
 
-    static void resetUid() {
+    public static void resetUid() {
         MARKER_UID = -1;
     }
 
-    static int nextUid() {
+    public static int nextUid() {
         MARKER_UID++;
         return MARKER_UID;
     }
 
     // ----------------------------------------------------------------------
 
-    void rotatePolygon(int steps) {
+    public void rotatePolygon(int steps) {
         Collections.rotate(this.polygon, steps);
     }
 
