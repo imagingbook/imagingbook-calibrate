@@ -344,22 +344,24 @@ public class ArucoDictionary {
 
     // -------------------------------------------------------------------------
 
-    public static class LookupResult {
-        final int markerIndex;
-        final int rotation;
-        final int hammingDistance;
+    public record LookupResult(int markerIndex, int rotation, int hammingDistance) {}
 
-        LookupResult(int markerIndex, int rotation, int hammingDistance) {
-            this.markerIndex = markerIndex;
-            this.rotation = rotation;
-            this.hammingDistance = hammingDistance;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s [id=%d, r=%d, dist=%d]",
-                    getClass().getSimpleName(), markerIndex, rotation, hammingDistance);
-        }
-    }
+    // public static class LookupResult {
+    //     final int markerIndex;
+    //     final int rotation;
+    //     final int hammingDistance;
+    //
+    //     LookupResult(int markerIndex, int rotation, int hammingDistance) {
+    //         this.markerIndex = markerIndex;
+    //         this.rotation = rotation;
+    //         this.hammingDistance = hammingDistance;
+    //     }
+    //
+    //     @Override
+    //     public String toString() {
+    //         return String.format("%s [id=%d, r=%d, dist=%d]",
+    //                 getClass().getSimpleName(), markerIndex, rotation, hammingDistance);
+    //     }
+    // }
 
 }

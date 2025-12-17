@@ -79,6 +79,11 @@ public class ArucoDetector {
 
     // -------------------------------------------------------------------------
 
+    private static int minContourLength = 50;
+    private static double minCircularity = 0.5;
+    private static int markerSize = 64;
+
+
     private final ArucoDictionary dictionary;
     private final DetectorParameters detectorParams;
     private final RefineParameters refineParams;
@@ -148,6 +153,7 @@ public class ArucoDetector {
         return markerDetectionResults;
     }
 
+    // ------------------ NEW VERSION !! --------------------------------------
 
     public List<MarkerDetectionResult> detectMarkers2(ImageProcessor ip) {
         MarkerOutline.resetUid();
@@ -156,28 +162,45 @@ public class ArucoDetector {
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
 
-        int initThr = Math.round(new OtsuThresholder().getThreshold(gray));
-        for (int thr = initThr; thr <= initThr; thr++) {
+        // STEP 2: Threshold the input image and find candidate outlines
+        int thr = Math.round(new OtsuThresholder().getThreshold(gray));
+        gray.threshold(thr);
 
-            // STEP 2: Threshold the input image and find candidate outlines
-            List<MarkerOutline> contours = extractContours(gray, thr);
+        // STEP 3: Find candidate contours
+        ContourTracer ct = new RegionContourSegmentation(gray);
+        // since white is considered foreground, outer contours
+        // of black regions are actually INNER contours:
+        List<? extends Contour> ics = ct.getInnerContours();             // inner corners run CCW?
 
-            for (MarkerOutline contour : contours) {
-                // A. Segment contour and extract quad
-                MarkerOutline quad = new ContourSegmenter().extractQuad(contour);
-                if (quad == null) {break;}
-
-                // B: Estimate homography from quad
-                //new QuadHomographyFit(quad);
-
-                // C: Extract canonical image and lookup in marker dictionary
-                MarkerDetectionResult dr = processOneOutline(ip, contour);
-                if (dr != null) {
-                    markerDetectionResults.add(dr);
-                }
+        for (Contour contour : ics) {
+            List<Pnt2d> pts = contour.getPointList();
+            if (pts.size() < minContourLength) {                          // parameter!
+                continue;
+            }
+            // A. Segment contour and extract quad
+            SegmentedContour poly = new ContourSegmenter().segment(pts);
+            List<Pnt2d> corners = poly.getCorners();
+            if (corners.size() != 4 ||                                     // pack into a local method
+                Polygons.circularity(corners) < minCircularity ||           // parameter!
+                Polygons.convexity(corners) != -1) {
+                continue;
             }
 
+            // B: Find the transformation and extract the canonical marker image
+            ByteProcessor canonical = new MarkerExtractor(ip, markerSize).extractMarker(poly);
+
+            // C: Extract marker bitvector and lookup in dictionary (all rotations)
+            MarkerDetectionResult dr = new MarkerChecker(ip, dictionary).checkMarker(canonical, thr);
+
+            // take care of rotation! Extract exact patch corner positions
+            // by projecting the unit square.
+
+            // MarkerDetectionResult dr = processOneOutline(ip, contour);
+            // if (dr != null) {
+            //     markerDetectionResults.add(dr);
+            // }
         }
+
         return markerDetectionResults;
     }
 
@@ -278,8 +301,10 @@ public class ArucoDetector {
 
         if (lookup != null) {
             // Collections.rotate(markerOutline.polygon, lookup.rotation);
-            markerOutline.rotatePolygon(lookup.rotation);   // rotate vertices to canonical state
-            return new MarkerDetectionResult(lookup, markerOutline, null);   // TODO: rejectedPoints?
+            markerOutline.rotatePolygon(lookup.rotation());   // rotate vertices to canonical state
+            // return new MarkerDetectionResult(lookup, markerOutline, null);   // TODO: rejectedPoints?
+            return new MarkerDetectionResult(lookup.markerIndex(), lookup.rotation(),
+                    lookup.hammingDistance(), markerOutline, null);
         }
         else {
             return null;

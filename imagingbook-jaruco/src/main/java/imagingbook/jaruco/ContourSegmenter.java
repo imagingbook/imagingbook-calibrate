@@ -40,7 +40,7 @@ public class ContourSegmenter {
 
         // Step 1: Simplify the contour outline
         double tol = poly.size() * polygonalApproxAccuracyRate;
-        SegmentedContour result = segment(poly, tol);
+        SegmentedContour result = segment(poly);
         // List<Integer> cornerIdx = result.;
         //List<Pnt2d> cornerListAll = result.poly();
 
@@ -80,13 +80,15 @@ public class ContourSegmenter {
 
     // record MyPair(List<Integer> indxs, List<Pnt2d> poly) {} // Pair<List<Integer>, List<Pnt2d>>
 
-    public SegmentedContour segment(List<Pnt2d> contour, double tol) {
-        final double tol2 = tol * tol;
+    public SegmentedContour segment(List<Pnt2d> contour) {
+
         final int n = contour.size();
         if (n <= 3) {
             // return new ArrayList<>(pts);
             return null; // TODO: to be fixed!
         }
+        final double tol = n * polygonalApproxAccuracyRate; // parameters!!
+        final double tol2 = tol * tol;
 
         // System.out.println("ContourSegmenter#segment:  pts.size() = " + contour.size());
 

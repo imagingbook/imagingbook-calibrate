@@ -77,7 +77,7 @@ public class Main {
                 System.out.println(res);
                 // create shape overlay
 
-                List<Pnt2d> corners = res.corners.polygon;
+                List<Pnt2d> corners = res.corners().polygon;
                 // Collections.rotate(corners, res.rotation);
                 //List<Pnt2d> corners = rotateCorners(corners, res.rotation);
 
@@ -96,7 +96,7 @@ public class Main {
                 Pnt2d center = Polygons.getCentroid(corners);
                 ola.setFont(MarkerFont);
                 ola.setTextColor(MarkerColor);
-                ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId));
+                ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId()));
             }
 
             im.setOverlay(ola.getOverlay());
