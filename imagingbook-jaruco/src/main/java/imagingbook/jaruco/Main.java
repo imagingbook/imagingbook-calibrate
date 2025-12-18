@@ -5,12 +5,11 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
-import imagingbook.jaruco.obsolete.MarkerDetectionResult_obsolete;
 import imagingbook.jaruco.util.Polygons;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.geom.Ellipse2D;
-import java.util.ArrayList;
 import java.util.List;
 
 import static imagingbook.jaruco.util.Polygons.getPolygonPath;
@@ -36,19 +35,19 @@ public class Main {
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
 
         ArucoDetector detector = new ArucoDetector(dict);
-        List<MarkerDetectionResult_obsolete> markerDetectionResultObsoletes = detector.detectMarkers(im.getProcessor());
+        List<ArucoDetector.MarkerDetectionResult> markerDetectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
 
         System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
-        for (MarkerDetectionResult_obsolete res : markerDetectionResultObsoletes) {
+        for (ArucoDetector.MarkerDetectionResult res : markerDetectionResultObsoletes) {
             System.out.println(res);
         }
     }
 
     static void doSmallImageTest() {
         String[] paths = {
-                // SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
-                // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
-                // SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
                 SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
                 // SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
         };
@@ -69,17 +68,17 @@ public class Main {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
 
-            List<MarkerDetectionResult_obsolete> markerDetectionResultObsoletes = detector.detectMarkers(im.getProcessor());
+            List<ArucoDetector.MarkerDetectionResult> markerDetectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
             System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
 
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            for (MarkerDetectionResult_obsolete res : markerDetectionResultObsoletes) {
+            for (ArucoDetector.MarkerDetectionResult res : markerDetectionResultObsoletes) {
                 // ArucoDetector.MarkerDetectionResult_obsolete res = markerDetectionResultObsoletes.get(0);
                 System.out.println(res);
                 // create shape overlay
 
-                List<Pnt2d> corners = res.corners().polygon;
+                List<Pnt2d> corners = res.corners();
                 // Collections.rotate(corners, res.rotation);
                 //List<Pnt2d> corners = rotateCorners(corners, res.rotation);
 
@@ -107,38 +106,9 @@ public class Main {
         }
     }
 
-    static List<Pnt2d> rotateCorners(List<Pnt2d> corners, int steps) {
-        int n = corners.size();
-        List<Pnt2d> corners2 = new ArrayList<>(n);
-        for (int i = 0; i < n; i++) {
-            corners2.add(corners.get((steps + i) % n));
-        }
-        return corners2;
-    }
-
-    // static Path2D getPolygonPath(List<Pnt2d> contour, double xOffset, double yOffset) {
-    //     Path2D path = new Path2D.Float();
-    //     Pnt2d[] pnts = contour.toArray(new Pnt2d[0]);
-    //     if (pnts.length > 1) {
-    //         path.moveTo(pnts[0].getX() + xOffset, pnts[0].getY() + yOffset);
-    //         for (int i = 1; i < pnts.length; i++) {
-    //             path.lineTo(pnts[i].getX() + xOffset,  pnts[i].getY() + yOffset);
-    //         }
-    //         path.closePath();
-    //     }
-    //     else {	// special case: mark a single pixel region "X"
-    //         double x = pnts[0].getX();
-    //         double y = pnts[0].getY();
-    //         path.moveTo(x + xOffset - 0.5, y + yOffset - 0.5);
-    //         path.lineTo(x + xOffset + 0.5, y + yOffset + 0.5);
-    //         path.moveTo(x + xOffset - 0.5, y + yOffset + 0.5);
-    //         path.lineTo(x + xOffset + 0.5, y + yOffset - 0.5);
-    //     }
-    //     return path;
-    // }
 
     public static void main(String[] args) {
-        // doBigImageTest();
-        doSmallImageTest();
+        // doSmallImageTest();
+        doBigImageTest();
     }
 }
