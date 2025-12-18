@@ -3,11 +3,9 @@ package imagingbook.jaruco;
 
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import ij.ImagePlus;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.image.ImageMapper;
-import imagingbook.common.math.Matrix;
 import imagingbook.common.regions.Contour;
 import imagingbook.common.regions.ContourTracer;
 import imagingbook.common.regions.RegionContourSegmentation;
@@ -180,9 +178,6 @@ public class ArucoDetector {
         // of black regions are actually INNER contours:
         List<? extends Contour> ics = ct.getInnerContours();             // inner corners run CCW?
 
-        System.out.println("ics = " + ics.size());
-        System.out.println("ics[0] = " + ics.get(0).getLength());
-
         for (Contour contour : ics) {
             List<Pnt2d> pts = contour.getPointList();
             if (pts.size() < minContourLength) {                          // parameter!
@@ -197,8 +192,6 @@ public class ArucoDetector {
                 continue;
             }
 
-            System.out.println("found corners = " + corners.size());
-
             // Estimate homography and locate corners
             MarkerLocator locator = new MarkerLocator(poly);
             ProjectiveMapping2D unitMapping = locator.getUnitMapping();
@@ -207,21 +200,15 @@ public class ArucoDetector {
             // B: Extract the canonical marker image and read the marker's bitcode
             MarkerExtractor extractor = new MarkerExtractor(ip, dictionary.getMarkerSize());
             BitVector bitCode = extractor.getMarkerBits(unitMapping, thr);
-            System.out.println("bitcode = " + bitCode);
 
             // C: Lookup the bitcode in the dictionary (all rotations)
             LookupResult lookup = dictionary.lookup(bitCode, maxCorrectionRate);
-            System.out.println("lookup = " + lookup);
-
             if (lookup == null) {
                continue;
             }
-            Collections.rotate(refinedCorners, lookup.rotation());   // rotate vertices to canonical state CHECK!!
-
+            // rotate corners to canonical position
+            Collections.rotate(refinedCorners, lookup.rotation());
             markerDetectionResults.add(new MarkerDetectionResult(lookup, refinedCorners));
-            // take care of rotation! Extract exact patch corner positions
-            // by projecting the unit square.
-            System.out.println("markerDetectionResults(0) = " + markerDetectionResults.get(0));
         }
 
         return markerDetectionResults;
@@ -296,8 +283,7 @@ public class ArucoDetector {
         LookupResult lookup = dictionary.lookup(sampleBits, maxCorrectionRate);
 
         if (lookup != null) {
-            // Collections.rotate(markerOutline.polygon, lookup.rotation);
-            markerOutline.rotatePolygon(lookup.rotation());   // rotate vertices to canonical state
+
             // return new MarkerDetectionResult_obsolete(lookup, markerOutline, null);   // TODO: rejectedPoints?
             return new MarkerDetectionResult_obsolete(lookup.markerIndex(), lookup.rotation(),
                     lookup.hammingDistance(), markerOutline, null);
@@ -387,4 +373,28 @@ public class ArucoDetector {
         return vals[4];
     }
 
+    // -------------------------------------------------------------------------
+
+    /**
+     * Represents the detection result for a single marker.
+     */
+
+     public static record MarkerDetectionResult (
+             int markerId,
+             int rotation,
+             int hammingDist,
+             List<Pnt2d> corners)
+    {
+
+         MarkerDetectionResult(LookupResult lookup, List<Pnt2d> poly) {
+             this(lookup.markerIndex(), lookup.rotation(), lookup.hammingDistance(),
+                     rotateCorners(poly, lookup.rotation()));
+         }
+
+        // rotate vertices to canonical state
+         static List<Pnt2d> rotateCorners(List<Pnt2d> poly, int rot) {
+             Collections.rotate(poly, rot);
+             return poly;
+         }
+     }
 }

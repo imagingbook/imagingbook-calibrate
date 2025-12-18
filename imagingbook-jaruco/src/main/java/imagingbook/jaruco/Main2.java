@@ -11,7 +11,6 @@ import imagingbook.jaruco.util.Polygons;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Ellipse2D;
-import java.util.ArrayList;
 import java.util.List;
 
 import static imagingbook.jaruco.util.Polygons.getPolygonPath;
@@ -70,12 +69,12 @@ public class Main2 {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
 
-            List<MarkerDetectionResult> markerDetectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
+            List<ArucoDetector.MarkerDetectionResult> markerDetectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
             System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
 
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            for (MarkerDetectionResult res : markerDetectionResultObsoletes) {
+            for (ArucoDetector.MarkerDetectionResult res : markerDetectionResultObsoletes) {
                 // ArucoDetector.MarkerDetectionResult_obsolete res = markerDetectionResultObsoletes.get(0);
                 System.out.println(res);
                 // create shape overlay
