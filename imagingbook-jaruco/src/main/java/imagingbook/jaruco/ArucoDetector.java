@@ -4,7 +4,6 @@ package imagingbook.jaruco;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.regions.Contour;
 import imagingbook.common.regions.ContourTracer;
 import imagingbook.common.regions.RegionContourSegmentation;
@@ -125,7 +124,7 @@ public class ArucoDetector {
      * @param ip the input image
      * @return a (possibly empty) list of {@link DetectionResult} instances
      */
-    public List<DetectionResult> detectMarkers2(ImageProcessor ip) {
+    public List<DetectionResult> detectMarkers(ImageProcessor ip) {
         List<DetectionResult> markerDetectionResults = new ArrayList<>();
 
         // STEP 1: convert input image to grayscale:
@@ -141,6 +140,7 @@ public class ArucoDetector {
         // of black regions are actually INNER contours:
         List<? extends Contour> ics = ct.getInnerContours();             // inner corners run CCW?
 
+        // process all contours
         for (Contour contour : ics) {
             List<Pnt2d> pts = contour.getPointList();
             if (pts.size() < minContourLength) {                          // parameter!
@@ -156,13 +156,13 @@ public class ArucoDetector {
             }
 
             // Estimate homography and locate corners
-            MarkerLocator locator = new MarkerLocator(poly);
-            ProjectiveMapping2D unitMapping = locator.getUnitMapping();
-            List<Pnt2d> refinedCorners = locator.getCorners();
+            // MarkerLocator locator = new MarkerLocator(poly);
+            // ProjectiveMapping2D unitMapping = locator.getUnitMapping();
+            List<Pnt2d> refinedCorners = new QuadHomographyLocator().getCorners(poly);
 
             // B: Extract the canonical marker image and read the marker's bitcode
-            MarkerExtractor extractor = new MarkerExtractor(ip, dictionary.getMarkerSize());
-            BitVector bitCode = extractor.getMarkerBits(unitMapping, thr);
+            MarkerScanner extractor = new MarkerScanner(ip, dictionary);
+            BitVector bitCode = extractor.getMarkerData(corners, thr);
 
             // C: Lookup the bitcode in the dictionary (all rotations)
             LookupResult lookup = dictionary.lookup(bitCode, maxCorrectionRate);

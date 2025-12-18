@@ -8,6 +8,8 @@ package imagingbook.jaruco;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.util.RotationUtils;
 
@@ -354,22 +356,26 @@ public class ArucoDictionary {
 
     public record LookupResult(int markerIndex, int rotation, int hammingDistance) {}
 
-    // public static class LookupResult {
-    //     final int markerIndex;
-    //     final int rotation;
-    //     final int hammingDistance;
-    //
-    //     LookupResult(int markerIndex, int rotation, int hammingDistance) {
-    //         this.markerIndex = markerIndex;
-    //         this.rotation = rotation;
-    //         this.hammingDistance = hammingDistance;
-    //     }
-    //
-    //     @Override
-    //     public String toString() {
-    //         return String.format("%s [id=%d, r=%d, dist=%d]",
-    //                 getClass().getSimpleName(), markerIndex, rotation, hammingDistance);
-    //     }
-    // }
+    // -------------------------------------------------------------------------
+
+    /**
+     * Creates
+     * @param idx
+     * @param rot
+     * @return
+     */
+    public ByteProcessor getMarkerImage(int idx, int rot) {
+        int n = this.getMarkerSize();
+        BitVector markerbits = this.getBits(idx, rot);
+        ByteProcessor ip = new ByteProcessor(n + 2, n + 2);
+        int k = 0;
+        for (int v = 0; v < n; v++) {
+            for (int u = 0; u < n; u++) {
+                ip.set(u + 1, v + 1, markerbits.getBit(k) ? 0xFF : 0);
+                k++;
+            }
+        }
+        return ip;
+    }
 
 }

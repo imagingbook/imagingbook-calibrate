@@ -14,8 +14,9 @@ import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
-import imagingbook.jaruco.*;
-import imagingbook.jaruco.obsolete.MarkerDetectionResult_obsolete;
+import imagingbook.jaruco.ArucoDetector;
+import imagingbook.jaruco.ArucoDictionary;
+import imagingbook.jaruco.ArucoDictionaryPredefined;
 import imagingbook.jaruco.util.Polygons;
 
 import java.awt.Color;
@@ -58,17 +59,17 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
         ColoredStroke stroke0 = new ColoredStroke(1.0 * 3, Color.red);
 
 
-        List<MarkerDetectionResult_obsolete> markerDetectionResultObsoletes = detector.detectMarkers(im.getProcessor());
+        List<ArucoDetector.DetectionResult> markerDetectionResults = detector.detectMarkers(im.getProcessor());
         // System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
-        if (markerDetectionResultObsoletes.isEmpty()) {
+        if (markerDetectionResults.isEmpty()) {
             IJ.log("No markers found!");
             return;
         }
 
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-        for (MarkerDetectionResult_obsolete res : markerDetectionResultObsoletes) {
-            List<Pnt2d> corners = res.corners().polygon;
+        for (ArucoDetector.DetectionResult res : markerDetectionResults) {
+            List<Pnt2d> corners = res.corners();
             ola.addShape(getPolygonPath(corners, 0, 0), stroke);
 
             double rad = 2;
@@ -84,7 +85,7 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
             Pnt2d center = Polygons.getCentroid(corners);
             ola.setFont(MarkerFont);
             ola.setTextColor(MarkerColor);
-            ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId()));
+            ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId()) + "/" + res.rotation());
         }
 
         im.setOverlay(ola.getOverlay());

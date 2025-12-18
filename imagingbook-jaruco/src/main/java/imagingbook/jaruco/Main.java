@@ -35,7 +35,7 @@ public class Main {
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
 
         ArucoDetector detector = new ArucoDetector(dict);
-        List<ArucoDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
+        List<ArucoDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers(im.getProcessor());
 
         System.out.println("Markers found: " + detectionResultObsoletes.size());
         for (ArucoDetector.DetectionResult res : detectionResultObsoletes) {
@@ -68,7 +68,7 @@ public class Main {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
 
-            List<ArucoDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
+            List<ArucoDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers(im.getProcessor());
             System.out.println("Markers found: " + detectionResultObsoletes.size());
 
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
@@ -97,7 +97,7 @@ public class Main {
                 Pnt2d center = Polygons.getCentroid(corners);
                 ola.setFont(MarkerFont);
                 ola.setTextColor(MarkerColor);
-                ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId()));
+                ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation());
             }
 
             im.setOverlay(ola.getOverlay());
@@ -108,7 +108,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        // doSmallImageTest();
-        doBigImageTest();
+        doSmallImageTest();
+        // doBigImageTest();
     }
 }

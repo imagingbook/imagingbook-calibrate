@@ -24,6 +24,8 @@ import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.common.image.ImageMapper;
 import imagingbook.common.regions.Contour;
+import imagingbook.common.regions.ContourTracer;
+import imagingbook.common.regions.RegionContourSegmentation;
 import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.core.jdoc.JavaDocHelp;
 import imagingbook.jaruco.ArucoDetector;
@@ -86,15 +88,17 @@ public class Quad_Fitting_Demo implements PlugIn, JavaDocHelp {
 
         int thr = Math.round(new OtsuThresholder().getThreshold(gray));
         gray.threshold(thr);
-        List<MarkerOutline> contours = ArucoDetector.extractContours(gray, thr);
+
+        ContourTracer ct = new RegionContourSegmentation(gray);
+        List<? extends Contour> contours = ct.getInnerContours();
 
         double ContourStrokeWidth = 0.25;
         ColorSequencer cseq = new CssColorSequencer();
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-        for (MarkerOutline contour : contours) {
+        for (Contour contour : contours) {
             SegmentedContour segCont =
-                    new ContourSegmenter().segment(contour.getPolygon());   // tol = contour.length() * accuracyRate
+                    new ContourSegmenter().segment(contour.getPointList());   // tol = contour.length() * accuracyRate
 
             // Show original corners from segmentation:
             ColoredStroke stroke = new ColoredStroke(ContourStrokeWidth, Color.red);
