@@ -22,6 +22,7 @@ import imagingbook.jaruco.util.Polygons;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ArucoDetector {
@@ -201,6 +202,7 @@ public class ArucoDetector {
             // Estimate homography and locate corners
             MarkerLocator locator = new MarkerLocator(poly);
             ProjectiveMapping2D unitMapping = locator.getUnitMapping();
+            List<Pnt2d> refinedCorners = locator.getCorners();
 
             // B: Extract the canonical marker image and read the marker's bitcode
             MarkerExtractor extractor = new MarkerExtractor(ip, dictionary.getMarkerSize());
@@ -214,8 +216,9 @@ public class ArucoDetector {
             if (lookup == null) {
                continue;
             }
+            Collections.rotate(refinedCorners, lookup.rotation());   // rotate vertices to canonical state CHECK!!
 
-            markerDetectionResults.add(new MarkerDetectionResult(lookup, poly));
+            markerDetectionResults.add(new MarkerDetectionResult(lookup, refinedCorners));
             // take care of rotation! Extract exact patch corner positions
             // by projecting the unit square.
             System.out.println("markerDetectionResults(0) = " + markerDetectionResults.get(0));

@@ -47,9 +47,9 @@ public class Main2 {
 
     static void doSmallImageTest() {
         String[] paths = {
-                // SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
-                // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
-                // SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
                 SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
                 // SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
         };
@@ -75,32 +75,32 @@ public class Main2 {
 
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            // for (MarkerDetectionResult_obsolete res : markerDetectionResultObsoletes) {
-            //     // ArucoDetector.MarkerDetectionResult_obsolete res = markerDetectionResultObsoletes.get(0);
-            //     System.out.println(res);
-            //     // create shape overlay
-            //
-            //     List<Pnt2d> corners = res.corners().polygon;
-            //     // Collections.rotate(corners, res.rotation);
-            //     //List<Pnt2d> corners = rotateCorners(corners, res.rotation);
-            //
-            //     ola.addShape(getPolygonPath(corners, 0, 0), stroke);
-            //
-            //     double rad = 2;
-            //     int j = 0;
-            //     for (Pnt2d p : corners) {
-            //         double x = p.getX() - rad;
-            //         double y = p.getY() - rad;
-            //         ola.addShape(new Ellipse2D.Double(x, y, 2 * rad, 2 * rad), j == 0 ? stroke0 : stroke);
-            //         j++;
-            //     }
-            //
-            //     // draw the marker's id number
-            //     Pnt2d center = Polygons.getCentroid(corners);
-            //     ola.setFont(MarkerFont);
-            //     ola.setTextColor(MarkerColor);
-            //     ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId()));
-            // }
+            for (MarkerDetectionResult res : markerDetectionResultObsoletes) {
+                // ArucoDetector.MarkerDetectionResult_obsolete res = markerDetectionResultObsoletes.get(0);
+                System.out.println(res);
+                // create shape overlay
+
+                List<Pnt2d> corners = res.corners();
+                // Collections.rotate(corners, res.rotation);
+                //List<Pnt2d> corners = rotateCorners(corners, res.rotation);
+
+                ola.addShape(getPolygonPath(corners, 0, 0), stroke);
+
+                double rad = 2;
+                int j = 0;
+                for (Pnt2d p : corners) {
+                    double x = p.getX() - rad;
+                    double y = p.getY() - rad;
+                    ola.addShape(new Ellipse2D.Double(x, y, 2 * rad, 2 * rad), j == 0 ? stroke0 : stroke);
+                    j++;
+                }
+
+                // draw the marker's id number
+                Pnt2d center = Polygons.getCentroid(corners);
+                ola.setFont(MarkerFont);
+                ola.setTextColor(MarkerColor);
+                ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId()));
+            }
 
             im.setOverlay(ola.getOverlay());
             // im.setTitle(im.getTitle() + " rot=" + res.rotation);
