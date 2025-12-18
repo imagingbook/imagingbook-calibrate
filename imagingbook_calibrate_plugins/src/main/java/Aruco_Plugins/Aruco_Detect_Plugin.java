@@ -36,7 +36,9 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
 
     private static final Font MarkerFont = new Font(Font.SANS_SERIF, Font.BOLD, 32);
-    private static final Color MarkerColor = Color.green.darker();
+    private static final Font CornerFont = new Font(Font.SANS_SERIF, Font.BOLD, 18);
+    private static final Color MarkerColor = Color.magenta;
+    private static final Color CornerColor = Color.blue;
 
     static {
         LogStream.redirectSystem();    // redirects System.out and System.err streams to IJ.log
@@ -72,12 +74,15 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
             List<Pnt2d> corners = res.corners();
             ola.addShape(getPolygonPath(corners, 0, 0), stroke);
 
+            ola.setFont(CornerFont);
+            ola.setTextColor(CornerColor);
             double rad = 2;
             int j = 0;
             for (Pnt2d p : corners) {
                 double x = p.getX() - rad;
                 double y = p.getY() - rad;
                 ola.addShape(new Ellipse2D.Double(x, y, 2 * rad, 2 * rad), j == 0 ? stroke0 : stroke);
+                ola.addText(x + 5, y + 5, "" + j);
                 j++;
             }
 

@@ -341,8 +341,8 @@ public class ArucoDictionary {
             }
         }
 
-        System.out.println("minIdx = " + minIdx);
-        System.out.println("minDist = " + minDist);
+        // System.out.println("minIdx = " + minIdx);
+        // System.out.println("minDist = " + minDist);
 
         if (minIdx >= 0 &&  minDist <= maxCorrectionRecalc) {
             return new LookupResult(minIdx, minRot, minDist);
@@ -359,7 +359,8 @@ public class ArucoDictionary {
     // -------------------------------------------------------------------------
 
     /**
-     * Creates
+     * Creates a marker image of the specified dictionary entry with a
+     * surrounding 1-pixel black border.
      * @param idx
      * @param rot
      * @return

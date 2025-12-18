@@ -24,7 +24,9 @@ public class Main {
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
 
     private static final Font MarkerFont = new Font(Font.SANS_SERIF, Font.BOLD, 32);
+    private static final Font CornerFont = new Font(Font.SANS_SERIF, Font.BOLD, 18);
     private static final Color MarkerColor = Color.magenta;
+    private static final Color CornerColor = Color.blue;
 
     static void doBigImageTest() {
         String IMG_PATH = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
@@ -45,11 +47,11 @@ public class Main {
 
     static void doSmallImageTest() {
         String[] paths = {
-                SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
-                // SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
+                SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
         };
 
         ImagePlus[] images = new ImagePlus[paths.length];
@@ -84,12 +86,15 @@ public class Main {
 
                 ola.addShape(getPolygonPath(corners, 0, 0), stroke);
 
+                ola.setFont(CornerFont);
+                ola.setTextColor(CornerColor);
                 double rad = 2;
                 int j = 0;
                 for (Pnt2d p : corners) {
                     double x = p.getX() - rad;
                     double y = p.getY() - rad;
                     ola.addShape(new Ellipse2D.Double(x, y, 2 * rad, 2 * rad), j == 0 ? stroke0 : stroke);
+                    ola.addText(x + 5, y + 5, "" + j);
                     j++;
                 }
 
