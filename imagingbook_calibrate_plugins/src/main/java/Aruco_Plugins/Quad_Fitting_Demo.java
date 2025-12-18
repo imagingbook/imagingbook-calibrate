@@ -94,7 +94,7 @@ public class Quad_Fitting_Demo implements PlugIn, JavaDocHelp {
 
         for (MarkerOutline contour : contours) {
             SegmentedContour segCont =
-                    new ContourSegmenter().segment(contour.getPolygon(), contour.length() * accuracyRate);
+                    new ContourSegmenter().segment(contour.getPolygon());   // tol = contour.length() * accuracyRate
 
             // Show original corners from segmentation:
             ColoredStroke stroke = new ColoredStroke(ContourStrokeWidth, Color.red);

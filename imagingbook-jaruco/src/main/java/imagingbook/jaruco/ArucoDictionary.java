@@ -308,6 +308,9 @@ public class ArucoDictionary {
         Objects.requireNonNull(candidate, "candidate bits must not be null");
         int maxCorrectionRecalc = (int) (maxCorrectionBits * maxCorrectionRate);
 
+        System.out.println("lookup candidate = " + candidate);
+        System.out.println("maxCorrectionRecalc = " + maxCorrectionRecalc);
+
         int card = candidate.cardinality();
         // candidate is blank, all bits either zero or one:
         if (card == 0 || card == markerBitCount) {
@@ -324,6 +327,7 @@ public class ArucoDictionary {
         for (int m = 0; m < M; m++) {       // all M marker id's
             for (int r = 0; r < 4; r++) {   // all 4 rotations
                 int dist = candidate.hammingDistance(bitdata[m][r]);
+                // System.out.println(" checking " + )
                 if(dist < minDist) {
                     minDist = dist;
                     minIdx = m;
@@ -334,6 +338,9 @@ public class ArucoDictionary {
                 }
             }
         }
+
+        System.out.println("minIdx = " + minIdx);
+        System.out.println("minDist = " + minDist);
 
         if (minIdx >= 0 &&  minDist <= maxCorrectionRecalc) {
             return new LookupResult(minIdx, minRot, minDist);

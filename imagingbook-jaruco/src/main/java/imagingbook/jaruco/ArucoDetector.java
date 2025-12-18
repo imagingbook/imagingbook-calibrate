@@ -3,9 +3,11 @@ package imagingbook.jaruco;
 
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
+import ij.ImagePlus;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.image.ImageMapper;
+import imagingbook.common.math.Matrix;
 import imagingbook.common.regions.Contour;
 import imagingbook.common.regions.ContourTracer;
 import imagingbook.common.regions.RegionContourSegmentation;
@@ -13,6 +15,7 @@ import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.common.util.ParameterBundle;
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
+import imagingbook.jaruco.gui.ZoomableImagePlus;
 import imagingbook.jaruco.obsolete.MarkerDetectionResult_obsolete;
 import imagingbook.jaruco.obsolete.MarkerOutline;
 import imagingbook.jaruco.util.Polygons;
@@ -176,6 +179,9 @@ public class ArucoDetector {
         // of black regions are actually INNER contours:
         List<? extends Contour> ics = ct.getInnerContours();             // inner corners run CCW?
 
+        System.out.println("ics = " + ics.size());
+        System.out.println("ics[0] = " + ics.get(0).getLength());
+
         for (Contour contour : ics) {
             List<Pnt2d> pts = contour.getPointList();
             if (pts.size() < minContourLength) {                          // parameter!
@@ -190,24 +196,32 @@ public class ArucoDetector {
                 continue;
             }
 
+            System.out.println("found corners = " + corners.size());
+
             // Estimate homograpy:
             QuadHomographyFit fit = new QuadHomographyFit(poly);
-            double[][] A = fit.getTransformationMatrix(); // maps image quad to unut square
+            double[][] A = fit.getTransformationMatrix(); // maps image quad to unit square
+
+            System.out.println("A = \n" + Matrix.toString(A));
 
             // B: Extract the canonical marker image and read its bitcode
-            ByteProcessor canonical = new MarkerExtractor(ip, markerImageSize).getCanonicalImage(ip, A);
+            ByteProcessor canonical = new MarkerExtractor(ip, dictionary.getMarkerSize()).getCanonicalImage(ip, A);
+            new ZoomableImagePlus("canonical", canonical).show(20);
 
             // Find the markers bitcode
             BitVector bitCode = new MarkerParser(dictionary.getMarkerSize()).parseImage(canonical, thr);
+            System.out.println("bitcode = " + bitCode);
 
             // C: Lookup the bitcode in the dictionary (all rotations)
             LookupResult lookup = dictionary.lookup(bitCode, maxCorrectionRate);
+            System.out.println("lookup = " + lookup);
 
             // take care of rotation! Extract exact patch corner positions
             // by projecting the unit square.
             if (lookup != null) {
                 markerDetectionResults.add(new MarkerDetectionResult(lookup, poly));
             }
+            System.out.println("markerDetectionResults(0) = " + markerDetectionResults.get(0));
         }
 
         return markerDetectionResults;
@@ -272,7 +286,7 @@ public class ArucoDetector {
         // STEP 4b - extract a small rectified subimage
         int targetSize = 5 * (this.dictionary.getMarkerSize() + 2); // fields with 5x5 pixels (parameter!?)
         ByteProcessor markerIp = extractMarkerImage(ip, markerOutline, targetSize);
-        // new ZoomableImagePlus("Marker raw" + k, markerIp.duplicate()).show(20);
+        new ZoomableImagePlus("Marker raw", markerIp.duplicate()).show(20);
 
         // STEP 4c - sample marker fields to generate the 1D marker pattern
         BitVector sampleBits = extractMarkerBits(markerIp, markerOutline.threshold);
@@ -306,8 +320,9 @@ public class ArucoDetector {
      */
     ByteProcessor extractMarkerImage(ImageProcessor origIp, MarkerOutline outline, int targetSize) {
         Pnt2d[] sourcePts = outline.polygon.toArray(new Pnt2d[0]);
+        System.out.println("extractMarkerImage: convexity = " + Polygons.convexity(outline.polygon));
         Pnt2d[] targetPts = {   // enlarge target square by 1/2 pixel
-                Pnt2d.from(-0.5, -0.5),
+                Pnt2d.from(-0.5, -0.5),                         // NOTE: square winds CW!
                 Pnt2d.from(-0.5, targetSize - 1 + 0.5),
                 Pnt2d.from(targetSize - 1 + 0.5, targetSize - 1 + 0.5),
                 Pnt2d.from(targetSize - 1 + 0.5, -0.5)};

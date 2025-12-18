@@ -2,7 +2,7 @@ package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.points.LinearFit2d;
-import imagingbook.common.math.Matrix;
+import imagingbook.jaruco.util.Polygons;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
@@ -24,8 +24,11 @@ import java.util.Arrays;
  */
 public class QuadHomographyFit implements LinearFit2d {
 
-    private static final double[][] UNIT_SQUARE =    // corners of the unit square (CCW)
+    private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
             {{0,0}, {1,0}, {1,1}, {0,1}};
+
+    private static final double[][] UNIT_SQUARE_CW =    // corners of the unit square (CW)
+            {{0,0}, {0,1}, {1,1}, {1,0}};
 
     private final SegmentedContour quad;
     private RealMatrix A = null;		// the calculated transformation matrix
@@ -42,12 +45,13 @@ public class QuadHomographyFit implements LinearFit2d {
                     + quad.getSegmentCount());
         }
         this.quad = quad;
-        doFit();
+        doFit(UNIT_SQUARE_CCW);
     }
 
     // -------------------------------------------------------------------------
 
-    private void doFit() {
+    private void doFit(double[][] unitSquare) {
+        System.out.println("QuadHomographyFit: convexity =" + Polygons.convexity(quad.getCorners()));
         int n = quad.length();
         // set up vector b and matrix M as arrays, each with n + 4 rows:
         double[] bb = new double[n + 4]; Arrays.fill(bb, Double.NaN);
@@ -66,8 +70,8 @@ public class QuadHomographyFit implements LinearFit2d {
             // insert 2 rows for the corner (first point)
             double px = segmentPnts[0].getX();      // corner of segment k (source point)
             double py = segmentPnts[0].getY();
-            double qx = UNIT_SQUARE[k][0];  // target point on unit square
-            double qy = UNIT_SQUARE[k][1];
+            double qx = unitSquare[k][0];  // target point on unit square
+            double qy = unitSquare[k][1];
 
             bb[row] = qx;
             MM[row] = new double[] { px, py, 1, 0, 0, 0, -qx * px, -qx * py };
@@ -125,7 +129,6 @@ public class QuadHomographyFit implements LinearFit2d {
         A.setEntry(2, 2, 1.0);
 
         // err = Math.sqrt(LinearFit2d.getSquaredError(P, Q, A.getData()));
-
     }
 
     // --------------------------------------------------------

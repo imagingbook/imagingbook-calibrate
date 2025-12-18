@@ -61,7 +61,7 @@ class QuadHomographyFitTest {
     void runFitTest(String contourPath, String cornersPath) {
         double[][] contour = (double[][]) loadObject(this.getClass(), contourPath, double[][].class);
         //double[][] corners = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
-        SegmentedContour segCtr = new ContourSegmenter().segment(makePolygon(contour), contour.length * polygonalApproxAccuracyRate);
+        SegmentedContour segCtr = new ContourSegmenter().segment(makePolygon(contour)); // tol = contour.length * polygonalApproxAccuracyRate
         assertEquals(4, segCtr.getSegmentCount());
 
         QuadHomographyFit fit = new QuadHomographyFit(segCtr);
