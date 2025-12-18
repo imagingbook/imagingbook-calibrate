@@ -198,29 +198,26 @@ public class ArucoDetector {
 
             System.out.println("found corners = " + corners.size());
 
-            // Estimate homograpy:
-            QuadHomographyFit fit = new QuadHomographyFit(poly);
-            double[][] A = fit.getTransformationMatrix(); // maps image quad to unit square
+            // Estimate homography and locate corners
+            MarkerLocator locator = new MarkerLocator(poly);
+            ProjectiveMapping2D unitMapping = locator.getUnitMapping();
 
-            System.out.println("A = \n" + Matrix.toString(A));
-
-            // B: Extract the canonical marker image and read its bitcode
-            ByteProcessor canonical = new MarkerExtractor(ip, dictionary.getMarkerSize()).getCanonicalImage(ip, A);
-            new ZoomableImagePlus("canonical", canonical).show(20);
-
-            // Find the markers bitcode
-            BitVector bitCode = new MarkerParser(dictionary.getMarkerSize()).parseImage(canonical, thr);
+            // B: Extract the canonical marker image and read the marker's bitcode
+            MarkerExtractor extractor = new MarkerExtractor(ip, dictionary.getMarkerSize());
+            BitVector bitCode = extractor.getMarkerBits(unitMapping, thr);
             System.out.println("bitcode = " + bitCode);
 
             // C: Lookup the bitcode in the dictionary (all rotations)
             LookupResult lookup = dictionary.lookup(bitCode, maxCorrectionRate);
             System.out.println("lookup = " + lookup);
 
+            if (lookup == null) {
+               continue;
+            }
+
+            markerDetectionResults.add(new MarkerDetectionResult(lookup, poly));
             // take care of rotation! Extract exact patch corner positions
             // by projecting the unit square.
-            if (lookup != null) {
-                markerDetectionResults.add(new MarkerDetectionResult(lookup, poly));
-            }
             System.out.println("markerDetectionResults(0) = " + markerDetectionResults.get(0));
         }
 
