@@ -35,10 +35,10 @@ public class Main {
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
 
         ArucoDetector detector = new ArucoDetector(dict);
-        List<ArucoDetector.MarkerDetectionResult> markerDetectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
+        List<ArucoDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
 
-        System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
-        for (ArucoDetector.MarkerDetectionResult res : markerDetectionResultObsoletes) {
+        System.out.println("Markers found: " + detectionResultObsoletes.size());
+        for (ArucoDetector.DetectionResult res : detectionResultObsoletes) {
             System.out.println(res);
         }
     }
@@ -68,13 +68,13 @@ public class Main {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
 
-            List<ArucoDetector.MarkerDetectionResult> markerDetectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
-            System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
+            List<ArucoDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers2(im.getProcessor());
+            System.out.println("Markers found: " + detectionResultObsoletes.size());
 
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            for (ArucoDetector.MarkerDetectionResult res : markerDetectionResultObsoletes) {
-                // ArucoDetector.MarkerDetectionResult_obsolete res = markerDetectionResultObsoletes.get(0);
+            for (ArucoDetector.DetectionResult res : detectionResultObsoletes) {
+                // ArucoDetector.MarkerDetectionResult_obsolete res = detectionResultObsoletes.get(0);
                 System.out.println(res);
                 // create shape overlay
 
