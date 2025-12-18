@@ -22,7 +22,7 @@ import java.util.Arrays;
  * @author WB
  * @version 2025
  */
-public class QuadHomographyFit implements LinearFit2d {
+public class QuadHomographyFit implements LinearFit2d { // TODO: move into LeastSquaresMarkerLocator.
 
     private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
             {{0,0}, {1,0}, {1,1}, {0,1}};

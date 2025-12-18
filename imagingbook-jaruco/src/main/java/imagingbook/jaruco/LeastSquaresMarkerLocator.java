@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Responsible for calculating a marker's corner coordinates with more or
- * less precision.
+ * Implementation of {@link MarkerLocator} which uses a special minimum
+ * least-squares fit incorporating the quad corners and all intermediate
+ * contour points.
  */
-public class QuadHomographyLocator implements MarkerLocator {
+public class LeastSquaresMarkerLocator implements MarkerLocator {
 
     private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
             {{0,0}, {1,0}, {1,1}, {0,1}};
@@ -18,20 +19,12 @@ public class QuadHomographyLocator implements MarkerLocator {
     // private static final double[][] UNIT_SQUARE_CW =    // corners of the unit square (CW)
     //         {{0,0}, {0,1}, {1,1}, {1,0}};
 
-
-    // private final ProjectiveMapping2D mapping;
-
-    public QuadHomographyLocator() {
+    /**
+     * Constructor.
+     */
+    public LeastSquaresMarkerLocator() {
     }
 
-    /**
-     * Returns the image corner coordinates for the marker outline associated
-     * with this {@link QuadHomographyLocator}. The resulting corners
-     * should be close to the original (detected) corners or may even be
-     * identical.
-     *
-     * @return the corner points in image coordinates
-     */
     @Override
     public List<Pnt2d> getCorners (SegmentedContour poly) {
         QuadHomographyFit fit = new QuadHomographyFit(poly);

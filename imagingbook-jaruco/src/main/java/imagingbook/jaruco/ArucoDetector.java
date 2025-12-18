@@ -156,9 +156,9 @@ public class ArucoDetector {
             }
 
             // Estimate homography and locate corners
-            // MarkerLocator locator = new MarkerLocator(poly);
-            // ProjectiveMapping2D unitMapping = locator.getUnitMapping();
-            List<Pnt2d> refinedCorners = new QuadHomographyLocator().getCorners(poly);
+            // MarkerLocator locator = new SimpleMarkerLocator();
+            MarkerLocator locator = new LeastSquaresMarkerLocator();
+            List<Pnt2d> refinedCorners = locator.getCorners(poly);
 
             // B: Extract the canonical marker image and read the marker's bitcode
             MarkerScanner extractor = new MarkerScanner(ip, dictionary);
@@ -169,7 +169,8 @@ public class ArucoDetector {
             if (lookup == null) {
                continue;
             }
-            // rotate corners to canonical position
+            // Rotate corners to canonical to align with ArUco pattern printouts
+            // (corner 0 is the top-left corner of the marker)
             Collections.rotate(refinedCorners, lookup.rotation());
             markerDetectionResults.add(new DetectionResult(lookup, refinedCorners));
         }
@@ -189,15 +190,8 @@ public class ArucoDetector {
              List<Pnt2d> corners)
     {
 
-         DetectionResult(LookupResult lookup, List<Pnt2d> poly) {
-             this(lookup.markerIndex(), lookup.rotation(), lookup.hammingDistance(),
-                     rotateCorners(poly, lookup.rotation()));
-         }
-
-        // rotate vertices to canonical state
-         static List<Pnt2d> rotateCorners(List<Pnt2d> poly, int rot) {
-             Collections.rotate(poly, rot);
-             return poly;
+         DetectionResult(LookupResult lookup, List<Pnt2d> corners) {
+             this(lookup.markerIndex(), lookup.rotation(), lookup.hammingDistance(), corners);
          }
      }
 }
