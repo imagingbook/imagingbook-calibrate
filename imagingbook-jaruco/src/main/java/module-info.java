@@ -10,4 +10,5 @@ module imagingbook.jaruco {
     exports imagingbook.jaruco.obsolete;
     exports imagingbook.jaruco.util;
     exports imagingbook.jaruco.gui;
+    exports imagingbook.jaruco.math;
 }

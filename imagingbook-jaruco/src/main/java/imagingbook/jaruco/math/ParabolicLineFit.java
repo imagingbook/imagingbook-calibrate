@@ -21,6 +21,7 @@ public class ParabolicLineFit {
     public RealVector v;
     public double d;
     public double a, c;
+    public RealVector solution;
 
     public ParabolicLineFit(List<Pnt2d> pts) {
         this.n = pts.size();
@@ -31,11 +32,10 @@ public class ParabolicLineFit {
         this.d = BmA.getNorm();
         this.u = BmA.mapMultiply(1 / d);
         this.v = new ArrayRealVector(new double[]{-u.getEntry(1), u.getEntry(0)});
-
-
+        this.solution = doFit(pts);
     }
 
-    RealVector mapForward(RealVector P) {
+    public RealVector mapForward(RealVector P) {
         double x = P.subtract(M).dotProduct(u);
         double y = P.subtract(M).dotProduct(v);
         return new ArrayRealVector(new double[]{x, y});
@@ -102,14 +102,18 @@ public class ParabolicLineFit {
 
     }
 
-    void plotValuesInRealSpace(double a, double c) {
-        for (double x = -d; x <= d; x += 0.2) {
+    public List<Pnt2d> plotValuesInRealSpace(int steps) {
+        double a = solution.getEntry(0);
+        double c = solution.getEntry(1);
+        List<Pnt2d> plotPoints = new ArrayList<>();
+        for (int i = 0; i < steps; i++) {
+            double x = -d + i * (2 * d) / steps;
             double y = a * x * x + c;
             RealVector P = M.add(u.mapMultiply(x)).add(v.mapMultiply(y));
-
-            System.out.println(x + " -> " + P);
+            plotPoints.add(Pnt2d.from(P.toArray()));
+            //System.out.println(x + " -> " + P);
         }
-
+        return plotPoints;
     }
 
     // ------------------------------------------------------------------

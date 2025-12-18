@@ -124,7 +124,7 @@ class PolygonsTest {
         double[][] corners1 = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
         List<Pnt2d> cornerList2 = simplify(makePolygon(contour), contour.length * polygonalApproxAccuracyRate);
         // System.out.println("corners1 = " + Polygons.toString(makePolygon(corners1)));
-        System.out.println("corners2 = " + Polygons.toString(cornerList2));
+        // System.out.println("corners2 = " + Polygons.toString(cornerList2));
         assertTrue(checkSame(makePolygon(corners1), cornerList2));
     }
 
