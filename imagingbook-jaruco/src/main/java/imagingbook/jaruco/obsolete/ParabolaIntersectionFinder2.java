@@ -1,5 +1,6 @@
-package imagingbook.jaruco.math;
+package imagingbook.jaruco.obsolete;
 
+import imagingbook.jaruco.math.Parabola;
 import org.apache.commons.math4.legacy.linear.*;
 
 import java.util.Arrays;
@@ -7,6 +8,7 @@ import java.util.Arrays;
 /**
  * https://chatgpt.com/share/694448e5-c3d4-8006-b5ed-ca6bf915b13c
  */
+@Deprecated
 public class ParabolaIntersectionFinder2 {
 
     static double DEFAULT_TOL = 1e-6;
@@ -77,8 +79,8 @@ public class ParabolaIntersectionFinder2 {
     // --------------------------------------------------------------
 
     public static void main(String[] args) {
-        Parabola Q0 = new Parabola(-0.1, 0.02, 0.5);
-        Parabola Q1 = new Parabola(0.1, 0.03 + 1, 0.5);
+        Parabola Q0 = new Parabola.OverX(-0.1, 0.02, 0.5);
+        Parabola Q1 = new Parabola.OverY(0.1, 0.03 + 1, 0.5);
         double x0 = 1, y0 = 0;
 
         double[] X = new ParabolaIntersectionFinder2().getIntersection(Q0, Q1, x0, y0);

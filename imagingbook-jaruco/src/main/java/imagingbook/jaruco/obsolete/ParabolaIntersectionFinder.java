@@ -1,7 +1,6 @@
-package imagingbook.jaruco.math;
+package imagingbook.jaruco.obsolete;
 
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
-import org.apache.commons.math4.legacy.linear.DecompositionSolver;
 import org.apache.commons.math4.legacy.linear.LUDecomposition;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
@@ -12,6 +11,7 @@ import java.util.Arrays;
 /**
  * https://chatgpt.com/share/694448e5-c3d4-8006-b5ed-ca6bf915b13c
  */
+@Deprecated
 public class ParabolaIntersectionFinder {
 
     static double DEFAULT_TOL = 1e-6;

@@ -45,7 +45,7 @@ public class ParabolaIntersector {
 
         for (int k = 0; k < maxIter; k++) {
             iterations++;
-            System.out.printf("x,y = %.6f, %.6f\n", x, y);
+            // System.out.printf("x,y = %.6f, %.6f\n", x, y);
 
             // Residual vector F
             double r0 = x - P1.getXvalue(y); // = f0(x, y)
@@ -53,9 +53,9 @@ public class ParabolaIntersector {
 
             // Convergence test (residual-based)
             double residual = Math.hypot(r0, r1);
-            System.out.printf("residual = %.6f\n", residual);
+            // System.out.printf("residual = %.6f\n", residual);
             if (residual < tol) {
-                break;
+                return new double[]{x, y};
             }
 
             double[][] JJ = {
@@ -72,8 +72,8 @@ public class ParabolaIntersector {
             y -= delta.getEntry(1);
         }
 
-        System.out.println("iterations: " + iterations);
-        return new double[]{x, y};
+        // System.out.println("iterations: " + iterations);
+        throw new RuntimeException("max. number of iterations exceeded: " + maxIter);
     }
 
     // --------------------------------------------------------------
@@ -84,7 +84,7 @@ public class ParabolaIntersector {
         double x0 = 1, y0 = 0;
 
         double[] X = new ParabolaIntersector().getIntersection(P0, P1, x0, y0);
-        System.out.println(Arrays.toString(X));
+        System.out.println("Intersection at " + Arrays.toString(X));
         // try also imagingbook.common.math.nonlinear.solveGaussNewton()
     }
 

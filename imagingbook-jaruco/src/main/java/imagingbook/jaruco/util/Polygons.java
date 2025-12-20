@@ -7,6 +7,7 @@
 package imagingbook.jaruco.util;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.mappings.linear.LinearMapping2D;
 
 import java.awt.geom.Path2D;
 import java.util.ArrayDeque;
@@ -305,6 +306,14 @@ public class Polygons {
             path.lineTo(x + xOffset + 0.5, y + yOffset - 0.5);
         }
         return path;
+    }
+
+    public static List<Pnt2d> transform(List<Pnt2d> poly, LinearMapping2D mapping) {
+        List<Pnt2d> poly2 = new ArrayList<>(poly.size());
+        for (Pnt2d p : poly) {
+            poly2.add(mapping.applyTo(p));
+        }
+        return poly2;
     }
 
     public static String toString(List<Pnt2d>  poly) {
