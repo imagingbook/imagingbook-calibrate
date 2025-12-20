@@ -1,13 +1,17 @@
 package imagingbook.jaruco.math;
 
-import org.apache.commons.math4.legacy.linear.*;
+import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.legacy.linear.ArrayRealVector;
+import org.apache.commons.math4.legacy.linear.LUDecomposition;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.Arrays;
 
 /**
  * https://chatgpt.com/share/694448e5-c3d4-8006-b5ed-ca6bf915b13c
  */
-public class ParabolaIntersectionFinder2 {
+public class ParabolaIntersector {
 
     static double DEFAULT_TOL = 1e-6;
     static int DEFAULT_MAX_ITER = 15;
@@ -15,30 +19,28 @@ public class ParabolaIntersectionFinder2 {
     private final double tol;
     private final int maxIter;
 
-    public ParabolaIntersectionFinder2() {
+    public ParabolaIntersector() {
         this(DEFAULT_TOL, DEFAULT_MAX_ITER);
     }
 
-    public ParabolaIntersectionFinder2(double tol, int maxIter) {
+    public ParabolaIntersector(double tol, int maxIter) {
         this.tol = tol;
         this.maxIter = maxIter;
     }
 
-    // --------------------------------------------------------
-
-    private static double F0(Parabola Q0, double x, double y) {
-        return y - Q0.getVal(x);
-    }
-
-    private static double F1(Parabola Q1, double x, double y) {
-        return x - Q1.getVal(y);
-    }
-
     // ----------------------------------------------------------------------------
 
-    public double[] getIntersection (Parabola Q0, Parabola Q1, double x0, double y0) {
-        double x = x0;
-        double y = y0;
+    /**
+     *
+     * @param P0 parabola with vertical axis:   y = a0 (x - d0)^2 + c0
+     * @param P1 parabola with horizontal axis: x = a1 (y - d1)^2 + c1
+     * @param xStart x-start coordinate for intersection
+     * @param yStart y-start coordinate for intersection
+     * @return the intersection point
+     */
+    public double[] getIntersection (Parabola.OverX P0, Parabola.OverY P1, double xStart, double yStart) {
+        double x = xStart;
+        double y = yStart;
         int iterations = 0;
 
         for (int k = 0; k < maxIter; k++) {
@@ -46,23 +48,23 @@ public class ParabolaIntersectionFinder2 {
             System.out.printf("x,y = %.6f, %.6f\n", x, y);
 
             // Residual vector F
-            double f0 = F0(Q0, x, y);
-            double f1 = F1(Q1, x, y);
+            double r0 = x - P1.getXvalue(y); // = f0(x, y)
+            double r1 = y - P0.getYvalue(x); // = f1(x, y);
 
             // Convergence test (residual-based)
-            double residual = Math.hypot(f0, f1);
+            double residual = Math.hypot(r0, r1);
             System.out.printf("residual = %.6f\n", residual);
             if (residual < tol) {
                 break;
             }
 
             double[][] JJ = {
-                    { -Q0.getDeriv(x), 1 },
-                    { 1, -Q1.getDeriv(y) }
+                { 1, -P1.getDeriv(y) },
+                { -P0.getDeriv(x), 1 }
             };
 
             RealMatrix J = new Array2DRowRealMatrix(JJ);
-            RealVector F = new ArrayRealVector(new double[]{f0, f1});
+            RealVector F = new ArrayRealVector(new double[] {r0, r1});
             // Solve J * delta = F
             RealVector delta = new LUDecomposition(J).getSolver().solve(F);
             // Newton update
@@ -77,11 +79,11 @@ public class ParabolaIntersectionFinder2 {
     // --------------------------------------------------------------
 
     public static void main(String[] args) {
-        Parabola Q0 = new Parabola(-0.1, 0.02, 0.5);
-        Parabola Q1 = new Parabola(0.1, 0.03 + 1, 0.5);
+        Parabola.OverX P0 = new Parabola.OverX(-0.1, 0.02, 0.5);
+        Parabola.OverY P1 = new Parabola.OverY(0.1, 0.03 + 1, 0.5);
         double x0 = 1, y0 = 0;
 
-        double[] X = new ParabolaIntersectionFinder2().getIntersection(Q0, Q1, x0, y0);
+        double[] X = new ParabolaIntersector().getIntersection(P0, P1, x0, y0);
         System.out.println(Arrays.toString(X));
         // try also imagingbook.common.math.nonlinear.solveGaussNewton()
     }
