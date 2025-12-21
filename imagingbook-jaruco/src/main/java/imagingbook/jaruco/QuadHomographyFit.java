@@ -51,7 +51,7 @@ public class QuadHomographyFit implements LinearFit2d { // TODO: move into Least
     // -------------------------------------------------------------------------
 
     private void doFit(double[][] unitSquare) {
-        System.out.println("QuadHomographyFit: convexity =" + Polygons.convexity(quad.getCorners()));
+        // System.out.println("QuadHomographyFit: convexity =" + Polygons.convexity(quad.getCorners()));
         int n = quad.length();
         // set up vector b and matrix M as arrays, each with n + 4 rows:
         double[] bb = new double[n + 4]; Arrays.fill(bb, Double.NaN);

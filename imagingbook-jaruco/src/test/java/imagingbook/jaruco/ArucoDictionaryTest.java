@@ -1,11 +1,11 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.util.bits.BitVector;
-import imagingbook.jaruco.util.RotationUtils;
+import imagingbook.jaruco.util.MatrixRotationUtils;
 import org.junit.jupiter.api.Test;
 
 import static imagingbook.jaruco.ArucoDictionary.toBitVector;
-import static imagingbook.jaruco.util.RotationUtils.makeRotationPermutation;
+import static imagingbook.jaruco.util.MatrixRotationUtils.makeRotationPermutation;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ArucoDictionaryTest {
@@ -28,9 +28,9 @@ class ArucoDictionaryTest {
         int[] rotperm = makeRotationPermutation(dict.getMarkerSize());
         char[][] patterns = new char[4][];
         patterns[0] = "1011010000010000001010111".toCharArray();
-        patterns[1] =  RotationUtils.permute(patterns[0], rotperm);
-        patterns[2] =  RotationUtils.permute(patterns[1], rotperm);
-        patterns[3] =  RotationUtils.permute(patterns[2], rotperm);
+        patterns[1] =  MatrixRotationUtils.permute(patterns[0], rotperm);
+        patterns[2] =  MatrixRotationUtils.permute(patterns[1], rotperm);
+        patterns[3] =  MatrixRotationUtils.permute(patterns[2], rotperm);
 
         for (int r=0; r<4; r++) {
             ArucoDictionary.LookupResult result = dict.lookup(toBitVector(patterns[r]), 2);

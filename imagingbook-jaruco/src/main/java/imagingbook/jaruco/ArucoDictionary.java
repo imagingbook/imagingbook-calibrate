@@ -9,9 +9,8 @@ package imagingbook.jaruco;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ij.process.ByteProcessor;
-import ij.process.ImageProcessor;
 import imagingbook.common.util.bits.BitVector;
-import imagingbook.jaruco.util.RotationUtils;
+import imagingbook.jaruco.util.MatrixRotationUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +19,7 @@ import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 
-import static imagingbook.jaruco.util.RotationUtils.makeRotationPermutation;
+import static imagingbook.jaruco.util.MatrixRotationUtils.makeRotationPermutation;
 
 /**
  * Dictionaries are stored as a list of bytes in its four rotations
@@ -91,7 +90,7 @@ public class ArucoDictionary {
         bitVectors[0] = toBitVector(markerPattern);   // r=0: canonical (unrotated)
         // make rotated patterns for r = 1, 2, 3
         for (int r = 1; r < 4; r++) {
-            markerPattern = RotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
+            markerPattern = MatrixRotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
             bitVectors[r] = toBitVector(markerPattern);
         }
         this.bitdata[id] = bitVectors;
@@ -119,7 +118,7 @@ public class ArucoDictionary {
     //     bitVectors[0] = toBitVector(markerPattern);   // r=0: canonical (unrotated)
     //     // make rotated patterns for r = 1, 2, 3
     //     for (int r = 1; r < 4; r++) {
-    //         markerPattern = RotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
+    //         markerPattern = MatrixRotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
     //         bitVectors[r] = toBitVector(markerPattern);
     //     }
     //
@@ -148,7 +147,7 @@ public class ArucoDictionary {
             allBitVectors[id][0] = toBitVector(markerPattern);   // r=0: canonical (unrotated)
             // make rotated patterns for r = 1, 2, 3
             for (int r = 1; r < 4; r++) {
-                markerPattern = RotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
+                markerPattern = MatrixRotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
                 allBitVectors[id][r] = toBitVector(markerPattern);
             }
         }
@@ -310,8 +309,8 @@ public class ArucoDictionary {
         Objects.requireNonNull(candidate, "candidate bits must not be null");
         int maxCorrectionRecalc = (int) (maxCorrectionBits * maxCorrectionRate);
 
-        System.out.println("lookup candidate = " + candidate);
-        System.out.println("maxCorrectionRecalc = " + maxCorrectionRecalc);
+        // System.out.println("lookup candidate = " + candidate);
+        // System.out.println("maxCorrectionRecalc = " + maxCorrectionRecalc);
 
         int card = candidate.cardinality();
         // candidate is blank, all bits either zero or one:

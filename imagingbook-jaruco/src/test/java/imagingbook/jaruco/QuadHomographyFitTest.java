@@ -39,14 +39,14 @@ class QuadHomographyFitTest {
     }
 
     // @Test
-    void fitFourPointsOnlyTest_projective() {  // just for comparison in 4-point case
-        ProjectiveFit2d fit = new ProjectiveFit2d(contour4.toArray(new Pnt2d[0]), UnitSquare.toArray(new Pnt2d[0]));
-        double[][] A = fit.getTransformationMatrix();
-        assertNotNull(A);
-
-        PrintPrecision.set(8);
-        System.out.println("A =" + Matrix.toString(A));
-    }
+    // void fitFourPointsOnlyTest_projective() {  // just for comparison in 4-point case
+    //     ProjectiveFit2d fit = new ProjectiveFit2d(contour4.toArray(new Pnt2d[0]), UnitSquare.toArray(new Pnt2d[0]));
+    //     double[][] A = fit.getTransformationMatrix();
+    //     assertNotNull(A);
+    //
+    //     PrintPrecision.set(8);
+    //     System.out.println("A =" + Matrix.toString(A));
+    // }
 
 
     @Test
@@ -68,14 +68,14 @@ class QuadHomographyFitTest {
         double[][] A = fit.getTransformationMatrix();
         assertNotNull(A);
         PrintPrecision.set(8);
-        System.out.println("A quadFit = \n" + Matrix.toString(A));
-        System.out.println("A quadFit error = " + fit.getError());
+        // System.out.println("A quadFit = \n" + Matrix.toString(A));
+        // System.out.println("A quadFit error = " + fit.getError());
 
         // -------------------------------------------
 
         ProjectiveFit2d fitP = new ProjectiveFit2d(segCtr.getCorners().toArray(new Pnt2d[0]), UnitSquare.toArray(new Pnt2d[0]));
-        System.out.println("A projective = \n" + Matrix.toString(fitP.getTransformationMatrix()));
-        System.out.println("A projective error = " + fitP.getError());
+        // System.out.println("A projective = \n" + Matrix.toString(fitP.getTransformationMatrix()));
+        // System.out.println("A projective error = " + fitP.getError());
 
     }
 

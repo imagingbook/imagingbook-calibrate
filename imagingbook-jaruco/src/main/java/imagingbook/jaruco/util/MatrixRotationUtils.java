@@ -1,8 +1,8 @@
 package imagingbook.jaruco.util;
 
-public final class RotationUtils {
+public final class MatrixRotationUtils {
 
-    private RotationUtils() {}
+    private MatrixRotationUtils() {}
 
     /**
      * Calculates and returns the 1D permutation vector for rotating a
