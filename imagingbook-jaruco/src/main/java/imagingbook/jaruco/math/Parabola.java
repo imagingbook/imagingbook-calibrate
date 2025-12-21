@@ -45,14 +45,16 @@ public abstract class Parabola {
      */
     public abstract List<Pnt2d> sample(double from, double to, int steps);
 
+
     // ---------------------------------------------------------------------
 
     /**
-     * Parabola with vertical axis:   y = a0 (x - d0)^2 + c0
+     * Parabolic function over x (with horizontal axis):
+     * {@code y = f(x) = a (x - d)^2 + c}
      */
-    public static class OverX extends Parabola {
+    public static class ParabolaX extends Parabola {
 
-        public OverX(double a, double c, double d) {
+        public ParabolaX(double a, double c, double d) {
             super(a, c, d);
         }
 
@@ -71,17 +73,28 @@ public abstract class Parabola {
             return this.getVal(x);
         }
 
-        public double[] getIntersection(Parabola.OverY other,  double xStart, double yStart) {
-            return new ParabolaIntersector().getIntersection(this, other, xStart, yStart);
+        /**
+         * Find the intersection between this parabola (over x) with another
+         * parabola over y).
+         * @param parY the other parabola
+         * @param xStart initial guess for x-intersection
+         * @param yStart initial guess for y-intersection
+         * @return the intersection as a {@link Pnt2d} instance
+         */
+        public Pnt2d getIntersection(ParabolaY parY, double xStart, double yStart) {
+            return Pnt2d.from(new ParabolaIntersector().getIntersection(this, parY, xStart, yStart));
         }
     }
 
-    /**
-     * Parabola with horizontal axis: x = a1 (y - d1)^2 + c1
-     */
-    public static class OverY extends Parabola {
+    // ---------------------------------------------------------------------
 
-        public OverY(double a, double c, double d) {
+    /**
+     * Parabolic function over y (with horizontal axis):
+     * {@code x = f(y) = a (y - d)^2 + c}
+     */
+    public static class ParabolaY extends Parabola {
+
+        public ParabolaY(double a, double c, double d) {
             super(a, c, d);
         }
 
@@ -100,8 +113,16 @@ public abstract class Parabola {
             return this.getVal(y);
         }
 
-        public double[] getIntersection(Parabola.OverX other,  double xStart, double yStart) {
-            return new ParabolaIntersector().getIntersection(other, this, xStart, yStart);
+        /**
+         * Find the intersection between this parabola (over y) with another
+         * parabola over x).
+         * @param parX the other parabola
+         * @param xStart initial guess for x-intersection
+         * @param yStart initial guess for y-intersection
+         * @return the intersection as a {@link Pnt2d} instance
+         */
+        public Pnt2d getIntersection(ParabolaX parX, double xStart, double yStart) {
+            return Pnt2d.from(new ParabolaIntersector().getIntersection(parX, this, xStart, yStart));
         }
     }
 

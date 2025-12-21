@@ -79,8 +79,8 @@ public class ParabolaIntersectionFinder2 {
     // --------------------------------------------------------------
 
     public static void main(String[] args) {
-        Parabola Q0 = new Parabola.OverX(-0.1, 0.02, 0.5);
-        Parabola Q1 = new Parabola.OverY(0.1, 0.03 + 1, 0.5);
+        Parabola Q0 = new Parabola.ParabolaX(-0.1, 0.02, 0.5);
+        Parabola Q1 = new Parabola.ParabolaY(0.1, 0.03 + 1, 0.5);
         double x0 = 1, y0 = 0;
 
         double[] X = new ParabolaIntersectionFinder2().getIntersection(Q0, Q1, x0, y0);

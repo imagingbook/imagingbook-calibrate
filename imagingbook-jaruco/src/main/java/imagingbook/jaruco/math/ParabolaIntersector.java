@@ -38,7 +38,7 @@ public class ParabolaIntersector {
      * @param yStart y-start coordinate for intersection
      * @return the intersection point
      */
-    public double[] getIntersection (Parabola.OverX P0, Parabola.OverY P1, double xStart, double yStart) {
+    public double[] getIntersection (Parabola.ParabolaX P0, Parabola.ParabolaY P1, double xStart, double yStart) {
         double x = xStart;
         double y = yStart;
         int iterations = 0;
@@ -55,6 +55,7 @@ public class ParabolaIntersector {
             double residual = Math.hypot(r0, r1);
             // System.out.printf("residual = %.6f\n", residual);
             if (residual < tol) {
+                System.out.println("iterations needed = " +  iterations);
                 return new double[]{x, y};
             }
 
@@ -79,8 +80,8 @@ public class ParabolaIntersector {
     // --------------------------------------------------------------
 
     public static void main(String[] args) {
-        Parabola.OverX P0 = new Parabola.OverX(-0.1, 0.02, 0.5);
-        Parabola.OverY P1 = new Parabola.OverY(0.1, 0.03 + 1, 0.5);
+        Parabola.ParabolaX P0 = new Parabola.ParabolaX(-0.1, 0.02, 0.5);
+        Parabola.ParabolaY P1 = new Parabola.ParabolaY(0.1, 0.03 + 1, 0.5);
         double x0 = 1, y0 = 0;
 
         double[] X = new ParabolaIntersector().getIntersection(P0, P1, x0, y0);

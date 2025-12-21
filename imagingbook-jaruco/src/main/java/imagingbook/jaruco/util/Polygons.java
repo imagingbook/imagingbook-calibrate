@@ -269,6 +269,10 @@ public class Polygons {
         return pntList;
     }
 
+    public static Pnt2d[] toPointArray(List<Pnt2d> poly) {
+        return poly.toArray(new Pnt2d[0]);
+    }
+
     public static boolean checkSame(List<Pnt2d> A, List<Pnt2d> B) {
         if (A.size() != B.size()) {
             return false;
@@ -287,6 +291,49 @@ public class Polygons {
         return missCnt == 0;
     }
 
+    /**
+     * Creates and returns a {@code double[2][N]} array, i.e., x and y
+     * coordinates placed in a pair of separate arrays.
+     * @param pts a list of 2D points of length {@code N}
+     * @return a {@code double[2][N]} coordinate array
+     */
+    public static double[][] toXYArray(List<Pnt2d> pts) {
+        int m = pts.size();
+        double[][] XY = new double[2][m]; // XY[0] are x-values, XY[1] are y-values
+        int i = 0;
+        for (Pnt2d p : pts) {
+            XY[0][i] = p.getX();
+            XY[1][i] = p.getY();
+            i++;
+        }
+        return XY;
+    }
+
+    /**
+     * Creates and returns a list of {@code N} {@link Pnt2d} points derived
+     * from the supplied {@code double[2][N]} array.
+     * @param XY a {@code double[2][N]} coordinate array
+     * @return a list of {@code N} {@link Pnt2d} instances
+     */
+    public static List<Pnt2d> fromXYArray(double[][] XY) {
+        int m = XY[0].length;
+        if (m != XY[1].length) {
+            throw new IllegalArgumentException("mismatch XY subarray length");
+        }
+        List<Pnt2d> pntList = new ArrayList<>(m);
+        for (int i = 0; i < m; i++) {
+            pntList.add(Pnt2d.from(XY[0][i], XY[1][i]));
+        }
+        return pntList;
+    }
+
+    // -------------------------------------------------------------------------
+
+    public static Path2D getPolygonPath(List<Pnt2d> contour) {
+        return getPolygonPath(contour, 0, 0);
+    }
+
+    // closed
     public static Path2D getPolygonPath(List<Pnt2d> contour, double xOffset, double yOffset) {
         Path2D path = new Path2D.Float();
         Pnt2d[] pnts = contour.toArray(new Pnt2d[0]);
@@ -308,13 +355,41 @@ public class Polygons {
         return path;
     }
 
-    public static List<Pnt2d> transform(List<Pnt2d> poly, LinearMapping2D mapping) {
-        List<Pnt2d> poly2 = new ArrayList<>(poly.size());
-        for (Pnt2d p : poly) {
-            poly2.add(mapping.applyTo(p));
-        }
-        return poly2;
+    // non-closed
+    public static Path2D getPolylinePath(List<Pnt2d> contour) {
+        return getPolylinePath(contour, 0, 0);
     }
+
+    // non-closed
+    public static Path2D getPolylinePath(List<Pnt2d> contour, double xOffset, double yOffset) {
+        Path2D path = new Path2D.Float();
+        Pnt2d[] pnts = contour.toArray(new Pnt2d[0]);
+        if (pnts.length > 1) {
+            path.moveTo(pnts[0].getX() + xOffset, pnts[0].getY() + yOffset);
+            for (int i = 1; i < pnts.length; i++) {
+                path.lineTo(pnts[i].getX() + xOffset,  pnts[i].getY() + yOffset);
+            }
+            // path.closePath();
+        }
+        else {	// special case: mark a single pixel region "X"
+            double x = pnts[0].getX();
+            double y = pnts[0].getY();
+            path.moveTo(x + xOffset - 0.5, y + yOffset - 0.5);
+            path.lineTo(x + xOffset + 0.5, y + yOffset + 0.5);
+            path.moveTo(x + xOffset - 0.5, y + yOffset + 0.5);
+            path.lineTo(x + xOffset + 0.5, y + yOffset - 0.5);
+        }
+        return path;
+    }
+
+    // Migrated to imagingbook.common.geometry.mappings.Mapping2D
+    // public static List<Pnt2d> applyMapping(List<Pnt2d> poly, LinearMapping2D mapping) {
+    //     List<Pnt2d> poly2 = new ArrayList<>(poly.size());
+    //     for (Pnt2d p : poly) {
+    //         poly2.add(mapping.applyTo(p));
+    //     }
+    //     return poly2;
+    // }
 
     public static String toString(List<Pnt2d>  poly) {
         if (poly == null) {

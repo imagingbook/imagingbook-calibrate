@@ -5,16 +5,22 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
+import imagingbook.jaruco.math.Parabola;
 import imagingbook.jaruco.util.Polygons;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Ellipse2D;
+import java.util.Arrays;
 import java.util.List;
 
 import static imagingbook.jaruco.util.Polygons.getPolygonPath;
+import static imagingbook.jaruco.util.Polygons.getPolylinePath;
 
 public class Main {
+
+
+    public static List<List<Pnt2d>> parabCurves = null;
 
     // ------------------------------------------------------------------------
 
@@ -29,8 +35,8 @@ public class Main {
     private static final Color CornerColor = Color.blue;
 
     static void doBigImageTest() {
-        String IMG_PATH = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
-        // String IMG_PATH = SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg";
+        // String IMG_PATH = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
+        String IMG_PATH = SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg";
 
         ImagePlus im = IjUtils.openImage(IMG_PATH);
         im.show();
@@ -51,7 +57,9 @@ public class Main {
                 // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
-                SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-0-distA.png",
+                SAMPLE_IMAGE_DIR + "single-marker-5-0-distB.png",
+                // SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
         };
 
         ImagePlus[] images = new ImagePlus[paths.length];
@@ -70,12 +78,16 @@ public class Main {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
 
-            List<ArucoDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers(im.getProcessor());
-            System.out.println("Markers found: " + detectionResultObsoletes.size());
+            parabCurves = null;
+            // ------------------------------------------------------------
+            List<ArucoDetector.DetectionResult> detectionResult
+                                = detector.detectMarkers(im.getProcessor());
+            // ------------------------------------------------------------
+            System.out.println("Markers found: " + detectionResult.size());
 
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            for (ArucoDetector.DetectionResult res : detectionResultObsoletes) {
+            for (ArucoDetector.DetectionResult res : detectionResult) {
                 // ArucoDetector.MarkerDetectionResult_obsolete res = detectionResultObsoletes.get(0);
                 System.out.println(res);
                 // create shape overlay
@@ -84,7 +96,8 @@ public class Main {
                 // Collections.rotate(corners, res.rotation);
                 //List<Pnt2d> corners = rotateCorners(corners, res.rotation);
 
-                ola.addShape(getPolygonPath(corners, 0, 0), stroke);
+                // draw the outline of the marker from estimated corners:
+                // ola.addShape(getPolygonPath(corners), stroke);
 
                 ola.setFont(CornerFont);
                 ola.setTextColor(CornerColor);
@@ -103,11 +116,22 @@ public class Main {
                 ola.setFont(MarkerFont);
                 ola.setTextColor(MarkerColor);
                 ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation());
+
+                // if parabolas exist, draw them:
+                if (parabCurves != null) {
+                    for (List<Pnt2d> par : parabCurves) {
+                        System.out.println("adding parabola " + par.size());
+                        System.out.println("pts = " + Arrays.toString(par.toArray()));
+                       ola.addShape(getPolylinePath(par));
+                    }
+                }
+
             }
 
             im.setOverlay(ola.getOverlay());
             // im.setTitle(im.getTitle() + " rot=" + res.rotation);
             im.updateAndDraw();
+
         }
     }
 
