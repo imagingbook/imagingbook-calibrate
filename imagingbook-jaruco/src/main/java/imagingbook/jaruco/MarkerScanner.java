@@ -1,16 +1,12 @@
 package imagingbook.jaruco;
 
 import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.mappings.linear.LinearMapping2D;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.image.ImageMapper;
 import imagingbook.common.util.bits.BitVector;
-import imagingbook.jaruco.gui.ZoomableImagePlus;
 
-import java.awt.Color;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,8 +22,6 @@ public class MarkerScanner {
     private final int fieldWidth;
     private final int sampleOffset;
     private final Pnt2d[] targetPts;
-
-    // ColorProcessor colorIp = null;
 
     public MarkerScanner(ImageProcessor ip, ArucoDictionary dictionary) {
         this.ip = ip;
@@ -69,51 +63,8 @@ public class MarkerScanner {
         ByteProcessor canonicalIm = new ByteProcessor(targetSize, targetSize);
         new ImageMapper(hom).map(ip, canonicalIm);
 
-        // this.colorIp = canonicalIm.convertToColorProcessor();
-        // new ZoomableImagePlus("canonical", canonicalIm).show(20);
-
-        BitVector result = parseImage(canonicalIm, threshold);
-        // new ZoomableImagePlus("canonical", colorIp).show(20);
-        return result;
+        return parseImage(canonicalIm, threshold);
     }
-
-
-    // /**
-    //  * @param unitMapping homography from the unit square to marker quad
-    //  * @return
-    //  */
-    // private ByteProcessor getCanonicalImage(ProjectiveMapping2D unitMapping) {
-    //     //int targetSize = 5 * (markerSize + 2);
-    //     // ProjectiveMapping2D unitMapping = new ProjectiveMapping2D(A).getInverse();  // target-to-source mapping
-    //     // adjust the unit-square mapping to the MARKER_SIZE x MARKER_SIZE target:
-    //     // 1: shift 1/2 pixel (in target space)
-    //     // 2. scale from MARKER_SIZE to 1
-    //     // 3. map to the source image
-    //     LinearMapping2D mapping =  // shift+scale target frame to unit square, then concat with uniMapping
-    //             new Translation2D(0.5, 0.5).concat(new Scaling2D(1.0 / targetSize)).concat(unitMapping);
-    //     ByteProcessor targetIp = new ByteProcessor(targetSize, targetSize);
-    //     new ImageMapper(mapping).map(ip, targetIp);
-    //
-    //     targetIp.flipVertical();    // TODO: still unclear why we have to flip here (check CCW/CW fitting)
-    //
-    //     // listCornerMappingsUnit(new ProjectiveMapping2D(A).getInverse());
-    //     // listCornerMappingsSized(mapping, targetSize);
-    //     return targetIp;
-    // }
-
-    // private static void listCornerMappingsUnit(LinearMapping2D map) {
-    //     System.out.println("corner 0,0 -> " + map.applyTo(Pnt2d.from(0,0)));
-    //     System.out.println("corner 1,0 -> " + map.applyTo(Pnt2d.from(1,0)));
-    //     System.out.println("corner 1,1 -> " + map.applyTo(Pnt2d.from(1,1)));
-    //     System.out.println("corner 0,1 -> " + map.applyTo(Pnt2d.from(0,1)));
-    // }
-    //
-    // private static void listCornerMappingsSized(LinearMapping2D map, int n) {
-    //     System.out.println("corner 0,0 -> " + map.applyTo(Pnt2d.from(0,0)));
-    //     System.out.println("corner 1,0 -> " + map.applyTo(Pnt2d.from(n,0)));
-    //     System.out.println("corner 1,1 -> " + map.applyTo(Pnt2d.from(n,n)));
-    //     System.out.println("corner 0,1 -> " + map.applyTo(Pnt2d.from(0,n)));
-    // }
 
     // ------------------------------------------------------------------------
 
@@ -141,7 +92,6 @@ public class MarkerScanner {
             for (int i = 0; i < markerSize; i++) {   // horizontal loop
                 int u = sampleOffset + i * fieldWidth;
                 int g = get3x3Median(canonical, u, v);
-                // colorIp.set(u, v, Color.green.getRGB());
                 if (g >= threshold) {    // use threshold from initial thresholding
                     bits.setBit(k);
                 }

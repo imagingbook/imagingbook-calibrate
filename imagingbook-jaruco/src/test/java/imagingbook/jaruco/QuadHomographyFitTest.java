@@ -9,11 +9,12 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static imagingbook.jaruco.JUnit5TestUtils.assert2dArrayEquals;
+import static imagingbook.jaruco.util.JUnit5TestUtils.assert2dArrayEquals;
 import static imagingbook.jaruco.util.Polygons.makePolygon;
 import static imagingbook.jaruco.util.JsonUtils.loadObject;
 import static org.junit.jupiter.api.Assertions.*;
 
+@Deprecated
 class QuadHomographyFitTest {
 
     static List< Pnt2d> contour4 = Polygons.makePolygon(10, 7,  23, 1,  19, 21,  12, 15);

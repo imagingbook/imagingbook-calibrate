@@ -102,32 +102,9 @@ public class ArucoDictionary {
                 getClass().getSimpleName(), M, N, maxCorrectionBits);
     }
 
-    // /**
-    //  * Converts a 0/1 marker string to an array of four {@link BitVector}
-    //  * instances, the canonical [0] plus 3 rotated versions.
-    //  * Note: M, N are assumed to be initialized!
-    //  *
-    //  * @param markerString the 0/1 pattern string for a single marker
-    //  * @return an 2D array of {@link BitVector} instances
-    //  */
-    // private BitVector[] makeBitVectors(String markerString) {
-    //     BitVector[] bitVectors = new BitVector[4];
-    //     // process all marker ids:
-    //
-    //     char[] markerPattern = markerString.toCharArray();
-    //     bitVectors[0] = toBitVector(markerPattern);   // r=0: canonical (unrotated)
-    //     // make rotated patterns for r = 1, 2, 3
-    //     for (int r = 1; r < 4; r++) {
-    //         markerPattern = MatrixRotationUtils.permute(markerPattern, rotperm);  // perform 2D rotation
-    //         bitVectors[r] = toBitVector(markerPattern);
-    //     }
-    //
-    //     return bitVectors;
-    // }
-
     /**
-     * Converts the 0/1 marker string array to an array of {@link BitVector,
-     * pre-calculating rotated versions too.
+     * Converts the 0/1 marker string array to an array of {@link BitVector},
+     * pre-calculating the three rotated versions too.
      * Note: M, N are assumed to be initialized!
      *
      * @param markerStrings an array of 0/1 marker strings
@@ -163,6 +140,11 @@ public class ArucoDictionary {
         BitVector bs = new BitVector(char01.length);
         for (int i = 0; i < char01.length; i++) {
             if (char01[i] == '1') bs.setBit(i);    // '0' is unchecked/ignored
+            switch (char01[i]) {
+                case '1' -> bs.setBit(i, true);
+                case '0' -> bs.setBit(i, false);
+                default -> throw new IllegalArgumentException("wrong character on 0/1 string: " + char01[i]);
+            }
         }
         return bs;
     }

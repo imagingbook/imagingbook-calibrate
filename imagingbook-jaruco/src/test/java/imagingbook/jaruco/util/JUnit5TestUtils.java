@@ -1,4 +1,4 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.util;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;

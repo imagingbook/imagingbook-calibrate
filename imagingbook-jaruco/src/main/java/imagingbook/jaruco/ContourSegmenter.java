@@ -23,7 +23,9 @@ public class ContourSegmenter {
     private double minCircularity = 0.5;
 
     // Processing parameters to be added
-    public ContourSegmenter() { }
+    public ContourSegmenter() {
+
+    }
 
     public SegmentedContour segment(List<Pnt2d> contour) {
         final int n = contour.size();

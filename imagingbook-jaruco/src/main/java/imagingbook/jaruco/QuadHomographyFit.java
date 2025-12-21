@@ -2,14 +2,7 @@ package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.points.LinearFit2d;
-import imagingbook.jaruco.util.Polygons;
-import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
-import org.apache.commons.math4.legacy.linear.ArrayRealVector;
-import org.apache.commons.math4.legacy.linear.DecompositionSolver;
-import org.apache.commons.math4.legacy.linear.MatrixUtils;
-import org.apache.commons.math4.legacy.linear.QRDecomposition;
-import org.apache.commons.math4.legacy.linear.RealMatrix;
-import org.apache.commons.math4.legacy.linear.RealVector;
+import org.apache.commons.math4.legacy.linear.*;
 
 import java.util.Arrays;
 
@@ -22,6 +15,7 @@ import java.util.Arrays;
  * @author WB
  * @version 2025
  */
+@Deprecated
 public class QuadHomographyFit implements LinearFit2d { // TODO: move into LeastSquaresMarkerLocator.
 
     private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
@@ -30,7 +24,7 @@ public class QuadHomographyFit implements LinearFit2d { // TODO: move into Least
     private static final double[][] UNIT_SQUARE_CW =    // corners of the unit square (CW)
             {{0,0}, {0,1}, {1,1}, {1,0}};
 
-    private final SegmentedContour quad;
+    private final SegmentedContour poly;
     private RealMatrix A = null;		// the calculated transformation matrix
     private double err = Double.NaN;		    // the calculated error
 
@@ -39,20 +33,21 @@ public class QuadHomographyFit implements LinearFit2d { // TODO: move into Least
     private RealVector a = null;
 
     // TODO: currently no weighting, add point weighting policy
-    public QuadHomographyFit(SegmentedContour quad) {
-        if (quad.getSegmentCount() != 4) {
+    public QuadHomographyFit(SegmentedContour poly) {
+        if (poly.getSegmentCount() != 4) {
             throw new IllegalArgumentException("quad must have 4 segments but has "
-                    + quad.getSegmentCount());
+                    + poly.getSegmentCount());
         }
-        this.quad = quad;
-        doFit(UNIT_SQUARE_CCW);
+        this.poly = poly;
+        doFit();
     }
 
     // -------------------------------------------------------------------------
 
-    private void doFit(double[][] unitSquare) {
+    private void doFit() {
+        double[][] unitSquare = UNIT_SQUARE_CCW;
         // System.out.println("QuadHomographyFit: convexity =" + Polygons.convexity(quad.getCorners()));
-        int n = quad.length();
+        int n = poly.length();
         // set up vector b and matrix M as arrays, each with n + 4 rows:
         double[] bb = new double[n + 4]; Arrays.fill(bb, Double.NaN);
         double[][] MM = new double[n + 4][];
@@ -65,7 +60,7 @@ public class QuadHomographyFit implements LinearFit2d { // TODO: move into Least
         // Mount matrix M and vector b:
         int row = 0;    // row counter
         for (int k = 0; k < 4; k++) {   // process each of the 4 segments
-            Pnt2d[] segmentPnts = quad.getSegment(k);
+            Pnt2d[] segmentPnts = poly.getSegment(k);
 
             // insert 2 rows for the corner (first point)
             double px = segmentPnts[0].getX();      // corner of segment k (source point)

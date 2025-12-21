@@ -4,7 +4,6 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
 import imagingbook.jaruco.math.ParabolicLineFit;
-import imagingbook.jaruco.util.Polygons;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +72,6 @@ public class ParabolicMarkerLocator implements MarkerLocator {
             parabCurves.add(invMap.applyTo(curve));
         }
         Main.parabCurves = parabCurves;
-
         return invMap.applyTo(Arrays.asList(ix));
     }
 
