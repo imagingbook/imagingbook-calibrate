@@ -3,7 +3,6 @@ package imagingbook.jaruco;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
-import imagingbook.jaruco.math.ParabolicLineFit;
 import imagingbook.jaruco.util.Polygons;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
@@ -59,10 +58,10 @@ public class ParabolicMarkerLocator implements MarkerLocator {
         }
 
         // Fit a parabola to each segment (including the original corner points):
-        Parabola.ParabolaX par0 = ParabolicLineFit.fitOverX(Arrays.asList(segments[0]), 0.5);
-        Parabola.ParabolaY par1 = ParabolicLineFit.fitOverY(Arrays.asList(segments[1]), 0.5);
-        Parabola.ParabolaX par2 = ParabolicLineFit.fitOverX(Arrays.asList(segments[2]), 0.5);
-        Parabola.ParabolaY par3 = ParabolicLineFit.fitOverY(Arrays.asList(segments[3]), 0.5);
+        Parabola.ParabolaX par0 = fitOverX(Arrays.asList(segments[0]), 0.5);
+        Parabola.ParabolaY par1 = fitOverY(Arrays.asList(segments[1]), 0.5);
+        Parabola.ParabolaX par2 = fitOverX(Arrays.asList(segments[2]), 0.5);
+        Parabola.ParabolaY par3 = fitOverY(Arrays.asList(segments[3]), 0.5);
 
         // Calculate intersections between successive pairs of segments:
         Pnt2d[] ix = new Pnt2d[4];
