@@ -159,7 +159,7 @@ public class ArucoDetector {
             // MarkerLocator locator = new SimpleMarkerLocator();
             // MarkerLocator locator = new LeastSquaresMarkerLocator();
             // MarkerLocator locator = new ParabolicMarkerLocator();
-            MarkerLocator locator = new ParabolicMarkerLocator2();
+            MarkerLocator locator = new SplitParabolicMarkerLocator();
 
             List<Pnt2d> refinedCorners = locator.getCorners(poly);
 

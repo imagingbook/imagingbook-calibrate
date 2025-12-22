@@ -3,22 +3,14 @@ package imagingbook.jaruco;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
-import imagingbook.jaruco.util.Polygons;
-import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
-import org.apache.commons.math4.legacy.linear.ArrayRealVector;
-import org.apache.commons.math4.legacy.linear.DecompositionSolver;
-import org.apache.commons.math4.legacy.linear.QRDecomposition;
-import org.apache.commons.math4.legacy.linear.RealMatrix;
-import org.apache.commons.math4.legacy.linear.RealVector;
+import org.apache.commons.math4.legacy.linear.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static imagingbook.common.math.Arithmetic.sqr;
-import static imagingbook.jaruco.util.Polygons.makePolygon;
-import static imagingbook.jaruco.util.Polygons.toPointArray;
-import static imagingbook.jaruco.util.Polygons.toXYArray;
+import static imagingbook.jaruco.util.Polygons.*;
 
 /**
  * Uses piecewise quadratic approximation (pair of parabolas)!
@@ -28,7 +20,7 @@ import static imagingbook.jaruco.util.Polygons.toXYArray;
  * (4) find the intersections of parabola pairs  and (5) maps these back
  * as refined marker corners.
  */
-public class ParabolicMarkerLocator2 implements MarkerLocator {
+public class SplitParabolicMarkerLocator implements MarkerLocator {
 
     private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
             {{0,0}, {1,0}, {1,1}, {0,1}};
@@ -39,7 +31,7 @@ public class ParabolicMarkerLocator2 implements MarkerLocator {
     /**
      * Constructor.
      */
-    public ParabolicMarkerLocator2() {
+    public SplitParabolicMarkerLocator() {
     }
 
     @Override
@@ -60,10 +52,11 @@ public class ParabolicMarkerLocator2 implements MarkerLocator {
 
         // Fit a pair of parabolas to each segment (including the original corner points):
         // [0] is the L-parabola, [1] is the R-parabola
-        Parabola.ParabolaX[] par0 = fitOverX(Arrays.asList(segments[0]), 0.5);
-        Parabola.ParabolaY[] par1 = fitOverY(Arrays.asList(segments[1]), 0.5);
-        Parabola.ParabolaX[] par2 = fitOverX(Arrays.asList(segments[2]), 0.5);
-        Parabola.ParabolaY[] par3 = fitOverY(Arrays.asList(segments[3]), 0.5);
+        double d = 0.5;
+        Parabola.ParabolaX[] par0 = fitOverX(Arrays.asList(segments[0]), d);
+        Parabola.ParabolaY[] par1 = fitOverY(Arrays.asList(segments[1]), d);
+        Parabola.ParabolaX[] par2 = fitOverX(Arrays.asList(segments[2]), d);
+        Parabola.ParabolaY[] par3 = fitOverY(Arrays.asList(segments[3]), d);
 
         // Calculate intersections between successive pairs of segments:
         Pnt2d[] ix = new Pnt2d[4];
@@ -92,10 +85,18 @@ public class ParabolicMarkerLocator2 implements MarkerLocator {
 
     // Parabola fitting: -------------------------------------------------------
 
+    /**
+     * A parabolic curve consisting of two parabolas with different curvatures
+     * {@code aL}, {@code aR} but the same offset {@code c} and axis position {@code d}.
+     * @param aL curvature of the "left" parabola
+     * @param aR curvature of the "right" parabola
+     * @param c the common offset value
+     * @param d the common axis position
+     */
     record PiecewiseParabola(double aL, double aR, double c, double d) {}
 
     /**
-     * Fit a parabola over x (vertical axis positioned at x=d) to given points.
+     * Fit a split parabola over x (vertical axis positioned at x=d) to given points.
      * @param pts point coordinates {@code (xi,yi)}
      * @param xd x-position of vertical parabola axis
      * @return @return a {@link Parabola.ParabolaX} instance
@@ -110,7 +111,7 @@ public class ParabolicMarkerLocator2 implements MarkerLocator {
     }
 
     /**
-     * Fit a parabola over y (horizontal axis positioned at y=d) to given points.
+     * Fit a split parabola over y (horizontal axis positioned at y=d) to given points.
      * @param pts point coordinates {@code (xi,yi)}
      * @param yd y-position of horizontal parabola axis
      * @return a {@link Parabola.ParabolaY} instance
@@ -125,19 +126,17 @@ public class ParabolicMarkerLocator2 implements MarkerLocator {
     }
 
     /**
-     * Fit a parabola over x (with vertical axis positioned at x=d) to given
+     * Fits a split parabola over x (with vertical axis positioned at x=d) to given
      * point coordinates. In this case, yi = f(xi) is assumed, i.e., {@code X} are the
      * independent coordinates, {@code Y} are the dependent coordinates.
      * The parabola's axis is perpendicular to the independent coordinate axis.
-     * Parameter {@code d} marks the position of the parabola on the dependent
-     * axis.
-     * To perform a fit to a rotated parabola just swap the X/Y coordinate
-     * arrays.
+     * Parameter {@code d} marks the position of the parabola on the dependent axis.
+     * To perform a fit to a rotated parabola just swap the X/Y coordinate arrays.
      *
      * @param X independent coordinates
      * @param Y dependent coordinates
      * @param d position of the parabola's axis
-     * @return
+     * @return a {@link PiecewiseParabola} instance
      */
     private static PiecewiseParabola doPiecewiseFit(double[] X, double[] Y, double d) {
         int m = X.length;
@@ -164,21 +163,8 @@ public class ParabolicMarkerLocator2 implements MarkerLocator {
         double aL = aac[0];
         double aR = aac[1];
         double c = aac[2];
-        System.out.println(new PiecewiseParabola(aL, aR, c, d));
+        // System.out.println(new PiecewiseParabola(aL, aR, c, d));
         return new PiecewiseParabola(aL, aR, c, d);
     }
-
-    // -----------------------------------------------------------------------
-
-    // public static void main(String[] args) {
-    //     List<Pnt2d> polyX = Polygons.makePolygon(0, 0, 0.25, 0.5, 0.5, 0.75, 0.2, 1.0, 1, 0);  // (x,y)
-    //     Parabola.ParabolaX fitX = fitOverX(polyX, 0.5);
-    //     System.out.println("fitX = " + fitX);
-    //
-    //     List<Pnt2d> polyY = Polygons.makePolygon(0, 0, 0.5, 0.25, 0.75, 0.5, 1.0, 0.2, 0, 1);  // (y,x)
-    //     Parabola.ParabolaY fitY = fitOverY(polyY, 0.5);
-    //     System.out.println("fitY = " + fitY);
-    //
-    // }
 
 }
