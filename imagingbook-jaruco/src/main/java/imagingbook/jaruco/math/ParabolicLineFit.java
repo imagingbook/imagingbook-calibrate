@@ -21,6 +21,7 @@ import static imagingbook.jaruco.util.Polygons.toXYArray;
  *  At the moment, the line points are assumed to be scaled to the
  *  horizontal segment (0,0) - (1,0).
  */
+@Deprecated
 public class ParabolicLineFit {
 
     public ParabolicLineFit() {
