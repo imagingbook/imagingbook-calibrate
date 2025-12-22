@@ -158,7 +158,8 @@ public class ArucoDetector {
             // Estimate homography and locate corners
             // MarkerLocator locator = new SimpleMarkerLocator();
             // MarkerLocator locator = new LeastSquaresMarkerLocator();
-            MarkerLocator locator = new ParabolicMarkerLocator();
+            // MarkerLocator locator = new ParabolicMarkerLocator();
+            MarkerLocator locator = new ParabolicMarkerLocator2();
 
             List<Pnt2d> refinedCorners = locator.getCorners(poly);
 
