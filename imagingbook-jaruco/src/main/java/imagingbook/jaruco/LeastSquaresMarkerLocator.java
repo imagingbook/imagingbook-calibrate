@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static imagingbook.common.math.Arithmetic.sqr;
+import static imagingbook.common.math.Matrix.multiply;
 
 /**
  * Implementation of {@link MarkerLocator} which uses a special minimum
@@ -32,7 +33,7 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
     private RealVector b = null;    // keep for error calculation
     private RealVector a = null;    // transformation parameter vector
 
-    public static final double DEFAULT_CORNER_SUPPORT = 0.1;
+    public static final double DEFAULT_CORNER_SUPPORT = 0.05;
     private final double cornerSupport; // the interval [0,cornerSupport] where segment points are included
 
     /**
@@ -56,6 +57,14 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
         for (int i = 0; i < 4; i++) {
             corners.add(mapping.applyTo(Pnt2d.from(UNIT_SQUARE_CCW[i])));
         }
+
+        // DEBUGGING
+        Main.parabCurves = new ArrayList<>();
+        Main.parabCurves.add(Arrays.asList(corners.get(0), corners.get(1)));
+        Main.parabCurves.add(Arrays.asList(corners.get(1), corners.get(2)));
+        Main.parabCurves.add(Arrays.asList(corners.get(2), corners.get(3)));
+        Main.parabCurves.add(Arrays.asList(corners.get(3), corners.get(0)));
+
         return corners;
     }
 
@@ -63,16 +72,15 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
 
     private void doFit(SegmentedContour poly) {
         double[][] unitSquare = UNIT_SQUARE_CCW;
+        System.out.println("cornerSupport = " + cornerSupport);
         // System.out.println("QuadHomographyFit: convexity =" + Polygons.convexity(quad.getCorners()));
         int n = poly.length();
         // set up vector b and matrix M as arrays, each with n + 4 rows:
         double[] bb = new double[n + 4]; Arrays.fill(bb, Double.NaN);
         double[][] MM = new double[n + 4][];
 
-        // corner 0 -> (0,0)
-        // corner 1 -> (1,0)
-        // corner 2 -> (1,1)
-        // corner 3 -> (0,1)
+        List<Double> bb_list = new ArrayList<>();
+        List<double[]> MM_list = new ArrayList<>();
 
         // Mount matrix M and vector b:
         int row = 0;    // row counter
@@ -90,14 +98,20 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
             double qx = unitSquare[k][0];   // 0/1 corner on unit square
             double qy = unitSquare[k][1];   // 0/1
 
+
             bb[row] = qx;   // map to unit square corner (x)
             MM[row] = new double[] { cx, cy, 1, 0, 0, 0, -qx * cx, -qx * cy };
+            bb_list.add(qx);
+            MM_list.add(new double[] { cx, cy, 1, 0, 0, 0, -qx * cx, -qx * cy });
             row++;
             bb[row] = qy;   // map to unit square corner (y)
             MM[row] = new double[] { 0, 0, 0, cx, cy, 1, -qy * cx, -qy * cy };
+            bb_list.add(qy);
+            MM_list.add(new double[] { 0, 0, 0, cx, cy, 1, -qy * cx, -qy * cy });
             row++;
 
             // now process the remaining points of this segment (1 row each):
+            int pntCnt = 0;
             for (int i = 1; i < segmentCur.length; i++) {
                 Pnt2d p = segmentCur[i];
                 double px = p.getX();
@@ -106,14 +120,23 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
                 //  omit point or assign zero weight!
                 double d = lineSegment.getRelPosition(p);
                 // System.out.printf(" %s %s %s  d = %.2f\n", corner0, corner1, p, d);
+                double w = (d < cornerSupport || d > 1 - cornerSupport) ? 1 : 0;    // weight for point i
 
                 if (k % 2 == 0) {       // even-numbered segment (enforcing qy)
-                    bb[row] = qy;
-                    MM[row] = new double[] { 0, 0, 0, px, py, 1, -qy * px, -qy * py };
+                    bb[row] = w * qy;
+                    MM[row] = multiply(w, new double[] { 0, 0, 0, px, py, 1, -qy * px, -qy * py });
+                    if (w > 0) {
+                        bb_list.add(qy);
+                        MM_list.add(new double[]{0, 0, 0, px, py, 1, -qy * px, -qy * py});
+                    }
                 }
                 else {                  // odd-numbered segment (enforcing qx)
-                    bb[row] = qx;
-                    MM[row] = new double[] { px, py, 1, 0, 0, 0, -qx * px, -qx * py };
+                    bb[row] = w * qx;
+                    MM[row] = multiply(w, new double[] { px, py, 1, 0, 0, 0, -qx * px, -qx * py });
+                    if (w > 0) {
+                        bb_list.add(qx);
+                        MM_list.add(new double[] { px, py, 1, 0, 0, 0, -qx * px, -qx * py });
+                    }
                 }
                 row++;
             }
@@ -130,8 +153,22 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
 
         }
 
-        this.M = new Array2DRowRealMatrix(MM, false);
-        this.b = new ArrayRealVector(bb, false);
+        //this.M = new Array2DRowRealMatrix(MM, false);
+        //this.b = new ArrayRealVector(bb, false);
+
+        System.out.println("number of rows: " + bb_list.size());
+
+        if (bb_list.size() != MM_list.size()) {
+            throw new RuntimeException("bb not same length as MM");
+        }
+        this.M = new Array2DRowRealMatrix(MM_list.size(), 8);
+        this.b = new ArrayRealVector(bb_list.size());
+        for (int r = 0; r < MM_list.size(); r++) {
+            M.setRow(r, MM_list.get(r));
+            b.setEntry(r, bb_list.get(r));
+        }
+
+
 
         DecompositionSolver solver = new QRDecomposition(M).getSolver();
         this.a = solver.solve(b);

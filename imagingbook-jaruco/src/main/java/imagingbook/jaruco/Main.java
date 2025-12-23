@@ -120,8 +120,8 @@ public class Main {
                 // if parabolas exist, draw them:
                 if (parabCurves != null) {
                     for (List<Pnt2d> par : parabCurves) {
-                        System.out.println("adding parabola " + par.size());
-                        System.out.println("pts = " + Arrays.toString(par.toArray()));
+                        System.out.println("adding parabola outline " + par.size());
+                        //System.out.println("pts = " + Arrays.toString(par.toArray()));
                        ola.addShape(getPolylinePath(par));
                     }
                 }
