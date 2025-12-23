@@ -2,11 +2,14 @@ package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static imagingbook.common.math.Arithmetic.sqr;
 
 /**
  * Implementation of {@link MarkerLocator} which uses a special minimum
@@ -29,10 +32,18 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
     private RealVector b = null;    // keep for error calculation
     private RealVector a = null;    // transformation parameter vector
 
+    public static final double DEFAULT_CORNER_SUPPORT = 0.1;
+    private final double cornerSupport; // the interval [0,cornerSupport] where segment points are included
+
     /**
      * Constructor.
      */
+    public LeastSquaresMarkerLocator(double cornerSupport) {
+        this.cornerSupport = cornerSupport;
+    }
+
     public LeastSquaresMarkerLocator() {
+        this(DEFAULT_CORNER_SUPPORT);
     }
 
     @Override
@@ -66,25 +77,36 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
         // Mount matrix M and vector b:
         int row = 0;    // row counter
         for (int k = 0; k < 4; k++) {   // process each of the 4 segments
-            Pnt2d[] segmentPnts = poly.getSegment(k);
+            Pnt2d[] segmentCur = poly.getSegment(k);
+            Pnt2d[] segmentNxt = poly.getSegment((k + 1) % 4);
+
+            Pnt2d corner0 = segmentCur[0];  // corner at start of current segment
+            Pnt2d corner1 = segmentNxt[0];  // corner at start of following segment
+            LineSegment lineSegment = new LineSegment(corner0, corner1);
 
             // insert 2 rows for the corner (first point)
-            double px = segmentPnts[0].getX();      // corner of segment k (source point)
-            double py = segmentPnts[0].getY();
-            double qx = unitSquare[k][0];  // target point on unit square
-            double qy = unitSquare[k][1];
+            double cx = corner0.getX();      // corner of segment k (source point)
+            double cy = corner0.getY();
+            double qx = unitSquare[k][0];   // 0/1 corner on unit square
+            double qy = unitSquare[k][1];   // 0/1
 
-            bb[row] = qx;
-            MM[row] = new double[] { px, py, 1, 0, 0, 0, -qx * px, -qx * py };
+            bb[row] = qx;   // map to unit square corner (x)
+            MM[row] = new double[] { cx, cy, 1, 0, 0, 0, -qx * cx, -qx * cy };
             row++;
-            bb[row] = qy;
-            MM[row] = new double[] { 0, 0, 0, px, py, 1, -qy * px, -qy * py };
+            bb[row] = qy;   // map to unit square corner (y)
+            MM[row] = new double[] { 0, 0, 0, cx, cy, 1, -qy * cx, -qy * cy };
             row++;
 
             // now process the remaining points of this segment (1 row each):
-            for (int i = 1; i < segmentPnts.length; i++) {
-                px = segmentPnts[i].getX();
-                py = segmentPnts[i].getY();
+            for (int i = 1; i < segmentCur.length; i++) {
+                Pnt2d p = segmentCur[i];
+                double px = p.getX();
+                double py = p.getY();
+                // TODO: calculate point's relative position on segment,
+                //  omit point or assign zero weight!
+                double d = lineSegment.getRelPosition(p);
+                // System.out.printf(" %s %s %s  d = %.2f\n", corner0, corner1, p, d);
+
                 if (k % 2 == 0) {       // even-numbered segment (enforcing qy)
                     bb[row] = qy;
                     MM[row] = new double[] { 0, 0, 0, px, py, 1, -qy * px, -qy * py };
@@ -129,6 +151,56 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
         // err = Math.sqrt(LinearFit2d.getSquaredError(P, Q, A.getData()));
     }
 
+    @Deprecated
+    static double relPosition(Pnt2d A, Pnt2d B,  Pnt2d C) {
+        RealVector a = A.toRealVector();
+        RealVector b = B.toRealVector();
+        RealVector c = C.toRealVector();
+        RealVector b_a = b.subtract(a);
+        RealVector c_a = c.subtract(a);
+        return c_a.dotProduct(b_a) / sqr(b_a.getNorm());
+    }
+
+    // --------------------------------------------------------
+
+    /**
+     * Helper class for repeatedly calculating the scalar projection of a point
+     * to a fixed line segment, defined by endpoints {@code A} and {@code B}.
+     * TODO: This could be added to {@link imagingbook.common.geometry.basic.LineSegment2d}.
+     */
+    static class LineSegment {
+        private final double[] a, b, b_a;
+        private final double normAB;
+
+        /**
+         * Constructor. Throws an exception if start and end point are identical.
+         * @param A start point of the line segment
+         * @param B end point of the line segment
+         */
+        LineSegment(Pnt2d A, Pnt2d B) {
+            if (A.isCloseTo(B)) {
+                throw new IllegalArgumentException("line segment with identical endpoints encountered");
+            }
+            this.a = A.toDoubleArray();
+            this.b = B.toDoubleArray();
+            this.b_a = Matrix.subtract(b, a);
+            this.normAB = Matrix.normL2squared(b_a);
+        }
+
+        /**
+         * Calculates the 'normalized scalar projection' of point {@code C}
+         * onto this line segment and returns the relative distance
+         * (interpolation factor) from the segment's start point.
+         * * d=0: projection of {@code C} is exactly at point {@code A}.
+         *   d=1: projection of {@code C} is exactly at point {@code B}.
+         * @param C point to be projected
+         * @return relative distance of projection from {@code A}
+         */
+        double getRelPosition(Pnt2d C) {
+            return Matrix.dotProduct(Matrix.subtract(C.toDoubleArray(), a), b_a) / normAB;
+        }
+    }
+
     // --------------------------------------------------------
 
     public double getError() {
@@ -144,5 +216,17 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
         }
         return err;
     }
+
+    // --------------------------------------------------------
+
+    // public static void main(String[] args) {
+    //     Pnt2d A = Pnt2d.from(1, 0);
+    //     Pnt2d B = Pnt2d.from(15, -100);
+    //     Pnt2d C = Pnt2d.from(-10, -0.5);
+    //     System.out.println("d1 = " + relPosition(A, B, C));
+    //
+    //     LineSegment ls = new LineSegment(A, B);
+    //     System.out.println("d2 = " + ls.getRelPosition(C));
+    // }
 
 }
