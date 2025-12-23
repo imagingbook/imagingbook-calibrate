@@ -28,10 +28,8 @@ import imagingbook.common.regions.ContourTracer;
 import imagingbook.common.regions.RegionContourSegmentation;
 import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.core.jdoc.JavaDocHelp;
-import imagingbook.jaruco.ArucoDetector;
 import imagingbook.jaruco.ContourSegmenter;
-import imagingbook.jaruco.obsolete.MarkerOutline;
-import imagingbook.jaruco.QuadHomographyFit;
+import imagingbook.jaruco.obsolete.QuadHomographyFit;
 import imagingbook.jaruco.SegmentedContour;
 
 import java.awt.Color;
@@ -50,6 +48,7 @@ import static imagingbook.jaruco.util.Polygons.getPolygonPath;
  * @author WB
  * @version 2025/12/01
  */
+@Deprecated
 public class Quad_Fitting_Demo implements PlugIn, JavaDocHelp {
 
     static {
