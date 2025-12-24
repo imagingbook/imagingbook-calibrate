@@ -101,6 +101,7 @@ public class Polygons {
 
     // --------------------
 
+    @Deprecated
     public static Pnt2d getCentroid(List<Pnt2d> pts) {
         int n = pts.size();
         double cx = 0, cy = 0;
@@ -166,6 +167,7 @@ public class Polygons {
      * @param polygon the polygon
      * @return 0 if non-convex, 1 or -1 otherwise
      */
+    @Deprecated
      public static int convexity(List<Pnt2d> polygon) {
         int n = polygon.size();
         // if (n < 4) return true; // triangles always convex (but we may want to know winding rule)
@@ -192,6 +194,7 @@ public class Polygons {
         return (int) sign;
     }
 
+    @Deprecated
     public static double getLength(List<Pnt2d> poly) {
         final int n = poly.size();
         double len = 0;

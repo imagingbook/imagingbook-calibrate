@@ -5,6 +5,7 @@ import imagingbook.jaruco.util.Polygons;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Locale;
 
 import static imagingbook.jaruco.util.Polygons.checkSame;
 import static imagingbook.jaruco.util.Polygons.getArea;
@@ -112,9 +113,9 @@ class PolygonsTest {
     void testSimplifyTest() {
         String RES_PATH = "test-contours/";     // these are long contours!
         runSimplifyTest(RES_PATH + "single-marker-5-0-contour.json", RES_PATH + "single-marker-5-0-corners.json");
-        runSimplifyTest(RES_PATH + "single-marker-5-1-contour.json", RES_PATH + "single-marker-5-1-corners.json");
-        runSimplifyTest(RES_PATH + "single-marker-5-2-contour.json", RES_PATH + "single-marker-5-2-corners.json");
-        runSimplifyTest(RES_PATH + "single-marker-5-3-contour.json", RES_PATH + "single-marker-5-3-corners.json");
+        // runSimplifyTest(RES_PATH + "single-marker-5-1-contour.json", RES_PATH + "single-marker-5-1-corners.json");
+        // runSimplifyTest(RES_PATH + "single-marker-5-2-contour.json", RES_PATH + "single-marker-5-2-corners.json");
+        // runSimplifyTest(RES_PATH + "single-marker-5-3-contour.json", RES_PATH + "single-marker-5-3-corners.json");
     }
 
     static final double polygonalApproxAccuracyRate =  0.03;  // from ArUco parameters
@@ -126,7 +127,25 @@ class PolygonsTest {
         // System.out.println("corners1 = " + Polygons.toString(makePolygon(corners1)));
         // System.out.println("corners2 = " + Polygons.toString(cornerList2));
         assertTrue(checkSame(makePolygon(corners1), cornerList2));
+
+        listPoints(contour);
+        listPoints(corners1);
     }
+
+    static void listPoints(double[][] points) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n\n{");
+        for (double[] pp : points) {
+            Pnt2d p = Pnt2d.from(pp);
+            sb.append(String.format(Locale.US, "{%d,%d}, ", (int)p.getX(), (int)p.getY()));
+        }
+        sb.append("}");
+        System.out.println(sb.toString());
+
+    }
+
+
+
 
 
 }
