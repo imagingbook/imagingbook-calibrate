@@ -27,8 +27,10 @@ TODO: Merge into common/geometry classes, make more flexible parameters!
 /**
  * Static utility methods for dealing with closed polygons.
  */
+@Deprecated
 public class Polygons {
 
+    @Deprecated
     public static List<Pnt2d> simplify(List<Pnt2d> pts, double tol) {
         final double tol2 = tol * tol;
         final int n = pts.size();
@@ -77,10 +79,11 @@ public class Polygons {
 
         // Assemble the simplified rotated polygon
         List<Pnt2d> simp = new ArrayList<>();
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++) {
             if (keep[i]) {
                 simp.add(rotatedPoly.get(i));
             }
+        }
 
         // At this moment the first point on the contour is likely a corner,
         // but this is not guaranteed.
@@ -113,6 +116,7 @@ public class Polygons {
         return Pnt2d.from(cx / n,  cy / n);
     }
 
+    @Deprecated
     public static int getMostEccentricVertexIndex(List<Pnt2d> pts) {
         Pnt2d ctr = getCentroid(pts);
         double cx = ctr.getX();

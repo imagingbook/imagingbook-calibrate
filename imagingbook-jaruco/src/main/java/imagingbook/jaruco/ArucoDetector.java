@@ -4,6 +4,7 @@ package imagingbook.jaruco;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.regions.Contour;
 import imagingbook.common.regions.ContourTracer;
 import imagingbook.common.regions.RegionContourSegmentation;
@@ -11,10 +12,8 @@ import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.common.util.ParameterBundle;
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.ArucoDictionary.LookupResult;
-import imagingbook.jaruco.util.Polygons;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class ArucoDetector {
@@ -142,30 +141,31 @@ public class ArucoDetector {
 
         // process all contours
         for (Contour contour : ics) {
-            List<Pnt2d> pts = contour.getPointList();
-            if (pts.size() < minContourLength) {                          // parameter!
+            Polygon2d poly = contour.getPolygon();
+            // List<Pnt2d> pts = contour.getPointList();
+            if (poly.length() < minContourLength) {                          // parameter!
                 continue;
             }
             // A. Segment contour and extract quad
-            SegmentedContour poly = new ContourSegmenter().segment(pts);
-            List<Pnt2d> corners = poly.getCorners();
-            if (corners.size() != 4 ||                                     // pack into a local method
-                Polygons.circularity(corners) < minCircularity ||           // parameter!
-                Polygons.convexity(corners) != -1) {
+            SegmentedContour segPoly = new ContourSegmenter().segment(poly);
+            Polygon2d corners = segPoly.getCornerPolygon();
+            if (corners.length() != 4 ||                                     // pack into a local method
+                corners.getCircularity() < minCircularity ||           // parameter!
+                corners.getConvexity() != -1) {
                 continue;
             }
 
             // Estimate homography and locate corners
             // MarkerLocator locator = new SimpleMarkerLocator();
-            MarkerLocator locator = new LeastSquaresMarkerLocator();
+            // MarkerLocator locator = new LeastSquaresMarkerLocator();
             // MarkerLocator locator = new ParabolicMarkerLocator();
-            // MarkerLocator locator = new SplitParabolicMarkerLocator();
+            MarkerLocator locator = new SplitParabolicMarkerLocator();
 
-            List<Pnt2d> refinedCorners = locator.getCorners(poly);
+            Polygon2d refinedCorners = locator.getCornerPolygon(segPoly);
 
             // B: Extract the canonical marker image and read the marker's bitcode
             MarkerScanner extractor = new MarkerScanner(ip, dictionary);
-            BitVector bitCode = extractor.getMarkerData(corners, thr);
+            BitVector bitCode = extractor.getMarkerData(refinedCorners, thr);
 
             // C: Lookup the bitcode in the dictionary (all rotations)
             LookupResult lookup = dictionary.lookup(bitCode, maxCorrectionRate);
@@ -174,8 +174,8 @@ public class ArucoDetector {
             }
             // Rotate corners to canonical to align with ArUco pattern printouts
             // (corner 0 is the top-left corner of the marker)
-            Collections.rotate(refinedCorners, lookup.rotation());
-            markerDetectionResults.add(new DetectionResult(lookup, refinedCorners));
+            Polygon2d finalCorners = refinedCorners.rotate(lookup.rotation());
+            markerDetectionResults.add(new DetectionResult(lookup, finalCorners));
         }
 
         return markerDetectionResults;
@@ -187,13 +187,13 @@ public class ArucoDetector {
      * Represents the result of a single marker detection.
      */
      public record DetectionResult(
-             int markerId,
-             int rotation,
-             int hammingDist,
-             List<Pnt2d> corners)
+            int markerId,
+            int rotation,
+            int hammingDist,
+            Polygon2d corners)
     {
 
-         DetectionResult(LookupResult lookup, List<Pnt2d> corners) {
+         DetectionResult(LookupResult lookup, Polygon2d corners) {
              this(lookup.markerIndex(), lookup.rotation(), lookup.hammingDistance(), corners);
          }
      }

@@ -2,6 +2,7 @@ package imagingbook.jaruco;
 
 import ij.ImagePlus;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
@@ -53,10 +54,10 @@ public class Main {
 
     static void doSmallImageTest() {
         String[] paths = {
-                // SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
-                // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
-                // SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
-                // SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
+                SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
                 SAMPLE_IMAGE_DIR + "single-marker-5-0-distA.png",
                 SAMPLE_IMAGE_DIR + "single-marker-5-0-distB.png",
                 // SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
@@ -92,7 +93,7 @@ public class Main {
                 System.out.println(res);
                 // create shape overlay
 
-                List<Pnt2d> corners = res.corners();
+                Polygon2d corners = res.corners();
                 // Collections.rotate(corners, res.rotation);
                 //List<Pnt2d> corners = rotateCorners(corners, res.rotation);
 
@@ -112,7 +113,7 @@ public class Main {
                 }
 
                 // draw the marker's id number
-                Pnt2d center = Polygons.getCentroid(corners);
+                Pnt2d center = corners.getCentroid();
                 ola.setFont(MarkerFont);
                 ola.setTextColor(MarkerColor);
                 ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation());

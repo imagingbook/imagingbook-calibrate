@@ -1,6 +1,8 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PolyLine2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,10 @@ public class SegmentedContour {
 
     private final int N;    // length of the full contour
     private final Pnt2d[][] segments;
+
+    public SegmentedContour(List<Integer> cornerIdxs, Polygon2d poly) {
+        this(cornerIdxs, poly.getPnts());
+    }
 
     /**
      * Constructor.
@@ -60,12 +66,21 @@ public class SegmentedContour {
         return segments[k][0];
     }
 
+    @Deprecated
     public List<Pnt2d> getCorners() {
         List<Pnt2d> cornerList = new ArrayList<>(segments.length);
         for (int k = 0; k < segments.length; k++) {
             cornerList.add(segments[k][0]);
         }
         return cornerList;
+    }
+
+    public Polygon2d getCornerPolygon() {
+        List<Pnt2d> corners = new ArrayList<>(segments.length);
+        for (int k = 0; k < segments.length; k++) {
+            corners.add(segments[k][0]);
+        }
+        return new Polygon2d(corners);
     }
 
     /**

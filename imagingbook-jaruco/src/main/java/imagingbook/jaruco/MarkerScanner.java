@@ -3,6 +3,7 @@ package imagingbook.jaruco;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.image.ImageMapper;
 import imagingbook.common.util.bits.BitVector;
@@ -38,6 +39,16 @@ public class MarkerScanner {
         // TODO: pre-calculate sample raster positions?
     }
 
+
+    BitVector getMarkerData(List<Pnt2d> outline, int threshold) {
+        Pnt2d[] sourcePts = outline.toArray(new Pnt2d[0]);
+        // calculate homography mapping (from target to source):
+        ProjectiveMapping2D hom = ProjectiveMapping2D.fromPoints(targetPts, sourcePts);
+        ByteProcessor canonicalIm = new ByteProcessor(targetSize, targetSize);
+        new ImageMapper(hom).map(ip, canonicalIm);
+        return parseImage(canonicalIm, threshold);
+    }
+
     /**
      * Extracts a square marker patch image and parses the bit pattern assuming
      * the marker structure specified by the current directory.
@@ -54,16 +65,8 @@ public class MarkerScanner {
      * @param threshold the threshold to decide 0/1 field contents
      * @return a {@link BitVector} holding the extracted bit pattern
      */
-    public BitVector getMarkerData(List<Pnt2d> outline, int threshold) {
-        Pnt2d[] sourcePts = outline.toArray(new Pnt2d[0]);
-
-        // calculate homography mapping (from target to source):
-        ProjectiveMapping2D hom = ProjectiveMapping2D.fromPoints(targetPts, sourcePts);
-
-        ByteProcessor canonicalIm = new ByteProcessor(targetSize, targetSize);
-        new ImageMapper(hom).map(ip, canonicalIm);
-
-        return parseImage(canonicalIm, threshold);
+    public BitVector getMarkerData(Polygon2d outline, int threshold) {
+        return getMarkerData(outline.getPnts(), threshold);
     }
 
     // ------------------------------------------------------------------------

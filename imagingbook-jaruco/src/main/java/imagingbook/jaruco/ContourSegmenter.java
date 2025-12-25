@@ -1,5 +1,6 @@
 package imagingbook.jaruco;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.obsolete.MarkerOutline;
 import imagingbook.jaruco.util.Polygons;
 
@@ -9,6 +10,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
+import static imagingbook.common.math.Arithmetic.sqr;
 import static imagingbook.jaruco.util.Polygons.getMostEccentricVertexIndex;
 import static imagingbook.jaruco.util.Polygons.perpDistSq;
 
@@ -28,67 +30,105 @@ public class ContourSegmenter {
     }
 
     public SegmentedContour segment(List<Pnt2d> contour) {
-        final int n = contour.size();
+        return segment(new Polygon2d(contour));
+    }
+
+    public SegmentedContour segment(Polygon2d contour) {
+        final int n = contour.length();
         if (n <= 3) {
             // return new ArrayList<>(pts); // TODO: to be fixed!
             throw new IllegalArgumentException("SegmentedContour() not ready for n<4 points yet");
         }
+        // Adapt tolerance to contour size
         final double tol = n * polygonalApproxAccuracyRate; // parameters!!
-        final double tol2 = tol * tol;
-
         // Pick optimal starting index
         int startPt = getMostEccentricVertexIndex(contour);
-
-        // Rotate the polygon such that most eccentric point comes first:
-        List<Pnt2d> rotatedPoly = new ArrayList<>(contour);
-        Collections.rotate(rotatedPoly, -startPt);
-
-        // Standard DP stack
-        boolean[] keep = new boolean[n];
-        keep[0] = true;
-
-        Deque<int[]> stack = new ArrayDeque<>();
-        stack.push(new int[]{0, n - 1});
-
-        while (!stack.isEmpty()) {
-            int[] seg = stack.pop();
-            int i0 = seg[0], i1 = seg[1];
-
-            Pnt2d A = rotatedPoly.get(i0);
-            Pnt2d B = rotatedPoly.get(i1);
-
-            double maxDist2 = -1;
-            int indexMax = -1;
-
-            for (int i = i0 + 1; i < i1; i++) {
-                double d2 = perpDistSq(rotatedPoly.get(i), A, B);
-                if (d2 > maxDist2) {
-                    maxDist2 = d2;
-                    indexMax = i;
-                }
-            }
-
-            if (maxDist2 > tol2) {
-                keep[indexMax] = true;
-                stack.push(new int[]{i0, indexMax});
-                stack.push(new int[]{indexMax, i1});
-            }
-        }
-
-        // Assemble the simplified rotated polygon
-        List<Integer> cornerIndexes = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            if (keep[i]) {
-                cornerIndexes.add(i);
-            }
-        }
-
-        // At this place the first point on the contour should be a corner, but we better check:
-        if (cornerIndexes.get(0) != 0) {
-            throw new IllegalStateException("first point on simplified contour is not a corner");
-        }
+        // Rotate polygon such that most eccentric point comes first:
+        Polygon2d rotatedPoly = new Polygon2d(contour).rotate(-startPt);
+        List<Integer> cornerIndexes = rotatedPoly.getSimplifiedCorners(tol);
         return new SegmentedContour(cornerIndexes, rotatedPoly);
     }
+
+    int getMostEccentricVertexIndex(Polygon2d poly) {
+        Pnt2d ctr = poly.getCentroid();
+        double cx = ctr.getX();
+        double cy = ctr.getY();
+        int maxIdx = 0;
+        double maxD2 = -1;
+        int n = poly.length();
+        for (int i = 0; i < n; i++) {
+            Pnt2d pi = poly.getPnt(i);
+            double d2 = sqr(pi.getX() - cx) + sqr(pi.getY() - cy);
+            if (d2 > maxD2) {
+                maxD2 = d2;
+                maxIdx = i;
+            }
+        }
+        return maxIdx;
+    }
+
+    // public SegmentedContour segment_old(List<Pnt2d> contour) {
+    //     final int n = contour.size();
+    //     if (n <= 3) {
+    //         // return new ArrayList<>(pts); // TODO: to be fixed!
+    //         throw new IllegalArgumentException("SegmentedContour() not ready for n<4 points yet");
+    //     }
+    //     final double tol = n * polygonalApproxAccuracyRate; // parameters!!
+    //     final double tol2 = tol * tol;
+    //
+    //     // Pick optimal starting index
+    //     int startPt = getMostEccentricVertexIndex(contour);
+    //
+    //     // Rotate the polygon such that most eccentric point comes first:
+    //     List<Pnt2d> rotatedPoly = new ArrayList<>(contour);
+    //     Collections.rotate(rotatedPoly, -startPt);
+    //
+    //     // Standard DP stack
+    //     boolean[] keep = new boolean[n];
+    //     keep[0] = true;
+    //
+    //     Deque<int[]> stack = new ArrayDeque<>();
+    //     stack.push(new int[]{0, n - 1});
+    //
+    //     while (!stack.isEmpty()) {
+    //         int[] seg = stack.pop();
+    //         int i0 = seg[0], i1 = seg[1];
+    //
+    //         Pnt2d A = rotatedPoly.get(i0);
+    //         Pnt2d B = rotatedPoly.get(i1);
+    //
+    //         double maxDist2 = -1;
+    //         int indexMax = -1;
+    //
+    //         for (int i = i0 + 1; i < i1; i++) {
+    //             double d2 = perpDistSq(rotatedPoly.get(i), A, B);
+    //             if (d2 > maxDist2) {
+    //                 maxDist2 = d2;
+    //                 indexMax = i;
+    //             }
+    //         }
+    //
+    //         if (maxDist2 > tol2) {
+    //             keep[indexMax] = true;
+    //             stack.push(new int[]{i0, indexMax});
+    //             stack.push(new int[]{indexMax, i1});
+    //         }
+    //     }
+    //
+    //     // Assemble the simplified rotated polygon
+    //     List<Integer> cornerIndexes = new ArrayList<>();
+    //     for (int i = 0; i < n; i++) {
+    //         if (keep[i]) {
+    //             cornerIndexes.add(i);
+    //         }
+    //     }
+    //
+    //     // At this place the first point on the contour should be a corner, but we better check:
+    //     if (cornerIndexes.get(0) != 0) {
+    //         throw new IllegalStateException("first point on simplified contour is not a corner");
+    //     }
+    //     return new SegmentedContour(cornerIndexes, rotatedPoly);
+    // }
 
     // to be removed ----------------------------------------------------------------------
 
