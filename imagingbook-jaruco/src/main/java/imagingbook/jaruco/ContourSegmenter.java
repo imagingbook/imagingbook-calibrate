@@ -41,13 +41,14 @@ public class ContourSegmenter {
         final double tol = n * accuracyRate; // parameters!!
         // Pick optimal starting index
         int startPt = getMostEccentricVertexIndex(contour);
-        // Rotate polygon such that most eccentric point comes first:
-        Polygon2d rotatedPoly = new Polygon2d(contour).rotate(-startPt);
+
+        // Rotate contour such that most eccentric point comes first:
+        Polygon2d rotatedPoly = contour.rotate(-startPt);
         List<Integer> cornerIndexes = rotatedPoly.getSimplifiedCorners(tol);
-        return new SegmentedPolygon(cornerIndexes, rotatedPoly);
+        return new SegmentedPolygon(rotatedPoly, cornerIndexes);
     }
 
-    int getMostEccentricVertexIndex(Polygon2d poly) {
+    private int getMostEccentricVertexIndex(Polygon2d poly) {
         Pnt2d ctr = poly.getCentroid();
         double cx = ctr.getX();
         double cy = ctr.getY();

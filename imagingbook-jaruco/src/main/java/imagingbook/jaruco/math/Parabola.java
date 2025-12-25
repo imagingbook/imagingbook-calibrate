@@ -1,6 +1,7 @@
 package imagingbook.jaruco.math;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PolyLine2d;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.LUDecomposition;

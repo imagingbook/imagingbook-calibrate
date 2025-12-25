@@ -8,17 +8,14 @@ package imagingbook.calibration.distortion;
 
 import imagingbook.testutils.DeterministicRandom;
 import org.apache.commons.math4.legacy.analysis.solvers.LaguerreSolver;
-import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
-import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
 import org.apache.commons.numbers.complex.Complex;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class Radial2TermDistortionTest {
@@ -117,7 +114,7 @@ public class Radial2TermDistortionTest {
     @Test
     public void fRadTestRandom() {
         RadialDistortion ldm = new Radial2TermDistortion(new double[] {k0, k1});
-        Random rand = new DeterministicRandom(37);
+        RandomGenerator rand = new DeterministicRandom(37);
         for (int i = 0; i < 100; i++) {
             double r1 = rand.nextDouble();
             double r2 = ldm.fRad(r1);
@@ -167,7 +164,7 @@ public class Radial2TermDistortionTest {
     @Test
     public void fRadXyTestRandom() {
         RadialDistortion ldm = new Radial2TermDistortion(new double[] {k0, k1});
-        Random rand = new DeterministicRandom(37);
+        RandomGenerator rand = new DeterministicRandom(37);
         for (int i = 0; i < 100; i++) {
             double[] xy1 = {2 * rand.nextDouble() - 1, 2 * rand.nextDouble() - 1};
             double[] xy2 = ldm.warp(xy1);
@@ -216,7 +213,7 @@ public class Radial2TermDistortionTest {
     public void checkPolynomialInverse() {
         // f^-1(r') = r' - k0 y^3 + (3 k0^2 - k1) r'^5 + higher order terms
         RadialDistortion ldm = new Radial2TermDistortion(new double[] {k0, k1});
-        Random rand = new DeterministicRandom(37);
+        RandomGenerator rand = new DeterministicRandom(37);
         for (int i = 0; i < 10; i++) {
             double r1 = rand.nextDouble();
             // System.out.println("r1 = " + r1);

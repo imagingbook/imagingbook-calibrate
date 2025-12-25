@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import static org.junit.Assert.*;
 
@@ -100,7 +101,7 @@ public class RadialLateralDistortionTest {
     @Test   // shaky!! fails for x,y in [-1, +1]
     public void unwarpTestRandom() {
         int N = 100;
-        Random rand = new DeterministicRandom(17);
+        RandomGenerator rand = new DeterministicRandom(17);
         RadialLateralDistortion distortion = new RadialLateralDistortion(demoParams);
         for (int i = 0; i < N; i++) {
             double[] p1 = {1 * rand.nextDouble() - 0.5, 1 * rand.nextDouble() - 0.5};

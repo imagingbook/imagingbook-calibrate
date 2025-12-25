@@ -12,22 +12,17 @@ import java.util.List;
  * each segment starting with a corner point. This structure is subsequently
  * used for homography fitting.
  */
-public class SegmentedPolygon {
+public class SegmentedPolygon extends Polygon2d {
 
-    private final int N;    // length of the full contour
+    // private final int N;    // length of the full contour
     private final Pnt2d[][] segments;
 
-    public SegmentedPolygon(List<Integer> cornerIdxs, Polygon2d poly) {
-        this(cornerIdxs, poly.getPnts());
-    }
-
-    /**
-     * Constructor.
-     * @param cornerIdxs the indexes of the corners in {@code contourPoints}
-     * @param allPoints the original sequence of contour points
-     */
-    public SegmentedPolygon(List<Integer> cornerIdxs, List<Pnt2d> allPoints) {
-        this.N = allPoints.size();
+    public SegmentedPolygon(Polygon2d poly, List<Integer> cornerIdxs) {
+        super(poly);
+        //this(poly.getPnts(), cornerIdxs);
+        List<Pnt2d> allPoints = this.getPnts();
+        // this.N = allPoints.size();
+        int N = this.length();
         if (cornerIdxs.get(0) != 0) {
             throw new IllegalArgumentException("first corner index must be 0 but is " +
                     cornerIdxs.get(0));
@@ -50,11 +45,67 @@ public class SegmentedPolygon {
         }
     }
 
+    // public SegmentedPolygon(Polygon2d poly, List<Integer> cornerIdxs) {
+    //     //this(poly.getPnts(), cornerIdxs);
+    //     List<Pnt2d> allPoints = poly.getPnts();
+    //     this.N = allPoints.size();
+    //     if (cornerIdxs.get(0) != 0) {
+    //         throw new IllegalArgumentException("first corner index must be 0 but is " +
+    //                 cornerIdxs.get(0));
+    //     }
+    //     // check if each corner index is inside fullContour:
+    //     for (int cIdx : cornerIdxs) {
+    //         if (cIdx < 0 || cIdx >= N) {
+    //             throw new IllegalArgumentException("out-of-bounds corner index: " + cIdx);
+    //         }
+    //     }
+    //     // initialize quad segments (sets of segment points, corner is first)
+    //     int[] cIdx = new int[cornerIdxs.size() + 1];
+    //     for (int i = 0; i < cornerIdxs.size(); i++) {
+    //         cIdx[i] = cornerIdxs.get(i);
+    //     }
+    //     cIdx[cornerIdxs.size()] = N;    // additional corner index for last segment
+    //     segments = new Pnt2d[cornerIdxs.size()][];
+    //     for (int i = 0; i < cornerIdxs.size(); i++) {
+    //         segments[i] = allPoints.subList(cIdx[i], cIdx[i+1]).toArray(new Pnt2d[0]);
+    //     }
+    // }
+
+    // /**
+    //  * Constructor.
+    //  *
+    //  * @param allPoints the original sequence of contour points
+    //  * @param cornerIdxs the indexes of the corners in {@code contourPoints}
+    //  */
+    // public SegmentedPolygon(List<Pnt2d> allPoints, List<Integer> cornerIdxs) {
+    //     this.N = allPoints.size();
+    //     if (cornerIdxs.get(0) != 0) {
+    //         throw new IllegalArgumentException("first corner index must be 0 but is " +
+    //                 cornerIdxs.get(0));
+    //     }
+    //     // check if each corner index is inside fullContour:
+    //     for (int cIdx : cornerIdxs) {
+    //         if (cIdx < 0 || cIdx >= N) {
+    //             throw new IllegalArgumentException("out-of-bounds corner index: " + cIdx);
+    //         }
+    //     }
+    //     // initialize quad segments (sets of segment points, corner is first)
+    //     int[] cIdx = new int[cornerIdxs.size() + 1];
+    //     for (int i = 0; i < cornerIdxs.size(); i++) {
+    //         cIdx[i] = cornerIdxs.get(i);
+    //     }
+    //     cIdx[cornerIdxs.size()] = N;    // additional corner index for last segment
+    //     segments = new Pnt2d[cornerIdxs.size()][];
+    //     for (int i = 0; i < cornerIdxs.size(); i++) {
+    //         segments[i] = allPoints.subList(cIdx[i], cIdx[i+1]).toArray(new Pnt2d[0]);
+    //     }
+    // }
+
     // -----------------------------------------------------------------------------------
 
-    public int length() {
-        return N;
-    }
+    // public int length() {
+    //     return N;
+    // }
 
     /**
      * Returns the {@code k}th corner point (of 4 corner points).

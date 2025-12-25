@@ -8,21 +8,21 @@ package imagingbook.calibration.util;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
-import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.testutils.DeterministicRandom;
 import imagingbook.testutils.NumericTestUtils;
 import org.junit.Test;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class PointStatisticsTest {
 
     @Test
     public void getNormalisationMappingTest() {
-        Random rand = new DeterministicRandom(61);
+        RandomGenerator rand = new DeterministicRandom(61);
         int xOffset = 100, yOffset = 70;
         int N = 100;
         Pnt2d[] pntsA = new Pnt2d[N];

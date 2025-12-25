@@ -123,7 +123,7 @@ public class ArucoDetector {
      * @return a (possibly empty) list of {@link DetectionResult} instances
      */
     public List<DetectionResult> detectMarkers(ImageProcessor ip) {
-        List<DetectionResult> markerDetectionResults = new ArrayList<>();
+        List<DetectionResult> detections = new ArrayList<>();
 
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
@@ -174,10 +174,10 @@ public class ArucoDetector {
             // Rotate corners to canonical to align with ArUco pattern printouts
             // (corner 0 is the top-left corner of the marker)
             Polygon2d finalCorners = refinedCorners.rotate(lookup.rotation());
-            markerDetectionResults.add(new DetectionResult(lookup, finalCorners));
+            detections.add(new DetectionResult(lookup, finalCorners));
         }
 
-        return markerDetectionResults;
+        return detections;
     }
 
     // -------------------------------------------------------------------------

@@ -2,26 +2,23 @@ package imagingbook.jaruco;
 
 import ij.ImagePlus;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
-import imagingbook.jaruco.math.Parabola;
-import imagingbook.jaruco.util.Polygons;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Ellipse2D;
-import java.util.Arrays;
 import java.util.List;
 
-import static imagingbook.jaruco.util.Polygons.getPolygonPath;
 import static imagingbook.jaruco.util.Polygons.getPolylinePath;
 
 public class Main {
 
 
-    public static List<List<Pnt2d>> parabCurves = null;
+    public static List<PolyLine2d> parabCurves = null;
 
     // ------------------------------------------------------------------------
 
@@ -120,10 +117,10 @@ public class Main {
 
                 // if parabolas exist, draw them:
                 if (parabCurves != null) {
-                    for (List<Pnt2d> par : parabCurves) {
-                        System.out.println("adding parabola outline " + par.size());
+                    for (PolyLine2d par : parabCurves) {
+                        System.out.println("adding parabola outline " + par.length());
                         //System.out.println("pts = " + Arrays.toString(par.toArray()));
-                       ola.addShape(getPolylinePath(par));
+                       ola.addShape(par.getShape());
                     }
                 }
 

@@ -1,6 +1,7 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
 import org.apache.commons.math4.legacy.linear.*;
@@ -71,12 +72,12 @@ public class SplitParabolicMarkerLocator implements MarkerLocator {
 
         // DEBUG
         Parabola[][] parabolas = {par0, par1, par2, par3};
-        List<List<Pnt2d>> parabCurves = new ArrayList<>();
+        List<PolyLine2d> parabCurves = new ArrayList<>();
         for (int k = 0; k < 4; k++) {
             Parabola parL = parabolas[k][0];
-            parabCurves.add(invMap.applyTo(parL.sample(-0.5, 1.5, 20)));
+            parabCurves.add(new PolyLine2d(invMap.applyTo(parL.sample(-0.5, 1.5, 20))));
             Parabola parR = parabolas[k][1];
-            parabCurves.add(invMap.applyTo(parR.sample(-0.5, 1.5, 20)));
+            parabCurves.add(new PolyLine2d(invMap.applyTo(parR.sample(-0.5, 1.5, 20))));
         }
 
         Main.parabCurves = parabCurves;

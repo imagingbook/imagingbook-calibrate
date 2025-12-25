@@ -1,6 +1,7 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -36,7 +37,10 @@ class ContourSegmenterTest {
     void runSegmentTest(String contourPath, String cornersPath) {
         double[][] contour = (double[][]) loadObject(this.getClass(), contourPath, double[][].class);
         double[][] corners = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
-        SegmentedPolygon segCtr = new ContourSegmenter().segment(makePolygon(contour)); // tol = , contour.length * polygonalApproxAccuracyRate
+        // System.out.println("corners = " + new Polygon2d(makePolygon(corners)));
+
+        SegmentedPolygon segCtr = new ContourSegmenter().segment(new Polygon2d(makePolygon(contour))); // tol = , contour.length * polygonalApproxAccuracyRate
+        // System.out.println("cornersSeg = " + segCtr.getCornerPolygon());
 
         // check if 4 corners exactly
         assertEquals(4, segCtr.getSegmentCount());

@@ -8,14 +8,13 @@ package imagingbook.calibration;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
-
 import imagingbook.testutils.DeterministicRandom;
 import imagingbook.testutils.NumericTestUtils;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -106,7 +105,7 @@ public class HomographyTest {
     public void HomographyTestEstimateNoisy() {
         double noise = 0.5;     // noise magnitude
         Pnt2d[] PBnoisy = new Pnt2d[POINTS_B.length];
-        Random rand = new DeterministicRandom(17);
+        RandomGenerator rand = new DeterministicRandom(17);
         for (int i = 0; i < POINTS_B.length; i++) {
             PBnoisy[i] = POINTS_B[i].plus(noise * rand.nextDouble(), noise * rand.nextDouble());    // add uniform noise
         }

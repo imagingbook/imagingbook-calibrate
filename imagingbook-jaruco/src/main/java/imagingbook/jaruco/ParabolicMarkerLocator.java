@@ -1,6 +1,7 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
 import imagingbook.jaruco.util.Polygons;
@@ -72,14 +73,15 @@ public class ParabolicMarkerLocator implements MarkerLocator {
 
         // Use the inverse of the original transformation to map the intersections back to real space
         ProjectiveMapping2D invMap = forwdMap.getInverse();
-        // DEBUG
+        // DEBUG --------------------------------------------
         Parabola[] parabolas = {par0, par1, par2, par3};
-        List<List<Pnt2d>> parabCurves = new ArrayList<>();
+        List<PolyLine2d> parabCurves = new ArrayList<>();
         for (Parabola par : parabolas) {
             List<Pnt2d> curve = par.sample(-0.5, 1.5, 20);
-            parabCurves.add(invMap.applyTo(curve));
+            parabCurves.add(new PolyLine2d(invMap.applyTo(curve)));
         }
         Main.parabCurves = parabCurves;
+        // ----------------------------------------------------
         return invMap.applyTo(Arrays.asList(ix));
     }
 

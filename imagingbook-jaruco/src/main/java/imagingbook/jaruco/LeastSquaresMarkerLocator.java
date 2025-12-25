@@ -1,6 +1,7 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.*;
@@ -48,11 +49,11 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public List<Pnt2d> getCorners (SegmentedPolygon poly) {
+    public List<Pnt2d> getCorners(SegmentedPolygon poly) {
         doFit(poly);
         ProjectiveMapping2D mapping =
                 new ProjectiveMapping2D(A.getData()).getInverse(); // target to source mapping
-        // map unit square corners to image coordinates:
+        // map unit square corners to image space:
         List<Pnt2d> corners = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             corners.add(mapping.applyTo(Pnt2d.from(UNIT_SQUARE_CCW[i])));
@@ -60,10 +61,10 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
 
         // DEBUGGING
         Main.parabCurves = new ArrayList<>();
-        Main.parabCurves.add(Arrays.asList(corners.get(0), corners.get(1)));
-        Main.parabCurves.add(Arrays.asList(corners.get(1), corners.get(2)));
-        Main.parabCurves.add(Arrays.asList(corners.get(2), corners.get(3)));
-        Main.parabCurves.add(Arrays.asList(corners.get(3), corners.get(0)));
+        Main.parabCurves.add(new PolyLine2d(corners.get(0), corners.get(1)));
+        Main.parabCurves.add(new PolyLine2d(corners.get(1), corners.get(2)));
+        Main.parabCurves.add(new PolyLine2d(corners.get(2), corners.get(3)));
+        Main.parabCurves.add(new PolyLine2d(corners.get(3), corners.get(0)));
 
         return corners;
     }

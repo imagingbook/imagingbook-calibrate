@@ -10,6 +10,7 @@ import imagingbook.testutils.DeterministicRandom;
 import org.junit.Test;
 
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import static org.junit.Assert.*;
 
@@ -120,7 +121,7 @@ public class Radial3TermDistortionTest {
     @Test
     public void fRadTestRandom() {
         RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
-        Random rand = new DeterministicRandom(37);
+        RandomGenerator rand = new DeterministicRandom(37);
         for (int i = 0; i < 100; i++) {
             double r1 = rand.nextDouble();
             double r2 = ldm.fRad(r1);
@@ -170,7 +171,7 @@ public class Radial3TermDistortionTest {
     @Test
     public void fRadXyTestRandom() {
         RadialDistortion ldm = new Radial3TermDistortion(new double[] {k0, k1, k2});
-        Random rand = new DeterministicRandom(37);
+        RandomGenerator rand = new DeterministicRandom(37);
         for (int i = 0; i < 100; i++) {
             double[] xy1 = {2 * rand.nextDouble() - 1, 2 * rand.nextDouble() - 1};
             double[] xy2 = ldm.warp(xy1);

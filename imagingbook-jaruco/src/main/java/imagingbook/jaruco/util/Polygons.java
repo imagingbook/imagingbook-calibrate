@@ -138,12 +138,14 @@ public class Polygons {
         return best;
     }
 
-    // Optimized 2D-only perpendicular distance from point P to segment AB
-    public static double perpDist(Pnt2d P, Pnt2d A, Pnt2d B) {
-        return Math.sqrt(perpDistSq(P, A, B));
-    }
+    // // Optimized 2D-only perpendicular distance from point P to segment AB
+    // @Deprecated
+    // public static double perpDist(Pnt2d P, Pnt2d A, Pnt2d B) {
+    //     return Math.sqrt(perpDistSq(P, A, B));
+    // }
 
     // Squared perpendicular distance from P to line AB
+    @Deprecated
     public static double perpDistSq(Pnt2d P, Pnt2d A, Pnt2d B) {
         final double ax = A.getX(), ay = A.getY();
         final double bx = B.getX(), by = B.getY();
@@ -217,6 +219,7 @@ public class Polygons {
      * @param poly
      * @return
      */
+    @Deprecated
     public static double getArea(List<Pnt2d> poly) {
         final int n = poly.size();
         double sum = 0;
@@ -229,6 +232,7 @@ public class Polygons {
         return Math.abs(sum) / 2;
     }
 
+    @Deprecated
     public static double circularity(List<Pnt2d> poly) {
         double area = getArea(poly);
         double len =  getLength(poly);
@@ -237,6 +241,7 @@ public class Polygons {
         }
         return 4 * Math.PI * area / sqr(len);
     }
+
 
     static List<Pnt2d> makeCircle(double radius, int steps) {
         List<Pnt2d> circle = new ArrayList<>(steps);
@@ -256,6 +261,7 @@ public class Polygons {
      * @param coords a sequence of x/y coordinate pairs
      * @return
      */
+    @Deprecated
     public static List<Pnt2d> makePolygon(double... coords) {
         List<Pnt2d> pntList = new ArrayList<>();
         for (int i = 0; i < coords.length; i+=2) {
@@ -268,6 +274,7 @@ public class Polygons {
      * @param coords a Nx2 array of x/y coordinate pairs
      * @return
      */
+    @Deprecated
     public static List<Pnt2d> makePolygon(double[][] coords) {
         List<Pnt2d> pntList = new ArrayList<>();
         for (int i = 0; i < coords.length; i++) {
@@ -280,6 +287,7 @@ public class Polygons {
         return poly.toArray(new Pnt2d[0]);
     }
 
+    @Deprecated
     public static boolean checkSame(List<Pnt2d> A, List<Pnt2d> B) {
         if (A.size() != B.size()) {
             return false;
@@ -336,11 +344,13 @@ public class Polygons {
 
     // -------------------------------------------------------------------------
 
+    @Deprecated
     public static Path2D getPolygonPath(List<Pnt2d> contour) {
         return getPolygonPath(contour, 0, 0);
     }
 
     // closed
+    @Deprecated
     public static Path2D getPolygonPath(List<Pnt2d> contour, double xOffset, double yOffset) {
         Path2D path = new Path2D.Float();
         Pnt2d[] pnts = contour.toArray(new Pnt2d[0]);
@@ -363,11 +373,13 @@ public class Polygons {
     }
 
     // non-closed
+    @Deprecated
     public static Path2D getPolylinePath(List<Pnt2d> contour) {
         return getPolylinePath(contour, 0, 0);
     }
 
     // non-closed
+    @Deprecated
     public static Path2D getPolylinePath(List<Pnt2d> contour, double xOffset, double yOffset) {
         Path2D path = new Path2D.Float();
         Pnt2d[] pnts = contour.toArray(new Pnt2d[0]);
