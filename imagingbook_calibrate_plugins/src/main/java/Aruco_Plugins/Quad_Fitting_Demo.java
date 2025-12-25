@@ -30,7 +30,7 @@ import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.core.jdoc.JavaDocHelp;
 import imagingbook.jaruco.ContourSegmenter;
 import imagingbook.jaruco.obsolete.QuadHomographyFit;
-import imagingbook.jaruco.SegmentedContour;
+import imagingbook.jaruco.SegmentedPolygon;
 
 import java.awt.Color;
 import java.io.File;
@@ -96,7 +96,7 @@ public class Quad_Fitting_Demo implements PlugIn, JavaDocHelp {
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
         for (Contour contour : contours) {
-            SegmentedContour segCont =
+            SegmentedPolygon segCont =
                     new ContourSegmenter().segment(contour.getPointList());   // tol = contour.length() * accuracyRate
 
             // Show original corners from segmentation:

@@ -36,7 +36,7 @@ class ContourSegmenterTest {
     void runSegmentTest(String contourPath, String cornersPath) {
         double[][] contour = (double[][]) loadObject(this.getClass(), contourPath, double[][].class);
         double[][] corners = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
-        SegmentedContour segCtr = new ContourSegmenter().segment(makePolygon(contour)); // tol = , contour.length * polygonalApproxAccuracyRate
+        SegmentedPolygon segCtr = new ContourSegmenter().segment(makePolygon(contour)); // tol = , contour.length * polygonalApproxAccuracyRate
 
         // check if 4 corners exactly
         assertEquals(4, segCtr.getSegmentCount());

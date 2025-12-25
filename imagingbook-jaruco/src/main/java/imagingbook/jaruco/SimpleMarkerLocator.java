@@ -1,9 +1,7 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +18,7 @@ public class SimpleMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public List<Pnt2d> getCorners (SegmentedContour poly) {
+    public List<Pnt2d> getCorners (SegmentedPolygon poly) {
         return poly.getCorners();
     }
 

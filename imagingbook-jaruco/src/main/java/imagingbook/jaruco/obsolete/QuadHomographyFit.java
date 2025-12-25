@@ -2,7 +2,7 @@ package imagingbook.jaruco.obsolete;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.points.LinearFit2d;
-import imagingbook.jaruco.SegmentedContour;
+import imagingbook.jaruco.SegmentedPolygon;
 import org.apache.commons.math4.legacy.linear.*;
 
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import java.util.Arrays;
 /**
  * A special fitter, which calculates the optimal projective transformation
  * (homography) from a segmented closed contour
- * (of type {@link SegmentedContour})
+ * (of type {@link SegmentedPolygon})
  * to the unit square by least-squares error minimization.
  *
  * @author WB
@@ -25,7 +25,7 @@ public class QuadHomographyFit implements LinearFit2d { // TODO: move into Least
     private static final double[][] UNIT_SQUARE_CW =    // corners of the unit square (CW)
             {{0,0}, {0,1}, {1,1}, {1,0}};
 
-    private final SegmentedContour poly;
+    private final SegmentedPolygon poly;
     private RealMatrix A = null;		// the calculated transformation matrix
     private double err = Double.NaN;		    // the calculated error
 
@@ -34,7 +34,7 @@ public class QuadHomographyFit implements LinearFit2d { // TODO: move into Least
     private RealVector a = null;
 
     // TODO: currently no weighting, add point weighting policy
-    public QuadHomographyFit(SegmentedContour poly) {
+    public QuadHomographyFit(SegmentedPolygon poly) {
         if (poly.getSegmentCount() != 4) {
             throw new IllegalArgumentException("quad must have 4 segments but has "
                     + poly.getSegmentCount());

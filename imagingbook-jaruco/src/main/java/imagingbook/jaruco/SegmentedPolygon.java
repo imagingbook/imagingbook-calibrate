@@ -1,7 +1,6 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 
 import java.util.ArrayList;
@@ -13,12 +12,12 @@ import java.util.List;
  * each segment starting with a corner point. This structure is subsequently
  * used for homography fitting.
  */
-public class SegmentedContour {
+public class SegmentedPolygon {
 
     private final int N;    // length of the full contour
     private final Pnt2d[][] segments;
 
-    public SegmentedContour(List<Integer> cornerIdxs, Polygon2d poly) {
+    public SegmentedPolygon(List<Integer> cornerIdxs, Polygon2d poly) {
         this(cornerIdxs, poly.getPnts());
     }
 
@@ -27,7 +26,7 @@ public class SegmentedContour {
      * @param cornerIdxs the indexes of the corners in {@code contourPoints}
      * @param allPoints the original sequence of contour points
      */
-    public SegmentedContour(List<Integer> cornerIdxs, List<Pnt2d> allPoints) {
+    public SegmentedPolygon(List<Integer> cornerIdxs, List<Pnt2d> allPoints) {
         this.N = allPoints.size();
         if (cornerIdxs.get(0) != 0) {
             throw new IllegalArgumentException("first corner index must be 0 but is " +
@@ -97,19 +96,5 @@ public class SegmentedContour {
     public int getSegmentCount() {
         return segments.length;
     }
-
-    // /**
-    //  * Returns the normalized position of a point's projection
-    //  * onto the specified line segment with starting point A
-    //  * and endpoint B. The resulting value t is in [0,1],
-    //  * increasing as the projection moves from point A to
-    //  * point B.
-    //  * @param segIdx the segment index (0,...,3)
-    //  * @param pntIdx the point index within the segment
-    //  * @return the relative projection position
-    //  */
-    // public double getProjectionPosition(int segIdx, int pntIdx) { // return value t_i
-    //     return 0;   // TODO
-    // }
 
 }

@@ -25,7 +25,7 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
     // private static final double[][] UNIT_SQUARE_CW =    // corners of the unit square (CW)
     //         {{0,0}, {0,1}, {1,1}, {1,0}};
 
-    //private final SegmentedContour poly;
+    //private final SegmentedPolygon poly;
     private RealMatrix A = null;		// the calculated transformation matrix
     private double err = Double.NaN;	// the calculated error
 
@@ -48,7 +48,7 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public List<Pnt2d> getCorners (SegmentedContour poly) {
+    public List<Pnt2d> getCorners (SegmentedPolygon poly) {
         doFit(poly);
         ProjectiveMapping2D mapping =
                 new ProjectiveMapping2D(A.getData()).getInverse(); // target to source mapping
@@ -70,7 +70,7 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
 
     // -------------------------------------------------------------------------
 
-    private void doFit(SegmentedContour poly) {
+    private void doFit(SegmentedPolygon poly) {
         double[][] unitSquare = UNIT_SQUARE_CCW;
         System.out.println("cornerSupport = " + cornerSupport);
         // System.out.println("QuadHomographyFit: convexity =" + Polygons.convexity(quad.getCorners()));

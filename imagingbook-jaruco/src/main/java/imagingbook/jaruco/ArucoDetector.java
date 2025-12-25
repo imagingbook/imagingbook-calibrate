@@ -3,7 +3,6 @@ package imagingbook.jaruco;
 
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.regions.Contour;
 import imagingbook.common.regions.ContourTracer;
@@ -147,7 +146,7 @@ public class ArucoDetector {
                 continue;
             }
             // A. Segment contour and extract quad
-            SegmentedContour segPoly = new ContourSegmenter().segment(poly);
+            SegmentedPolygon segPoly = new ContourSegmenter().segment(poly);
             Polygon2d corners = segPoly.getCornerPolygon();
             if (corners.length() != 4 ||                                     // pack into a local method
                 corners.getCircularity() < minCircularity ||           // parameter!

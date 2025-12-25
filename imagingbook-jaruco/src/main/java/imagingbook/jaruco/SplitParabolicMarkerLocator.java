@@ -35,7 +35,7 @@ public class SplitParabolicMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public List<Pnt2d> getCorners (SegmentedContour poly) {
+    public List<Pnt2d> getCorners (SegmentedPolygon poly) {
         Pnt2d[] corners = toPointArray(poly.getCorners());
         Pnt2d[] unitPts = toPointArray(makePolygon(UNIT_SQUARE_CCW));
 

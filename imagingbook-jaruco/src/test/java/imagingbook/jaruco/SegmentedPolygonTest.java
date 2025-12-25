@@ -8,13 +8,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SegmentedContourTest {
+class SegmentedPolygonTest {
 
     @Test
     void cornersOnlyTest() {
         List<Pnt2d> contour = Polygons.makePolygon(10, 7,  23, 1,  19, 21,  12, 15);
         //List<Integer> corners = List.of(0, 1, 2, 3);
-        SegmentedContour segCtr = new SegmentedContour(List.of(0, 1, 2, 3), contour);
+        SegmentedPolygon segCtr = new SegmentedPolygon(List.of(0, 1, 2, 3), contour);
         // must have 4 segments/corners
         assertEquals(4, segCtr.getSegmentCount());
         // each segment has length 1 and contains a corner

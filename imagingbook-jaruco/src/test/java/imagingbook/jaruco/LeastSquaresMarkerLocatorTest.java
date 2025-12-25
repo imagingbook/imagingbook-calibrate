@@ -1,8 +1,5 @@
 package imagingbook.jaruco;
 
-import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.fitting.points.ProjectiveFit2d;
-import imagingbook.common.math.PrintPrecision;
 import org.junit.jupiter.api.Test;
 
 import static imagingbook.jaruco.util.JsonUtils.loadObject;
@@ -26,7 +23,7 @@ class LeastSquaresMarkerLocatorTest {
         assertNotNull(contour);
         assertNotNull(corners);
 
-        SegmentedContour segCtr = new ContourSegmenter().segment(makePolygon(contour)); // tol = contour.length * polygonalApproxAccuracyRate
+        SegmentedPolygon segCtr = new ContourSegmenter().segment(makePolygon(contour)); // tol = contour.length * polygonalApproxAccuracyRate
         assertEquals(4, segCtr.getSegmentCount());
 
         // QuadHomographyFit fit = new QuadHomographyFit(segCtr);
