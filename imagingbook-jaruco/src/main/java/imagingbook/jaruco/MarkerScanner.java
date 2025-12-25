@@ -66,7 +66,7 @@ public class MarkerScanner {
      * @return a {@link BitVector} holding the extracted bit pattern
      */
     public BitVector getMarkerData(Polygon2d outline, int threshold) {
-        return getMarkerData(outline.getPnts(), threshold);
+        return getMarkerData(outline.getPntList(), threshold);
     }
 
     // ------------------------------------------------------------------------

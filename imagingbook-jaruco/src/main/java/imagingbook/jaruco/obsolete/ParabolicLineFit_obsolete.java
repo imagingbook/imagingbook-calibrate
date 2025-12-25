@@ -125,24 +125,24 @@ public class ParabolicLineFit_obsolete {
 
     // ------------------------------------------------------------------
 
-    public static void main(String[] args) {
-        List<Pnt2d> pts = Polygons.makePolygon(1, 2, 3, 4, 4, 5, 5, 4, 7, 4);
-        //List<Pnt2d> pts = Polygons.makePolygon(3, 4, 4, 5, 5, 4);
-        ParabolicLineFit_obsolete fit = new ParabolicLineFit_obsolete(pts);
-        fit.printStuff();
-
-        fit.listMappedPoints(pts);
-
-
-        RealVector ac = fit.doFit(pts);
-        System.out.println("\nSolution ac = " + ac);
-
-
-
-        // fit.plotValues(ac.getEntry(0), ac.getEntry(1), pts);
-        // fit.plotValues(ac.getEntry(0), ac.getEntry(1));
-        // fit.plotValuesInRealSpace(ac.getEntry(0), ac.getEntry(1));
-
-    }
+    // public static void main(String[] args) {
+    //     List<Pnt2d> pts = Polygons.makePolygon(1, 2, 3, 4, 4, 5, 5, 4, 7, 4);
+    //     //List<Pnt2d> pts = Polygons.makePolygon(3, 4, 4, 5, 5, 4);
+    //     ParabolicLineFit_obsolete fit = new ParabolicLineFit_obsolete(pts);
+    //     fit.printStuff();
+    //
+    //     fit.listMappedPoints(pts);
+    //
+    //
+    //     RealVector ac = fit.doFit(pts);
+    //     System.out.println("\nSolution ac = " + ac);
+    //
+    //
+    //
+    //     // fit.plotValues(ac.getEntry(0), ac.getEntry(1), pts);
+    //     // fit.plotValues(ac.getEntry(0), ac.getEntry(1));
+    //     // fit.plotValuesInRealSpace(ac.getEntry(0), ac.getEntry(1));
+    //
+    // }
 
 }

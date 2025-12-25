@@ -1,17 +1,22 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
-import org.apache.commons.math4.legacy.linear.*;
+import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.legacy.linear.ArrayRealVector;
+import org.apache.commons.math4.legacy.linear.DecompositionSolver;
+import org.apache.commons.math4.legacy.linear.QRDecomposition;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static imagingbook.common.math.Arithmetic.sqr;
-import static imagingbook.jaruco.util.Polygons.*;
 
 /**
  * Uses piecewise quadratic approximation (pair of parabolas)!
@@ -37,8 +42,8 @@ public class SplitParabolicMarkerLocator implements MarkerLocator {
 
     @Override
     public List<Pnt2d> getCorners (SegmentedPolygon poly) {
-        Pnt2d[] corners = toPointArray(poly.getCorners());
-        Pnt2d[] unitPts = toPointArray(makePolygon(UNIT_SQUARE_CCW));
+        Pnt2d[] corners = poly.getCornerPolygon().getPntList().toArray(new Pnt2d[0]);
+        Pnt2d[] unitPts = PntUtils.makePntList(UNIT_SQUARE_CCW).toArray(new Pnt2d[0]);
 
         ProjectiveMapping2D forwdMap = ProjectiveMapping2D.fromPoints(corners, unitPts);
 
@@ -103,7 +108,7 @@ public class SplitParabolicMarkerLocator implements MarkerLocator {
      * @return @return a {@link Parabola.ParabolaX} instance
      */
     public static Parabola.ParabolaX[] fitOverX(List<Pnt2d> pts, double xd) {
-        double[][] XY = toXYArray(pts);
+        double[][] XY = PntUtils.toXYArray(pts);
         PiecewiseParabola pp = doPiecewiseFit(XY[0], XY[1], xd);
         return new Parabola.ParabolaX[]{
                 new Parabola.ParabolaX(pp.aL, pp.c, pp.d),
@@ -118,7 +123,7 @@ public class SplitParabolicMarkerLocator implements MarkerLocator {
      * @return a {@link Parabola.ParabolaY} instance
      */
     public static Parabola.ParabolaY[] fitOverY(List<Pnt2d> pts, double yd) {
-        double[][] XY = toXYArray(pts);
+        double[][] XY = PntUtils.toXYArray(pts);
         PiecewiseParabola pp = doPiecewiseFit(XY[1], XY[0], yd);  // swap X/Y
         return new Parabola.ParabolaY[]{
                 new Parabola.ParabolaY(pp.aL, pp.c, pp.d),

@@ -13,8 +13,6 @@ import java.awt.Font;
 import java.awt.geom.Ellipse2D;
 import java.util.List;
 
-import static imagingbook.jaruco.util.Polygons.getPolylinePath;
-
 public class Main {
 
 
@@ -27,7 +25,7 @@ public class Main {
 
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
 
-    private static final Font MarkerFont = new Font(Font.SANS_SERIF, Font.BOLD, 32);
+    private static final Font MarkerFont = new Font(Font.SANS_SERIF, Font.BOLD, 24);
     private static final Font CornerFont = new Font(Font.SANS_SERIF, Font.BOLD, 18);
     private static final Color MarkerColor = Color.magenta;
     private static final Color CornerColor = Color.blue;
@@ -51,13 +49,13 @@ public class Main {
 
     static void doSmallImageTest() {
         String[] paths = {
-                SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
-                SAMPLE_IMAGE_DIR + "single-marker-5-0-distA.png",
-                SAMPLE_IMAGE_DIR + "single-marker-5-0-distB.png",
-                // SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-2.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-0-distA.png",
+                // SAMPLE_IMAGE_DIR + "single-marker-5-0-distB.png",
+                SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
         };
 
         ImagePlus[] images = new ImagePlus[paths.length];
@@ -67,35 +65,32 @@ public class Main {
         }
 
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
+        System.out.println("Dict name = " + dict.getName());
         ArucoDetector detector = new ArucoDetector(dict);
 
-        ColoredStroke stroke = new ColoredStroke(1.0, Color.blue);
-        ColoredStroke stroke0 = new ColoredStroke(1.0 * 3, Color.red);
+        ColoredStroke cornerStroke = new ColoredStroke(1.0, Color.blue);
+        ColoredStroke cornerStroke0 = new ColoredStroke(1.0 * 3, Color.red);
+
+        // process each image -------------------------------------------------------------
 
         for (int i = 0; i < paths.length; i++) {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
-
+            ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
             parabCurves = null;
+
             // ------------------------------------------------------------
             List<ArucoDetector.DetectionResult> detectionResult
                                 = detector.detectMarkers(im.getProcessor());
             // ------------------------------------------------------------
-            System.out.println("Markers found: " + detectionResult.size());
 
-            ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
-
+            // process all detected markers
             for (ArucoDetector.DetectionResult res : detectionResult) {
-                // ArucoDetector.MarkerDetectionResult_obsolete res = detectionResultObsoletes.get(0);
-                System.out.println(res);
-                // create shape overlay
-
                 Polygon2d corners = res.corners();
+
                 // Collections.rotate(corners, res.rotation);
                 //List<Pnt2d> corners = rotateCorners(corners, res.rotation);
 
-                // draw the outline of the marker from estimated corners:
-                // ola.addShape(getPolygonPath(corners), stroke);
 
                 ola.setFont(CornerFont);
                 ola.setTextColor(CornerColor);
@@ -104,7 +99,8 @@ public class Main {
                 for (Pnt2d p : corners) {
                     double x = p.getX() - rad;
                     double y = p.getY() - rad;
-                    ola.addShape(new Ellipse2D.Double(x, y, 2 * rad, 2 * rad), j == 0 ? stroke0 : stroke);
+                    ola.addShape(new Ellipse2D.Double(x, y, 2 * rad, 2 * rad),
+                            j == 0 ? cornerStroke0 : cornerStroke); // mark corner 0 red
                     ola.addText(x + 5, y + 5, "" + j);
                     j++;
                 }
@@ -113,12 +109,12 @@ public class Main {
                 Pnt2d center = corners.getCentroid();
                 ola.setFont(MarkerFont);
                 ola.setTextColor(MarkerColor);
-                ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation());
+                ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
 
                 // if parabolas exist, draw them:
                 if (parabCurves != null) {
                     for (PolyLine2d par : parabCurves) {
-                        System.out.println("adding parabola outline " + par.length());
+                        // System.out.println("adding parabola outline " + par.length());
                         //System.out.println("pts = " + Arrays.toString(par.toArray()));
                        ola.addShape(par.getShape());
                     }

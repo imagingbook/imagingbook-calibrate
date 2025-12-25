@@ -18,14 +18,11 @@ import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.jaruco.ArucoDetector;
 import imagingbook.jaruco.ArucoDictionary;
 import imagingbook.jaruco.ArucoDictionaryPredefined;
-import imagingbook.jaruco.util.Polygons;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Ellipse2D;
 import java.util.List;
-
-import static imagingbook.jaruco.util.Polygons.getPolygonPath;
 
 /**
  * First test of ArUco functionality.
@@ -36,7 +33,7 @@ import static imagingbook.jaruco.util.Polygons.getPolygonPath;
 public class Aruco_Detect_Plugin implements PlugInFilter {
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
 
-    private static final Font MarkerFont = new Font(Font.SANS_SERIF, Font.BOLD, 32);
+    private static final Font MarkerFont = new Font(Font.SANS_SERIF, Font.BOLD, 24);
     private static final Font CornerFont = new Font(Font.SANS_SERIF, Font.BOLD, 18);
     private static final Color MarkerColor = Color.magenta;
     private static final Color CornerColor = Color.blue;
@@ -91,7 +88,7 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
             Pnt2d center = corners.getCentroid();
             ola.setFont(MarkerFont);
             ola.setTextColor(MarkerColor);
-            ola.addText(center.getX(), center.getY(), Integer.toString(res.markerId()) + "/" + res.rotation());
+            ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
         }
 
         im.setOverlay(ola.getOverlay());

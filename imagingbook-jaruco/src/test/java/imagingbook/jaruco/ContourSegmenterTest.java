@@ -1,26 +1,17 @@
 package imagingbook.jaruco;
 
-import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.Polygon2d;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static imagingbook.jaruco.util.Polygons.checkSame;
-import static imagingbook.jaruco.util.Polygons.makePolygon;
 import static imagingbook.jaruco.util.JsonUtils.loadObject;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ContourSegmenterTest {
 
     @Test
     void extractQuadTest() {
     }
-
-    // cIdx = [0, 199, 406, 607, 816]
-    // cIdx = [0, 203, 411, 613, 820]
-    // cIdx = [0, 197, 404, 605, 814]
-    // cIdx = [0, 200, 407, 608, 816]
 
     @Test
     void segmentTest() {
@@ -37,19 +28,22 @@ class ContourSegmenterTest {
     void runSegmentTest(String contourPath, String cornersPath) {
         double[][] contour = (double[][]) loadObject(this.getClass(), contourPath, double[][].class);
         double[][] corners = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
-        // System.out.println("corners = " + new Polygon2d(makePolygon(corners)));
+        // System.out.println("corners = " + new Polygon2d(PntUtils.makePntList(corners)));
 
-        SegmentedPolygon segCtr = new ContourSegmenter().segment(new Polygon2d(makePolygon(contour))); // tol = , contour.length * polygonalApproxAccuracyRate
+        SegmentedPolygon segCtr = new ContourSegmenter(polygonalApproxAccuracyRate) // tol = contour.length * polygonalApproxAccuracyRate
+                .segment(new Polygon2d(PntUtils.makePntList(contour)));
         // System.out.println("cornersSeg = " + segCtr.getCornerPolygon());
 
         // check if 4 corners exactly
         assertEquals(4, segCtr.getSegmentCount());
 
-        // check all corner points
-        List<Pnt2d> cornerList2 = segCtr.getCorners();
-        assertTrue(checkSame(makePolygon(corners), cornerList2));
+        // check if all corner points are the same
+        Polygon2d cornerPoly1 = new Polygon2d(PntUtils.makePntList(corners));
+        Polygon2d cornerPoly2 = segCtr.getCornerPolygon();
+        assertEquals(4, cornerPoly2.length());
+        assertEquals(cornerPoly1, cornerPoly2);
 
-        // check if the segments' point count adds up to the contour's point count
+        // check if the segment's point count adds up to the contour's point count
         int pntCnt = 0;
         for (int k = 0; k < segCtr.getSegmentCount(); k++) {
             pntCnt += segCtr.getSegment(k).length;

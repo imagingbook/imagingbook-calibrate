@@ -1,10 +1,10 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
-import imagingbook.jaruco.util.Polygons;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
@@ -17,9 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static imagingbook.common.math.Arithmetic.sqr;
-import static imagingbook.jaruco.util.Polygons.makePolygon;
-import static imagingbook.jaruco.util.Polygons.toPointArray;
-import static imagingbook.jaruco.util.Polygons.toXYArray;
 
 /**
  * Implementation of {@link MarkerLocator} which (1) )finds an initial
@@ -43,9 +40,9 @@ public class ParabolicMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public List<Pnt2d> getCorners (SegmentedPolygon poly) {
-        Pnt2d[] corners = toPointArray(poly.getCorners());
-        Pnt2d[] unitPts = toPointArray(makePolygon(UNIT_SQUARE_CCW));
+    public List<Pnt2d> getCorners(SegmentedPolygon poly) {
+        Pnt2d[] corners = poly.getCornerPolygon().getPntList().toArray(new Pnt2d[0]);
+        Pnt2d[] unitPts = PntUtils.makePntList(UNIT_SQUARE_CCW).toArray(new Pnt2d[0]);
 
         ProjectiveMapping2D forwdMap = ProjectiveMapping2D.fromPoints(corners, unitPts);
 
@@ -94,7 +91,7 @@ public class ParabolicMarkerLocator implements MarkerLocator {
      * @return @return a {@link Parabola.ParabolaX} instance
      */
     public static Parabola.ParabolaX fitOverX(List<Pnt2d> pts, double xd) {
-        double[][] XY = toXYArray(pts);
+        double[][] XY = PntUtils.toXYArray(pts);
         double[] ac = doFit(XY[0], XY[1], xd);
         return new Parabola.ParabolaX(ac[0], ac[1], xd);
     }
@@ -106,7 +103,7 @@ public class ParabolicMarkerLocator implements MarkerLocator {
      * @return a {@link Parabola.ParabolaY} instance
      */
     public static Parabola.ParabolaY fitOverY(List<Pnt2d> pts, double yd) {
-        double[][] XY = toXYArray(pts);
+        double[][] XY = PntUtils.toXYArray(pts);
         double[] ac = doFit(XY[1], XY[0], yd);  // swap X/Y
         return new Parabola.ParabolaY(ac[0], ac[1], yd);
     }
@@ -146,11 +143,11 @@ public class ParabolicMarkerLocator implements MarkerLocator {
     // -----------------------------------------------------------------------
 
     public static void main(String[] args) {
-        List<Pnt2d> polyX = Polygons.makePolygon(0, 0, 0.25, 0.5, 0.5, 0.75, 0.2, 1.0, 1, 0);  // (x,y)
+        List<Pnt2d> polyX = PntUtils.makePntList(0, 0, 0.25, 0.5, 0.5, 0.75, 0.2, 1.0, 1, 0);  // (x,y)
         Parabola.ParabolaX fitX = fitOverX(polyX, 0.5);
         System.out.println("fitX = " + fitX);
 
-        List<Pnt2d> polyY = Polygons.makePolygon(0, 0, 0.5, 0.25, 0.75, 0.5, 1.0, 0.2, 0, 1);  // (y,x)
+        List<Pnt2d> polyY = PntUtils.makePntList(0, 0, 0.5, 0.25, 0.75, 0.5, 1.0, 0.2, 0, 1);  // (y,x)
         Parabola.ParabolaY fitY = fitOverY(polyY, 0.5);
         System.out.println("fitY = " + fitY);
 

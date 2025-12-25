@@ -49,16 +49,18 @@ public enum ArucoDictionaryPredefined {
 
     private ArucoDictionary instance = null;    // singleton instance, only loaded once
 
-    public boolean isLoaded() {
-        return (instance != null);
-    }
+    // public boolean isLoaded() {
+    //     return (instance != null);
+    // }
 
     // lazy evaluation: data don't get loaded unless needed:
     public ArucoDictionary getInstance() {
-        if (!isLoaded()) {   // dictionary not yet initialized
+        if (instance == null) {   // dictionary not yet initialized
             String resourcePath = RELATIVE_DIR + this.name() + FILE_EXTENSION;
             // System.out.println("Loading dictionary from " + resourcePath);
-            instance = ArucoDictionary.fromResource(this.getClass(), resourcePath);
+            ArucoDictionary dict = ArucoDictionary.fromResource(this.getClass(), resourcePath);
+            dict.setName(this.name());
+            instance = dict;
         }
         return instance;
     }

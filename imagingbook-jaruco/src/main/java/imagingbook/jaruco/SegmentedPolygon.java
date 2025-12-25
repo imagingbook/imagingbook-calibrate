@@ -20,7 +20,7 @@ public class SegmentedPolygon extends Polygon2d {
     public SegmentedPolygon(Polygon2d poly, List<Integer> cornerIdxs) {
         super(poly);
         //this(poly.getPnts(), cornerIdxs);
-        List<Pnt2d> allPoints = this.getPnts();
+        List<Pnt2d> allPoints = this.getPntList();
         // this.N = allPoints.size();
         int N = this.length();
         if (cornerIdxs.get(0) != 0) {

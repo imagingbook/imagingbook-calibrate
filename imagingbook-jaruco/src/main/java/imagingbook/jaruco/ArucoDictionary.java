@@ -41,6 +41,8 @@ public class ArucoDictionary {
     private final int maxCorrectionBits;        // max. number of correction bits
     private final BitVector[][] bitdata;        // marker bit patterns, bitdata[m][r] is a 0/1 bit-pattern for marker m, rotation r
     private final int[] rotperm;                // permutation vector for 2D matrix rotation of size NxN
+    private String name = "unknown";                        // name of this dictionary
+
 
     /**
      * Constructor
@@ -335,16 +337,34 @@ public class ArucoDictionary {
 
     // -------------------------------------------------------------------------
 
-    public record LookupResult(int markerIndex, int rotation, int hammingDistance) {}
+    void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    /**
+     * Data structure holding a single marker lookup result
+     * @param markerIndex
+     * @param rotation
+     * @param hammingDistance
+     */
+    public record LookupResult(
+
+            int markerIndex,
+            int rotation,
+            int hammingDistance) {}
 
     // -------------------------------------------------------------------------
 
     /**
      * Creates a marker image of the specified dictionary entry with a
      * surrounding 1-pixel black border.
-     * @param idx
-     * @param rot
-     * @return
+     * @param idx the marker index
+     * @param rot the rotation index (0,..3)
+     * @return an image of the specified marker with 1 pixel per code field
      */
     public ByteProcessor getMarkerImage(int idx, int rot) {
         int n = this.getMarkerSize();

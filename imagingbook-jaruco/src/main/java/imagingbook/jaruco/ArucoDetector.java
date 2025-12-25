@@ -158,7 +158,7 @@ public class ArucoDetector {
             // MarkerLocator locator = new SimpleMarkerLocator();
             // MarkerLocator locator = new LeastSquaresMarkerLocator();
             // MarkerLocator locator = new ParabolicMarkerLocator();
-            MarkerLocator locator = new SplitParabolicMarkerLocator();
+            MarkerLocator locator = new SplitParabolicMarkerLocator();  // the best!
 
             Polygon2d refinedCorners = locator.getCornerPolygon(segPoly);
 
@@ -173,8 +173,15 @@ public class ArucoDetector {
             }
             // Rotate corners to canonical to align with ArUco pattern printouts
             // (corner 0 is the top-left corner of the marker)
-            Polygon2d finalCorners = refinedCorners.rotate(lookup.rotation());
-            detections.add(new DetectionResult(lookup, finalCorners));
+            Polygon2d finalCorners = refinedCorners.rotate(-lookup.rotation());
+            DetectionResult det = new DetectionResult(dictionary.getName(), lookup, finalCorners);
+
+            // System.out.println("\n***** " + lookup.markerIndex() + " ********** ");
+            // System.out.println("refinedCorners = " + refinedCorners);
+            // System.out.println("finalCorners = " + finalCorners);
+            // System.out.println("det = " + det);
+
+            detections.add(det);
         }
 
         return detections;
@@ -186,14 +193,15 @@ public class ArucoDetector {
      * Represents the result of a single marker detection.
      */
      public record DetectionResult(
+            String dictName,
             int markerId,
             int rotation,
             int hammingDist,
             Polygon2d corners)
     {
 
-         DetectionResult(LookupResult lookup, Polygon2d corners) {
-             this(lookup.markerIndex(), lookup.rotation(), lookup.hammingDistance(), corners);
+         DetectionResult(String dictName, LookupResult lookup, Polygon2d corners) {
+             this(dictName, lookup.markerIndex(), lookup.rotation(), lookup.hammingDistance(), corners);
          }
      }
 }

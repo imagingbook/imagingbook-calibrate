@@ -1,6 +1,7 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.util.Polygons;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ class SegmentedPolygonTest {
 
     @Test
     void cornersOnlyTest() {
-        List<Pnt2d> contour = Polygons.makePolygon(10, 7,  23, 1,  19, 21,  12, 15);
+        List<Pnt2d> contour = PntUtils.makePntList(10, 7,  23, 1,  19, 21,  12, 15);
         //List<Integer> corners = List.of(0, 1, 2, 3);
         SegmentedPolygon segCtr = new SegmentedPolygon(new Polygon2d(contour), List.of(0, 1, 2, 3));
         // must have 4 segments/corners
