@@ -1,7 +1,6 @@
 package imagingbook.jaruco.obsolete;
 
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.jaruco.util.Polygons;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
