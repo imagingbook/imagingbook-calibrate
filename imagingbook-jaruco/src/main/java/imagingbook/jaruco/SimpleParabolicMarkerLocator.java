@@ -3,6 +3,7 @@ package imagingbook.jaruco;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.PolyLine2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
@@ -25,7 +26,8 @@ import static imagingbook.common.math.Arithmetic.sqr;
  * (4) find the intersections of parabola pairs  and (5) maps these back
  * as refined marker corners.
  */
-public class ParabolicMarkerLocator implements MarkerLocator {
+@Deprecated
+public class SimpleParabolicMarkerLocator implements MarkerLocator {
 
     private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
             {{0,0}, {1,0}, {1,1}, {0,1}};
@@ -36,11 +38,11 @@ public class ParabolicMarkerLocator implements MarkerLocator {
     /**
      * Constructor.
      */
-    public ParabolicMarkerLocator() {
+    public SimpleParabolicMarkerLocator() {
     }
 
     @Override
-    public List<Pnt2d> getCorners(SegmentedPolygon poly) {
+    public Polygon2d getCandidateCorners(SegmentedPolygon poly) {
         Pnt2d[] corners = poly.getCornerPolygon().getPntList().toArray(new Pnt2d[0]);
         Pnt2d[] unitPts = PntUtils.makePntList(UNIT_SQUARE_CCW).toArray(new Pnt2d[0]);
 
@@ -79,7 +81,7 @@ public class ParabolicMarkerLocator implements MarkerLocator {
         }
         Main.parabCurves = parabCurves;
         // ----------------------------------------------------
-        return invMap.applyTo(Arrays.asList(ix));
+        return new Polygon2d(invMap.applyTo(Arrays.asList(ix)));
     }
 
     // Parabola fitting: -------------------------------------------------------

@@ -3,6 +3,7 @@ package imagingbook.jaruco;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.PolyLine2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
@@ -41,7 +42,7 @@ public class SplitParabolicMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public List<Pnt2d> getCorners (SegmentedPolygon poly) {
+    public Polygon2d getCandidateCorners(SegmentedPolygon poly) {
         Pnt2d[] corners = poly.getCornerPolygon().getPntList().toArray(new Pnt2d[0]);
         Pnt2d[] unitPts = PntUtils.makePntList(UNIT_SQUARE_CCW).toArray(new Pnt2d[0]);
 
@@ -86,7 +87,7 @@ public class SplitParabolicMarkerLocator implements MarkerLocator {
         }
 
         Main.parabCurves = parabCurves;
-        return invMap.applyTo(Arrays.asList(ix));
+        return new Polygon2d(invMap.applyTo(Arrays.asList(ix)));
     }
 
     // Parabola fitting: -------------------------------------------------------

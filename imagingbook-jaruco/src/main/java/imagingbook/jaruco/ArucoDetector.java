@@ -166,11 +166,11 @@ public class ArucoDetector {
         }
 
         // Estimate homography and locate corners
-        // MarkerLocator locator = new SimpleMarkerLocator();
-        // MarkerLocator locator = new LeastSquaresMarkerLocator();
-        // MarkerLocator locator = new ParabolicMarkerLocator();
+        // MarkerLocator locator = new RawCornerMarkerLocator();
+        // MarkerLocator locator = new StraightLineMarkerLocator();
+        // MarkerLocator locator = new SimpleParabolicMarkerLocator();
         MarkerLocator locator = new SplitParabolicMarkerLocator();  // the best!
-        Polygon2d initialCorners = locator.getCornerPolygon(segPoly);
+        Polygon2d initialCorners = locator.getCandidateCorners(segPoly);
 
         // B: Extract the canonical marker image and read the marker's bitcode
         MarkerScanner extractor = new MarkerScanner(ip, dictionary);

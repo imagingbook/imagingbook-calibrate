@@ -2,6 +2,7 @@ package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PolyLine2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.*;
@@ -15,10 +16,10 @@ import static imagingbook.common.math.Matrix.multiply;
 
 /**
  * Implementation of {@link MarkerLocator} which uses a special minimum
- * least-squares fit incorporating the quad corners and all intermediate
- * contour points.
+ * least-squares fit incorporating the contour corners and a subset of
+ * intermediate contour points to be fit to straight lines.
  */
-public class LeastSquaresMarkerLocator implements MarkerLocator {
+public class StraightLineMarkerLocator implements MarkerLocator {
 
     private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
             {{0,0}, {1,0}, {1,1}, {0,1}};
@@ -39,17 +40,22 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
 
     /**
      * Constructor.
+     * @param cornerSupport the fraction of each quad side length used to fit straight lines,
+     * default is 0.05 or 5% on each end (see {@link #DEFAULT_CORNER_SUPPORT}).
      */
-    public LeastSquaresMarkerLocator(double cornerSupport) {
+    public StraightLineMarkerLocator(double cornerSupport) {
         this.cornerSupport = cornerSupport;
     }
 
-    public LeastSquaresMarkerLocator() {
+    /**
+     * Constructor using default values (see {@link #DEFAULT_CORNER_SUPPORT}=.
+     */
+    public StraightLineMarkerLocator() {
         this(DEFAULT_CORNER_SUPPORT);
     }
 
     @Override
-    public List<Pnt2d> getCorners(SegmentedPolygon poly) {
+    public Polygon2d getCandidateCorners(SegmentedPolygon poly) {
         doFit(poly);
         ProjectiveMapping2D mapping =
                 new ProjectiveMapping2D(A.getData()).getInverse(); // target to source mapping
@@ -66,7 +72,7 @@ public class LeastSquaresMarkerLocator implements MarkerLocator {
         Main.parabCurves.add(new PolyLine2d(corners.get(2), corners.get(3)));
         Main.parabCurves.add(new PolyLine2d(corners.get(3), corners.get(0)));
 
-        return corners;
+        return new Polygon2d(corners);
     }
 
     // -------------------------------------------------------------------------
