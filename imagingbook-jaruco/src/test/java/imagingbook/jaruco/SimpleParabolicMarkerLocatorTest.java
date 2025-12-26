@@ -3,6 +3,7 @@ package imagingbook.jaruco;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.jaruco.math.Parabola;
+import imagingbook.jaruco.obsolete.SimpleParabolicMarkerLocator;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

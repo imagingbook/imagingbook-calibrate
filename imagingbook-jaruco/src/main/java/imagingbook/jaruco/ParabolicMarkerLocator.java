@@ -20,12 +20,12 @@ import java.util.List;
 import static imagingbook.common.math.Arithmetic.sqr;
 
 /**
- * Uses piecewise quadratic approximation (pair of parabolas)!
+ * Uses a pair of coupled parabolas to approximate each side of the marker quad.
  * Implementation of {@link MarkerLocator} which (1) )finds an initial
  * homography by mapping marker corners to the unit square, (2) maps all contour
- * points to normalized space, (3) fits a parabola to each segment,
- * (4) find the intersections of parabola pairs  and (5) maps these back
- * as refined marker corners.
+ * points to normalized space, (3) fits a pair of coupled parabolas to each segment,
+ * (4) finds the intersections of parabola at each corner and (5) maps these back
+ * to image space as refined marker corners.
  */
 public class ParabolicMarkerLocator implements MarkerLocator {
 
@@ -37,12 +37,13 @@ public class ParabolicMarkerLocator implements MarkerLocator {
 
     /**
      * Constructor.
+     * @param params parameters (ignored)
      */
-    public ParabolicMarkerLocator() {
+    public ParabolicMarkerLocator(ArucoDetector.Parameters params) {
     }
 
     @Override
-    public Polygon2d getCandidateCorners(SegmentedPolygon poly) {
+    public Polygon2d getMarkerCorners(SegmentedPolygon poly) {
         Pnt2d[] corners = poly.getCornerPolygon().getPntList().toArray(new Pnt2d[0]);
         Pnt2d[] unitPts = PntUtils.makePntList(UNIT_SQUARE_CCW).toArray(new Pnt2d[0]);
 
@@ -51,7 +52,7 @@ public class ParabolicMarkerLocator implements MarkerLocator {
         // Copy all contour points and map to normalized space
         Pnt2d[][] segments = new Pnt2d[4][];
         for (int k = 0; k < 4; k++) {
-            segments[k] = poly.getSegment(k);
+            segments[k] = poly.getSegmentPoints(k);
             for (int i = 0; i < segments[k].length; i++) {
                 segments[k][i] = forwdMap.applyTo(segments[k][i]);
             }
@@ -77,16 +78,16 @@ public class ParabolicMarkerLocator implements MarkerLocator {
         ProjectiveMapping2D invMap = forwdMap.getInverse();
 
         // DEBUG
-        Parabola[][] parabolas = {par0, par1, par2, par3};
-        List<PolyLine2d> parabCurves = new ArrayList<>();
-        for (int k = 0; k < 4; k++) {
-            Parabola parL = parabolas[k][0];
-            parabCurves.add(new PolyLine2d(invMap.applyTo(parL.sample(-0.5, 1.5, 20))));
-            Parabola parR = parabolas[k][1];
-            parabCurves.add(new PolyLine2d(invMap.applyTo(parR.sample(-0.5, 1.5, 20))));
-        }
+        // Parabola[][] parabolas = {par0, par1, par2, par3};
+        // List<PolyLine2d> parabCurves = new ArrayList<>();
+        // for (int k = 0; k < 4; k++) {
+        //     Parabola parL = parabolas[k][0];
+        //     parabCurves.add(new PolyLine2d(invMap.applyTo(parL.sample(-0.5, 1.5, 20))));
+        //     Parabola parR = parabolas[k][1];
+        //     parabCurves.add(new PolyLine2d(invMap.applyTo(parR.sample(-0.5, 1.5, 20))));
+        // }
+        // Main.parabCurves = parabCurves;
 
-        Main.parabCurves = parabCurves;
         return new Polygon2d(invMap.applyTo(Arrays.asList(ix)));
     }
 

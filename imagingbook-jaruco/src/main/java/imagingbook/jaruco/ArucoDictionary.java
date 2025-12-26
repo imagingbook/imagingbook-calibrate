@@ -38,24 +38,23 @@ public class ArucoDictionary {
     private final int M;                        // number of marker codes
     private final int N;                        // number of bits per dimension
     private final int markerBitCount;           // number of bits for whole marker
-    private final int maxCorrectionBits;        // max. number of correction bits
+    private final int maxCorrectableBits;       // max. number of correctable bits
     private final BitVector[][] bitdata;        // marker bit patterns, bitdata[m][r] is a 0/1 bit-pattern for marker m, rotation r
     private final int[] rotperm;                // permutation vector for 2D matrix rotation of size NxN
     private String name = "unknown";                        // name of this dictionary
 
-
     /**
-     * Constructor
+     * Constructor.
      * @param M number of code id's
      * @param N marker size
-     * @param maxCorrectionBits number of correctable error bits
+     * @param maxCorrectableBits number of correctable error bits
      * specifying the marker's canonical (unrotated) pattern
      */
-    private ArucoDictionary(int M, int N, int maxCorrectionBits) {
+    private ArucoDictionary(int M, int N, int maxCorrectableBits) {
         this.M = M;
         this.N = N;
         this.markerBitCount = N * N;
-        this.maxCorrectionBits = maxCorrectionBits;
+        this.maxCorrectableBits = maxCorrectableBits;
         this.bitdata = new BitVector[M][]; // not yet initialized, to be filled later
         this.rotperm = makeRotationPermutation(N);
     }
@@ -101,7 +100,7 @@ public class ArucoDictionary {
     @Override
     public String toString() {
         return String.format("%s [M=%d, N=%d, maxCorrectionBits=%d]",
-                getClass().getSimpleName(), M, N, maxCorrectionBits);
+                getClass().getSimpleName(), M, N, maxCorrectableBits);
     }
 
     /**
@@ -263,8 +262,8 @@ public class ArucoDictionary {
         return this.N;
     }
 
-    public int getMaxCorrectionBits() {
-        return this.maxCorrectionBits;
+    public int getMaxCorrectableBits() {
+        return this.maxCorrectableBits;
     }
 
     // ----------------------------------------------------------------------
@@ -291,10 +290,7 @@ public class ArucoDictionary {
      */
     public DictionaryLookupResult lookup(BitVector candidate, double maxCorrectionRate) {
         Objects.requireNonNull(candidate, "candidate bits must not be null");
-        int maxCorrectionRecalc = (int) (maxCorrectionBits * maxCorrectionRate);
-
-        // System.out.println("lookup candidate = " + candidate);
-        // System.out.println("maxCorrectionRecalc = " + maxCorrectionRecalc);
+        int maxCorrectionBitsUsed = (int) (maxCorrectableBits * maxCorrectionRate);
 
         int card = candidate.cardinality();
         // candidate is blank, all bits either zero or one:
@@ -327,7 +323,7 @@ public class ArucoDictionary {
         // System.out.println("minIdx = " + minIdx);
         // System.out.println("minDist = " + minDist);
 
-        if (minIdx >= 0 &&  minDist <= maxCorrectionRecalc) {
+        if (minIdx >= 0 &&  minDist <= maxCorrectionBitsUsed) {
             return new DictionaryLookupResult(this.getName(), minIdx, minRot, minDist);
         }
         else {

@@ -11,12 +11,13 @@ public class RawCornersMarkerLocator implements MarkerLocator {
 
     /**
      * Constructor.
+     * @param params parameters (ignored)
      */
-    public RawCornersMarkerLocator() {
+    public RawCornersMarkerLocator(ArucoDetector.Parameters params) {
     }
 
     @Override
-    public Polygon2d getCandidateCorners(SegmentedPolygon poly) {
+    public Polygon2d getMarkerCorners(SegmentedPolygon poly) {
         return poly.getCornerPolygon();
     }
 

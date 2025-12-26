@@ -22,7 +22,7 @@ class ContourSegmenterTest {
         runSegmentTest(RES_PATH + "single-marker-5-3-contour.json", RES_PATH + "single-marker-5-3-corners.json");
     }
 
-    static final double polygonalApproxAccuracyRate =  0.03;  // from ArUco parameters
+    static final double polygonalApproxAccuracyRate = 0.03;  // from ArUco parameters
 
     // Checks if corners of segmented contours are as expected
     void runSegmentTest(String contourPath, String cornersPath) {
@@ -46,7 +46,7 @@ class ContourSegmenterTest {
         // check if the segment's point count adds up to the contour's point count
         int pntCnt = 0;
         for (int k = 0; k < segCtr.getSegmentCount(); k++) {
-            pntCnt += segCtr.getSegment(k).length;
+            pntCnt += segCtr.getSegmentPoints(k).length;
         }
         assertEquals(contour.length, pntCnt);
     }

@@ -8,12 +8,11 @@ package imagingbook.jaruco;
 
 /**
  * Dictionary specs from
- * "/opencv/modules/objdetect/src/aruco/aruco_dictionary.cpp",
- * "/opencv/modules/objdetect/include/opencv2/objdetect/aruco_dictionary.hpp"
- *
- *  JSON byte data derived from
- * "/opencv/modules/objdetect/src/aruco/predefined_dictionaries.hpp"
- * "/opencv/modules/objdetect/src/aruco/apriltag/predefined_dictionaries_apriltag.hpp"
+ * {@code opencv/modules/objdetect/src/aruco/aruco_dictionary.cpp} and
+ * {@code /opencv/modules/objdetect/include/opencv2/objdetect/aruco_dictionary.hpp}.
+ * JSON byte data derived from
+ * {@code /opencv/modules/objdetect/src/aruco/predefined_dictionaries.hpp},
+ * {@code /opencv/modules/objdetect/src/aruco/apriltag/predefined_dictionaries_apriltag.hpp}.
  */
 
 public enum ArucoDictionaryPredefined {
@@ -48,10 +47,6 @@ public enum ArucoDictionaryPredefined {
     static final String FILE_EXTENSION = ".json.gz";
 
     private ArucoDictionary instance = null;    // singleton instance, only loaded once
-
-    // public boolean isLoaded() {
-    //     return (instance != null);
-    // }
 
     // lazy evaluation: data don't get loaded unless needed:
     public ArucoDictionary getInstance() {

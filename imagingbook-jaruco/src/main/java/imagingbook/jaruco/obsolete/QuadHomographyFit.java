@@ -61,7 +61,7 @@ public class QuadHomographyFit implements LinearFit2d { // TODO: move into Strai
         // Mount matrix M and vector b:
         int row = 0;    // row counter
         for (int k = 0; k < 4; k++) {   // process each of the 4 segments
-            Pnt2d[] segmentPnts = poly.getSegment(k);
+            Pnt2d[] segmentPnts = poly.getSegmentPoints(k);
 
             // insert 2 rows for the corner (first point)
             double px = segmentPnts[0].getX();      // corner of segment k (source point)

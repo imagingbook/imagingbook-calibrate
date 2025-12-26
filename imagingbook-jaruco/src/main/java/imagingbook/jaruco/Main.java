@@ -19,7 +19,7 @@ import static imagingbook.common.util.Timing.timeNanos;
 public class Main {
 
 
-    public static List<PolyLine2d> parabCurves = null;
+    // public static List<PolyLine2d> parabCurves = null;
 
     // ------------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ public class Main {
             System.out.println("***** Processing image + " + i);
             ImagePlus im = images[i];
             ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
-            parabCurves = null;
+            // parabCurves = null;
 
             // ------------------------------------------------------------
             List<ArucoDetector.DetectionResult> detectedMarkers = new ArrayList<>();
@@ -116,13 +116,11 @@ public class Main {
                         marker.lookup().markerIndex() + "/" + marker.lookup().rotation() + "/" + marker.lookup().hammingDistance());
 
                 // if parabolas exist, draw them:
-                if (parabCurves != null) {
-                    for (PolyLine2d par : parabCurves) {
-                        // System.out.println("adding parabola outline " + par.length());
-                        //System.out.println("pts = " + Arrays.toString(par.toArray()));
-                       ola.addShape(par.getShape());
-                    }
-                }
+                // if (parabCurves != null) {
+                //     for (PolyLine2d par : parabCurves) {
+                //        ola.addShape(par.getShape());
+                //     }
+                // }
             }
             im.setOverlay(ola.getOverlay());
             // im.setTitle(im.getTitle() + " rot=" + res.rotation);

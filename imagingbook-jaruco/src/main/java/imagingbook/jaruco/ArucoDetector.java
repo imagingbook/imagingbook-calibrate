@@ -15,107 +15,47 @@ import imagingbook.jaruco.ArucoDictionary.DictionaryLookupResult;
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.jaruco.MarkerLocator.Type.Parabolic;
+import static imagingbook.jaruco.MarkerLocator.Type.ParabolicFit;
 
+/**
+ * Performs Aruco marker detection.
+ */
 public class ArucoDetector {
 
-    static int PYRAMID_LEVELS = 5;
-
-
-
-    public enum CornerRefineMethod {
-        /** Tag and corners detection based on the ArUco approach */
-        CORNER_REFINE_NONE,
-        /** ArUco approach and refine the corners locations using corner subpixel accuracy */
-        CORNER_REFINE_SUBPIX,
-        /** ArUco approach and refine the corners locations using the contour-points line fitting */
-        CORNER_REFINE_CONTOUR,
-        /** Tag and corners detection based on the AprilTag 2 approach @cite wang2016iros */
-        CORNER_REFINE_APRILTAG
-    }
-
-    public static class DetectorParameters implements ParameterBundle<ArucoDetector> {
-        public int adaptiveThreshWinSizeMin = 3;
-        public int adaptiveThreshWinSizeMax = 23;
-        public int adaptiveThreshWinSizeStep = 10;
-        public int adaptiveThreshConstant = 7;
-        public double minMarkerPerimeterRate = 0.03;
-        public double maxMarkerPerimeterRate = 4.;
+    /**
+     * A bundle of parameters for {@link ArucoDetector}.
+     */
+    public static class Parameters implements ParameterBundle<ArucoDetector> {
+        /** Minimum number of contour points to be considered a marker candidate. */
+        public int minContourLength = 50;
+        /** Minimum circularity of contour to be considered a marker candidate. */
+        public double minCircularity = 0.5;
+        /** Relative straightness tolerance for polygon segmentation (used by {@link ContourSegmenter}) */
         public double polygonalApproxAccuracyRate = 0.03;
-        public double minCornerDistanceRate = 0.05;
-        public int minDistanceToBorder = 3;
-        public double minMarkerDistanceRate = 0.125;
-        public CornerRefineMethod cornerRefinementMethod = CornerRefineMethod.CORNER_REFINE_NONE;
-        public int cornerRefinementWinSize = 5;
-        public double relativeCornerRefinmentWinSize = 0.3;
-        public int cornerRefinementMaxIterations = 30;
-        public double cornerRefinementMinAccuracy = 0.1;
-        public int markerBorderBits = 1;
-        public int perspectiveRemovePixelPerCell = 4;
-        public double perspectiveRemoveIgnoredMarginPerCell = 0.13;
-        public double maxErroneousBitsInBorderRate = 0.35;
-        public double minOtsuStdDev = 5.0;
-        public double errorCorrectionRate = 0.6;
-        public double aprilTagQuadDecimate = 0.0;
-        public double aprilTagQuadSigma = 0.0;
-        public int aprilTagMinClusterPixels = 5;
-        public int aprilTagMaxNmaxima = 10;
-        public double aprilTagCriticalRad = 10 * Math.PI / 180;
-        public double aprilTagMaxLineFitMse = 10.0;
-        public int aprilTagMinWhiteBlackDiff = 5;
-        public int aprilTagDeglitch = 0;
-        public boolean detectInvertedMarker = false;
-        public boolean useAruco3Detection = false;
-        public int minSideLengthCanonicalImg = 32;
-        public double minMarkerLengthRatioOriginalImg = 0.0;
+        /** Fraction of the dictionary's correctable bit errors to actually use (used by {@link ArucoDictionary} */
+        public double maxCorrectionRate = 1.0;
+        /** Type of {@link MarkerLocator} to use. */
+        public MarkerLocator.Type locatorType = ParabolicFit;
+        /** Fraction of quad side length used for fitting (used by {@link StraightLineMarkerLocator}) */
+        public double cornerSupportFraction = 0.05;
     }
 
-    public static class RefineParameters implements ParameterBundle<ArucoDetector> {
-        public double minRepDistance = 10;
-        public double errorCorrectionRate = 3;
-        public boolean checkAllOrders = true;
-    }
+    private final ArucoDictionary dictionary;
+    private final Parameters params;
 
     // -------------------------------------------------------------------------
 
-    private static int minContourLength = 50;
-    private static double minCircularity = 0.5;
-    private static int markerImageSize = 64;
-    private static double maxCorrectionRate = 1.0; // TODO: CHECK!!!
-
-
-    private final MarkerLocator.Type locatorType = Parabolic;      // the best!
-    private final ArucoDictionary dictionary;
-    private final DetectorParameters detectorParams;
-    private final RefineParameters refineParams;
-
     /**
-     * Basic constructor, using default parameter settings specified by
-     * {@link DetectorParameters} and {@link RefineParameters}.
-     *
+     * Constructor.
      * @param dictionary a {@link ArucoDictionary} instance
      */
     public ArucoDetector(ArucoDictionary dictionary) {
-        this(dictionary, new DetectorParameters(), new RefineParameters());
+        this(dictionary, new Parameters());
     }
 
-    /**
-     * Full constructor.
-     * Default parameters are used if null is passed for any of the parameter
-     * bundles.
-     *
-     * @param dictionary a {@link ArucoDictionary} instance
-     * @param detectorParams a {@link DetectorParameters} parameter bundle (may be null)
-     * @param refineParams a {@link RefineParameters} parameter bundle (may be null)
-     */
-    public ArucoDetector(ArucoDictionary dictionary,
-                         DetectorParameters detectorParams,
-                         RefineParameters refineParams) {
+    public ArucoDetector(ArucoDictionary dictionary, Parameters params) {
+        this.params = params;
         this.dictionary = dictionary;
-        this.detectorParams = (detectorParams != null) ?
-                detectorParams : new DetectorParameters();
-        this.refineParams = (refineParams != null) ?
-                refineParams : new RefineParameters();
     }
 
     // -------------------------------------------------------------------------
@@ -156,43 +96,37 @@ public class ArucoDetector {
     void processOneCandidate(Contour contour, ImageProcessor ip, int thr, List<DetectionResult> detections) {
         Polygon2d poly = contour.getPolygon();
         // List<Pnt2d> pts = contour.getPointList();
-        if (poly.length() < minContourLength) {                          // parameter!
+        if (poly.length() < params.minContourLength) {                          // parameter!
             return;
         }
         // A. Segment contour and extract quad
-        SegmentedPolygon segPoly = new ContourSegmenter().segment(poly);
+        SegmentedPolygon segPoly = new ContourSegmenter(params.polygonalApproxAccuracyRate).segment(poly);
         Polygon2d corners = segPoly.getCornerPolygon();
         if (corners.length() != 4 ||                                     // pack into a local method
-                corners.getCircularity() < minCircularity ||           // parameter!
+                corners.getCircularity() < params.minCircularity ||           // parameter!
                 corners.getConvexity() != -1) {
             return;
         }
 
-        // Estimate homography and locate corners
+        // B. Estimate homography and locate corners
+        MarkerLocator locator = MarkerLocator.createFrom(params);
+        Polygon2d initialCorners = locator.getMarkerCorners(segPoly);
 
-        MarkerLocator locator = locatorType.create();
-        Polygon2d initialCorners = locator.getCandidateCorners(segPoly);
-
-        // B: Extract the canonical marker image and read the marker's bitcode
+        // C: Extract the canonical marker image and read the marker's bitcode
         MarkerScanner extractor = new MarkerScanner(ip, dictionary);
         BitVector bitCode = extractor.getMarkerData(initialCorners, thr);
 
-        // C: Lookup the bitcode in the dictionary (all rotations)
-        DictionaryLookupResult lookup = dictionary.lookup(bitCode, maxCorrectionRate);
+        // D: Lookup the bitcode in the dictionary (all rotations)
+        DictionaryLookupResult lookup = dictionary.lookup(bitCode, params.maxCorrectionRate);
         if (lookup == null) {
             return;
         }
-        // Rotate corners to canonical to align with ArUco pattern printouts
+        // E. Rotate corners to canonical to align with ArUco pattern printouts
         // (corner 0 is the top-left corner of the marker)
         Polygon2d finalCorners = initialCorners.rotate(-lookup.rotation());
-        DetectionResult det = new DetectionResult(lookup, finalCorners);
-
-        // System.out.println("\n***** " + lookup.markerIndex() + " ********** ");
-        // System.out.println("refinedCorners = " + refinedCorners);
-        // System.out.println("finalCorners = " + finalCorners);
-        // System.out.println("det = " + det);
-
-        detections.add(det);
+        // Merge everything into the result.
+        DetectionResult result = new DetectionResult(lookup, finalCorners);
+        detections.add(result);
     }
 
     // -------------------------------------------------------------------------
@@ -201,17 +135,6 @@ public class ArucoDetector {
      * Represents the result of a single marker detection.
      */
      public record DetectionResult(
-            // String dictName,
-            // int markerId,
-            // int rotation,
-            // int hammingDist,
             DictionaryLookupResult lookup,
-            Polygon2d corners)
-    {
-
-         // DetectionResult(DictionaryLookupResult lookup, Polygon2d corners) {
-         //     this(lookup.dictionaryName(), lookup.markerIndex(), lookup.rotation(),
-         //             lookup.hammingDistance(), corners);
-         // }
-     }
+            Polygon2d corners) { }
 }

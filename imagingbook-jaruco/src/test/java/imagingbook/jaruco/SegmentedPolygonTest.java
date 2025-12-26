@@ -20,8 +20,8 @@ class SegmentedPolygonTest {
         assertEquals(4, segCtr.getSegmentCount());
         // each segment has length 1 and contains a corner
         for (int k = 0; k < segCtr.getSegmentCount(); k++) {
-            assertEquals(1, segCtr.getSegment(k).length);
-            assertSame(segCtr.getCorner(k), segCtr.getSegment(k)[0]);
+            assertEquals(1, segCtr.getSegmentPoints(k).length);
+            assertSame(segCtr.getCornerPoint(k), segCtr.getSegmentPoints(k)[0]);
         }
     }
 
@@ -30,14 +30,14 @@ class SegmentedPolygonTest {
     }
 
     @Test
-    void getCornerTest() {
+    void getCornerPointTest() {
     }
 
     @Test
-    void getCornersTest() {
+    void getCornerPointPointsTest() {
     }
 
     @Test
-    void getSegmentTest() {
+    void getSegmentPointsTest() {
     }
 }

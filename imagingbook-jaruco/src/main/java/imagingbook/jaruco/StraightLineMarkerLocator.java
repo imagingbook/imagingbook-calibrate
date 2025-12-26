@@ -8,7 +8,6 @@ import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static imagingbook.common.math.Arithmetic.sqr;
@@ -16,7 +15,7 @@ import static imagingbook.common.math.Matrix.multiply;
 
 /**
  * Implementation of {@link MarkerLocator} which uses a special minimum
- * least-squares fit incorporating the contour corners and a subset of
+ * least-squares fit incorporating the four contour corners and a subset of
  * intermediate contour points to be fit to straight lines.
  */
 public class StraightLineMarkerLocator implements MarkerLocator {
@@ -27,35 +26,26 @@ public class StraightLineMarkerLocator implements MarkerLocator {
     // private static final double[][] UNIT_SQUARE_CW =    // corners of the unit square (CW)
     //         {{0,0}, {0,1}, {1,1}, {1,0}};
 
-    //private final SegmentedPolygon poly;
-    private RealMatrix A = null;		// the calculated transformation matrix
-    private double err = Double.NaN;	// the calculated error
 
+    private final double cornerSupportFraction; // set from parameters
+
+    private RealMatrix A = null;		// the calculated transformation matrix
     private RealMatrix M = null;    // linear problem M a = b
     private RealVector b = null;    // keep for error calculation
     private RealVector a = null;    // transformation parameter vector
-
-    public static final double DEFAULT_CORNER_SUPPORT = 0.05;
-    private final double cornerSupport; // the interval [0,cornerSupport] where segment points are included
+    private double err = Double.NaN;	// the calculated error
 
     /**
      * Constructor.
-     * @param cornerSupport the fraction of each quad side length used to fit straight lines,
-     * default is 0.05 or 5% on each end (see {@link #DEFAULT_CORNER_SUPPORT}).
+     * {@code cornerSupport} is the fraction of each quad side length used to fit straight lines
+     * (default is 0.05 or 5% on each end, See {@link ArucoDetector.Parameters#cornerSupportFraction}.
      */
-    public StraightLineMarkerLocator(double cornerSupport) {
-        this.cornerSupport = cornerSupport;
-    }
-
-    /**
-     * Constructor using default values (see {@link #DEFAULT_CORNER_SUPPORT}=.
-     */
-    public StraightLineMarkerLocator() {
-        this(DEFAULT_CORNER_SUPPORT);
+    public StraightLineMarkerLocator(ArucoDetector.Parameters params) {
+        this.cornerSupportFraction = params.cornerSupportFraction;
     }
 
     @Override
-    public Polygon2d getCandidateCorners(SegmentedPolygon poly) {
+    public Polygon2d getMarkerCorners(SegmentedPolygon poly) {
         doFit(poly);
         ProjectiveMapping2D mapping =
                 new ProjectiveMapping2D(A.getData()).getInverse(); // target to source mapping
@@ -66,25 +56,26 @@ public class StraightLineMarkerLocator implements MarkerLocator {
         }
 
         // DEBUGGING
-        Main.parabCurves = new ArrayList<>();
-        Main.parabCurves.add(new PolyLine2d(corners.get(0), corners.get(1)));
-        Main.parabCurves.add(new PolyLine2d(corners.get(1), corners.get(2)));
-        Main.parabCurves.add(new PolyLine2d(corners.get(2), corners.get(3)));
-        Main.parabCurves.add(new PolyLine2d(corners.get(3), corners.get(0)));
+        // Main.parabCurves = new ArrayList<>();
+        // Main.parabCurves.add(new PolyLine2d(corners.get(0), corners.get(1)));
+        // Main.parabCurves.add(new PolyLine2d(corners.get(1), corners.get(2)));
+        // Main.parabCurves.add(new PolyLine2d(corners.get(2), corners.get(3)));
+        // Main.parabCurves.add(new PolyLine2d(corners.get(3), corners.get(0)));
 
         return new Polygon2d(corners);
     }
 
     // -------------------------------------------------------------------------
 
+    // this version collects row of M and b into lists first,
+    // then builds the matrix/vector:
     private void doFit(SegmentedPolygon poly) {
         double[][] unitSquare = UNIT_SQUARE_CCW;
-        System.out.println("cornerSupport = " + cornerSupport);
-        // System.out.println("QuadHomographyFit: convexity =" + Polygons.convexity(quad.getCorners()));
-        int n = poly.length();
+
+        // int n = poly.length();
         // set up vector b and matrix M as arrays, each with n + 4 rows:
-        double[] bb = new double[n + 4]; Arrays.fill(bb, Double.NaN);
-        double[][] MM = new double[n + 4][];
+        // double[] bb = new double[n + 4]; Arrays.fill(bb, Double.NaN);
+        // double[][] MM = new double[n + 4][];
 
         List<Double> bb_list = new ArrayList<>();
         List<double[]> MM_list = new ArrayList<>();
@@ -92,8 +83,8 @@ public class StraightLineMarkerLocator implements MarkerLocator {
         // Mount matrix M and vector b:
         int row = 0;    // row counter
         for (int k = 0; k < 4; k++) {   // process each of the 4 segments
-            Pnt2d[] segmentCur = poly.getSegment(k);
-            Pnt2d[] segmentNxt = poly.getSegment((k + 1) % 4);
+            Pnt2d[] segmentCur = poly.getSegmentPoints(k);
+            Pnt2d[] segmentNxt = poly.getSegmentPoints((k + 1) % 4);
 
             Pnt2d corner0 = segmentCur[0];  // corner at start of current segment
             Pnt2d corner1 = segmentNxt[0];  // corner at start of following segment
@@ -105,14 +96,14 @@ public class StraightLineMarkerLocator implements MarkerLocator {
             double qx = unitSquare[k][0];   // 0/1 corner on unit square
             double qy = unitSquare[k][1];   // 0/1
 
-
-            bb[row] = qx;   // map to unit square corner (x)
-            MM[row] = new double[] { cx, cy, 1, 0, 0, 0, -qx * cx, -qx * cy };
+            // bb[row] = qx;   // map to unit square corner (x)
+            // MM[row] = new double[] { cx, cy, 1, 0, 0, 0, -qx * cx, -qx * cy };
             bb_list.add(qx);
             MM_list.add(new double[] { cx, cy, 1, 0, 0, 0, -qx * cx, -qx * cy });
             row++;
-            bb[row] = qy;   // map to unit square corner (y)
-            MM[row] = new double[] { 0, 0, 0, cx, cy, 1, -qy * cx, -qy * cy };
+
+            // bb[row] = qy;   // map to unit square corner (y)
+            // MM[row] = new double[] { 0, 0, 0, cx, cy, 1, -qy * cx, -qy * cy };
             bb_list.add(qy);
             MM_list.add(new double[] { 0, 0, 0, cx, cy, 1, -qy * cx, -qy * cy });
             row++;
@@ -123,23 +114,21 @@ public class StraightLineMarkerLocator implements MarkerLocator {
                 Pnt2d p = segmentCur[i];
                 double px = p.getX();
                 double py = p.getY();
-                // TODO: calculate point's relative position on segment,
-                //  omit point or assign zero weight!
-                double d = lineSegment.getRelPosition(p);
-                // System.out.printf(" %s %s %s  d = %.2f\n", corner0, corner1, p, d);
-                double w = (d < cornerSupport || d > 1 - cornerSupport) ? 1 : 0;    // weight for point i
+
+                double d = lineSegment.getRelativePosition(p);
+                double w = (d < cornerSupportFraction || d > 1 - cornerSupportFraction) ? 1 : 0;  // weight for point i
 
                 if (k % 2 == 0) {       // even-numbered segment (enforcing qy)
-                    bb[row] = w * qy;
-                    MM[row] = multiply(w, new double[] { 0, 0, 0, px, py, 1, -qy * px, -qy * py });
+                    // bb[row] = w * qy;
+                    // MM[row] = multiply(w, new double[] { 0, 0, 0, px, py, 1, -qy * px, -qy * py });
                     if (w > 0) {
                         bb_list.add(qy);
                         MM_list.add(new double[]{0, 0, 0, px, py, 1, -qy * px, -qy * py});
                     }
                 }
                 else {                  // odd-numbered segment (enforcing qx)
-                    bb[row] = w * qx;
-                    MM[row] = multiply(w, new double[] { px, py, 1, 0, 0, 0, -qx * px, -qx * py });
+                    // bb[row] = w * qx;
+                    // MM[row] = multiply(w, new double[] { px, py, 1, 0, 0, 0, -qx * px, -qx * py });
                     if (w > 0) {
                         bb_list.add(qx);
                         MM_list.add(new double[] { px, py, 1, 0, 0, 0, -qx * px, -qx * py });
@@ -150,32 +139,26 @@ public class StraightLineMarkerLocator implements MarkerLocator {
         }
 
         // check if all rows are filled;
-        for (int i = 0; i < bb.length; i++) {
-            if (bb[i] == Double.NaN) {
-                throw new IllegalStateException("problem in bb row " + i);
-            }
-            if (MM[i] == null || MM[i].length != 8) {
-                throw new IllegalStateException("problem in MM row " + i);
-            }
-
-        }
-
-        //this.M = new Array2DRowRealMatrix(MM, false);
-        //this.b = new ArrayRealVector(bb, false);
-
-        System.out.println("number of rows: " + bb_list.size());
+        // for (int i = 0; i < bb.length; i++) {
+        //     if (Double.isNaN(bb[i])) {
+        //         throw new IllegalStateException("problem in bb row " + i);
+        //     }
+        //     if (MM[i] == null || MM[i].length != 8) {
+        //         throw new IllegalStateException("problem in MM row " + i);
+        //     }
+        //
+        // }
 
         if (bb_list.size() != MM_list.size()) {
-            throw new RuntimeException("bb not same length as MM");
+            throw new RuntimeException("bb_list not same length as MM_list");
         }
+
         this.M = new Array2DRowRealMatrix(MM_list.size(), 8);
         this.b = new ArrayRealVector(bb_list.size());
         for (int r = 0; r < MM_list.size(); r++) {
             M.setRow(r, MM_list.get(r));
             b.setEntry(r, bb_list.get(r));
         }
-
-
 
         DecompositionSolver solver = new QRDecomposition(M).getSolver();
         this.a = solver.solve(b);
@@ -193,16 +176,6 @@ public class StraightLineMarkerLocator implements MarkerLocator {
         A.setEntry(2, 2, 1.0);
 
         // err = Math.sqrt(LinearFit2d.getSquaredError(P, Q, A.getData()));
-    }
-
-    @Deprecated
-    static double relPosition(Pnt2d A, Pnt2d B,  Pnt2d C) {
-        RealVector a = A.toRealVector();
-        RealVector b = B.toRealVector();
-        RealVector c = C.toRealVector();
-        RealVector b_a = b.subtract(a);
-        RealVector c_a = c.subtract(a);
-        return c_a.dotProduct(b_a) / sqr(b_a.getNorm());
     }
 
     // --------------------------------------------------------
@@ -240,7 +213,7 @@ public class StraightLineMarkerLocator implements MarkerLocator {
          * @param C point to be projected
          * @return relative distance of projection from {@code A}
          */
-        double getRelPosition(Pnt2d C) {
+        double getRelativePosition(Pnt2d C) {
             return Matrix.dotProduct(Matrix.subtract(C.toDoubleArray(), a), b_a) / normAB;
         }
     }
@@ -260,17 +233,5 @@ public class StraightLineMarkerLocator implements MarkerLocator {
         }
         return err;
     }
-
-    // --------------------------------------------------------
-
-    // public static void main(String[] args) {
-    //     Pnt2d A = Pnt2d.from(1, 0);
-    //     Pnt2d B = Pnt2d.from(15, -100);
-    //     Pnt2d C = Pnt2d.from(-10, -0.5);
-    //     System.out.println("d1 = " + relPosition(A, B, C));
-    //
-    //     LineSegment ls = new LineSegment(A, B);
-    //     System.out.println("d2 = " + ls.getRelPosition(C));
-    // }
 
 }

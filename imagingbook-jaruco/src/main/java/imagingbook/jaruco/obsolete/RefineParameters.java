@@ -1,6 +1,7 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.obsolete;
 
 import imagingbook.common.util.ParameterBundle;
+import imagingbook.jaruco.ArucoDetector;
 
 @Deprecated
 public class RefineParameters implements ParameterBundle<ArucoDetector> {

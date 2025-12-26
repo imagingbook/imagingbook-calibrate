@@ -9,31 +9,31 @@ import imagingbook.common.geometry.basic.Polygon2d;
 public interface MarkerLocator {
 
     public enum Type {
-        RawCorners {
-            @Override
-            public MarkerLocator create() {
-                return new RawCornersMarkerLocator();
-            }},
-        StraightLine {
-            @Override
-            public MarkerLocator create() {
-                return new StraightLineMarkerLocator();
-            }},
-        Parabolic {
-            @Override
-            public MarkerLocator create() {
-                return new ParabolicMarkerLocator();
-            }};
+        RawCorners,
+        StraightLineFit,
+        ParabolicFit
+    }
 
-        public abstract MarkerLocator create();
+    /**
+     * Returns a new instance of the specified {@link MarkerLocator} type, which is extracted
+     * from the passed parameters.
+     * @param params a parameter bundle associated with the calling {@link ArucoDetector} instance
+     * @return a new {@link MarkerLocator}
+     */
+    public static MarkerLocator createFrom(ArucoDetector.Parameters params) {
+        return switch (params.locatorType) {
+            case RawCorners -> new RawCornersMarkerLocator(params);
+            case StraightLineFit -> new StraightLineMarkerLocator(params);
+            case ParabolicFit -> new ParabolicMarkerLocator(params);
+        };
     }
 
     /**
      * Returns the (usually but not necessarily refined) image corner coordinates
      * for the marker candidate as a {@link Polygon2d} instance.
-     * @param segmentedPolygon the original, already segmented contour
+     * @param segmentedPolygon the original, already segmented contour (see {@link SegmentedPolygon})
      * @return the refined corner points in image coordinates
      */
-    public Polygon2d getCandidateCorners(SegmentedPolygon segmentedPolygon);
+    public Polygon2d getMarkerCorners(SegmentedPolygon segmentedPolygon);
 
 }

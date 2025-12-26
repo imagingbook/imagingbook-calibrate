@@ -14,14 +14,7 @@ import static imagingbook.common.math.Arithmetic.sqr;
  */
 public class ContourSegmenter {
 
-    public static final double DefaultAccuracyRate = 0.03;   //= detectorParams.polygonalApproxAccuracyRate;
-
-    private final double accuracyRate;
-
-    // Processing parameters to be added
-    public ContourSegmenter() {
-        this(DefaultAccuracyRate);
-    }
+    private final double accuracyRate;  // extracted from parameters
 
     public ContourSegmenter(double accuracyRate) {
         this.accuracyRate = accuracyRate;

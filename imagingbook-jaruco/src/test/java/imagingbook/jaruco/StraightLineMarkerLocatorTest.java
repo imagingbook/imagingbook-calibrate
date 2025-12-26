@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class StraightLineMarkerLocatorTest {
 
+    static final double polygonalApproxAccuracyRate = 0.03;  // from ArUco parameters
+
     @Test
     void fitRealContourTest() {
         String RES_PATH = "test-contours/";     // these are long contours!
@@ -24,7 +26,8 @@ class StraightLineMarkerLocatorTest {
         assertNotNull(contour);
         assertNotNull(corners);
 
-        SegmentedPolygon segCtr = new ContourSegmenter().segment(PntUtils.makePntList(contour)); // tol = contour.length * polygonalApproxAccuracyRate
+        SegmentedPolygon segCtr = new ContourSegmenter(polygonalApproxAccuracyRate)
+                .segment(PntUtils.makePntList(contour)); // tol = contour.length * polygonalApproxAccuracyRate
         assertEquals(4, segCtr.getSegmentCount());
 
         // QuadHomographyFit fit = new QuadHomographyFit(segCtr);

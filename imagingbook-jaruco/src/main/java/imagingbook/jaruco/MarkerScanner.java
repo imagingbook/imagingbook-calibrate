@@ -9,21 +9,25 @@ import imagingbook.common.image.ImageMapper;
 import imagingbook.common.util.bits.BitVector;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Extracts the normalized (canonical) marker image from the input image and
- * reads the marker bits by scanning that image.
+ * reads the marker bits by sampling that image.
  */
 public class MarkerScanner {
 
     private final ImageProcessor ip;    // the input image
     private final int markerSize;       // the number of marker data fields in each direction
     private final int targetSize;       // the size of the canonical image (5x5 pixels for each marker field)
-    private final int fieldWidth;
-    private final int sampleOffset;
-    private final Pnt2d[] targetPts;
+    private final int fieldWidth;       // bits per marker field (fixed)
+    private final int sampleOffset;     // where to start sampling
+    private final Pnt2d[] targetPts;    // the exact rectangle to map the marker quad to
 
+    /**
+     * Constructor.
+     * @param ip the image to read markers from
+     * @param dictionary the {@link ArucoDictionary} for looking up bitcodes
+     */
     public MarkerScanner(ImageProcessor ip, ArucoDictionary dictionary) {
         this.ip = ip;
         this.markerSize = dictionary.getMarkerSize();
@@ -39,16 +43,6 @@ public class MarkerScanner {
         // TODO: pre-calculate sample raster positions?
     }
 
-
-    BitVector getMarkerData(List<Pnt2d> outline, int threshold) {
-        Pnt2d[] sourcePts = outline.toArray(new Pnt2d[0]);
-        // calculate homography mapping (from target to source):
-        ProjectiveMapping2D hom = ProjectiveMapping2D.fromPoints(targetPts, sourcePts);
-        ByteProcessor canonicalIm = new ByteProcessor(targetSize, targetSize);
-        new ImageMapper(hom).map(ip, canonicalIm);
-        return parseImage(canonicalIm, threshold);
-    }
-
     /**
      * Extracts a square marker patch image and parses the bit pattern assuming
      * the marker structure specified by the current directory.
@@ -61,12 +55,17 @@ public class MarkerScanner {
      * {@code threshold}, which is typically the threshold applied to obtain
      * the binary image for region and contour extraction.
      *
-     * @param outline the corners of the marker quad (image coordinates)
+     * @param poly the corners of the marker quad (image coordinates)
      * @param threshold the threshold to decide 0/1 field contents
      * @return a {@link BitVector} holding the extracted bit pattern
      */
-    public BitVector getMarkerData(Polygon2d outline, int threshold) {
-        return getMarkerData(outline.getPntList(), threshold);
+    public BitVector getMarkerData(Polygon2d poly, int threshold) {
+        Pnt2d[] sourcePts = poly.getPntList().toArray(new Pnt2d[0]);
+        // calculate homography mapping (from target to source):
+        ProjectiveMapping2D hom = ProjectiveMapping2D.fromPoints(targetPts, sourcePts);
+        ByteProcessor canonicalIm = new ByteProcessor(targetSize, targetSize);
+        new ImageMapper(hom).map(ip, canonicalIm);
+        return parseImage(canonicalIm, threshold);
     }
 
     // ------------------------------------------------------------------------
@@ -104,6 +103,14 @@ public class MarkerScanner {
         return bits;
     }
 
+    /**
+     * Calculates the median gray value in a 3x3 image neighborhood centered at
+     * {@code u}, {@code v}.
+     * @param ip the image
+     * @param u position  in x
+     * @param v position in y
+     * @return the median value
+     */
     private static int get3x3Median(ByteProcessor ip, int u, int v) {
         // collect 3x3 values
         int[] vals = new int[9];
@@ -115,7 +122,7 @@ public class MarkerScanner {
             }
         }
         Arrays.sort(vals);  // calculate median
-        return vals[4];
+        return vals[4];     // the mid value
     }
 
 }

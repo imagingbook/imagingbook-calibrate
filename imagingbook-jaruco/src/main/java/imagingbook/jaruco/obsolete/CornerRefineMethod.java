@@ -1,4 +1,4 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.obsolete;
 
 @Deprecated
 public enum CornerRefineMethod {

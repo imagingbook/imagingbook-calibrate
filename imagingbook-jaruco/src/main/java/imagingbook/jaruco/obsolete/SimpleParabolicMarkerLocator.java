@@ -1,10 +1,13 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.obsolete;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
+import imagingbook.jaruco.Main;
+import imagingbook.jaruco.MarkerLocator;
+import imagingbook.jaruco.SegmentedPolygon;
 import imagingbook.jaruco.math.Parabola;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
@@ -42,7 +45,7 @@ public class SimpleParabolicMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public Polygon2d getCandidateCorners(SegmentedPolygon poly) {
+    public Polygon2d getMarkerCorners(SegmentedPolygon poly) {
         Pnt2d[] corners = poly.getCornerPolygon().getPntList().toArray(new Pnt2d[0]);
         Pnt2d[] unitPts = PntUtils.makePntList(UNIT_SQUARE_CCW).toArray(new Pnt2d[0]);
 
@@ -51,7 +54,7 @@ public class SimpleParabolicMarkerLocator implements MarkerLocator {
         // Copy all contour points and map to normalized space
         Pnt2d[][] segments = new Pnt2d[4][];
         for (int k = 0; k < 4; k++) {
-            segments[k] = poly.getSegment(k);
+            segments[k] = poly.getSegmentPoints(k);
             for (int i = 0; i < segments[k].length; i++) {
                 segments[k][i] = forwdMap.applyTo(segments[k][i]);
             }
@@ -79,7 +82,7 @@ public class SimpleParabolicMarkerLocator implements MarkerLocator {
             List<Pnt2d> curve = par.sample(-0.5, 1.5, 20);
             parabCurves.add(new PolyLine2d(invMap.applyTo(curve)));
         }
-        Main.parabCurves = parabCurves;
+        // Main.parabCurves = parabCurves;
         // ----------------------------------------------------
         return new Polygon2d(invMap.applyTo(Arrays.asList(ix)));
     }
