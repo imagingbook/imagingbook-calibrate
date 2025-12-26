@@ -15,6 +15,8 @@ import imagingbook.jaruco.ArucoDictionary.DictionaryLookupResult;
 import java.util.ArrayList;
 import java.util.List;
 
+import static imagingbook.jaruco.MarkerLocator.Type.Parabolic;
+
 public class ArucoDetector {
 
     static int PYRAMID_LEVELS = 5;
@@ -82,6 +84,7 @@ public class ArucoDetector {
     private static double maxCorrectionRate = 1.0; // TODO: CHECK!!!
 
 
+    private final MarkerLocator.Type locatorType = Parabolic;      // the best!
     private final ArucoDictionary dictionary;
     private final DetectorParameters detectorParams;
     private final RefineParameters refineParams;
@@ -166,10 +169,8 @@ public class ArucoDetector {
         }
 
         // Estimate homography and locate corners
-        // MarkerLocator locator = new RawCornerMarkerLocator();
-        // MarkerLocator locator = new StraightLineMarkerLocator();
-        // MarkerLocator locator = new SimpleParabolicMarkerLocator();
-        MarkerLocator locator = new SplitParabolicMarkerLocator();  // the best!
+
+        MarkerLocator locator = locatorType.create();
         Polygon2d initialCorners = locator.getCandidateCorners(segPoly);
 
         // B: Extract the canonical marker image and read the marker's bitcode

@@ -68,7 +68,6 @@ public class Main {
         }
 
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
-        System.out.println("Dict name = " + dict.getName());
         ArucoDetector detector = new ArucoDetector(dict);
 
         ColoredStroke cornerStroke = new ColoredStroke(1.0, Color.blue);
@@ -88,6 +87,7 @@ public class Main {
                 {detectedMarkers.addAll(detector.detectMarkers(im.getProcessor()));}
             );
             System.out.println("Elapsed time (ms): " + elapsed/1000000);
+            System.out.println("Markers found: " + detectedMarkers.size());
             // ------------------------------------------------------------
 
             // process all detected markers

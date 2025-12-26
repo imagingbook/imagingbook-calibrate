@@ -27,7 +27,7 @@ import static imagingbook.common.math.Arithmetic.sqr;
  * (4) find the intersections of parabola pairs  and (5) maps these back
  * as refined marker corners.
  */
-public class SplitParabolicMarkerLocator implements MarkerLocator {
+public class ParabolicMarkerLocator implements MarkerLocator {
 
     private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
             {{0,0}, {1,0}, {1,1}, {0,1}};
@@ -38,7 +38,7 @@ public class SplitParabolicMarkerLocator implements MarkerLocator {
     /**
      * Constructor.
      */
-    public SplitParabolicMarkerLocator() {
+    public ParabolicMarkerLocator() {
     }
 
     @Override
