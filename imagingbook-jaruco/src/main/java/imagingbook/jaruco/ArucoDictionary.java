@@ -277,7 +277,7 @@ public class ArucoDictionary {
 
     /**
      * Scans the dictionary for the index of the best-fitting marker and
-     * if successful, builds and returns a {@link LookupResult} instance.
+     * if successful, builds and returns a {@link DictionaryLookupResult} instance.
      * Otherwise, null is returned.
      * Different to the OpenCV implementation we potentially scan the entire
      * dictionary, continuing even if an "acceptable" match was found.
@@ -287,9 +287,9 @@ public class ArucoDictionary {
      * matching (Hamming distance calculation) is very efficient.
      *
      * @param candidate the bit pattern extracted from the candidate region
-     * @return a {@link LookupResult} instance or null if unsuccessful
+     * @return a {@link DictionaryLookupResult} instance or null if unsuccessful
      */
-    public LookupResult lookup(BitVector candidate, double maxCorrectionRate) {
+    public DictionaryLookupResult lookup(BitVector candidate, double maxCorrectionRate) {
         Objects.requireNonNull(candidate, "candidate bits must not be null");
         int maxCorrectionRecalc = (int) (maxCorrectionBits * maxCorrectionRate);
 
@@ -328,7 +328,7 @@ public class ArucoDictionary {
         // System.out.println("minDist = " + minDist);
 
         if (minIdx >= 0 &&  minDist <= maxCorrectionRecalc) {
-            return new LookupResult(minIdx, minRot, minDist);
+            return new DictionaryLookupResult(this.getName(), minIdx, minRot, minDist);
         }
         else {
             return null;
@@ -351,8 +351,8 @@ public class ArucoDictionary {
      * @param rotation
      * @param hammingDistance
      */
-    public record LookupResult(
-
+    public record DictionaryLookupResult(
+            String dictionaryName,
             int markerIndex,
             int rotation,
             int hammingDistance) {}
@@ -363,7 +363,7 @@ public class ArucoDictionary {
      * Creates a marker image of the specified dictionary entry with a
      * surrounding 1-pixel black border.
      * @param idx the marker index
-     * @param rot the rotation index (0,..3)
+     * @param rot the rotation index (0,...,3)
      * @return an image of the specified marker with 1 pixel per code field
      */
     public ByteProcessor getMarkerImage(int idx, int rot) {

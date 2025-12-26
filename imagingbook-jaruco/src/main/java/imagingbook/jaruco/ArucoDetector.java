@@ -10,7 +10,7 @@ import imagingbook.common.regions.RegionContourSegmentation;
 import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.common.util.ParameterBundle;
 import imagingbook.common.util.bits.BitVector;
-import imagingbook.jaruco.ArucoDictionary.LookupResult;
+import imagingbook.jaruco.ArucoDictionary.DictionaryLookupResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,8 +123,6 @@ public class ArucoDetector {
      * @return a (possibly empty) list of {@link DetectionResult} instances
      */
     public List<DetectionResult> detectMarkers(ImageProcessor ip) {
-        List<DetectionResult> detections = new ArrayList<>();
-
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
 
@@ -138,53 +136,62 @@ public class ArucoDetector {
         // of black regions are actually INNER contours:
         List<? extends Contour> ics = ct.getInnerContours();             // inner corners run CCW?
 
-        // process all contours
-        for (Contour contour : ics) {
-            Polygon2d poly = contour.getPolygon();
-            // List<Pnt2d> pts = contour.getPointList();
-            if (poly.length() < minContourLength) {                          // parameter!
-                continue;
-            }
-            // A. Segment contour and extract quad
-            SegmentedPolygon segPoly = new ContourSegmenter().segment(poly);
-            Polygon2d corners = segPoly.getCornerPolygon();
-            if (corners.length() != 4 ||                                     // pack into a local method
-                corners.getCircularity() < minCircularity ||           // parameter!
-                corners.getConvexity() != -1) {
-                continue;
-            }
+        List<DetectionResult> detections = new ArrayList<>();
 
-            // Estimate homography and locate corners
-            // MarkerLocator locator = new SimpleMarkerLocator();
-            // MarkerLocator locator = new LeastSquaresMarkerLocator();
-            // MarkerLocator locator = new ParabolicMarkerLocator();
-            MarkerLocator locator = new SplitParabolicMarkerLocator();  // the best!
-
-            Polygon2d refinedCorners = locator.getCornerPolygon(segPoly);
-
-            // B: Extract the canonical marker image and read the marker's bitcode
-            MarkerScanner extractor = new MarkerScanner(ip, dictionary);
-            BitVector bitCode = extractor.getMarkerData(refinedCorners, thr);
-
-            // C: Lookup the bitcode in the dictionary (all rotations)
-            LookupResult lookup = dictionary.lookup(bitCode, maxCorrectionRate);
-            if (lookup == null) {
-               continue;
-            }
-            // Rotate corners to canonical to align with ArUco pattern printouts
-            // (corner 0 is the top-left corner of the marker)
-            Polygon2d finalCorners = refinedCorners.rotate(-lookup.rotation());
-            DetectionResult det = new DetectionResult(dictionary.getName(), lookup, finalCorners);
-
-            // System.out.println("\n***** " + lookup.markerIndex() + " ********** ");
-            // System.out.println("refinedCorners = " + refinedCorners);
-            // System.out.println("finalCorners = " + finalCorners);
-            // System.out.println("det = " + det);
-
-            detections.add(det);
+        // process all contours and collect results in detections
+        for (Contour candidate : ics) {
+            processOneCandidate(candidate, ip, thr, detections);
         }
 
+        // multi-threaded version:
+        // ics.parallelStream().forEach(candidate ->
+        //         processOneCandidate(candidate, ip, thr, detections));
+
         return detections;
+    }
+
+    void processOneCandidate(Contour contour, ImageProcessor ip, int thr, List<DetectionResult> detections) {
+        Polygon2d poly = contour.getPolygon();
+        // List<Pnt2d> pts = contour.getPointList();
+        if (poly.length() < minContourLength) {                          // parameter!
+            return;
+        }
+        // A. Segment contour and extract quad
+        SegmentedPolygon segPoly = new ContourSegmenter().segment(poly);
+        Polygon2d corners = segPoly.getCornerPolygon();
+        if (corners.length() != 4 ||                                     // pack into a local method
+                corners.getCircularity() < minCircularity ||           // parameter!
+                corners.getConvexity() != -1) {
+            return;
+        }
+
+        // Estimate homography and locate corners
+        // MarkerLocator locator = new SimpleMarkerLocator();
+        // MarkerLocator locator = new LeastSquaresMarkerLocator();
+        // MarkerLocator locator = new ParabolicMarkerLocator();
+        MarkerLocator locator = new SplitParabolicMarkerLocator();  // the best!
+        Polygon2d initialCorners = locator.getCornerPolygon(segPoly);
+
+        // B: Extract the canonical marker image and read the marker's bitcode
+        MarkerScanner extractor = new MarkerScanner(ip, dictionary);
+        BitVector bitCode = extractor.getMarkerData(initialCorners, thr);
+
+        // C: Lookup the bitcode in the dictionary (all rotations)
+        DictionaryLookupResult lookup = dictionary.lookup(bitCode, maxCorrectionRate);
+        if (lookup == null) {
+            return;
+        }
+        // Rotate corners to canonical to align with ArUco pattern printouts
+        // (corner 0 is the top-left corner of the marker)
+        Polygon2d finalCorners = initialCorners.rotate(-lookup.rotation());
+        DetectionResult det = new DetectionResult(lookup, finalCorners);
+
+        // System.out.println("\n***** " + lookup.markerIndex() + " ********** ");
+        // System.out.println("refinedCorners = " + refinedCorners);
+        // System.out.println("finalCorners = " + finalCorners);
+        // System.out.println("det = " + det);
+
+        detections.add(det);
     }
 
     // -------------------------------------------------------------------------
@@ -193,15 +200,17 @@ public class ArucoDetector {
      * Represents the result of a single marker detection.
      */
      public record DetectionResult(
-            String dictName,
-            int markerId,
-            int rotation,
-            int hammingDist,
+            // String dictName,
+            // int markerId,
+            // int rotation,
+            // int hammingDist,
+            DictionaryLookupResult lookup,
             Polygon2d corners)
     {
 
-         DetectionResult(String dictName, LookupResult lookup, Polygon2d corners) {
-             this(dictName, lookup.markerIndex(), lookup.rotation(), lookup.hammingDistance(), corners);
-         }
+         // DetectionResult(DictionaryLookupResult lookup, Polygon2d corners) {
+         //     this(lookup.dictionaryName(), lookup.markerIndex(), lookup.rotation(),
+         //             lookup.hammingDistance(), corners);
+         // }
      }
 }

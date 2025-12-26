@@ -14,7 +14,7 @@ class ArucoDictionaryTest {
     void lookupTest1() {
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
         BitVector pattern0 = toBitVector("1011010000010000001010111");
-        ArucoDictionary.LookupResult result = dict.lookup(pattern0, 2);
+        ArucoDictionary.DictionaryLookupResult result = dict.lookup(pattern0, 2);
         // System.out.println(result);
         assertNotNull(result);
         assertEquals(5, result.markerIndex());
@@ -33,7 +33,7 @@ class ArucoDictionaryTest {
         patterns[3] =  MatrixRotationUtils.permute(patterns[2], rotperm);
 
         for (int r=0; r<4; r++) {
-            ArucoDictionary.LookupResult result = dict.lookup(toBitVector(patterns[r]), 2);
+            ArucoDictionary.DictionaryLookupResult result = dict.lookup(toBitVector(patterns[r]), 2);
             assertNotNull(result);
             // System.out.println(result);
             assertEquals(5, result.markerIndex());

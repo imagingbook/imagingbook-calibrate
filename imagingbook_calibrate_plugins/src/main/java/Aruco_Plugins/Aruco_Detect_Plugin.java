@@ -58,18 +58,18 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
         ColoredStroke stroke = new ColoredStroke(1.0, Color.blue);
         ColoredStroke stroke0 = new ColoredStroke(1.0 * 3, Color.red);
 
-        List<ArucoDetector.DetectionResult> markerDetectionResults =
+        List<ArucoDetector.DetectionResult> detectedMarkers =
                 detector.detectMarkers(im.getProcessor());
         // System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
-        if (markerDetectionResults.isEmpty()) {
+        if (detectedMarkers.isEmpty()) {
             IJ.log("No markers found!");
             return;
         }
 
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-        for (ArucoDetector.DetectionResult res : markerDetectionResults) {
-            Polygon2d corners = res.corners();
+        for (ArucoDetector.DetectionResult marker : detectedMarkers) {
+            Polygon2d corners = marker.corners();
             ola.addShape(corners.getShape(), stroke);
 
             ola.setFont(CornerFont);
@@ -88,7 +88,9 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
             Pnt2d center = corners.getCentroid();
             ola.setFont(MarkerFont);
             ola.setTextColor(MarkerColor);
-            ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
+            // ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
+            ola.addText(center.getX(), center.getY(),
+                    marker.lookup().markerIndex() + "/" + marker.lookup().rotation() + "/" + marker.lookup().hammingDistance());
         }
 
         im.setOverlay(ola.getOverlay());

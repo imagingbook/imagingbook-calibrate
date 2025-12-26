@@ -11,7 +11,10 @@ import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Ellipse2D;
+import java.util.ArrayList;
 import java.util.List;
+
+import static imagingbook.common.util.Timing.timeNanos;
 
 public class Main {
 
@@ -80,17 +83,16 @@ public class Main {
             parabCurves = null;
 
             // ------------------------------------------------------------
-            List<ArucoDetector.DetectionResult> detectionResult
-                                = detector.detectMarkers(im.getProcessor());
+            List<ArucoDetector.DetectionResult> detectedMarkers = new ArrayList<>();
+            long elapsed = timeNanos(() ->
+                {detectedMarkers.addAll(detector.detectMarkers(im.getProcessor()));}
+            );
+            System.out.println("Elapsed time (ms): " + elapsed/1000000);
             // ------------------------------------------------------------
 
             // process all detected markers
-            for (ArucoDetector.DetectionResult res : detectionResult) {
-                Polygon2d corners = res.corners();
-
-                // Collections.rotate(corners, res.rotation);
-                //List<Pnt2d> corners = rotateCorners(corners, res.rotation);
-
+            for (ArucoDetector.DetectionResult marker : detectedMarkers) {
+                Polygon2d corners = marker.corners();
 
                 ola.setFont(CornerFont);
                 ola.setTextColor(CornerColor);
@@ -109,7 +111,9 @@ public class Main {
                 Pnt2d center = corners.getCentroid();
                 ola.setFont(MarkerFont);
                 ola.setTextColor(MarkerColor);
-                ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
+                // ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
+                ola.addText(center.getX(), center.getY(),
+                        marker.lookup().markerIndex() + "/" + marker.lookup().rotation() + "/" + marker.lookup().hammingDistance());
 
                 // if parabolas exist, draw them:
                 if (parabCurves != null) {
@@ -119,16 +123,12 @@ public class Main {
                        ola.addShape(par.getShape());
                     }
                 }
-
             }
-
             im.setOverlay(ola.getOverlay());
             // im.setTitle(im.getTitle() + " rot=" + res.rotation);
             im.updateAndDraw();
-
         }
     }
-
 
     public static void main(String[] args) {
         doSmallImageTest();
