@@ -1,0 +1,5 @@
+Detection of ChArUco Boards:
+
+https://docs.opencv.org/4.x/df/d4a/tutorial_charuco_detection.html
+https://docs.opencv.org/4.x/de/d05/classcv_1_1aruco_1_1GridBoard.html
+
