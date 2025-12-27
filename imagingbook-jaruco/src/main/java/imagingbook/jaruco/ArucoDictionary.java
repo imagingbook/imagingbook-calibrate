@@ -12,6 +12,9 @@ import ij.process.ByteProcessor;
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.util.MatrixRotationUtils;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -376,8 +379,9 @@ public class ArucoDictionary {
      */
     public ByteProcessor getMarkerImage(int idx, int rot, int borderBits) {
         int n = this.getMarkerSize();
-        BitVector bitcode = this.getBits(idx, rot);
         int npix = n + 2 * borderBits;
+        BitVector bitcode = this.getBits(idx, rot);
+
         ByteProcessor ip = new ByteProcessor(npix, npix);
         int k = 0;
         for (int v = 0; v < n; v++) {
@@ -387,6 +391,41 @@ public class ArucoDictionary {
             }
         }
         return ip;
+    }
+
+    // -------------------------------------------------------------------------
+
+    /**
+     * Draw the specified marker to a {@link Graphics2D} canvas.
+     * @param g a {@link Graphics2D} canvas
+     * @param idx the marker index
+     * @param rot the rotation index (0,...,3)
+     * @param borderBits width of surrounding black border (in bits)
+     */
+    public void drawTo(Graphics2D g, int idx, int rot, int borderBits, double x0, double y0, double markerWidth) {
+        int innerBits = getMarkerSize();
+        int totalBits = innerBits + 2 * borderBits;
+        double scale = markerWidth / totalBits; // scale factor to enlarge one bit
+        BitVector bitcode = this.getBits(idx, rot);
+
+        // draw the surrounding square black
+        double wOuter = totalBits * scale;
+        g.setColor(Color.black);
+        g.fill(new Rectangle2D.Double(x0, y0, wOuter, wOuter));
+
+        // draw the active bits white
+        g.setColor(Color.white);
+        int k = 0;
+        for (int v = 0; v < innerBits; v++) {
+            for (int u = 0; u < innerBits; u++) {
+                if (bitcode.getBit(k)) {
+                    double x = x0 + (borderBits + u) * scale;
+                    double y = y0 + (borderBits + v) * scale;
+                    g.fill(new Rectangle2D.Double(x, y, 1 * scale, 1 * scale));
+                }
+                k++;
+            }
+        }
     }
 
 }

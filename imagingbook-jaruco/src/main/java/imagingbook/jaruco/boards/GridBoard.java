@@ -4,13 +4,13 @@ import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.image.ImageGraphics;
 import imagingbook.jaruco.ArucoDictionary;
 
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static imagingbook.jaruco.ArucoDictionaryPredefined.DICT_5X5_100;
 
 /**
  * Represents a marke board with all markers in the same plane and in a regular M x N grid layout.
@@ -19,15 +19,17 @@ import static imagingbook.jaruco.ArucoDictionaryPredefined.DICT_5X5_100;
  */
 public class GridBoard {
 
-    private final int markersX;
-    private final int markersY;
-    private final double markerLength;
+    private final int nMarkersX;
+    private final int nMarkersY;
+    private final double markerWidth;
     private final double markerSeparation;
     private final ArucoDictionary dictionary;
     private final int borderBits;
     private final int[] ids;
-    private final List<Pnt2d[]> objPoints;
-    private final Pnt2d rightBottomBorder;
+    private final List<Pnt2d[]> cornerPoints;
+    private final double boardWidth;
+    private final double boardHeight;
+    private String name = "unnamed";         // name of this board (used by predefined boards)
 
     /**
      * Constructor. Creates a board with Aruco markers placed on a rectangular grid. Marker ids are
@@ -36,54 +38,59 @@ public class GridBoard {
      *     0  1  2  3  4  5
      *     6  7  8  ...
      * </pre>
-     * on a 6 x N board.
+     * on a 6 x N board. All markers are arranged in canonical orientation (rotation 0).
+     * The board has no surrounding border, i.e., the first marker is placed at the coordinate
+     * origin. All board coordinates are in mm.
      *
-     * @param markersX number of markers in x directions
-     * @param markersY number of markers in y directions
-     * @param markerLength marker side length (normally in meters)
-     * @param markerSeparation separation between two markers (same unit as markerLength)
-     * @param dictionary dictionary of markers indicating the type of markers
-     * @param borderBits
+     * @param nMarkersX number of markers in x direction
+     * @param nMarkersY number of markers in y direction
+     * @param markerWidth marker side length in real board space (in mm)
+     * @param markerSeparation space between two markers (in mm)
+     * @param dictionary the dictionary of markers
+     * @param borderBits the number of border bits around the inner of each marker
      */
-    public GridBoard(int markersX, int markersY, double markerLength, double markerSeparation,
+    public GridBoard(int nMarkersX, int nMarkersY, double markerWidth, double markerSeparation,
                      ArucoDictionary dictionary, int borderBits) {
-        this.markersX = markersX;
-        this.markersY = markersY;
-        this.markerLength = markerLength;
+        this.nMarkersX = nMarkersX;
+        this.nMarkersY = nMarkersY;
+        this.markerWidth = markerWidth;
         this.markerSeparation = markerSeparation;
         this.dictionary = dictionary;
         this.borderBits = borderBits;
 
-        double onePin = markerLength / (dictionary.getMarkerSize() + 2);    // size of one marker bitfield
+        double onePin = markerWidth / (dictionary.getMarkerSize() + 2);    // size of one marker bitfield
         if (markerSeparation < onePin * 0.7) {
             System.out.println("Marker border " + markerSeparation + " is less than 70% of ArUco pin size " + onePin);
             System.out.println("Please increase markerSeparation or decrease markerLength for stable board detection");
         }
-        int totalMarkers = markersX * markersY;
+        int totalMarkers = nMarkersX * nMarkersY;
         if (totalMarkers > dictionary.getNumberOfCodes()) {
             throw new IllegalArgumentException("number of board markers exceeds dictionary size: " + totalMarkers);
         }
         this.ids = new int[totalMarkers];
-        Arrays.setAll(ids, i -> i);
+        Arrays.setAll(ids, (i) -> i); // fill ids = 0, 1, 2, ...
 
-        // calculate Board objPoints
-        this.objPoints = new ArrayList<Pnt2d[]>();
-        for (int y = 0; y < markersY; y++) {
-            for (int x = 0; x < markersX; x++) {
+        // calculate markers' corner points in board coordinates
+        this.cornerPoints = new ArrayList<>();
+        for (int y = 0; y < nMarkersY; y++) {
+            for (int x = 0; x < nMarkersX; x++) {
                 Pnt2d[] corners = new Pnt2d[4];
                 corners[0] = Pnt2d.from(
-                        x * (markerLength + markerSeparation),
-                        y * (markerLength + markerSeparation));
-                corners[1] = corners[0].plus(markerLength, 0);
-                corners[2] = corners[0].plus(markerLength, markerLength);
-                corners[3] = corners[0].plus(0, markerLength);
-                objPoints.add(corners);
+                        x * (markerWidth + markerSeparation),
+                        y * (markerWidth + markerSeparation));
+                corners[1] = corners[0].plus(markerWidth, 0);
+                corners[2] = corners[0].plus(markerWidth, markerWidth);
+                corners[3] = corners[0].plus(0, markerWidth);
+                cornerPoints.add(corners);
             }
         }
 
-        this.rightBottomBorder =
-                Pnt2d.from(markersX * markerLength + markerSeparation * (markersX - 1),
-                           markersY * markerLength + markerSeparation * (markersY - 1));
+        this.boardWidth = nMarkersX * markerWidth + markerSeparation * (nMarkersX - 1);
+        this.boardHeight = nMarkersY * markerWidth + markerSeparation * (nMarkersY - 1);
+
+        // this.rightBottomBorder =
+        //         Pnt2d.from(nMarkersX * markerWidth + markerSeparation * (nMarkersX - 1),
+        //                    nMarkersY * markerWidth + markerSeparation * (nMarkersY - 1));
     }
 
     // -------------------------------------------------------------------------------------------
@@ -100,16 +107,16 @@ public class GridBoard {
      * Returns the number of board markers in horizontal direction.
      * @return number of horizontal markers
      */
-    public int getMarkersX() {
-        return markersX;
+    public int getnMarkersX() {
+        return nMarkersX;
     }
 
     /**
      * Returns the number of board markers in vertical direction.
      * @return number of vertical markers
      */
-    public int getMarkersY() {
-        return markersY;
+    public int getnMarkersY() {
+        return nMarkersY;
     }
 
     /**
@@ -123,7 +130,7 @@ public class GridBoard {
      * @ an array with the four corner points
      */
     Pnt2d[] getCorners(int id) {
-        return objPoints.get(id);
+        return cornerPoints.get(id);
     }
 
     public int[] getIds() {
@@ -134,70 +141,140 @@ public class GridBoard {
         return ids.length;
     }
 
-    /**
-     * Returns the board coordinate of the bottom right corner of the board.
-     * @return the bottom right corner
-     */
-    Pnt2d getRightBottomBorder() {
-        return rightBottomBorder;
+    public double getMarkerWidth() {
+        return markerWidth;
+    }
+
+    public double getMarkerSeparation() {
+        return markerSeparation;
+    }
+
+    public double getBoardWidth() {
+        return boardWidth;
+    }
+
+    public double getBoardHeight() {
+        return boardHeight;
     }
 
 
+    void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    // /**
+    //  *
+    //  * @param width the width of the output image in pixels
+    //  * @param marginSize minimum margins (in pixels) of the board in the output image
+    //  * @return an image of this board
+    //  */
+    // public ByteProcessor generateImage(int width, int marginSize) {
+    //     double contentWidth = rightBottomBorder.getX();
+    //     double contentHeight = rightBottomBorder.getY();
+    //     int innerWidth = width - 2 * marginSize;
+    //     int innerHeight = (int) Math.ceil(innerWidth * contentHeight / contentWidth);
+    //     int height = innerHeight + 2 * marginSize;
+    //     double scale = innerWidth / contentWidth;
+    //     int xOff = marginSize;
+    //     int yOff = marginSize;
+    //
+    //     ByteProcessor ip = new ByteProcessor(width, height);
+    //     ip.setValue(255);
+    //     ip.fill();
+    //     ip.setValue(0);
+    //
+    //     for (int idx = 0; idx < getMarkerCount(); idx++) {
+    //         Pnt2d[] corners = getCorners(idx);
+    //         int x0 = (int) Math.round(corners[0].getX() * scale);
+    //         int y0 = (int) Math.round(corners[0].getY() * scale);
+    //         int x2 = (int) Math.round(corners[2].getX() * scale);
+    //         // int y2 = (int) Math.round(corners[2].getY() * scale);
+    //         // ip.fillRect(xOff + x0, yOff + y0, x2 - x0, y2 - y0);
+    //         // System.out.printf("filling %d: %d %d %d %d\n", idx, xOff + x0, yOff + y0, x2 - x0, y2 - y0);
+    //         ImageProcessor markerIp = dictionary.getMarkerImage(idx, 0, this.borderBits).resize(x2 - x0);
+    //         // double markerScale = 5; // (x2 - x0) / (double) markerIp.getWidth();
+    //         // System.out.println("markerScale = " + markerScale);
+    //         // markerIp.scale(markerScale, markerScale);
+    //         // markerIp.resize(x2 - x0);
+    //         // new ImagePlus("Marker " + idx, markerIp).show();
+    //         ip.insert(markerIp, xOff + x0, yOff + y0);
+    //     }
+    //     return ip;
+    // }
+
+
     /**
+     * Generates and returns a b/w image of this {@link GridBoard} by drawing shapes into a
+     * {@link Graphics2D} canvas. See also {@link ImageGraphics}.
      *
      * @param width the width of the output image in pixels
-     * @param marginSize minimum margins (in pixels) of the board in the output image
+     * @param marginSize margins (in pixels) of the board in the output image
      * @return an image of this board
      */
     public ByteProcessor generateImage(int width, int marginSize) {
-        double contentWidth = rightBottomBorder.getX();
-        double contentHeight = rightBottomBorder.getY();
         int innerWidth = width - 2 * marginSize;
-        int innerHeight = (int) Math.ceil(innerWidth * contentHeight / contentWidth);
+        int innerHeight = (int) Math.ceil(innerWidth * boardHeight / boardWidth);
         int height = innerHeight + 2 * marginSize;
-        double scale = innerWidth / contentWidth;
-        int xOff = marginSize;
-        int yOff = marginSize;
+        double scale = innerWidth / boardWidth;
+        double xOff = marginSize;
+        double yOff = marginSize;
 
         ByteProcessor ip = new ByteProcessor(width, height);
         ip.setValue(255);
         ip.fill();
-        ip.setValue(0);
-
-        for (int idx = 0; idx < getMarkerCount(); idx++) {
-            Pnt2d[] corners = getCorners(idx);
-            int x0 = (int) Math.round(corners[0].getX() * scale);
-            int y0 = (int) Math.round(corners[0].getY() * scale);
-            int x2 = (int) Math.round(corners[2].getX() * scale);
-            // int y2 = (int) Math.round(corners[2].getY() * scale);
-            // ip.fillRect(xOff + x0, yOff + y0, x2 - x0, y2 - y0);
-            // System.out.printf("filling %d: %d %d %d %d\n", idx, xOff + x0, yOff + y0, x2 - x0, y2 - y0);
-            ImageProcessor markerIp = dictionary.getMarkerImage(idx, 0, this.borderBits).resize(x2 - x0);
-            // double markerScale = 5; // (x2 - x0) / (double) markerIp.getWidth();
-            // System.out.println("markerScale = " + markerScale);
-            // markerIp.scale(markerScale, markerScale);
-            // markerIp.resize(x2 - x0);
-            // new ImagePlus("Marker " + idx, markerIp).show();
-            ip.insert(markerIp, xOff + x0, yOff + y0);
+        try (ImageGraphics ig = new ImageGraphics(ip)) {
+            ig.setAntialiasing(false);  // turn off to avoid thin lines between boxes
+            Graphics2D g2 = ig.getGraphics2D();
+            // draw each marker
+            for (int idx = 0; idx < getMarkerCount(); idx++) {
+                Pnt2d[] corners = getCorners(idx);
+                double x0 = corners[0].getX() * scale;
+                double y0 = corners[0].getY() * scale;
+                double x2 = corners[2].getX() * scale;
+                double mrkWidth = x2 - x0;
+                dictionary.drawTo(g2, idx, 0, borderBits, xOff + x0, yOff + y0, mrkWidth);
+            }
         }
-
         return ip;
     }
+
     // -------------------------------------------------------------------
 
-    public static void main(String[] args) {
-        GridBoard gb = new GridBoard(7, 5, 0.02, 0.01, DICT_5X5_100.getInstance(), 2);
-        int i = 0;
-        for (int y = 0; y < gb.getMarkersY(); y++) {
-            for (int x = 0; x < gb.getMarkersX(); x++) {
-                System.out.print(i + ": " + gb.getCorners(i)[0] + " | ");
-                i++;
-            }
-            System.out.println();
-        }
-        System.out.println("getRightBottomBorder = " + gb.getRightBottomBorder());
 
+    // public static void drawPixels() {
+    //     GridBoard gb = new GridBoard(7, 5, 0.02, 0.01, DICT_5X5_100.getInstance(), 2);
+    //     int i = 0;
+    //     for (int y = 0; y < gb.getMarkersY(); y++) {
+    //         for (int x = 0; x < gb.getMarkersX(); x++) {
+    //             System.out.print(i + ": " + gb.getCorners(i)[0] + " | ");
+    //             i++;
+    //         }
+    //         System.out.println();
+    //     }
+    //     System.out.println("getRightBottomBorder = " + gb.getRightBottomBorder());
+    //
+    //     ImageProcessor ip = gb.generateImage(1200, 10);
+    //     new ImagePlus("Board", ip).show();
+    // }
+
+    // public static void drawToImage() {
+    //     // GridBoard gb = new GridBoard(7, 5, 20.0, 10.0, DICT_5X5_100.getInstance(), 2);
+    //     GridBoard gb = GridBoardPredefined.DICT_5X5_BOARD_8x5_A4.getInstance();
+    //     // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_BOARD_12x8_A4.getInstance();
+    //     System.out.printf("board size = %.2f x %.2f mm\n", gb.getBoardWidth(), gb.getBoardHeight());
+    //     ImageProcessor ip = gb.generateImage(1200, 10);
+    //     new ImagePlus("Board", ip).show();
+    // }
+
+    public static void main(String[] args) {
+        GridBoard gb = GridBoardPredefined.DICT_5X5_BOARD_8x5_A4.getInstance();
+        // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_BOARD_12x8_A4.getInstance();
+        System.out.printf("board size = %.2f x %.2f mm\n", gb.getBoardWidth(), gb.getBoardHeight());
         ImageProcessor ip = gb.generateImage(1200, 10);
-        new ImagePlus("Board", ip).show();
+        new ImagePlus("Board " + gb.getName(), ip).show();
     }
 }
