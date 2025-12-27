@@ -360,16 +360,29 @@ public class ArucoDictionary {
      * surrounding 1-pixel black border.
      * @param idx the marker index
      * @param rot the rotation index (0,...,3)
-     * @return an image of the specified marker with 1 pixel per code field
+     * @return an image of the specified marker with 1 pixel per code bit
      */
     public ByteProcessor getMarkerImage(int idx, int rot) {
+        return getMarkerImage(idx, rot, 1);
+    }
+
+    /**
+     * Creates a marker image of the specified dictionary entry with a
+     * surrounding black  of the specified width.
+     * @param idx the marker index
+     * @param rot the rotation index (0,...,3)
+     * @param borderBits width of black border
+     * @return an image of the specified marker with 1 pixel per code bit
+     */
+    public ByteProcessor getMarkerImage(int idx, int rot, int borderBits) {
         int n = this.getMarkerSize();
-        BitVector markerbits = this.getBits(idx, rot);
-        ByteProcessor ip = new ByteProcessor(n + 2, n + 2);
+        BitVector bitcode = this.getBits(idx, rot);
+        int npix = n + 2 * borderBits;
+        ByteProcessor ip = new ByteProcessor(npix, npix);
         int k = 0;
         for (int v = 0; v < n; v++) {
             for (int u = 0; u < n; u++) {
-                ip.set(u + 1, v + 1, markerbits.getBit(k) ? 0xFF : 0);
+                ip.set(u + borderBits, v + borderBits, bitcode.getBit(k) ? 0xFF : 0);
                 k++;
             }
         }
