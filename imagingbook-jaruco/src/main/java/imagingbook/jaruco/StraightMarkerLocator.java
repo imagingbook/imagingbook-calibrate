@@ -1,7 +1,6 @@
 package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.math.Matrix;
@@ -18,7 +17,7 @@ import static imagingbook.common.math.Matrix.multiply;
  * least-squares fit incorporating the four contour corners and a subset of
  * intermediate contour points to be fit to straight lines.
  */
-public class StraightLineMarkerLocator implements MarkerLocator {
+public class StraightMarkerLocator implements MarkerLocator {
 
     private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
             {{0,0}, {1,0}, {1,1}, {0,1}};
@@ -40,7 +39,7 @@ public class StraightLineMarkerLocator implements MarkerLocator {
      * {@code cornerSupport} is the fraction of each quad side length used to fit straight lines
      * (default is 0.05 or 5% on each end, See {@link ArucoDetector.Parameters#cornerSupportFraction}.
      */
-    public StraightLineMarkerLocator(ArucoDetector.Parameters params) {
+    public StraightMarkerLocator(ArucoDetector.Parameters params) {
         this.cornerSupportFraction = params.cornerSupportFraction;
     }
 

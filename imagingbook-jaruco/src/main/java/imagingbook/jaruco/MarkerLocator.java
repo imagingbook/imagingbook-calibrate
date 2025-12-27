@@ -10,7 +10,7 @@ public interface MarkerLocator {
 
     public enum Type {
         RawCorners,
-        StraightLineFit,
+        StraightFit,
         ParabolicFit
     }
 
@@ -23,7 +23,7 @@ public interface MarkerLocator {
     public static MarkerLocator createFrom(ArucoDetector.Parameters params) {
         return switch (params.locatorType) {
             case RawCorners -> new RawCornersMarkerLocator(params);
-            case StraightLineFit -> new StraightLineMarkerLocator(params);
+            case StraightFit -> new StraightMarkerLocator(params);
             case ParabolicFit -> new ParabolicMarkerLocator(params);
         };
     }

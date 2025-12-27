@@ -36,7 +36,7 @@ public class ArucoDetector {
         public double maxCorrectionRate = 1.0;
         /** Type of {@link MarkerLocator} to use. */
         public MarkerLocator.Type locatorType = ParabolicFit;
-        /** Fraction of quad side length used for fitting (used by {@link StraightLineMarkerLocator}) */
+        /** Fraction of quad side length used for fitting (used by {@link StraightMarkerLocator}) */
         public double cornerSupportFraction = 0.05;
     }
 
@@ -100,7 +100,8 @@ public class ArucoDetector {
             return;
         }
         // A. Segment contour and extract quad
-        SegmentedPolygon segPoly = new ContourSegmenter(params.polygonalApproxAccuracyRate).segment(poly);
+        ContourSegmenter segmenter = new ContourSegmenter(params.polygonalApproxAccuracyRate);
+        SegmentedPolygon segPoly = segmenter.segment(poly);
         Polygon2d corners = segPoly.getCornerPolygon();
         if (corners.length() != 4 ||                                     // pack into a local method
                 corners.getCircularity() < params.minCircularity ||           // parameter!

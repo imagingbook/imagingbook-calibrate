@@ -7,7 +7,7 @@ import static imagingbook.jaruco.util.JsonUtils.loadObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class StraightLineMarkerLocatorTest {
+class StraightMarkerLocatorTest {
 
     static final double polygonalApproxAccuracyRate = 0.03;  // from ArUco parameters
 

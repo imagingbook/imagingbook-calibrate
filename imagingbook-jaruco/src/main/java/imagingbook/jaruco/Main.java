@@ -58,7 +58,8 @@ public class Main {
                 // SAMPLE_IMAGE_DIR + "single-marker-5-3.jpg",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-0-distA.png",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-0-distB.png",
-                SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
+                // SAMPLE_IMAGE_DIR + "all-markers-small.jpg",
+                SAMPLE_IMAGE_DIR + "all-markers.jpg",
         };
 
         ImagePlus[] images = new ImagePlus[paths.length];

@@ -17,7 +17,7 @@ import java.util.Arrays;
  * @version 2025
  */
 @Deprecated
-public class QuadHomographyFit implements LinearFit2d { // TODO: move into StraightLineMarkerLocator.
+public class QuadHomographyFit implements LinearFit2d { // TODO: move into StraightMarkerLocator.
 
     private static final double[][] UNIT_SQUARE_CCW =    // corners of the unit square (CCW)
             {{0,0}, {1,0}, {1,1}, {0,1}};
