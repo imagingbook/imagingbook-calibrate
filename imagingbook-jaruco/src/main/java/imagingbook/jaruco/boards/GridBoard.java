@@ -1,16 +1,26 @@
 package imagingbook.jaruco.boards;
 
-import ij.ImagePlus;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfGraphics2D;
+import com.lowagie.text.pdf.PdfWriter;
 import ij.process.ByteProcessor;
-import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.image.ImageGraphics;
+import imagingbook.core.Info;
 import imagingbook.jaruco.ArucoDictionary;
 
 import java.awt.Graphics2D;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import com.lowagie.text.Document;
 
 /**
  * Represents a marke board with all markers in the same plane and in a regular M x N grid layout.
@@ -242,6 +252,65 @@ public class GridBoard {
         return ip;
     }
 
+    double mmFromPnts(double points) {
+        return points * 25.4 / 72;
+    }
+
+    double pntsFromMm(double mm) {
+        return mm * 73 / 25.4;
+    }
+
+    public String saveAsPdf(String filename) {
+        // Rectangle rect = PageSize.A4;
+        Path currentDir = Paths.get("tmp");
+        Path path = currentDir.resolve(filename);
+        boolean embedCoreFonts = true;
+
+        try (Document document = new Document(PageSize.A4.rotate())) {
+            System.out.printf("document size = %.2f x %.2f mm\n",
+                    mmFromPnts(document.getPageSize().getWidth()),
+                    mmFromPnts(document.getPageSize().getHeight()));
+
+            PdfWriter writer = null;
+            try {
+                writer = PdfWriter.getInstance(document, new FileOutputStream(path.toFile()));
+            } catch (DocumentException | FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+            document.open();
+            document.addTitle("My Title");
+            document.addAuthor("The Author");
+            document.addSubject("The subject");
+            document.addKeywords("The keywords");
+            document.addCreationDate();
+            document.addCreator("Me");
+            document.addProducer(this.getClass().getSimpleName() + " " + Info.getVersionInfo());
+
+            PdfContentByte cb = writer.getDirectContent();
+
+            float width = document.getPageSize().getWidth();
+            float height = document.getPageSize().getHeight();
+            Graphics2D g2 = new PdfGraphics2D(cb, width, height); // no core font embedding
+
+            double scale = 1.0 / mmFromPnts(1);
+            double xOff = pntsFromMm(12.5);
+            double yOff = pntsFromMm(20);
+            for (int idx = 0; idx < getMarkerCount(); idx++) {
+                Pnt2d[] corners = getCorners(idx);
+                double x0 = corners[0].getX() * scale;
+                double y0 = corners[0].getY() * scale;
+                double x2 = corners[2].getX() * scale;
+                double mrkWidth = x2 - x0;
+                dictionary.drawTo(g2, idx, 0, borderBits, xOff + x0, yOff + y0, mrkWidth);
+            }
+
+            g2.dispose();
+        }
+
+        return path.toAbsolutePath().toString();
+    }
+
     // -------------------------------------------------------------------
 
 
@@ -274,7 +343,9 @@ public class GridBoard {
         GridBoard gb = GridBoardPredefined.DICT_5X5_BOARD_8x5_A4.getInstance();
         // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_BOARD_12x8_A4.getInstance();
         System.out.printf("board size = %.2f x %.2f mm\n", gb.getBoardWidth(), gb.getBoardHeight());
-        ImageProcessor ip = gb.generateImage(1200, 10);
-        new ImagePlus("Board " + gb.getName(), ip).show();
+        // ImageProcessor ip = gb.generateImage(1200, 10);
+        // new ImagePlus("Board " + gb.getName(), ip).show();
+
+        System.out.println("pdf path = " + gb.saveAsPdf("board.pdf"));
     }
 }

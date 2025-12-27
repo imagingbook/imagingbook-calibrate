@@ -102,6 +102,12 @@
             <version>3.25.3</version> <!-- or latest -->
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.4.2</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 

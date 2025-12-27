@@ -4,6 +4,8 @@ module imagingbook.jaruco {
     requires ij;
     requires org.apache.commons.math4.legacy;
     requires org.apache.commons.math4.legacy.core;
+    requires com.github.librepdf.openpdf;
+    requires imagingbook.core;
 
     exports imagingbook.jaruco;
     exports imagingbook.jaruco.pyramid;
