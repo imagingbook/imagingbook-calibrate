@@ -13,19 +13,23 @@ import imagingbook.common.ij.IjUtils;
 import java.util.Arrays;
 import java.util.Locale;
 
+import static imagingbook.common.util.Timing.timeNanos;
+
 /**
  * Represents a simple Gaussian pyramid with 2:1 subsampling between
  * each pyramid level.
+ * TODO: UNFINISHED CODE!
  */
 public class GaussianPyramid {
 
-    static boolean ADD_CORNERS = true;
+    static boolean ADD_CORNERS = false;
 
     /*
     It’s cheap to compute (integer arithmetic possible) and is exactly the 4th
     row of Pascal’s triangle — i.e. convolving twice with [1,2,1]/4 yields this kernel:
      */
-    static final float[] H = Kernel1D.normalize(new float[] {1, 4, 6, 4, 1});
+    // static final float[] H = Kernel1D.normalize(new float[] {1, 4, 6, 4, 1});
+    static final float[] H = Kernel1D.normalize(new float[] {0.021910315f, 0.22831072f, 0.49867645f, 0.22831072f, 0.021910315f});
 
     public int getLevelCount() {
         return levels.length;
@@ -194,22 +198,29 @@ public class GaussianPyramid {
     // ---------------------------------------------------------
 
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
-    // static String SAMPLE_IMAGE = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
-    static String SAMPLE_IMAGE = SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg";
+    static String SAMPLE_IMAGE = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
+    // static String SAMPLE_IMAGE = SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg";
 
     public static void main(String[] args) {
-        System.out.println("kernel = " + Arrays.toString(H));
+        System.out.println("kernel H = " + Arrays.toString(H));
+
+        // float[] h2 = GaussianKernel1D.makeGaussKernel1D(0.8);
+        // System.out.println("kernel h2 =" + Arrays.toString(h2));
+
         ImagePlus im = IjUtils.openImage(SAMPLE_IMAGE);
         //im.show();
         ByteProcessor ip = im.getProcessor().convertToByteProcessor();
         // ip = (ByteProcessor) ip.resize(ip.getWidth() - 1);
 
         int K = 5;
+
         GaussianPyramid pyramid = new GaussianPyramid(ip, K);
+
+
         for (int k = 0; k < K; k++) {
             new ImagePlus("Level" + k, pyramid.getLevel(k).getImage()).show();
-            if (pyramid.getLevel(k).getCornerScore() != null)
-                new ImagePlus("Corners" + k, pyramid.getLevel(k).getCornerScore()).show();
+            // if (pyramid.getLevel(k).getCornerScore() != null)
+            //     new ImagePlus("Corners" + k, pyramid.getLevel(k).getCornerScore()).show();
             System.out.println(pyramid.getLevel(k).toString());
         }
 
