@@ -1,26 +1,27 @@
 package imagingbook.jaruco.boards;
 
+import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
+import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfGraphics2D;
 import com.lowagie.text.pdf.PdfWriter;
 import ij.process.ByteProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.image.ImageGraphics;
-import imagingbook.core.Info;
 import imagingbook.jaruco.ArucoDictionary;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import com.lowagie.text.Document;
 
 /**
  * Represents a marke board with all markers in the same plane and in a regular M x N grid layout.
@@ -29,8 +30,8 @@ import com.lowagie.text.Document;
  */
 public class GridBoard {
 
-    private final int nMarkersX;
-    private final int nMarkersY;
+    private final int markerCols;
+    private final int markerRows;
     private final double markerWidth;
     private final double markerSeparation;
     private final ArucoDictionary dictionary;
@@ -39,7 +40,8 @@ public class GridBoard {
     private final List<Pnt2d[]> cornerPoints;
     private final double boardWidth;
     private final double boardHeight;
-    private String name = "unnamed";         // name of this board (used by predefined boards)
+    private String name = "none";         // name of this board (used by predefined boards)
+    private Rectangle pdfPageSize;
 
     /**
      * Constructor. Creates a board with Aruco markers placed on a rectangular grid. Marker ids are
@@ -48,32 +50,34 @@ public class GridBoard {
      *     0  1  2  3  4  5
      *     6  7  8  ...
      * </pre>
-     * on a 6 x N board. All markers are arranged in canonical orientation (rotation 0).
-     * The board has no surrounding border, i.e., the first marker is placed at the coordinate
-     * origin. All board coordinates are in mm.
+     * on a 6 x N board. All markers are arranged in canonical orientation (rotation 0). The board
+     * has no surrounding border, i.e., the first marker is placed at the coordinate origin. All
+     * board coordinates are in mm.
      *
-     * @param nMarkersX number of markers in x direction
-     * @param nMarkersY number of markers in y direction
+     * @param markerCols number of markers in x direction
+     * @param markerRows number of markers in y direction
      * @param markerWidth marker side length in real board space (in mm)
      * @param markerSeparation space between two markers (in mm)
      * @param dictionary the dictionary of markers
      * @param borderBits the number of border bits around the inner of each marker
+     * @param pdfPageSize the recommended PDF document size (may be null)
      */
-    public GridBoard(int nMarkersX, int nMarkersY, double markerWidth, double markerSeparation,
-                     ArucoDictionary dictionary, int borderBits) {
-        this.nMarkersX = nMarkersX;
-        this.nMarkersY = nMarkersY;
+    public GridBoard(int markerCols, int markerRows, double markerWidth, double markerSeparation,
+                     ArucoDictionary dictionary, int borderBits, Rectangle pdfPageSize) {
+        this.markerCols = markerCols;
+        this.markerRows = markerRows;
         this.markerWidth = markerWidth;
         this.markerSeparation = markerSeparation;
         this.dictionary = dictionary;
         this.borderBits = borderBits;
+        this.pdfPageSize = pdfPageSize;
 
         double onePin = markerWidth / (dictionary.getMarkerSize() + 2);    // size of one marker bitfield
         if (markerSeparation < onePin * 0.7) {
             System.out.println("Marker border " + markerSeparation + " is less than 70% of ArUco pin size " + onePin);
             System.out.println("Please increase markerSeparation or decrease markerLength for stable board detection");
         }
-        int totalMarkers = nMarkersX * nMarkersY;
+        int totalMarkers = markerCols * markerRows;
         if (totalMarkers > dictionary.getNumberOfCodes()) {
             throw new IllegalArgumentException("number of board markers exceeds dictionary size: " + totalMarkers);
         }
@@ -82,8 +86,8 @@ public class GridBoard {
 
         // calculate markers' corner points in board coordinates
         this.cornerPoints = new ArrayList<>();
-        for (int y = 0; y < nMarkersY; y++) {
-            for (int x = 0; x < nMarkersX; x++) {
+        for (int y = 0; y < markerRows; y++) {
+            for (int x = 0; x < markerCols; x++) {
                 Pnt2d[] corners = new Pnt2d[4];
                 corners[0] = Pnt2d.from(
                         x * (markerWidth + markerSeparation),
@@ -95,12 +99,8 @@ public class GridBoard {
             }
         }
 
-        this.boardWidth = nMarkersX * markerWidth + markerSeparation * (nMarkersX - 1);
-        this.boardHeight = nMarkersY * markerWidth + markerSeparation * (nMarkersY - 1);
-
-        // this.rightBottomBorder =
-        //         Pnt2d.from(nMarkersX * markerWidth + markerSeparation * (nMarkersX - 1),
-        //                    nMarkersY * markerWidth + markerSeparation * (nMarkersY - 1));
+        this.boardWidth = markerCols * markerWidth + markerSeparation * (markerCols - 1);
+        this.boardHeight = markerRows * markerWidth + markerSeparation * (markerRows - 1);
     }
 
     // -------------------------------------------------------------------------------------------
@@ -117,20 +117,20 @@ public class GridBoard {
      * Returns the number of board markers in horizontal direction.
      * @return number of horizontal markers
      */
-    public int getnMarkersX() {
-        return nMarkersX;
+    public int getMarkerCols() {
+        return markerCols;
     }
 
     /**
      * Returns the number of board markers in vertical direction.
      * @return number of vertical markers
      */
-    public int getnMarkersY() {
-        return nMarkersY;
+    public int getMarkerRows() {
+        return markerRows;
     }
 
     /**
-     * Returns the board coordinates for corner points of the specified marker.
+     * Returns the board coordinates of corner points for the specified marker.
      * Each marker has 4 corners in CW order:
      * corners[0]: left-top corner
      * corners[1]: right-top corner
@@ -139,93 +139,89 @@ public class GridBoard {
      * @param id the marker id
      * @ an array with the four corner points
      */
-    Pnt2d[] getCorners(int id) {
+    Pnt2d[] getMarkerCorners(int id) {
         return cornerPoints.get(id);
     }
 
+    /**
+     * Returns an array with all marker ids.
+     * @return all marker ids
+     */
     public int[] getIds() {
         return ids;
     }
 
+    /**
+     * Returns the number of markers on this board.
+     * @return the number of markers
+     */
     public int getMarkerCount() {
         return ids.length;
     }
 
+    /**
+     * Returns the size (width and height) of the markers on this board
+     * (in millimeters).
+     * @return marker size (in mm)
+     */
     public double getMarkerWidth() {
         return markerWidth;
     }
 
+    /** Returns the space between adjacent markers (in millimeters).
+     * @ space between markers (in mm)
+     */
     public double getMarkerSeparation() {
         return markerSeparation;
     }
 
+    /**
+     * Returns the overall width of this board, which is the width of the bounding rectangle
+     * comprising all markers (in millimeters).
+     * @return the overall width of this board (in mm)
+     */
     public double getBoardWidth() {
         return boardWidth;
     }
 
+    /**
+     * Returns the overall height of this board, which is the height of the bounding rectangle
+     * comprising all markers (in millimeters).
+     * @return the overall height of this board (in mm)
+     */
     public double getBoardHeight() {
         return boardHeight;
     }
 
-
+    /**
+     * Set the name of this board (used by {@link GridBoardPredefined#getInstance()}).
+     * @param name the board's name
+     */
     void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Returns the name of this board.
+     * @return the board's name
+     */
     public String getName() {
         return this.name;
     }
 
-    // /**
-    //  *
-    //  * @param width the width of the output image in pixels
-    //  * @param marginSize minimum margins (in pixels) of the board in the output image
-    //  * @return an image of this board
-    //  */
-    // public ByteProcessor generateImage(int width, int marginSize) {
-    //     double contentWidth = rightBottomBorder.getX();
-    //     double contentHeight = rightBottomBorder.getY();
-    //     int innerWidth = width - 2 * marginSize;
-    //     int innerHeight = (int) Math.ceil(innerWidth * contentHeight / contentWidth);
-    //     int height = innerHeight + 2 * marginSize;
-    //     double scale = innerWidth / contentWidth;
-    //     int xOff = marginSize;
-    //     int yOff = marginSize;
-    //
-    //     ByteProcessor ip = new ByteProcessor(width, height);
-    //     ip.setValue(255);
-    //     ip.fill();
-    //     ip.setValue(0);
-    //
-    //     for (int idx = 0; idx < getMarkerCount(); idx++) {
-    //         Pnt2d[] corners = getCorners(idx);
-    //         int x0 = (int) Math.round(corners[0].getX() * scale);
-    //         int y0 = (int) Math.round(corners[0].getY() * scale);
-    //         int x2 = (int) Math.round(corners[2].getX() * scale);
-    //         // int y2 = (int) Math.round(corners[2].getY() * scale);
-    //         // ip.fillRect(xOff + x0, yOff + y0, x2 - x0, y2 - y0);
-    //         // System.out.printf("filling %d: %d %d %d %d\n", idx, xOff + x0, yOff + y0, x2 - x0, y2 - y0);
-    //         ImageProcessor markerIp = dictionary.getMarkerImage(idx, 0, this.borderBits).resize(x2 - x0);
-    //         // double markerScale = 5; // (x2 - x0) / (double) markerIp.getWidth();
-    //         // System.out.println("markerScale = " + markerScale);
-    //         // markerIp.scale(markerScale, markerScale);
-    //         // markerIp.resize(x2 - x0);
-    //         // new ImagePlus("Marker " + idx, markerIp).show();
-    //         ip.insert(markerIp, xOff + x0, yOff + y0);
-    //     }
-    //     return ip;
-    // }
-
+    // --------------------------------------------------------------------------------------------
 
     /**
-     * Generates and returns a b/w image of this {@link GridBoard} by drawing shapes into a
+     * Creates and returns a B/W image of this {@link GridBoard} by drawing shapes into a
      * {@link Graphics2D} canvas. See also {@link ImageGraphics}.
+     * Only the {@code width} of the image is specified, while its {@code height} is derived from the board's
+     * dimensions.
      *
-     * @param width the width of the output image in pixels
+     * @param width the width of the output image (in pixels)
      * @param marginSize margins (in pixels) of the board in the output image
      * @return an image of this board
      */
-    public ByteProcessor generateImage(int width, int marginSize) {
+    public ByteProcessor createImage(int width, int marginSize) {
         int innerWidth = width - 2 * marginSize;
         int innerHeight = (int) Math.ceil(innerWidth * boardHeight / boardWidth);
         int height = innerHeight + 2 * marginSize;
@@ -241,37 +237,64 @@ public class GridBoard {
             Graphics2D g2 = ig.getGraphics2D();
             // draw each marker
             for (int idx = 0; idx < getMarkerCount(); idx++) {
-                Pnt2d[] corners = getCorners(idx);
+                Pnt2d[] corners = getMarkerCorners(idx);
                 double x0 = corners[0].getX() * scale;
                 double y0 = corners[0].getY() * scale;
                 double x2 = corners[2].getX() * scale;
                 double mrkWidth = x2 - x0;
-                dictionary.drawTo(g2, idx, 0, borderBits, xOff + x0, yOff + y0, mrkWidth);
+                dictionary.getMarker(idx, 0, borderBits).drawTo(g2, xOff + x0, yOff + y0, mrkWidth);
             }
         }
         return ip;
     }
 
-    double mmFromPnts(double points) {
-        return points * 25.4 / 72;
+    // --------------------------------------------------------------------------------------------
+
+    private static double mmFromPt(double pt) {
+        return pt * 25.4 / 72;
     }
 
-    double pntsFromMm(double mm) {
-        return mm * 73 / 25.4;
+    private static double ptFromMm(double mm) {
+        return mm * 72 / 25.4;
     }
 
-    public String saveAsPdf(String filename) {
-        // Rectangle rect = PageSize.A4;
-        Path currentDir = Paths.get("tmp");
-        Path path = currentDir.resolve(filename);
-        boolean embedCoreFonts = true;
+    // --------------------------------------------------------------------------------------------
 
-        try (Document document = new Document(PageSize.A4.rotate())) {
-            System.out.printf("document size = %.2f x %.2f mm\n",
-                    mmFromPnts(document.getPageSize().getWidth()),
-                    mmFromPnts(document.getPageSize().getHeight()));
+    /**
+     * Saves the board graphics as a PDF (shortcut for {@link #saveAsPdf(Path, Rectangle, boolean)}).
+     * @param path the file {@link Path}
+     * @return the absolute file path of the stored document
+     */
+    public String saveAsPdf(Path path) {
+        return saveAsPdf(path, this.pdfPageSize, true);
+    }
 
-            PdfWriter writer = null;
+    /**
+     * Saves the board graphics as a PDF.
+     * The directory of the specified {@code path} must exist in advance (no new directories
+     * are created) and must be writable, otherwise an exception is thrown. For example,
+     * <pre>
+     *     Path.of("tmp/board.pdf")</pre>
+     * will try to save the document to file {@code <currendDir>/tmp/board.pdf}.
+     * The {@code pageSize} argument may be {@code null}, in
+     * which case the board's own PDF size is used. If this is {@code null} too, an exception
+     * is thrown. Note that each pre-defined board listed in {@link GridBoardPredefined} do have a
+     * specific document size and name.
+     *
+     * @param path the file {@link Path}
+     * @param pageSize the document page size, e.g. {@link PageSize#A4}{@code .rotate()}.
+     * @param showLegend set true to show the board's name in the PDF
+     * @return the absolute file path of the stored document
+     */
+    public String saveAsPdf(Path path, Rectangle pageSize, boolean showLegend) {
+        if (pageSize == null)
+            pageSize = this.pdfPageSize;
+        if (pageSize == null) {
+            throw new IllegalArgumentException("no PDF page size specified");
+        }
+
+        try (Document document = new Document(pageSize)) {
+            PdfWriter writer;
             try {
                 writer = PdfWriter.getInstance(document, new FileOutputStream(path.toFile()));
             } catch (DocumentException | FileNotFoundException e) {
@@ -279,30 +302,37 @@ public class GridBoard {
             }
 
             document.open();
-            document.addTitle("My Title");
-            document.addAuthor("The Author");
-            document.addSubject("The subject");
-            document.addKeywords("The keywords");
+            document.addTitle(this.getName());
             document.addCreationDate();
-            document.addCreator("Me");
-            document.addProducer(this.getClass().getSimpleName() + " " + Info.getVersionInfo());
+            document.addProducer(this.getClass().getCanonicalName());
 
             PdfContentByte cb = writer.getDirectContent();
+            float pageWidth = document.getPageSize().getWidth();    // unit is pt !
+            float pageHeight = document.getPageSize().getHeight();
+            double boardWidthPt = ptFromMm(this.boardWidth);
+            double boardHeightPt = ptFromMm(this.boardHeight);
 
-            float width = document.getPageSize().getWidth();
-            float height = document.getPageSize().getHeight();
-            Graphics2D g2 = new PdfGraphics2D(cb, width, height); // no core font embedding
+            // center board on page:
+            double xOff = (pageWidth - boardWidthPt) / 2;
+            double yOff = (pageHeight - boardHeightPt) / 2;
 
-            double scale = 1.0 / mmFromPnts(1);
-            double xOff = pntsFromMm(12.5);
-            double yOff = pntsFromMm(20);
+            Graphics2D g2 = new PdfGraphics2D(cb, pageWidth, pageHeight);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
             for (int idx = 0; idx < getMarkerCount(); idx++) {
-                Pnt2d[] corners = getCorners(idx);
-                double x0 = corners[0].getX() * scale;
-                double y0 = corners[0].getY() * scale;
-                double x2 = corners[2].getX() * scale;
+                Pnt2d[] corners = getMarkerCorners(idx);    // marke corners in board coordinates
+                double x0 = ptFromMm(corners[0].getX());
+                double y0 = ptFromMm(corners[0].getY());
+                double x2 = ptFromMm(corners[2].getX());
                 double mrkWidth = x2 - x0;
-                dictionary.drawTo(g2, idx, 0, borderBits, xOff + x0, yOff + y0, mrkWidth);
+                dictionary.getMarker(idx, 0, borderBits).drawTo(g2, xOff + x0, yOff + y0, mrkWidth);
+            }
+            if (showLegend && this.getName() != null) {
+                Font legendFont = new Font(Font.SANS_SERIF, Font.PLAIN, 6);
+                Color legendColor = Color.BLACK;
+                g2.setColor(legendColor);
+                g2.setFont(legendFont);
+                g2.drawString(this.getName(), 20, 20);
             }
 
             g2.dispose();
@@ -313,39 +343,13 @@ public class GridBoard {
 
     // -------------------------------------------------------------------
 
-
-    // public static void drawPixels() {
-    //     GridBoard gb = new GridBoard(7, 5, 0.02, 0.01, DICT_5X5_100.getInstance(), 2);
-    //     int i = 0;
-    //     for (int y = 0; y < gb.getMarkersY(); y++) {
-    //         for (int x = 0; x < gb.getMarkersX(); x++) {
-    //             System.out.print(i + ": " + gb.getCorners(i)[0] + " | ");
-    //             i++;
-    //         }
-    //         System.out.println();
-    //     }
-    //     System.out.println("getRightBottomBorder = " + gb.getRightBottomBorder());
-    //
-    //     ImageProcessor ip = gb.generateImage(1200, 10);
-    //     new ImagePlus("Board", ip).show();
-    // }
-
-    // public static void drawToImage() {
-    //     // GridBoard gb = new GridBoard(7, 5, 20.0, 10.0, DICT_5X5_100.getInstance(), 2);
-    //     GridBoard gb = GridBoardPredefined.DICT_5X5_BOARD_8x5_A4.getInstance();
-    //     // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_BOARD_12x8_A4.getInstance();
-    //     System.out.printf("board size = %.2f x %.2f mm\n", gb.getBoardWidth(), gb.getBoardHeight());
-    //     ImageProcessor ip = gb.generateImage(1200, 10);
-    //     new ImagePlus("Board", ip).show();
-    // }
-
     public static void main(String[] args) {
-        GridBoard gb = GridBoardPredefined.DICT_5X5_BOARD_8x5_A4.getInstance();
-        // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_BOARD_12x8_A4.getInstance();
+        GridBoard gb = GridBoardPredefined.DICT_5X5_GridBoard_8x5_A4L.getInstance();
+        // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_GridBoard_12x8_A4.getInstance();
         System.out.printf("board size = %.2f x %.2f mm\n", gb.getBoardWidth(), gb.getBoardHeight());
-        // ImageProcessor ip = gb.generateImage(1200, 10);
+        // ImageProcessor ip = gb.createImage(1200, 10);
         // new ImagePlus("Board " + gb.getName(), ip).show();
 
-        System.out.println("pdf path = " + gb.saveAsPdf("board.pdf"));
+        System.out.println("pdf path = " + gb.saveAsPdf(Path.of("tmp/board.pdf")));
     }
 }

@@ -5,10 +5,8 @@ import ij.ImagePlus;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
-import imagingbook.core.jdoc.JavaDocHelp;
 import imagingbook.jaruco.ArucoDictionary;
 import imagingbook.jaruco.ArucoDictionaryPredefined;
-import imagingbook.jaruco.gui.ZoomableImagePlus;
 
 /**
  * This ImageJ plugin demonstrates the basic use of {@link GenericDialog} to create a new byte image.
@@ -46,7 +44,7 @@ public class Show_Dictionary_Marker implements PlugIn {
         IJ.log("rot = " + rot);
         IJ.log("bits = " + dict.getBits(idx, rot));
 
-        ByteProcessor bp = (ByteProcessor) dict.getMarkerImage(idx, rot).resize(DISPLAY_SIZE);
+        ByteProcessor bp = (ByteProcessor) dict.getMarker(idx, rot, 1).getImage().resize(DISPLAY_SIZE);
         new ImagePlus("Marker " + idx + "/" + rot, bp).show();
 
         // ImagePlus imp = NewImage.createByteImage(Title, Width, Height, 1, NewImage.FILL_WHITE);

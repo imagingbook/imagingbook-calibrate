@@ -8,10 +8,12 @@ package imagingbook.jaruco;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lowagie.text.pdf.PdfGraphics2D;
 import ij.process.ByteProcessor;
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.util.MatrixRotationUtils;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
@@ -344,8 +346,10 @@ public class ArucoDictionary {
         return this.name;
     }
 
+    // -------------------------------------------------------------------------
+
     /**
-     * Data structure holding a single marker lookup result
+     * Data structure holding a single dictionary lookup result.
      * @param markerIndex
      * @param rotation
      * @param hammingDistance
@@ -359,73 +363,27 @@ public class ArucoDictionary {
     // -------------------------------------------------------------------------
 
     /**
-     * Creates a marker image of the specified dictionary entry with a
-     * surrounding 1-pixel black border.
-     * @param idx the marker index
-     * @param rot the rotation index (0,...,3)
-     * @return an image of the specified marker with 1 pixel per code bit
+     * Returns a {@link Marker} instance for the specified dictionary entry,
+     * with rotation = 0 and 1 border bit.
+     * @param id the marker's id
+     * @return a {@link Marker} instance
      */
-    public ByteProcessor getMarkerImage(int idx, int rot) {
-        return getMarkerImage(idx, rot, 1);
+    public Marker getMarker(int id) {
+        return getMarker(id, 0, 1);
     }
 
     /**
-     * Creates a marker image of the specified dictionary entry with a
-     * surrounding black  of the specified width.
-     * @param idx the marker index
-     * @param rot the rotation index (0,...,3)
-     * @param borderBits width of black border
-     * @return an image of the specified marker with 1 pixel per code bit
+     * Returns a {@link Marker} instance for the specified dictionary entry, rotation and
+     * number of additional border bits.
+     * @param id the marker's id
+     * @param rot the marker's rotation (0,...,3)
+     * @param borderBits the number of additional border bits
+     * @return a {@link Marker} instance
      */
-    public ByteProcessor getMarkerImage(int idx, int rot, int borderBits) {
-        int n = this.getMarkerSize();
-        int npix = n + 2 * borderBits;
-        BitVector bitcode = this.getBits(idx, rot);
-
-        ByteProcessor ip = new ByteProcessor(npix, npix);
-        int k = 0;
-        for (int v = 0; v < n; v++) {
-            for (int u = 0; u < n; u++) {
-                ip.set(u + borderBits, v + borderBits, bitcode.getBit(k) ? 0xFF : 0);
-                k++;
-            }
-        }
-        return ip;
-    }
-
-    // -------------------------------------------------------------------------
-
-    /**
-     * Draw the specified marker to a {@link Graphics2D} canvas.
-     * @param g a {@link Graphics2D} canvas
-     * @param idx the marker index
-     * @param rot the rotation index (0,...,3)
-     * @param borderBits width of surrounding black border (in bits)
-     */
-    public void drawTo(Graphics2D g, int idx, int rot, int borderBits, double x0, double y0, double markerWidth) {
-        int innerBits = getMarkerSize();
-        int totalBits = innerBits + 2 * borderBits;
-        double scale = markerWidth / totalBits; // scale factor to enlarge one bit
-        BitVector bitcode = this.getBits(idx, rot);
-
-        // draw the surrounding square black
-        double wOuter = totalBits * scale;
-        g.setColor(Color.black);
-        g.fill(new Rectangle2D.Double(x0, y0, wOuter, wOuter));
-
-        // draw the active bits white
-        g.setColor(Color.white);
-        int k = 0;
-        for (int v = 0; v < innerBits; v++) {
-            for (int u = 0; u < innerBits; u++) {
-                if (bitcode.getBit(k)) {
-                    double x = x0 + (borderBits + u) * scale;
-                    double y = y0 + (borderBits + v) * scale;
-                    g.fill(new Rectangle2D.Double(x, y, 1 * scale, 1 * scale));
-                }
-                k++;
-            }
-        }
+    public Marker getMarker(int id, int rot, int borderBits) {
+        if (borderBits < 0)
+            throw new IllegalArgumentException("borderBits must be >= 0");
+        return new Marker(this.getBits(id, rot), this.N, borderBits);
     }
 
 }

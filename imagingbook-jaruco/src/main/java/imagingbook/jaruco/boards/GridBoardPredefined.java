@@ -1,18 +1,20 @@
 package imagingbook.jaruco.boards;
 
+import com.lowagie.text.PageSize;
+
 import static imagingbook.jaruco.ArucoDictionaryPredefined.DICT_5X5_100;
 
 public enum GridBoardPredefined {
-    DICT_5X5_BOARD_8x5_A4 {
+    DICT_5X5_GridBoard_8x5_A4L {
         @Override
         GridBoard makeInstance() {
-            return new GridBoard(8, 5, 25.0, 10.0, DICT_5X5_100.getInstance(), 1);
+            return new GridBoard(8, 5, 25.0, 10.0, DICT_5X5_100.getInstance(), 1, PageSize.A4.rotate());
         }
     },
-    DICT_5X5_BOARD_12x8_A4 {
+    DICT_5X5_GridBoard_12x8_A4L {
         @Override
         GridBoard makeInstance() {
-            return new GridBoard(12, 8, 15.0, 6.0, DICT_5X5_100.getInstance(), 1);
+            return new GridBoard(12, 8, 15.0, 6.0, DICT_5X5_100.getInstance(), 1, PageSize.A4.rotate());
         }
     };
 
