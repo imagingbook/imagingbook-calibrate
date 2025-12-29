@@ -1,8 +1,6 @@
 package imagingbook.jaruco.boards;
 
 import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfGraphics2D;
@@ -18,8 +16,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,122 +138,19 @@ public class GridBoard extends AbstractBoard {
         return ids.length;
     }
 
-    // --------------------------------------------------------------------------------------------
-
-    /**
-     * Creates and returns a B/W image of this {@link GridBoard} by drawing shapes into a
-     * {@link Graphics2D} canvas. See also {@link ImageGraphics}. Only the {@code width} of the
-     * image is specified, while its {@code height} is derived from the board's dimensions.
-     *
-     * @param imgWidth the width of the output image (in pixels)
-     * @return an image of this board
-     */
-    @Override
-    public ByteProcessor createImage(int imgWidth) {
-        int imgHeight = (int) Math.ceil(imgWidth * boardHeight / boardWidth);
-        double scale = imgWidth / boardWidth;
-
-        ByteProcessor ip = new ByteProcessor(imgWidth, imgHeight);
-        ip.setValue(255);
-        ip.fill();
-        try (ImageGraphics ig = new ImageGraphics(ip)) {
-            ig.setAntialiasing(false);  // turn off to avoid thin lines between boxes
-            Graphics2D g2 = ig.getGraphics2D();
-            // draw each marker
-            for (int idx = 0; idx < getMarkerCount(); idx++) {
-                Pnt2d[] corners = getMarkerCorners(idx);
-                double x0 = corners[0].getX() * scale;
-                double y0 = corners[0].getY() * scale;
-                double x2 = corners[2].getX() * scale;
-                double mrkWidth = x2 - x0;
-                dictionary.getMarker(idx, 0, borderBits).drawTo(g2, x0, y0, mrkWidth);
-            }
-        }
-        return ip;
-    }
 
     // --------------------------------------------------------------------------------------------
 
-    /**
-     * Saves the board graphics as a PDF (shortcut for {@link #saveAsPdf(Path, Rectangle, boolean)}).
-     * @param path the file {@link Path}
-     * @return the absolute file path of the stored document
-     */
     @Override
-    public String saveAsPdf(Path path) {
-        return saveAsPdf(path, this.pdfPageSize, true);
-    }
-
-    /**
-     * Saves the board graphics as a PDF.
-     * The directory of the specified {@code path} must exist in advance (no new directories
-     * are created) and must be writable, otherwise an exception is thrown. For example,
-     * <pre>
-     *     Path.of("tmp/board.pdf")</pre>
-     * will try to save the document to file {@code <currendDir>/tmp/board.pdf}.
-     * The {@code pageSize} argument may be {@code null}, in
-     * which case the board's own PDF size is used. If this is {@code null} too, an exception
-     * is thrown. Note that each pre-defined board listed in {@link GridBoardPredefined} do have a
-     * specific document size and name.
-     *
-     * @param path the file {@link Path}
-     * @param pageSize the document page size, e.g. {@link PageSize#A4}{@code .rotate()}.
-     * @param showLegend set true to show the board's name in the PDF
-     * @return the absolute file path of the stored document
-     */
-    public String saveAsPdf(Path path, Rectangle pageSize, boolean showLegend) {
-        if (pageSize == null)
-            pageSize = this.pdfPageSize;
-        if (pageSize == null) {
-            throw new IllegalArgumentException("no PDF page size specified");
+    void drawBoard(Graphics2D g2, double scale, double xOffset, double yOffset) {
+        // draw each marker
+        for (int idx = 0; idx < getMarkerCount(); idx++) {
+            Pnt2d[] corners = getMarkerCorners(idx);
+            double x0 = corners[0].getX() * scale + xOffset;
+            double y0 = corners[0].getY() * scale + yOffset;
+            double mw = markerWidth * scale;
+            dictionary.getMarker(idx, 0, borderBits).drawTo(g2, x0, y0, mw);
         }
-
-        try (Document document = new Document(pageSize)) {
-            PdfWriter writer;
-            try {
-                writer = PdfWriter.getInstance(document, new FileOutputStream(path.toFile()));
-            } catch (DocumentException | FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-
-            document.open();
-            document.addTitle(this.getName());
-            document.addCreationDate();
-            document.addProducer(this.getClass().getCanonicalName());
-
-            PdfContentByte cb = writer.getDirectContent();
-            float pageWidth = document.getPageSize().getWidth();    // unit is pt !
-            float pageHeight = document.getPageSize().getHeight();
-            double boardWidthPt = ptFromMm(this.boardWidth);
-            double boardHeightPt = ptFromMm(this.boardHeight);
-
-            // center board on page:
-            double xOff = (pageWidth - boardWidthPt) / 2;
-            double yOff = (pageHeight - boardHeightPt) / 2;
-
-            Graphics2D g2 = new PdfGraphics2D(cb, pageWidth, pageHeight);
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-
-            for (int idx = 0; idx < getMarkerCount(); idx++) {
-                Pnt2d[] corners = getMarkerCorners(idx);    // marke corners in board coordinates
-                double x0 = ptFromMm(corners[0].getX());
-                double y0 = ptFromMm(corners[0].getY());
-                double x2 = ptFromMm(corners[2].getX());
-                double mrkWidth = x2 - x0;
-                dictionary.getMarker(idx, 0, borderBits).drawTo(g2, xOff + x0, yOff + y0, mrkWidth);
-            }
-            if (showLegend && this.getName() != null) {
-                Font legendFont = new Font(Font.SANS_SERIF, Font.PLAIN, 6);
-                Color legendColor = Color.BLACK;
-                g2.setColor(legendColor);
-                g2.setFont(legendFont);
-                g2.drawString(this.getName(), 20, 20);
-            }
-
-            g2.dispose();
-        }
-
-        return path.toAbsolutePath().toString();
     }
 
     // -------------------------------------------------------------------
@@ -270,6 +163,6 @@ public class GridBoard extends AbstractBoard {
         ImageProcessor ip = gb.createImage(1200);
         new ImagePlus("Board " + gb.getName(), ip).show();
 
-        // System.out.println("pdf path = " + gb.saveAsPdf(Path.of("tmp/board.pdf")));
+        System.out.println("pdf path = " + gb.saveAsPdf(Path.of("tmp/board.pdf")));
     }
 }

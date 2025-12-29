@@ -1,7 +1,11 @@
 package imagingbook.jaruco.boards;
 
+import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfGraphics2D;
+import com.lowagie.text.pdf.PdfWriter;
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
@@ -10,7 +14,9 @@ import imagingbook.common.image.ImageGraphics;
 import imagingbook.jaruco.ArucoDictionary;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -24,7 +30,7 @@ public class CharucoBoard extends AbstractBoard {
     private final int[] ids;
     final List<Pnt2d[]> cornerPoints;
     final List<Pnt2d[]> chessboardCorners;
-    List<Rectangle2D> squares;
+    final List<Pnt2d[]> squares;
 
     /**
      * Constructor. Creates a board with Aruco markers placed on a rectangular grid. Marker ids are
@@ -70,15 +76,22 @@ public class CharucoBoard extends AbstractBoard {
             for (int u = 0; u < gridCols; u++) {
                 double x = u * squareWidth;
                 if(v % 2 == u % 2) {
-                    //continue; // black corner, no marker here
-                    squares.add(new Rectangle2D.Double(x, y, squareWidth, squareWidth));
+                    // black corner, no marker
+                    Pnt2d s0 = Pnt2d.from(x, y);
+                    Pnt2d[] square = {
+                        s0,
+                        s0.plus(squareWidth, 0),
+                        s0.plus(squareWidth, squareWidth),
+                        s0.plus(0, squareWidth)};
+                    squares.add(square);
                 }
                 else {
-                    Pnt2d[] corners = new Pnt2d[4];
-                    corners[0] = Pnt2d.from(x + markerSep/2, y + markerSep/2);
-                    corners[1] = corners[0].plus(markerWidth, 0);
-                    corners[2] = corners[0].plus(markerWidth, markerWidth);
-                    corners[3] = corners[0].plus(0, markerWidth);
+                    Pnt2d c0 = Pnt2d.from(x + markerSep / 2, y + markerSep / 2);
+                    Pnt2d[] corners = {
+                        c0,
+                        c0.plus(markerWidth, 0),
+                        c0.plus(markerWidth, markerWidth),
+                        c0.plus(0, markerWidth)};
                     cornerPoints.add(corners);
                     mIds.add(nextId);
                     nextId++;
@@ -113,41 +126,24 @@ public class CharucoBoard extends AbstractBoard {
     }
 
     @Override
-    public ByteProcessor createImage(int imgWidth) {
-        int height = (int) Math.ceil(imgWidth * boardHeight / boardWidth);
-        double scale = imgWidth / boardWidth;
-
-        ByteProcessor ip = new ByteProcessor(imgWidth, height);
-        ip.setValue(255);
-        ip.fill();
-        try (ImageGraphics ig = new ImageGraphics(ip)) {
-            ig.setAntialiasing(false);  // turn off to avoid thin lines between boxes
-            Graphics2D g2 = ig.getGraphics2D();
-            // draw each marker
-            for (int idx = 0; idx < getMarkerCount(); idx++) {
-                Pnt2d[] corners = getMarkerCorners(idx);
-                double x0 = corners[0].getX() * scale;
-                double y0 = corners[0].getY() * scale;
-                double mw = markerWidth * scale;
-                dictionary.getMarker(idx, 0, borderBits).drawTo(g2, x0, y0, mw);
-            }
-            g2.setColor(Color.black);
-            for (Rectangle2D sqr : squares) {
-                g2.fill(scale(sqr, scale));
-            }
+    void drawBoard(Graphics2D g2, double scale, double xOffset, double yOffset) {
+        // draw all markers
+        for (int idx = 0; idx < getMarkerCount(); idx++) {
+            Pnt2d[] corners = getMarkerCorners(idx);
+            double x0 = corners[0].getX() * scale + xOffset;
+            double y0 = corners[0].getY() * scale + yOffset;
+            double mw = markerWidth * scale;
+            dictionary.getMarker(idx, 0, borderBits).drawTo(g2, x0, y0, mw);
         }
-        return ip;
-    }
+        // draw the black squares
+        g2.setColor(Color.black);
+        for (Pnt2d[] sqr : squares) {
+            double x0 = sqr[0].getX() * scale + xOffset;
+            double y0 = sqr[0].getY() * scale + yOffset;
+            double sw = squareWidth * scale;
+            g2.fill(new Rectangle2D.Double(x0, y0, sw, sw));
+        }
 
-    private Rectangle2D scale(Rectangle2D rect, double scale) {
-        return new Rectangle2D.Double(
-                rect.getX()*scale, rect.getY()*scale,
-                rect.getWidth()*scale, rect.getHeight()*scale);
-    }
-
-    @Override
-    public String saveAsPdf(Path path) {
-        return "";
     }
 
     // -------------------------------------------------------------------
@@ -161,7 +157,7 @@ public class CharucoBoard extends AbstractBoard {
         ImageProcessor ip = board.createImage(1200);
         new ImagePlus("Board " + board.getName(), ip).show();
 
-        // System.out.println("pdf path = " + gb.saveAsPdf(Path.of("tmp/board.pdf")));
+        System.out.println("pdf path = " + board.saveAsPdf(Path.of("tmp/chboard.pdf")));
     }
 
 }
