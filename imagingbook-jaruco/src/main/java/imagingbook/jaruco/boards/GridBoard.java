@@ -1,21 +1,11 @@
 package imagingbook.jaruco.boards;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfGraphics2D;
-import com.lowagie.text.pdf.PdfWriter;
 import ij.ImagePlus;
-import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.image.ImageGraphics;
 import imagingbook.jaruco.ArucoDictionary;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +45,7 @@ public class GridBoard extends AbstractBoard {
      * @param pdfPageSize the recommended PDF document size (may be null)
      */
     public GridBoard(int gridCols, int gridRows, double markerWidth, double squareWidth,
-                     ArucoDictionary dictionary, int borderBits, Rectangle pdfPageSize) {
+                     ArucoDictionary dictionary, int borderBits, PageFmt pdfPageSize) {
         super(gridCols, gridRows, markerWidth, squareWidth, dictionary, borderBits, pdfPageSize);
         // this.gridCols = gridCols;
         // this.gridRows = gridRows;
@@ -105,34 +95,19 @@ public class GridBoard extends AbstractBoard {
 
     // -------------------------------------------------------------------------------------------
 
-    /**
-     * Returns the board coordinates of corner points for the specified marker.
-     * Each marker has 4 corners in CW order:
-     * corners[0]: left-top corner
-     * corners[1]: right-top corner
-     * corners[2]: right-bottom corner
-     * corners[3]: left-bottom corner
-     * @param id the marker id
-     * @ an array with the four corner points
-     */
+
     @Override
     public Pnt2d[] getMarkerCorners(int id) {
         return cornerPoints.get(id);
     }
 
-    /**
-     * Returns an array with all marker ids.
-     * @return all marker ids
-     */
+
     @Override
     public int[] getIds() {
         return ids;
     }
 
-    /**
-     * Returns the number of markers on this board.
-     * @return the number of markers
-     */
+
     @Override
     public int getMarkerCount() {
         return ids.length;
@@ -142,7 +117,7 @@ public class GridBoard extends AbstractBoard {
     // --------------------------------------------------------------------------------------------
 
     @Override
-    void drawBoard(Graphics2D g2, double scale, double xOffset, double yOffset) {
+    void drawBoardContent(Graphics2D g2, double scale, double xOffset, double yOffset) {
         // draw each marker
         for (int idx = 0; idx < getMarkerCount(); idx++) {
             Pnt2d[] corners = getMarkerCorners(idx);

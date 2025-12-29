@@ -4,6 +4,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
+import com.lowagie.text.RectangleReadOnly;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfGraphics2D;
 import com.lowagie.text.pdf.PdfWriter;
@@ -28,17 +29,15 @@ public abstract class AbstractBoard {
     final double squareWidth;
     final ArucoDictionary dictionary;
     final int borderBits;
-    final Rectangle pdfPageSize;
+    final PageFmt pdfPageSize;
 
     double boardWidth;
     double boardHeight;
 
-
     String name = "none";         // name of this board (used by predefined boards)
 
-
     AbstractBoard(int gridCols, int gridRows, double markerWidth, double squareWidth,
-                         ArucoDictionary dictionary, int borderBits, Rectangle pdfPageSize) {
+                         ArucoDictionary dictionary, int borderBits, PageFmt pdfPageSize) {
         this.gridCols = gridCols;
         this.gridRows = gridRows;
         this.markerWidth = markerWidth;
@@ -129,18 +128,49 @@ public abstract class AbstractBoard {
 
     // --------------------------------------------------------------------------------------------
 
+    /**
+     * Converts the length {@code pt} to millimeters.
+     * @param pt length in pt units
+     * @return the equivalent length in mm
+     */
     static double mmFromPt(double pt) {
         return pt * 25.4 / 72;
     }
 
+    /**
+     * Converts the length {@code mm} to points (pt).
+     * @param mm length in millimeters
+     * @return the equivalent length in points
+     */
     static double ptFromMm(double mm) {
         return mm * 72 / 25.4;
     }
 
     // -----------------------------------------------------------------------------
 
+    /**
+     * Returns the board coordinates of corner points for the specified marker.
+     * Each marker has 4 corners in CW order:
+     * corners[0]: left-top corner
+     * corners[1]: right-top corner
+     * corners[2]: right-bottom corner
+     * corners[3]: left-bottom corner
+     * @param id the marker id
+     * @ an array with the four corner points
+     */
     public abstract Pnt2d[] getMarkerCorners(int id);
+
+
+    /**
+     * Returns the number of markers on this board.
+     * @return the number of markers
+     */
     public abstract int getMarkerCount();
+
+    /**
+     * Returns an array with all marker ids.
+     * @return all marker ids
+     */
     public abstract int[] getIds();
 
     // -----------------------------------------------------------------------------
@@ -155,13 +185,12 @@ public abstract class AbstractBoard {
      * @param xOffset the x-offset (in canvas units)
      * @param yOffset the y-offset (in canvas units)
      */
-    abstract void drawBoard(Graphics2D g2, double scale, double xOffset, double yOffset);
+    abstract void drawBoardContent(Graphics2D g2, double scale, double xOffset, double yOffset);
 
     /**
      * Creates and returns a B/W image of this {@link GridBoard} by drawing shapes into a
      * {@link Graphics2D} canvas. See also {@link ImageGraphics}. Only the {@code width} of the
      * image is specified, while its {@code height} is derived from the board's dimensions.
-     *
      * @param imgWidth the width of the output image (in pixels)
      * @return an image of this board
      */
@@ -175,7 +204,7 @@ public abstract class AbstractBoard {
         try (ImageGraphics ig = new ImageGraphics(ip)) {
             ig.setAntialiasing(false);  // turn off to avoid thin lines between boxes
             Graphics2D g2 = ig.getGraphics2D();
-            drawBoard(g2, scale, 0, 0);
+            drawBoardContent(g2, scale, 0, 0);
         }
         return ip;
     }
@@ -198,14 +227,14 @@ public abstract class AbstractBoard {
      * @return the absolute file path of the stored document
      */
     // public abstract String saveAsPdf(Path path, Rectangle pageSize, boolean showLegend);
-    public String saveAsPdf(Path path, Rectangle pageSize, boolean showLegend) {
+    public String saveAsPdf(Path path, PageFmt pageSize, boolean showLegend) {
         if (pageSize == null)
             pageSize = this.pdfPageSize;
         if (pageSize == null) {
             throw new IllegalArgumentException("no PDF page size specified");
         }
 
-        try (Document document = new Document(pageSize)) {
+        try (Document document = new Document(pageSize.getRectangle())) {
             PdfWriter writer;
             try {
                 writer = PdfWriter.getInstance(document, new FileOutputStream(path.toFile()));
@@ -225,7 +254,7 @@ public abstract class AbstractBoard {
     }
 
     /**
-     * Saves the board graphics as a PDF (shortcut for {@link #saveAsPdf(Path, Rectangle, boolean)}).
+     * Saves the board graphics as a PDF (shortcut for {@link #saveAsPdf(Path, PageFmt, boolean)}).
      * @param path the file {@link Path}
      * @return the absolute file path of the stored document
      */
@@ -238,18 +267,16 @@ public abstract class AbstractBoard {
         float pageHeight = document.getPageSize().getHeight();
         double boardWidthPt = ptFromMm(this.boardWidth);
         double boardHeightPt = ptFromMm(this.boardHeight);
-
         // center board on page:
         double xOff = (pageWidth - boardWidthPt) / 2;
         double yOff = (pageHeight - boardHeightPt) / 2;
         double scale = ptFromMm(1);
         // System.out.println("pdf scale " + scale);
-
         PdfContentByte cb = writer.getDirectContent();
         Graphics2D g2 = new PdfGraphics2D(cb, pageWidth, pageHeight);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
-        drawBoard(g2, scale, xOff, yOff);
+        drawBoardContent(g2, scale, xOff, yOff);    // implemented by concrete classes
 
         if (showLegend && this.getName() != null) {
             Font legendFont = new Font(Font.SANS_SERIF, Font.PLAIN, 6);
@@ -260,5 +287,34 @@ public abstract class AbstractBoard {
         }
 
         g2.dispose();
+    }
+
+    /**
+     * Wrapper class to avoid exposure of {@link com.lowagie.text.Rectangle} when calling
+     * {@link #saveAsPdf(Path, PageFmt, boolean)}.
+     * Custom page formats can be created by
+     * <pre>
+     *     new PageFmt(width, height); </pre> with dimensions in mm.
+     * See OpenPDF {@link PageSize} for additional standard formats.
+     * @param width document width (in millimeters)
+     * @param height document height (in millimeters)
+     */
+    public record PageFmt(double width, double height) {
+
+        // instantiate from OpenPDF rectange
+        PageFmt(Rectangle pageSize) {
+            this(pageSize.getWidth(), pageSize.getHeight());
+        }
+
+        // returns the OpenPDF rectangle
+        Rectangle getRectangle() {
+            return new RectangleReadOnly((float) width, (float) height);
+        }
+
+        public static final PageFmt A4_Portrait = new PageFmt(PageSize.A4);
+        public static final PageFmt A4_Landscape = new PageFmt(PageSize.A4.rotate());
+        public static final PageFmt A3_Portrait = new PageFmt(PageSize.A3);
+        public static final PageFmt A3_Landscape = new PageFmt(PageSize.A3.rotate());
+
     }
 }

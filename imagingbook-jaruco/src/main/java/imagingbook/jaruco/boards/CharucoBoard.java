@@ -1,22 +1,12 @@
 package imagingbook.jaruco.boards;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfGraphics2D;
-import com.lowagie.text.pdf.PdfWriter;
 import ij.ImagePlus;
-import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.image.ImageGraphics;
 import imagingbook.jaruco.ArucoDictionary;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -54,7 +44,7 @@ public class CharucoBoard extends AbstractBoard {
      * @param pdfPageSize the recommended PDF document size (may be null)
      */
     public CharucoBoard(int gridCols, int gridRows, double markerWidth, double squareWidth,
-                        ArucoDictionary dictionary, int borderBits, Rectangle pdfPageSize) {
+                        ArucoDictionary dictionary, int borderBits, PageFmt pdfPageSize) {
         super(gridCols, gridRows, markerWidth, squareWidth, dictionary, borderBits, pdfPageSize);
 
         double markerSep = squareWidth - markerWidth;
@@ -126,7 +116,7 @@ public class CharucoBoard extends AbstractBoard {
     }
 
     @Override
-    void drawBoard(Graphics2D g2, double scale, double xOffset, double yOffset) {
+    void drawBoardContent(Graphics2D g2, double scale, double xOffset, double yOffset) {
         // draw all markers
         for (int idx = 0; idx < getMarkerCount(); idx++) {
             Pnt2d[] corners = getMarkerCorners(idx);
@@ -152,7 +142,7 @@ public class CharucoBoard extends AbstractBoard {
         // GridBoard gb = GridBoardPredefined.DICT_5X5_GridBoard_18x12_A3L.getInstance();
         // GridBoard gb = GridBoardPredefined.DICT_5X5_GridBoard_8x5_A4L.getInstance();
         // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_GridBoard_12x8_A4.getInstance();
-        CharucoBoard board = new CharucoBoard(12, 8, 15.0, 21.0, DICT_5X5_100.getInstance(), 1, PageSize.A4.rotate());
+        CharucoBoard board = new CharucoBoard(12, 8, 15.0, 21.0, DICT_5X5_100.getInstance(), 1, PageFmt.A4_Landscape);
         System.out.printf("board size = %.2f x %.2f mm\n", board.getBoardWidth(), board.getBoardHeight());
         ImageProcessor ip = board.createImage(1200);
         new ImagePlus("Board " + board.getName(), ip).show();
