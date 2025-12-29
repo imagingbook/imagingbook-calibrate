@@ -9,19 +9,19 @@ public enum GridBoardPredefined {
     DICT_5X5_GridBoard_8x5_A4L {
         @Override
         GridBoard makeInstance() {
-            return new GridBoard(8, 5, 25.0, 10.0, DICT_5X5_100.getInstance(), 1, PageSize.A4.rotate());
+            return new GridBoard(8, 5, 25.0, 35.0, DICT_5X5_100.getInstance(), 1, PageSize.A4.rotate());
         }
     },
     DICT_5X5_GridBoard_12x8_A4L {
         @Override
         GridBoard makeInstance() {
-            return new GridBoard(12, 8, 15.0, 6.0, DICT_5X5_100.getInstance(), 1, PageSize.A4.rotate());
+            return new GridBoard(12, 8, 15.0, 21.0, DICT_5X5_100.getInstance(), 1, PageSize.A4.rotate());
         }
     },
     DICT_5X5_GridBoard_18x12_A3L {
         @Override
         GridBoard makeInstance() {
-            return new GridBoard(18, 12, 15.0, 6.0, DICT_5X5_1000.getInstance(), 1, PageSize.A3.rotate());
+            return new GridBoard(18, 12, 15.0, 21.0, DICT_5X5_1000.getInstance(), 1, PageSize.A3.rotate());
         }
     };
 

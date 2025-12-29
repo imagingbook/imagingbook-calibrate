@@ -55,7 +55,7 @@ public class Marker {
     // --------------------------------------------------------------------------------------------
 
     /** Overlap for white boxes to avoid "hairline gap" problem in PDFs. */
-    static final double PDF_OVERLAP = 0.0002;   // fraction of marker size
+    static final double PDF_OVERLAP = 0.0005;   // fraction of marker size 0.0002
 
     /**
      * Draws this marker to a {@link Graphics2D} canvas. Positions
