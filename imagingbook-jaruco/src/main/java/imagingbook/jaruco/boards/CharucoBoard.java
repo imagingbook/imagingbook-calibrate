@@ -18,10 +18,9 @@ import static imagingbook.jaruco.ArucoDictionaryPredefined.DICT_5X5_100;
 public class CharucoBoard extends AbstractBoard {
 
     private final int[] ids;                    // the marker ids
-    final List<Pnt2d[]> cornerPoints;           //
+    final List<Pnt2d[]> markerCorners;          // the markers' corner points
+    final List<Pnt2d[]> squareCorners;          // the squares' corner points
     final List<Pnt2d[]> chessboardCorners;
-    final List<Pnt2d[]> squares;
-
 
 
     /**
@@ -56,11 +55,11 @@ public class CharucoBoard extends AbstractBoard {
         System.out.println("diffSquareMarkerLength = " + markerSep/2);
 
         // calculate markers' corner points in board coordinates
-        cornerPoints = new ArrayList<>();
+        markerCorners = new ArrayList<>();
         List<Pnt2d[]> cPoints = new ArrayList<>();
         ArrayList<Integer> mIds = new ArrayList<>();
 
-        squares = new ArrayList<>();
+        squareCorners = new ArrayList<>();
 
         // fill in squares and markers
         int nextId = 0;
@@ -76,7 +75,7 @@ public class CharucoBoard extends AbstractBoard {
                         s0.plus(squareWidth, 0),
                         s0.plus(squareWidth, squareWidth),
                         s0.plus(0, squareWidth)};
-                    squares.add(square);
+                    squareCorners.add(square);
                 }
                 else {  // here comes a Aruco marker
                     Pnt2d c0 = Pnt2d.from(x + markerSep / 2, y + markerSep / 2);
@@ -85,7 +84,7 @@ public class CharucoBoard extends AbstractBoard {
                         c0.plus(markerWidth, 0),
                         c0.plus(markerWidth, markerWidth),
                         c0.plus(0, markerWidth)};
-                    cornerPoints.add(corners);
+                    markerCorners.add(corners);
                     mIds.add(nextId);
                     nextId++;
                 }
@@ -105,7 +104,7 @@ public class CharucoBoard extends AbstractBoard {
 
     @Override
     public Pnt2d[] getMarkerCorners(int id) {
-        return cornerPoints.get(id);
+        return markerCorners.get(id);
     }
 
     @Override
@@ -130,7 +129,7 @@ public class CharucoBoard extends AbstractBoard {
         }
         // draw the black squares
         g2.setColor(Color.black);
-        for (Pnt2d[] sqr : squares) {
+        for (Pnt2d[] sqr : squareCorners) {
             double x0 = sqr[0].getX() * scale + xOffset;
             double y0 = sqr[0].getY() * scale + yOffset;
             double sw = squareWidth * scale;

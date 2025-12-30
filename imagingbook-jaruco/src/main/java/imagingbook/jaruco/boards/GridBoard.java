@@ -19,7 +19,7 @@ import java.util.List;
 public class GridBoard extends AbstractBoard {
 
     private final int[] ids;
-    final List<Pnt2d[]> cornerPoints;
+    final List<Pnt2d[]> markerCorners;
 
 
     /**
@@ -71,7 +71,7 @@ public class GridBoard extends AbstractBoard {
         Arrays.setAll(ids, (i) -> i); // fill ids = 0, 1, 2, ...
 
         // calculate markers' corner points in board coordinates
-        this.cornerPoints = new ArrayList<>();
+        this.markerCorners = new ArrayList<>();
         for (int v = 0; v < gridRows; v++) {
             double y = v * squareWidth;
             for (int u = 0; u < gridCols; u++) {
@@ -85,7 +85,7 @@ public class GridBoard extends AbstractBoard {
                 corners[1] = corners[0].plus(markerWidth, 0);
                 corners[2] = corners[0].plus(markerWidth, markerWidth);
                 corners[3] = corners[0].plus(0, markerWidth);
-                cornerPoints.add(corners);
+                markerCorners.add(corners);
             }
         }
 
@@ -98,7 +98,7 @@ public class GridBoard extends AbstractBoard {
 
     @Override
     public Pnt2d[] getMarkerCorners(int id) {
-        return cornerPoints.get(id);
+        return markerCorners.get(id);
     }
 
 
