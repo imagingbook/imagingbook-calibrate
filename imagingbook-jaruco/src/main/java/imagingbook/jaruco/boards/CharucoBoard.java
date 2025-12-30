@@ -3,6 +3,7 @@ package imagingbook.jaruco.boards;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.ArucoDictionary;
 
 import java.awt.Color;
@@ -46,7 +47,7 @@ public class CharucoBoard extends AbstractBoard {
      */
     public CharucoBoard(int gridCols, int gridRows, double markerWidth, double squareWidth,
                         ArucoDictionary dictionary, int borderBits, PageFmt pdfPageSize) {
-        super(gridCols, gridRows, markerWidth, squareWidth, dictionary, borderBits, pdfPageSize);
+        super(gridCols, gridRows, squareWidth, markerWidth, dictionary, borderBits, pdfPageSize);
 
         double markerSep = squareWidth - markerWidth;
         // double diffSquareMarkerLength = (squareWidth - markerWidth) / 2;
@@ -95,16 +96,15 @@ public class CharucoBoard extends AbstractBoard {
         this.ids = new int[mIds.size()];
         Arrays.setAll(ids, (i) -> i); // fill ids = 0, 1, 2, ...
 
-        this.boardWidth = gridCols * squareWidth;
-        this.boardHeight = gridRows * squareWidth;
         chessboardCorners = new ArrayList<>();
     }
 
     // ----------------------------------------------------------------------------------
 
     @Override
-    public Pnt2d[] getMarkerCorners(int id) {
-        return markerCorners.get(id);
+    public Polygon2d getMarkerCorners(int id) {
+        // return markerCorners.get(id);
+        return new Polygon2d(markerCorners.get(id));
     }
 
     @Override
@@ -121,9 +121,9 @@ public class CharucoBoard extends AbstractBoard {
     void drawBoardContent(Graphics2D g2, double scale, double xOffset, double yOffset) {
         // draw all markers
         for (int idx = 0; idx < getMarkerCount(); idx++) {
-            Pnt2d[] corners = getMarkerCorners(idx);
-            double x0 = corners[0].getX() * scale + xOffset;
-            double y0 = corners[0].getY() * scale + yOffset;
+            Polygon2d corners = getMarkerCorners(idx);
+            double x0 = corners.getPnt(0).getX() * scale + xOffset;
+            double y0 = corners.getPnt(0).getY() * scale + yOffset;
             double mw = markerWidth * scale;
             dictionary.getMarker(idx, 0, borderBits).drawTo(g2, x0, y0, mw);
         }

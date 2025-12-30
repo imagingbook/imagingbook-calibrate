@@ -90,7 +90,7 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
             ola.setTextColor(MarkerColor);
             // ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
             ola.addText(center.getX(), center.getY(),
-                    marker.lookup().markerIndex() + "/" + marker.lookup().rotation() + "/" + marker.lookup().hammingDistance());
+                    marker.lookup().markerId() + "/" + marker.lookup().rotation() + "/" + marker.lookup().hammingDistance());
         }
 
         im.setOverlay(ola.getOverlay());

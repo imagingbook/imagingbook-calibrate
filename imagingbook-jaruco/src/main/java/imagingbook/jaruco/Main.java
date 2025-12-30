@@ -2,7 +2,6 @@ package imagingbook.jaruco;
 
 import ij.ImagePlus;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ColoredStroke;
@@ -114,7 +113,7 @@ public class Main {
                 ola.setTextColor(MarkerColor);
                 // ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
                 ola.addText(center.getX(), center.getY(),
-                        marker.lookup().markerIndex() + "/" + marker.lookup().rotation() + "/" + marker.lookup().hammingDistance());
+                        marker.lookup().markerId() + "/" + marker.lookup().rotation() + "/" + marker.lookup().hammingDistance());
 
                 // if parabolas exist, draw them:
                 // if (parabCurves != null) {

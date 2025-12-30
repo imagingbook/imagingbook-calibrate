@@ -344,13 +344,13 @@ public class ArucoDictionary {
 
     /**
      * Data structure holding a single dictionary lookup result.
-     * @param markerIndex
+     * @param markerId
      * @param rotation
      * @param hammingDistance
      */
     public record DictionaryLookupResult(
             String dictionaryName,
-            int markerIndex,
+            int markerId,
             int rotation,
             int hammingDistance) {}
 

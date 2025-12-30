@@ -3,13 +3,11 @@ package imagingbook.jaruco.boards;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.PageSize;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.RectangleReadOnly;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfGraphics2D;
 import com.lowagie.text.pdf.PdfWriter;
 import ij.process.ByteProcessor;
-import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.image.ImageGraphics;
 import imagingbook.jaruco.ArucoDictionary;
 
@@ -23,28 +21,26 @@ import java.nio.file.Path;
 
 public abstract class AbstractBoard {
 
-    final int gridCols;
-    final int gridRows;
-    final double markerWidth;
-    final double squareWidth;
-    final ArucoDictionary dictionary;
-    final int borderBits;
-    final PageFmt pdfPageSize;
+    final int gridCols;                 // number of grid fields in horizontal direction
+    final int gridRows;                 // number of grid fields in vertical direction
+    final double squareWidth;           // grid spacing in x/y-direction
+    final double markerWidth;           // size of the ArucoMarkers
+    final ArucoDictionary dictionary;   // marker dictionary
+    final int borderBits;               // number of border layers around marker data
+    final PageFmt pdfPageFormat;        // PDF document size
 
-    double boardWidth;
-    double boardHeight;
+    String name = "none";               // name of this board (used by predefined boards)
 
-    String name = "none";         // name of this board (used by predefined boards)
+    AbstractBoard(int gridCols, int gridRows, double squareWidth, double markerWidth,
+                  ArucoDictionary dictionary, int borderBits, PageFmt pdfPageFormat) {
 
-    AbstractBoard(int gridCols, int gridRows, double markerWidth, double squareWidth,
-                         ArucoDictionary dictionary, int borderBits, PageFmt pdfPageSize) {
         this.gridCols = gridCols;
         this.gridRows = gridRows;
-        this.markerWidth = markerWidth;
         this.squareWidth = squareWidth;
+        this.markerWidth = markerWidth;
         this.dictionary = dictionary;
         this.borderBits = borderBits;
-        this.pdfPageSize = pdfPageSize;
+        this.pdfPageFormat = pdfPageFormat;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -114,7 +110,7 @@ public abstract class AbstractBoard {
      * @return the overall width of this board (in mm)
      */
     public double getBoardWidth() {
-        return boardWidth;
+        return squareWidth * gridCols;
     }
 
     /**
@@ -123,7 +119,27 @@ public abstract class AbstractBoard {
      * @return the overall height of this board (in mm)
      */
     public double getBoardHeight() {
-        return boardHeight;
+        return squareWidth * gridRows;
+    }
+
+    /**
+     * Returns the leftmost x-position of the specified grid field.
+     * @param u horizontal grid index
+     * @param v vertical grid index
+     * @return the field's x-position
+     */
+    public double getX0(int u, int v) {
+        return squareWidth * u;
+    }
+
+    /**
+     * Returns the topmost y-position of the specified grid field.
+     * @param u horizontal grid index
+     * @param v vertical grid index
+     * @return the field's y-position
+     */
+    public double getY0(int u, int v) {
+        return squareWidth * v;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -158,8 +174,7 @@ public abstract class AbstractBoard {
      * @param id the marker id
      * @ an array with the four corner points
      */
-    public abstract Pnt2d[] getMarkerCorners(int id);
-
+    public abstract Polygon2d getMarkerCorners(int id);
 
     /**
      * Returns the number of markers on this board.
@@ -195,6 +210,8 @@ public abstract class AbstractBoard {
      * @return an image of this board
      */
     public ByteProcessor createImage(int imgWidth) {
+        double boardWidth = getBoardWidth();
+        double boardHeight = getBoardHeight();
         int imgHeight = (int) Math.ceil(imgWidth * boardHeight / boardWidth);
         double scale = imgWidth / boardWidth;   // scale in pixel/mm
         // System.out.println("scale " + scale);
@@ -229,7 +246,7 @@ public abstract class AbstractBoard {
     // public abstract String saveAsPdf(Path path, Rectangle pageSize, boolean showLegend);
     public String saveAsPdf(Path path, PageFmt pageSize, boolean showLegend) {
         if (pageSize == null)
-            pageSize = this.pdfPageSize;
+            pageSize = this.pdfPageFormat;
         if (pageSize == null) {
             throw new IllegalArgumentException("no PDF page size specified");
         }
@@ -259,14 +276,14 @@ public abstract class AbstractBoard {
      * @return the absolute file path of the stored document
      */
     public String saveAsPdf(Path path) {
-        return saveAsPdf(path, this.pdfPageSize, true);
+        return saveAsPdf(path, this.pdfPageFormat, true);
     }
 
     void writeToPdf(Document document, PdfWriter writer, boolean showLegend) {
         float pageWidth = document.getPageSize().getWidth();    // unit is pt !
         float pageHeight = document.getPageSize().getHeight();
-        double boardWidthPt = ptFromMm(this.boardWidth);
-        double boardHeightPt = ptFromMm(this.boardHeight);
+        double boardWidthPt = ptFromMm(getBoardWidth());
+        double boardHeightPt = ptFromMm(getBoardHeight());
         // center board on page:
         double xOff = (pageWidth - boardWidthPt) / 2;
         double yOff = (pageHeight - boardHeightPt) / 2;
@@ -289,32 +306,4 @@ public abstract class AbstractBoard {
         g2.dispose();
     }
 
-    /**
-     * Wrapper class to avoid exposure of {@link com.lowagie.text.Rectangle} when calling
-     * {@link #saveAsPdf(Path, PageFmt, boolean)}.
-     * Custom page formats can be created by
-     * <pre>
-     *     new PageFmt(width, height); </pre> with dimensions in mm.
-     * See OpenPDF {@link PageSize} for additional standard formats.
-     * @param width document width (in millimeters)
-     * @param height document height (in millimeters)
-     */
-    public record PageFmt(double width, double height) {
-
-        // instantiate from OpenPDF rectange
-        PageFmt(Rectangle pageSize) {
-            this(pageSize.getWidth(), pageSize.getHeight());
-        }
-
-        // returns the OpenPDF rectangle
-        Rectangle getRectangle() {
-            return new RectangleReadOnly((float) width, (float) height);
-        }
-
-        public static final PageFmt A4_Portrait = new PageFmt(PageSize.A4);
-        public static final PageFmt A4_Landscape = new PageFmt(PageSize.A4.rotate());
-        public static final PageFmt A3_Portrait = new PageFmt(PageSize.A3);
-        public static final PageFmt A3_Landscape = new PageFmt(PageSize.A3.rotate());
-
-    }
 }
