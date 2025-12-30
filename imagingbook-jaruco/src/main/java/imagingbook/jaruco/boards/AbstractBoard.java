@@ -18,6 +18,7 @@ import java.awt.RenderingHints;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
+import java.util.Locale;
 
 public abstract class AbstractBoard {
 
@@ -29,11 +30,10 @@ public abstract class AbstractBoard {
     final int borderBits;               // number of border layers around marker data
     final PageFmt pdfPageFormat;        // PDF document size
 
-    String name = "none";               // name of this board (used by predefined boards)
+    String name = "none";               // name of this board (used by predefined boards)   TODO:
 
     AbstractBoard(int gridCols, int gridRows, double squareWidth, double markerWidth,
                   ArucoDictionary dictionary, int borderBits, PageFmt pdfPageFormat) {
-
         this.gridCols = gridCols;
         this.gridRows = gridRows;
         this.squareWidth = squareWidth;
@@ -41,9 +41,24 @@ public abstract class AbstractBoard {
         this.dictionary = dictionary;
         this.borderBits = borderBits;
         this.pdfPageFormat = pdfPageFormat;
+        checkMarkerSize();
+        checkDictionarySize();
     }
 
     // --------------------------------------------------------------------------------------------
+
+    boolean checkMarkerSize() {
+        double markerSep = squareWidth - markerWidth;
+        double onePin = markerWidth / (dictionary.getMarkerSize() + 2);    // size of one marker bitfield
+        if (markerSep < onePin * 0.7) {
+            System.err.println("[Warning] ArucoMarker border " + markerSep + " is less than 70% of ArUco pin size " + onePin);
+            System.err.println("[Warning] increase markerSeparation or decrease markerLength for stable board detection");
+            return false;
+        }
+        return true;
+    }
+
+    abstract boolean checkDictionarySize();
 
     /**
      * Set the name of this board (used by {@link GridBoardPredefined#getInstance()}).
@@ -163,6 +178,13 @@ public abstract class AbstractBoard {
     }
 
     // -----------------------------------------------------------------------------
+
+    /**
+     * Returns the {@link BoardMarker} instance for the given index.
+     * @param id the marker's id
+     * @return the {@link BoardMarker} instance
+     */
+    public abstract BoardMarker getMarker(int id);
 
     /**
      * Returns the board coordinates of corner points for the specified marker.
@@ -306,4 +328,11 @@ public abstract class AbstractBoard {
         g2.dispose();
     }
 
+    // -------------------------------------------------------------------------------------
+
+    @Override
+    public String toString() {
+        return String.format(Locale.US, "%s %dx%d - square=%.1fmm, marker=%.1fmm, dict=%s",
+                getClass().getSimpleName(), gridCols, gridRows, squareWidth, markerWidth, dictionary.getName());
+    }
 }

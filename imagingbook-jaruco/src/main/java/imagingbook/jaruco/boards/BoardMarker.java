@@ -6,16 +6,16 @@ import imagingbook.jaruco.ArucoMarker;
 
 public class BoardMarker extends ArucoMarker implements BoardElement {
 
-    private final int u, v;           // x/y board position
-    private Polygon2d corners;
+    private final int col, row;           // column/row board position
+    private final Polygon2d corners;
 
-    BoardMarker(AbstractBoard board, ArucoMarker marker, int u, int v) {
+    BoardMarker(AbstractBoard board, ArucoMarker marker, int col, int row) {
         super(marker);
-        this.u = u;
-        this.v = v;
+        this.col = col;
+        this.row = row;
         double markerMargin = (board.squareWidth - board.markerWidth) / 2;
-        double x0 = board.squareWidth * u + markerMargin;
-        double y0 = board.squareWidth * v + markerMargin;
+        double x0 = board.squareWidth * col + markerMargin;
+        double y0 = board.squareWidth * row + markerMargin;
         this.corners = new Polygon2d(
                 Pnt2d.from(x0, y0),
                 Pnt2d.from(x0 + board.markerWidth, y0),
@@ -26,13 +26,13 @@ public class BoardMarker extends ArucoMarker implements BoardElement {
     // --------------------------------------------------------------------------------------------
 
     @Override
-    public int getColumnIndex() {
-        return u;
+    public int getColIndex() {
+        return col;
     }
 
     @Override
     public int getRowIndex() {
-        return v;
+        return row;
     }
 
     @Override

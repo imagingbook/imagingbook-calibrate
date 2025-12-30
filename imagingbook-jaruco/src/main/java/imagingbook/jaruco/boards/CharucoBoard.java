@@ -2,7 +2,6 @@ package imagingbook.jaruco.boards;
 
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
-import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.ArucoDictionary;
 import imagingbook.jaruco.ArucoMarker;
@@ -11,22 +10,13 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static imagingbook.jaruco.ArucoDictionaryPredefined.DICT_5X5_100;
 
 public class CharucoBoard extends AbstractBoard {
 
-    // private final int[] ids;                    // the marker ids
-    // final List<Pnt2d[]> markerCorners;          // the markers' corner points
-    // final List<Pnt2d[]> squareCorners;          // the squares' corner points
-    // final List<Pnt2d[]> chessboardCorners;
-    BoardElement[][] boardElements;
-
-    int[][] markerGridPos;                  // markerGridPos[i][0] = u, markerGridPos[i][1] = v
-
+    private final BoardElement[][] boardElements;             // hold all MxN board elements
+    private final int[][] markerRegistry;                     // marker column/row grid coordinates
 
     /**
      * Constructor. Creates a board with Aruco markers placed on a rectangular grid. ArucoMarker ids are
@@ -53,52 +43,39 @@ public class CharucoBoard extends AbstractBoard {
                         ArucoDictionary dictionary, int borderBits, PageFmt pdfPageSize) {
         super(gridCols, gridRows, squareWidth, markerWidth, dictionary, borderBits, pdfPageSize);
 
-        // ids = null;
-        // markerCorners = null;
-        // squareCorners = null;
-        // chessboardCorners = null;
-
         boardElements = new BoardElement[gridCols][gridRows];
-        double markerSep = squareWidth - markerWidth;
 
         // fill in squares and markers
-        int nextId = 0;
-        for (int v = 0; v < gridRows; v++) {
-            double y = v * squareWidth;
-            for (int u = 0; u < gridCols; u++) {
-                double x = u * squareWidth;
-                if(v % 2 == u % 2) {
-                    // black square, no marker
-                    boardElements[u][v] = new BlackSquare(this, u, v);
+        int idCnt = 0;
+        for (int row = 0; row < gridRows; row++) {
+            for (int col = 0; col < gridCols; col++) {
+                if (row % 2 == col % 2) {           // black checkerboard square, no marker
+                    boardElements[col][row] = new BlackSquare(this, col, row);
                 }
-                else {
-                    // here comes a Aruco marker
-                    ArucoMarker marker = new ArucoMarker(nextId, 0, dictionary, borderBits);
-                    boardElements[u][v] = new BoardMarker(this, marker, u, v);
-                    nextId++;
+                else {                              // here comes a Aruco marker
+                    ArucoMarker marker = new ArucoMarker(idCnt, 0, dictionary, borderBits);
+                    boardElements[col][row] = new BoardMarker(this, marker, col, row);
+                    idCnt++;
                 }
             }
         }
 
-        int markerCnt = nextId;
-        markerGridPos = new int[markerCnt][2];
-
-        // collect marker grid positions:
+        // collect marker ids and grid positions:
+        markerRegistry = new int[idCnt][2];
         for (int v = 0; v < gridRows; v++) {
             for (int u = 0; u < gridCols; u++) {
                 if (boardElements[u][v] instanceof BoardMarker marker) {
-                    markerGridPos[marker.getId()][0] = marker.getColumnIndex();    // = u
-                    markerGridPos[marker.getId()][1] = marker.getRowIndex();
+                    markerRegistry[marker.getId()][0] = marker.getColIndex();    // = u
+                    markerRegistry[marker.getId()][1] = marker.getRowIndex();
                 }
             }
         }
-
         checkMarkers();
     }
 
     void checkMarkers() {
-        System.out.println("checking markers: " + markerGridPos.length);
-        for (int i = 0; i < markerGridPos.length; i++) {
+        System.out.println("checking markers: " + markerRegistry.length);
+        for (int i = 0; i < markerRegistry.length; i++) {
             BoardMarker marker = getMarker(i);
             if (marker.getId() != i) {
                 throw new IllegalStateException(("wrong marker id at " + i));
@@ -106,11 +83,28 @@ public class CharucoBoard extends AbstractBoard {
         }
     }
 
+    @Override
+    boolean checkDictionarySize() {
+        int idCnt = 0;
+        for (int row = 0; row < gridRows; row++) {
+            for (int col = 0; col < gridCols; col++) {
+                if (row % 2 == col % 2) {
+                    idCnt++;
+                }
+            }
+        }
+        if (idCnt > dictionary.getNumberOfCodes()) {
+            throw new IllegalArgumentException("number of board markers exceeds dictionary size: " + idCnt);
+        }
+        return true;
+    }
+
     // ----------------------------------------------------------------------------------
 
+    @Override
     public BoardMarker getMarker(int id) {
-        int u = markerGridPos[id][0];
-        int v = markerGridPos[id][1];
+        int u = markerRegistry[id][0];
+        int v = markerRegistry[id][1];
         return (BoardMarker) boardElements[u][v];
     }
 
@@ -121,7 +115,7 @@ public class CharucoBoard extends AbstractBoard {
 
     @Override
     public int getMarkerCount() {
-        return markerGridPos.length;
+        return markerRegistry.length;
     }
 
     // @Override
@@ -154,11 +148,12 @@ public class CharucoBoard extends AbstractBoard {
     // -------------------------------------------------------------------
 
     public static void main(String[] args) {
-        // GridBoard gb = GridBoardPredefined.DICT_5X5_GridBoard_18x12_A3L.getInstance();
-        // GridBoard gb = GridBoardPredefined.DICT_5X5_GridBoard_8x5_A4L.getInstance();
-        // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_GridBoard_12x8_A4.getInstance();
-        CharucoBoard board = new CharucoBoard(12, 8, 15.0, 21.0, DICT_5X5_100.getInstance(), 1, PageFmt.A4_Landscape);
+        GridBoard board = GridBoardPredefined.DICT_5X5_GridBoard_18x12_A3L.getInstance();
+        // GridBoard board = GridBoardPredefined.DICT_5X5_GridBoard_8x5_A4L.getInstance();
+        // GridBoard board = GridBoardPredefined.DICT_5X5_1000_GridBoard_12x8_A4.getInstance();
+        // CharucoBoard board = new CharucoBoard(12, 8, 15.0, 21.0, DICT_5X5_100.getInstance(), 1, PageFmt.A4_Landscape);
         System.out.printf("board size = %.2f x %.2f mm\n", board.getBoardWidth(), board.getBoardHeight());
+        System.out.println(board.toString());
         ImageProcessor ip = board.createImage(1200);
         new ImagePlus("Board " + board.getName(), ip).show();
 

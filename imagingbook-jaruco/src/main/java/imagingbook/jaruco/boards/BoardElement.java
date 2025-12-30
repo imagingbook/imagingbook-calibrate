@@ -12,7 +12,7 @@ public interface BoardElement {
      * Returns the horizontal grid index of this item.
      * @return the horizontal grid index
      */
-    public int getColumnIndex();
+    public int getColIndex();
 
     /**
      * Returns the vertical grid index of this item.

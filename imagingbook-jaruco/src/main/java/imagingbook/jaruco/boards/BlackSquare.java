@@ -22,7 +22,7 @@ class BlackSquare implements BoardElement {
     }
 
     @Override
-    public int getColumnIndex() {
+    public int getColIndex() {
         return u;
     }
 

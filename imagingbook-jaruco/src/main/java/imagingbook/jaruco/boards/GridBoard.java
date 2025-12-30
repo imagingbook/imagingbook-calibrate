@@ -2,15 +2,12 @@ package imagingbook.jaruco.boards;
 
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
-import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.ArucoDictionary;
+import imagingbook.jaruco.ArucoMarker;
 
 import java.awt.Graphics2D;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Represents a marke board with all markers in the same plane and in a regular M x N grid layout.
@@ -19,8 +16,8 @@ import java.util.List;
  */
 public class GridBoard extends AbstractBoard {
 
-    private final int[] ids;
-    final List<Pnt2d[]> markerCorners;
+    private final BoardElement[][] boardElements;             // holds all MxN board elements
+    private final int[][] markerRegistry;                     // marker column/row grid coordinates
 
     /**
      * Constructor. Creates a board with Aruco markers placed on a rectangular grid. ArucoMarker ids are
@@ -47,65 +44,68 @@ public class GridBoard extends AbstractBoard {
     public GridBoard(int gridCols, int gridRows, double markerWidth, double squareWidth,
                      ArucoDictionary dictionary, int borderBits, PageFmt pdfPageSize) {
         super(gridCols, gridRows, squareWidth, markerWidth, dictionary, borderBits, pdfPageSize);
-        // this.gridCols = gridCols;
-        // this.gridRows = gridRows;
-        // this.markerWidth = markerWidth;
-        // this.squareWidth = squareWidth;
-        // this.dictionary = dictionary;
-        // this.borderBits = borderBits;
-        // this.pdfPageSize = pdfPageSize;
 
-        // distance between adjacent markers
-        double markerSep = squareWidth - markerWidth;
+        boardElements = new BoardElement[gridCols][gridRows];
 
-        double onePin = markerWidth / (dictionary.getMarkerSize() + 2);    // size of one marker bitfield
-        if (markerSep < onePin * 0.7) {
-            System.out.println("ArucoMarker border " + markerSep + " is less than 70% of ArUco pin size " + onePin);
-            System.out.println("Please increase markerSeparation or decrease markerLength for stable board detection");
+        // insert a unique marker at each grid position:
+        int idCnt = 0;
+        for (int row = 0; row < gridRows; row++) {
+            for (int col = 0; col < gridCols; col++) {
+                ArucoMarker marker = new ArucoMarker(idCnt, 0, dictionary, borderBits);
+                boardElements[col][row] = new BoardMarker(this, marker, col, row);
+                idCnt++;
+            }
         }
+
+        // collect marker ids and grid positions:
+        markerRegistry = new int[idCnt][2];
+        for (int row = 0; row < gridRows; row++) {
+            for (int col = 0; col < gridCols; col++) {
+                if (boardElements[col][row] instanceof BoardMarker marker) {
+                    markerRegistry[marker.getId()][0] = marker.getColIndex();    // = column
+                    markerRegistry[marker.getId()][1] = marker.getRowIndex();       // = row
+                }
+            }
+        }
+        checkMarkerRegistry();
+    }
+
+    private void checkMarkerRegistry() {
+        // System.out.println("checking markers: " + markerRegistry.length);
+        for (int i = 0; i < markerRegistry.length; i++) {
+            BoardMarker marker = getMarker(i);
+            if (marker.getId() != i) {
+                throw new IllegalStateException(("wrong marker id at " + i));
+            }
+        }
+    }
+
+    @Override
+    boolean checkDictionarySize() {
         int totalMarkers = gridCols * gridRows;
         if (totalMarkers > dictionary.getNumberOfCodes()) {
             throw new IllegalArgumentException("number of board markers exceeds dictionary size: " + totalMarkers);
         }
-        this.ids = new int[totalMarkers];
-        Arrays.setAll(ids, (i) -> i); // fill ids = 0, 1, 2, ...
-
-        // calculate markers' corner points in board coordinates
-        this.markerCorners = new ArrayList<>();
-        for (int v = 0; v < gridRows; v++) {
-            double y = v * squareWidth;
-            for (int u = 0; u < gridCols; u++) {
-                double x = u * squareWidth;
-                Pnt2d[] corners = new Pnt2d[4];
-                corners[0] = Pnt2d.from(
-                        u * squareWidth + markerSep/2,
-                        v * squareWidth + markerSep/2);
-                        // u * (markerWidth + markerSep),
-                        // v * (markerWidth + markerSep));
-                corners[1] = corners[0].plus(markerWidth, 0);
-                corners[2] = corners[0].plus(markerWidth, markerWidth);
-                corners[3] = corners[0].plus(0, markerWidth);
-                markerCorners.add(corners);
-            }
-        }
+        return true;
     }
 
     // -------------------------------------------------------------------------------------------
 
     @Override
-    public Polygon2d getMarkerCorners(int id) {
-        return new Polygon2d(markerCorners.get(id));
+    public BoardMarker getMarker(int id) {
+        int u = markerRegistry[id][0];
+        int v = markerRegistry[id][1];
+        return (BoardMarker) boardElements[u][v];
     }
 
-
-    // @Override
-    // public int[] getIds() {
-    //     return ids;
-    // }
+    @Override
+    public Polygon2d getMarkerCorners(int id) {
+        return getMarker(id).getCorners();
+    }
 
     @Override
     public int getMarkerCount() {
-        return ids.length;
+        return markerRegistry.length;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -125,13 +125,14 @@ public class GridBoard extends AbstractBoard {
     // -------------------------------------------------------------------
 
     public static void main(String[] args) {
-        GridBoard gb = GridBoardPredefined.DICT_5X5_GridBoard_18x12_A3L.getInstance();
+        GridBoard board = GridBoardPredefined.DICT_5X5_GridBoard_18x12_A3L.getInstance();
         // GridBoard gb = GridBoardPredefined.DICT_5X5_GridBoard_8x5_A4L.getInstance();
         // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_GridBoard_12x8_A4.getInstance();
-        System.out.printf("board size = %.2f x %.2f mm\n", gb.getBoardWidth(), gb.getBoardHeight());
-        ImageProcessor ip = gb.createImage(1200);
-        new ImagePlus("Board " + gb.getName(), ip).show();
+        System.out.printf("board size = %.2f x %.2f mm\n", board.getBoardWidth(), board.getBoardHeight());
+        System.out.println(board.toString());
+        ImageProcessor ip = board.createImage(1200);
+        new ImagePlus("Board " + board.getName(), ip).show();
 
-        System.out.println("pdf path = " + gb.saveAsPdf(Path.of("tmp/board.pdf")));
+        System.out.println("pdf path = " + board.saveAsPdf(Path.of("tmp/board.pdf")));
     }
 }
