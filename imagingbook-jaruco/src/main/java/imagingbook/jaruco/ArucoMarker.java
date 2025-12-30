@@ -15,22 +15,21 @@ import java.awt.geom.Rectangle2D;
 public class ArucoMarker {
 
     private final int id;
-    private final BitVector bitCode;    // the bits holding the marker code
-    private final int markerSize;
+    private final int rot;
+    private final ArucoDictionary dictionary;
     private final int borderBits;
 
     /**
      * Constructor.
      *
-     * @param id
-     * @param bitCode the {@link BitVector} holding the marker code
-     * @param markerSize the number of bits in x and y
+     * @param id the marker's id in the associated {@code dictionary}
+     * @param dictionary the {@link ArucoDictionary} instance
      * @param borderBits the number of additional (black) border bits
      */
-    ArucoMarker(int id, BitVector bitCode, int markerSize, int borderBits) {
+    ArucoMarker(int id, int rot, ArucoDictionary dictionary, int borderBits) {
         this.id = id;
-        this.bitCode = bitCode;
-        this.markerSize = markerSize;
+        this.rot = rot;
+        this.dictionary = dictionary;
         this.borderBits = borderBits;
     }
 
@@ -42,14 +41,14 @@ public class ArucoMarker {
      * @return an image of the specified marker with 1 pixel per code bit
      */
     public ByteProcessor getImage() {
-        int n = this.markerSize;
+        int n = dictionary.getMarkerSize();
         int npix = n + 2 * borderBits;
-
+        BitVector bitcode = dictionary.getBits(id, rot);
         ByteProcessor ip = new ByteProcessor(npix, npix);
         int k = 0;
         for (int v = 0; v < n; v++) {
             for (int u = 0; u < n; u++) {
-                ip.set(u + borderBits, v + borderBits, bitCode.getBit(k) ? 0xFF : 0);
+                ip.set(u + borderBits, v + borderBits, bitcode.getBit(k) ? 0xFF : 0);
                 k++;
             }
         }
@@ -73,7 +72,8 @@ public class ArucoMarker {
      * @param markerWidth the width and height of the marker (including its boundary)
      */
     public void drawTo(Graphics2D g, double x0, double y0, double markerWidth) {
-        int innerBits = this.markerSize;
+        BitVector bitcode = dictionary.getBits(id, rot);
+        int innerBits = dictionary.getMarkerSize();
         int totalBits = innerBits + 2 * borderBits;
         double scale = markerWidth / totalBits; // scale factor to enlarge one bit
 
@@ -90,7 +90,7 @@ public class ArucoMarker {
         int i = 0;
         for (int v = 0; v < innerBits; v++) {
             for (int u = 0; u < innerBits; u++) {
-                if (bitCode.getBit(i)) {
+                if (bitcode.getBit(i)) {
                     double x = x0 + (borderBits + u) * scale - overlap;
                     double y = y0 + (borderBits + v) * scale - overlap;
                     double w = 1 * scale + 2 * overlap;

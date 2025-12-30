@@ -377,7 +377,7 @@ public class ArucoDictionary {
     public ArucoMarker getMarker(int id, int rot, int borderBits) {
         if (borderBits < 0)
             throw new IllegalArgumentException("borderBits must be >= 0");
-        return new ArucoMarker(-1, this.getBits(id, rot), this.markerBitSize, borderBits);
+        return new ArucoMarker(id, rot, this, borderBits);
     }
 
 }
