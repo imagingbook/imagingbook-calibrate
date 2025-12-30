@@ -11,12 +11,10 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.nio.file.Path;
 
-import static imagingbook.jaruco.ArucoDictionaryPredefined.DICT_5X5_100;
-
 public class CharucoBoard extends AbstractBoard {
 
-    private final BoardElement[][] boardElements;             // hold all MxN board elements
-    private final int[][] markerRegistry;                     // marker column/row grid coordinates
+    private final BoardElement[][] boardElements;        // hold all MxN board elements
+    private final int[][] markerMap;                     // marker column/row grid coordinates
 
     /**
      * Constructor. Creates a board with Aruco markers placed on a rectangular grid. ArucoMarker ids are
@@ -31,26 +29,26 @@ public class CharucoBoard extends AbstractBoard {
      * {@code markerWidth}. Thus the spacing between adjacent markers is
      * {@code markerSeparation = squareWidth - markerWidth}. TODO: check again!
      *
-     * @param gridCols number of markers in x direction
-     * @param gridRows number of markers in y direction
-     * @param markerWidth marker side length in real board space (in mm)
+     * @param nCols       number of markers in x direction
+     * @param nRows       number of markers in y direction
      * @param squareWidth size of the marker grid, marker position step width (in mm)
-     * @param dictionary the dictionary of markers
-     * @param borderBits the number of border bits around the inner of each marker
+     * @param markerWidth marker side length in real board space (in mm)
+     * @param dictionary  the dictionary of markers
+     * @param borderBits  the number of border bits around the inner of each marker
      * @param pdfPageSize the recommended PDF document size (may be null)
      */
-    public CharucoBoard(int gridCols, int gridRows, double markerWidth, double squareWidth,
+    public CharucoBoard(int nCols, int nRows, double squareWidth, double markerWidth,
                         ArucoDictionary dictionary, int borderBits, PageFmt pdfPageSize) {
-        super(gridCols, gridRows, squareWidth, markerWidth, dictionary, borderBits, pdfPageSize);
+        super(nCols, nRows, squareWidth, markerWidth, dictionary, borderBits, pdfPageSize);
 
-        boardElements = new BoardElement[gridCols][gridRows];
+        boardElements = new BoardElement[nCols][nRows];
 
         // fill in squares and markers
         int idCnt = 0;
-        for (int row = 0; row < gridRows; row++) {
-            for (int col = 0; col < gridCols; col++) {
+        for (int row = 0; row < nRows; row++) {
+            for (int col = 0; col < nCols; col++) {
                 if (row % 2 == col % 2) {           // black checkerboard square, no marker
-                    boardElements[col][row] = new BlackSquare(this, col, row);
+                    boardElements[col][row] = new CheckerBoardSquare(this, col, row);
                 }
                 else {                              // here comes a Aruco marker
                     ArucoMarker marker = new ArucoMarker(idCnt, 0, dictionary, borderBits);
@@ -61,12 +59,12 @@ public class CharucoBoard extends AbstractBoard {
         }
 
         // collect marker ids and grid positions:
-        markerRegistry = new int[idCnt][2];
-        for (int v = 0; v < gridRows; v++) {
-            for (int u = 0; u < gridCols; u++) {
+        markerMap = new int[idCnt][2];
+        for (int v = 0; v < nRows; v++) {
+            for (int u = 0; u < nCols; u++) {
                 if (boardElements[u][v] instanceof BoardMarker marker) {
-                    markerRegistry[marker.getId()][0] = marker.getColIndex();    // = u
-                    markerRegistry[marker.getId()][1] = marker.getRowIndex();
+                    markerMap[marker.getId()][0] = marker.getColIndex();    // = u
+                    markerMap[marker.getId()][1] = marker.getRowIndex();
                 }
             }
         }
@@ -74,8 +72,8 @@ public class CharucoBoard extends AbstractBoard {
     }
 
     void checkMarkers() {
-        System.out.println("checking markers: " + markerRegistry.length);
-        for (int i = 0; i < markerRegistry.length; i++) {
+        System.out.println("checking markers: " + markerMap.length);
+        for (int i = 0; i < markerMap.length; i++) {
             BoardMarker marker = getMarker(i);
             if (marker.getId() != i) {
                 throw new IllegalStateException(("wrong marker id at " + i));
@@ -103,8 +101,8 @@ public class CharucoBoard extends AbstractBoard {
 
     @Override
     public BoardMarker getMarker(int id) {
-        int u = markerRegistry[id][0];
-        int v = markerRegistry[id][1];
+        int u = markerMap[id][0];
+        int v = markerMap[id][1];
         return (BoardMarker) boardElements[u][v];
     }
 
@@ -115,13 +113,8 @@ public class CharucoBoard extends AbstractBoard {
 
     @Override
     public int getMarkerCount() {
-        return markerRegistry.length;
+        return markerMap.length;
     }
-
-    // @Override
-    // public int[] getIds() {
-    //     return ids;
-    // }
 
     @Override
     void drawBoardContent(Graphics2D g2, double scale, double xOffset, double yOffset) {
@@ -134,7 +127,7 @@ public class CharucoBoard extends AbstractBoard {
                     double mw = markerWidth * scale;
                     marker.drawTo(g2, x0, y0, mw);
                 }
-                else if (elem instanceof BlackSquare sqr) {
+                else if (elem instanceof CheckerBoardSquare sqr) {
                     g2.setColor(Color.black);
                     double x0 = sqr.getCorner(0).getX() * scale + xOffset;   // TODO: make BlackSquare self-draw
                     double y0 = sqr.getCorner(0).getY() * scale + yOffset;

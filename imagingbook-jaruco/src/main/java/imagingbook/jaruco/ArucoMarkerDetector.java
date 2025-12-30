@@ -20,12 +20,12 @@ import static imagingbook.jaruco.MarkerLocator.Type.ParabolicFit;
 /**
  * Performs Aruco marker detection.
  */
-public class ArucoDetector {
+public class ArucoMarkerDetector {
 
     /**
-     * A bundle of parameters for {@link ArucoDetector}.
+     * A bundle of parameters for {@link ArucoMarkerDetector}.
      */
-    public static class Parameters implements ParameterBundle<ArucoDetector> {
+    public static class Parameters implements ParameterBundle<ArucoMarkerDetector> {
         /** Minimum number of contour points to be considered a marker candidate. */
         public int minContourLength = 50;
         /** Minimum circularity of contour to be considered a marker candidate. */
@@ -49,11 +49,11 @@ public class ArucoDetector {
      * Constructor.
      * @param dictionary a {@link ArucoDictionary} instance
      */
-    public ArucoDetector(ArucoDictionary dictionary) {
+    public ArucoMarkerDetector(ArucoDictionary dictionary) {
         this(dictionary, new Parameters());
     }
 
-    public ArucoDetector(ArucoDictionary dictionary, Parameters params) {
+    public ArucoMarkerDetector(ArucoDictionary dictionary, Parameters params) {
         this.params = params;
         this.dictionary = dictionary;
     }

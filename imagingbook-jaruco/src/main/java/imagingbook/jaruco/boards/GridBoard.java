@@ -17,7 +17,7 @@ import java.nio.file.Path;
 public class GridBoard extends AbstractBoard {
 
     private final BoardElement[][] boardElements;             // holds all MxN board elements
-    private final int[][] markerRegistry;                     // marker column/row grid coordinates
+    private final int[][] markerMap;                     // marker column/row grid coordinates
 
     /**
      * Constructor. Creates a board with Aruco markers placed on a rectangular grid. ArucoMarker ids are
@@ -33,24 +33,24 @@ public class GridBoard extends AbstractBoard {
      * {@code markerWidth}. Thus, the spacing between adjacent markers is
      * {@code markerSeparation = squareWidth - markerWidth}.
      *
-     * @param gridCols number of markers in x direction
-     * @param gridRows number of markers in y direction
-     * @param markerWidth marker side length in real board space (in mm)
+     * @param nCols       number of markers in x direction
+     * @param nRows       number of markers in y direction
      * @param squareWidth size of the marker grid, marker position step width (in mm)
-     * @param dictionary the dictionary of markers
-     * @param borderBits the number of border bits around the inner of each marker
+     * @param markerWidth marker side length in real board space (in mm)
+     * @param dictionary  the dictionary of markers
+     * @param borderBits  the number of border bits around the inner of each marker
      * @param pdfPageSize the recommended PDF document size (may be null)
      */
-    public GridBoard(int gridCols, int gridRows, double markerWidth, double squareWidth,
+    public GridBoard(int nCols, int nRows, double squareWidth, double markerWidth,
                      ArucoDictionary dictionary, int borderBits, PageFmt pdfPageSize) {
-        super(gridCols, gridRows, squareWidth, markerWidth, dictionary, borderBits, pdfPageSize);
+        super(nCols, nRows, squareWidth, markerWidth, dictionary, borderBits, pdfPageSize);
 
-        boardElements = new BoardElement[gridCols][gridRows];
+        boardElements = new BoardElement[nCols][nRows];
 
         // insert a unique marker at each grid position:
         int idCnt = 0;
-        for (int row = 0; row < gridRows; row++) {
-            for (int col = 0; col < gridCols; col++) {
+        for (int row = 0; row < nRows; row++) {
+            for (int col = 0; col < nCols; col++) {
                 ArucoMarker marker = new ArucoMarker(idCnt, 0, dictionary, borderBits);
                 boardElements[col][row] = new BoardMarker(this, marker, col, row);
                 idCnt++;
@@ -58,12 +58,12 @@ public class GridBoard extends AbstractBoard {
         }
 
         // collect marker ids and grid positions:
-        markerRegistry = new int[idCnt][2];
-        for (int row = 0; row < gridRows; row++) {
-            for (int col = 0; col < gridCols; col++) {
+        markerMap = new int[idCnt][2];
+        for (int row = 0; row < nRows; row++) {
+            for (int col = 0; col < nCols; col++) {
                 if (boardElements[col][row] instanceof BoardMarker marker) {
-                    markerRegistry[marker.getId()][0] = marker.getColIndex();    // = column
-                    markerRegistry[marker.getId()][1] = marker.getRowIndex();       // = row
+                    markerMap[marker.getId()][0] = marker.getColIndex();    // = col
+                    markerMap[marker.getId()][1] = marker.getRowIndex();    // = row
                 }
             }
         }
@@ -72,7 +72,7 @@ public class GridBoard extends AbstractBoard {
 
     private void checkMarkerRegistry() {
         // System.out.println("checking markers: " + markerRegistry.length);
-        for (int i = 0; i < markerRegistry.length; i++) {
+        for (int i = 0; i < markerMap.length; i++) {
             BoardMarker marker = getMarker(i);
             if (marker.getId() != i) {
                 throw new IllegalStateException(("wrong marker id at " + i));
@@ -84,7 +84,8 @@ public class GridBoard extends AbstractBoard {
     boolean checkDictionarySize() {
         int totalMarkers = gridCols * gridRows;
         if (totalMarkers > dictionary.getNumberOfCodes()) {
-            throw new IllegalArgumentException("number of board markers exceeds dictionary size: " + totalMarkers);
+            throw new IllegalArgumentException("number of board markers exceeds dictionary size: "
+                    + totalMarkers);
         }
         return true;
     }
@@ -93,9 +94,9 @@ public class GridBoard extends AbstractBoard {
 
     @Override
     public BoardMarker getMarker(int id) {
-        int u = markerRegistry[id][0];
-        int v = markerRegistry[id][1];
-        return (BoardMarker) boardElements[u][v];
+        int col = markerMap[id][0];
+        int row = markerMap[id][1];
+        return (BoardMarker) boardElements[col][row];
     }
 
     @Override
@@ -105,7 +106,7 @@ public class GridBoard extends AbstractBoard {
 
     @Override
     public int getMarkerCount() {
-        return markerRegistry.length;
+        return markerMap.length;
     }
 
     // --------------------------------------------------------------------------------------------

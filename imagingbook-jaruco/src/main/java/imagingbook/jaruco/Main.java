@@ -40,11 +40,11 @@ public class Main {
         im.show();
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
 
-        ArucoDetector detector = new ArucoDetector(dict);
-        List<ArucoDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers(im.getProcessor());
+        ArucoMarkerDetector detector = new ArucoMarkerDetector(dict);
+        List<ArucoMarkerDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers(im.getProcessor());
 
         System.out.println("Markers found: " + detectionResultObsoletes.size());
-        for (ArucoDetector.DetectionResult res : detectionResultObsoletes) {
+        for (ArucoMarkerDetector.DetectionResult res : detectionResultObsoletes) {
             System.out.println(res);
         }
     }
@@ -68,7 +68,7 @@ public class Main {
         }
 
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
-        ArucoDetector detector = new ArucoDetector(dict);
+        ArucoMarkerDetector detector = new ArucoMarkerDetector(dict);
 
         ColoredStroke cornerStroke = new ColoredStroke(1.0, Color.blue);
         ColoredStroke cornerStroke0 = new ColoredStroke(1.0 * 3, Color.red);
@@ -82,7 +82,7 @@ public class Main {
             // parabCurves = null;
 
             // ------------------------------------------------------------
-            List<ArucoDetector.DetectionResult> detectedMarkers = new ArrayList<>();
+            List<ArucoMarkerDetector.DetectionResult> detectedMarkers = new ArrayList<>();
             long elapsed = timeNanos(() ->
                 {detectedMarkers.addAll(detector.detectMarkers(im.getProcessor()));}
             );
@@ -91,7 +91,7 @@ public class Main {
             // ------------------------------------------------------------
 
             // process all detected markers
-            for (ArucoDetector.DetectionResult marker : detectedMarkers) {
+            for (ArucoMarkerDetector.DetectionResult marker : detectedMarkers) {
                 Polygon2d corners = marker.corners();
 
                 ola.setFont(CornerFont);

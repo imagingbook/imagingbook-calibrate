@@ -15,7 +15,7 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
-import imagingbook.jaruco.ArucoDetector;
+import imagingbook.jaruco.ArucoMarkerDetector;
 import imagingbook.jaruco.ArucoDictionary;
 import imagingbook.jaruco.ArucoDictionaryPredefined;
 
@@ -53,12 +53,12 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
     @Override
     public void run(ImageProcessor imageProcessor) {
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
-        ArucoDetector detector = new ArucoDetector(dict);
+        ArucoMarkerDetector detector = new ArucoMarkerDetector(dict);
 
         ColoredStroke stroke = new ColoredStroke(1.0, Color.blue);
         ColoredStroke stroke0 = new ColoredStroke(1.0 * 3, Color.red);
 
-        List<ArucoDetector.DetectionResult> detectedMarkers =
+        List<ArucoMarkerDetector.DetectionResult> detectedMarkers =
                 detector.detectMarkers(im.getProcessor());
         // System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
         if (detectedMarkers.isEmpty()) {
@@ -68,7 +68,7 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
 
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-        for (ArucoDetector.DetectionResult marker : detectedMarkers) {
+        for (ArucoMarkerDetector.DetectionResult marker : detectedMarkers) {
             Polygon2d corners = marker.corners();
             ola.addShape(corners.getShape(), stroke);
 

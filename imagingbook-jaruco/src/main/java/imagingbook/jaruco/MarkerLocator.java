@@ -17,10 +17,10 @@ public interface MarkerLocator {
     /**
      * Returns a new instance of the specified {@link MarkerLocator} type, which is extracted
      * from the passed parameters.
-     * @param params a parameter bundle associated with the calling {@link ArucoDetector} instance
+     * @param params a parameter bundle associated with the calling {@link ArucoMarkerDetector} instance
      * @return a new {@link MarkerLocator}
      */
-    public static MarkerLocator createFrom(ArucoDetector.Parameters params) {
+    public static MarkerLocator createFrom(ArucoMarkerDetector.Parameters params) {
         return switch (params.locatorType) {
             case RawCorners -> new RawCornersMarkerLocator(params);
             case StraightFit -> new StraightMarkerLocator(params);

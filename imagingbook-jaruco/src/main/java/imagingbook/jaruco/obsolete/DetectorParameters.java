@@ -1,10 +1,10 @@
 package imagingbook.jaruco.obsolete;
 
 import imagingbook.common.util.ParameterBundle;
-import imagingbook.jaruco.ArucoDetector;
+import imagingbook.jaruco.ArucoMarkerDetector;
 
 @Deprecated
-public class DetectorParameters implements ParameterBundle<ArucoDetector> {
+public class DetectorParameters implements ParameterBundle<ArucoMarkerDetector> {
     public int adaptiveThreshWinSizeMin = 3;
     public int adaptiveThreshWinSizeMax = 23;
     public int adaptiveThreshWinSizeStep = 10;

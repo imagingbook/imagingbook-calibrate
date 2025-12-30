@@ -13,7 +13,7 @@ public class RawCornersMarkerLocator implements MarkerLocator {
      * Constructor.
      * @param params parameters (ignored)
      */
-    public RawCornersMarkerLocator(ArucoDetector.Parameters params) {
+    public RawCornersMarkerLocator(ArucoMarkerDetector.Parameters params) {
     }
 
     @Override

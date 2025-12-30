@@ -2,7 +2,6 @@ package imagingbook.jaruco;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
-import imagingbook.common.geometry.basic.PolyLine2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.jaruco.math.Parabola;
@@ -13,7 +12,6 @@ import org.apache.commons.math4.legacy.linear.QRDecomposition;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,7 +37,7 @@ public class ParabolicMarkerLocator implements MarkerLocator {
      * Constructor.
      * @param params parameters (ignored)
      */
-    public ParabolicMarkerLocator(ArucoDetector.Parameters params) {
+    public ParabolicMarkerLocator(ArucoMarkerDetector.Parameters params) {
     }
 
     @Override

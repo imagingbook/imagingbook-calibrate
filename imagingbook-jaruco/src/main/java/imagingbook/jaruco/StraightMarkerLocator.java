@@ -37,9 +37,9 @@ public class StraightMarkerLocator implements MarkerLocator {
     /**
      * Constructor.
      * {@code cornerSupport} is the fraction of each quad side length used to fit straight lines
-     * (default is 0.05 or 5% on each end, See {@link ArucoDetector.Parameters#cornerSupportFraction}.
+     * (default is 0.05 or 5% on each end, See {@link ArucoMarkerDetector.Parameters#cornerSupportFraction}.
      */
-    public StraightMarkerLocator(ArucoDetector.Parameters params) {
+    public StraightMarkerLocator(ArucoMarkerDetector.Parameters params) {
         this.cornerSupportFraction = params.cornerSupportFraction;
     }
 
