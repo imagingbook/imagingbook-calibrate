@@ -182,11 +182,11 @@ public abstract class AbstractBoard {
      */
     public abstract int getMarkerCount();
 
-    /**
-     * Returns an array with all marker ids.
-     * @return all marker ids
-     */
-    public abstract int[] getIds();
+    // /**
+    //  * Returns an array with all marker ids.
+    //  * @return all marker ids
+    //  */
+    // public abstract int[] getIds();
 
     // -----------------------------------------------------------------------------
 

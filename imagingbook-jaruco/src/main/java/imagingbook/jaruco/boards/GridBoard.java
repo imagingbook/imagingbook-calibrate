@@ -22,7 +22,6 @@ public class GridBoard extends AbstractBoard {
     private final int[] ids;
     final List<Pnt2d[]> markerCorners;
 
-
     /**
      * Constructor. Creates a board with Aruco markers placed on a rectangular grid. ArucoMarker ids are
      * assigned sequentially starting from zero in row-major order, e.g.,
@@ -34,7 +33,7 @@ public class GridBoard extends AbstractBoard {
      * has no surrounding border, i.e., the first marker is placed at the coordinate origin. All
      * board coordinates are in mm.
      * Markers are spaced at {@code squareWidth} steps in x/y and their size is
-     * {@code markerWidth}. Thus the spacing between adjacent markers is
+     * {@code markerWidth}. Thus, the spacing between adjacent markers is
      * {@code markerSeparation = squareWidth - markerWidth}.
      *
      * @param gridCols number of markers in x direction
@@ -93,24 +92,21 @@ public class GridBoard extends AbstractBoard {
 
     // -------------------------------------------------------------------------------------------
 
-
     @Override
     public Polygon2d getMarkerCorners(int id) {
         return new Polygon2d(markerCorners.get(id));
     }
 
 
-    @Override
-    public int[] getIds() {
-        return ids;
-    }
-
+    // @Override
+    // public int[] getIds() {
+    //     return ids;
+    // }
 
     @Override
     public int getMarkerCount() {
         return ids.length;
     }
-
 
     // --------------------------------------------------------------------------------------------
 

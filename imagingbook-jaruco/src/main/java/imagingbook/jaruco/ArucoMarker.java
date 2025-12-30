@@ -3,7 +3,6 @@ package imagingbook.jaruco;
 import com.lowagie.text.pdf.PdfGraphics2D;
 import ij.process.ByteProcessor;
 import imagingbook.common.util.bits.BitVector;
-import imagingbook.jaruco.boards.GridElement;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -13,13 +12,13 @@ import java.awt.geom.Rectangle2D;
 /**
  * Describes the geometry of a Aruco dictionary marker for visualization.
  */
-public class ArucoMarker implements GridElement {
+public class ArucoMarker {
 
     private final int id;
     private final int rot;
     private final ArucoDictionary dictionary;
     private final int borderBits;
-    private int gridX, gridY;           // x/y board position
+
 
     /**
      * Constructor.
@@ -28,34 +27,26 @@ public class ArucoMarker implements GridElement {
      * @param dictionary the {@link ArucoDictionary} instance
      * @param borderBits the number of additional (black) border bits
      */
-    ArucoMarker(int id, int rot, ArucoDictionary dictionary, int borderBits) {
+    public ArucoMarker(int id, int rot, ArucoDictionary dictionary, int borderBits) {
         this.id = id;
         this.rot = rot;
         this.dictionary = dictionary;
         this.borderBits = borderBits;
-        this.gridX = -1;
-        this.gridY = -1;
+    }
+
+    protected ArucoMarker(ArucoMarker marker) {
+        this(marker.id, marker.rot, marker.dictionary, marker.borderBits);
     }
 
     // --------------------------------------------------------------------------------------------
 
-    @Override
-    public void setGridPos(int u, int v) {
-        this.gridX = u;
-        this.gridY = v;
+    public int getId() {
+        return id;
     }
 
-    @Override
-    public int getGridPosX() {
-        return gridX;
+    public int getRotation() {
+        return rot;
     }
-
-    @Override
-    public int getGridPosY() {
-        return gridY;
-    }
-
-    // --------------------------------------------------------------------------------------------
 
     /**
      * Creates a marker image of the specified dictionary entry with a
