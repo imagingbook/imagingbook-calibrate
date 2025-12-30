@@ -32,7 +32,7 @@ public class Show_Dictionary_Marker implements PlugIn {
         String[] rotItems = {"0", "1", "2", "3"};
 
         GenericDialog gd = new GenericDialog("Select Dict Entry");
-              gd.addChoice("Marker idx: ", idxItems, idxItems[idx]);
+              gd.addChoice("ArucoMarker idx: ", idxItems, idxItems[idx]);
         gd.addChoice("Rotation: ", rotItems, rotItems[rot]);
 
         gd.showDialog();
@@ -45,7 +45,7 @@ public class Show_Dictionary_Marker implements PlugIn {
         IJ.log("bits = " + dict.getBits(idx, rot));
 
         ByteProcessor bp = (ByteProcessor) dict.getMarker(idx, rot, 1).getImage().resize(DISPLAY_SIZE);
-        new ImagePlus("Marker " + idx + "/" + rot, bp).show();
+        new ImagePlus("ArucoMarker " + idx + "/" + rot, bp).show();
 
         // ImagePlus imp = NewImage.createByteImage(Title, Width, Height, 1, NewImage.FILL_WHITE);
         // imp.show();

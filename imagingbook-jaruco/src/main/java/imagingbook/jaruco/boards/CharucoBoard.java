@@ -17,13 +17,15 @@ import static imagingbook.jaruco.ArucoDictionaryPredefined.DICT_5X5_100;
 
 public class CharucoBoard extends AbstractBoard {
 
-    private final int[] ids;
-    final List<Pnt2d[]> cornerPoints;
+    private final int[] ids;                    // the marker ids
+    final List<Pnt2d[]> cornerPoints;           //
     final List<Pnt2d[]> chessboardCorners;
     final List<Pnt2d[]> squares;
 
+
+
     /**
-     * Constructor. Creates a board with Aruco markers placed on a rectangular grid. Marker ids are
+     * Constructor. Creates a board with Aruco markers placed on a rectangular grid. ArucoMarker ids are
      * assigned sequentially starting from zero in row-major order, e.g.,
      * <pre>
      *     0  1  2  3  4  5
@@ -60,13 +62,14 @@ public class CharucoBoard extends AbstractBoard {
 
         squares = new ArrayList<>();
 
+        // fill in squares and markers
         int nextId = 0;
         for (int v = 0; v < gridRows; v++) {
             double y = v * squareWidth;
             for (int u = 0; u < gridCols; u++) {
                 double x = u * squareWidth;
                 if(v % 2 == u % 2) {
-                    // black corner, no marker
+                    // black square, no marker
                     Pnt2d s0 = Pnt2d.from(x, y);
                     Pnt2d[] square = {
                         s0,
@@ -75,7 +78,7 @@ public class CharucoBoard extends AbstractBoard {
                         s0.plus(0, squareWidth)};
                     squares.add(square);
                 }
-                else {
+                else {  // here comes a Aruco marker
                     Pnt2d c0 = Pnt2d.from(x + markerSep / 2, y + markerSep / 2);
                     Pnt2d[] corners = {
                         c0,

@@ -23,7 +23,7 @@ public class GridBoard extends AbstractBoard {
 
 
     /**
-     * Constructor. Creates a board with Aruco markers placed on a rectangular grid. Marker ids are
+     * Constructor. Creates a board with Aruco markers placed on a rectangular grid. ArucoMarker ids are
      * assigned sequentially starting from zero in row-major order, e.g.,
      * <pre>
      *     0  1  2  3  4  5
@@ -60,7 +60,7 @@ public class GridBoard extends AbstractBoard {
 
         double onePin = markerWidth / (dictionary.getMarkerSize() + 2);    // size of one marker bitfield
         if (markerSep < onePin * 0.7) {
-            System.out.println("Marker border " + markerSep + " is less than 70% of ArUco pin size " + onePin);
+            System.out.println("ArucoMarker border " + markerSep + " is less than 70% of ArUco pin size " + onePin);
             System.out.println("Please increase markerSeparation or decrease markerLength for stable board detection");
         }
         int totalMarkers = gridCols * gridRows;

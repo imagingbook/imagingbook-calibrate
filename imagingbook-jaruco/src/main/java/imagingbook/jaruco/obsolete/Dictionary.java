@@ -219,7 +219,7 @@ public class Dictionary {
             System.out.println("Dict = " + pd.name());
             Dictionary dict  = pd.getDict();
             System.out.println("Size = " + dict.getMarkerSize());
-            System.out.println("Marker bits = " + dict.getMarkerSize() * dict.getMarkerSize());
+            System.out.println("ArucoMarker bits = " + dict.getMarkerSize() * dict.getMarkerSize());
             System.out.println("  codes = " + dict.getNumberOfCodes());
 
             int N = dict.getMarkerSize();
@@ -260,7 +260,7 @@ public class Dictionary {
             System.out.println("Dict = " + pd.name());
             Dictionary dict  = pd.getDict();
             System.out.println("Size = " + dict.getMarkerSize());
-            System.out.println("Marker bits = " + dict.getMarkerSize() * dict.getMarkerSize());
+            System.out.println("ArucoMarker bits = " + dict.getMarkerSize() * dict.getMarkerSize());
             System.out.println("  codes = " + dict.getNumberOfCodes());
             int N = dict.getMarkerSize();
             int markerId = 0;

@@ -10,21 +10,25 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Holds the necessary data for visualizing a dictionary marker.
+ * Describes the geometry of a Aruco dictionary marker for visualization.
  */
-public class Marker {
+public class ArucoMarker {
 
+    private final int id;
     private final BitVector bitCode;    // the bits holding the marker code
     private final int markerSize;
     private final int borderBits;
 
     /**
      * Constructor.
+     *
+     * @param id
      * @param bitCode the {@link BitVector} holding the marker code
      * @param markerSize the number of bits in x and y
      * @param borderBits the number of additional (black) border bits
      */
-    Marker(BitVector bitCode, int markerSize, int borderBits) {
+    ArucoMarker(int id, BitVector bitCode, int markerSize, int borderBits) {
+        this.id = id;
         this.bitCode = bitCode;
         this.markerSize = markerSize;
         this.borderBits = borderBits;

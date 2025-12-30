@@ -8,15 +8,9 @@ package imagingbook.jaruco;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lowagie.text.pdf.PdfGraphics2D;
-import ij.process.ByteProcessor;
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.util.MatrixRotationUtils;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -40,8 +34,8 @@ import static imagingbook.jaruco.util.MatrixRotationUtils.makeRotationPermutatio
 
 public class ArucoDictionary {
     static final int R = 4;                     // number of marker rotations
-    private final int M;                        // number of marker codes
-    private final int N;                        // number of bits per dimension
+    private final int dictionarySize;           // number of marker codes
+    private final int markerBitSize;            // number of bits per dimension
     private final int markerBitCount;           // number of bits for whole marker
     private final int maxCorrectableBits;       // max. number of correctable bits
     private final BitVector[][] bitdata;        // marker bit patterns, bitdata[m][r] is a 0/1 bit-pattern for marker m, rotation r
@@ -50,18 +44,18 @@ public class ArucoDictionary {
 
     /**
      * Constructor.
-     * @param M number of code id's
-     * @param N marker size
+     * @param dictionarySize number of code id's
+     * @param markerBitSize marker size
      * @param maxCorrectableBits number of correctable error bits
      * specifying the marker's canonical (unrotated) pattern
      */
-    private ArucoDictionary(int M, int N, int maxCorrectableBits) {
-        this.M = M;
-        this.N = N;
-        this.markerBitCount = N * N;
+    private ArucoDictionary(int dictionarySize, int markerBitSize, int maxCorrectableBits) {
+        this.dictionarySize = dictionarySize;
+        this.markerBitSize = markerBitSize;
+        this.markerBitCount = markerBitSize * markerBitSize;
         this.maxCorrectableBits = maxCorrectableBits;
-        this.bitdata = new BitVector[M][]; // not yet initialized, to be filled later
-        this.rotperm = makeRotationPermutation(N);
+        this.bitdata = new BitVector[dictionarySize][]; // not yet initialized, to be filled later
+        this.rotperm = makeRotationPermutation(markerBitSize);
     }
 
     // private ArucoDictionary(int M, int N, int maxCorrectionBits, String[] markerStrings) {
@@ -82,7 +76,7 @@ public class ArucoDictionary {
      * @param markerString the marker's bit pattern as a 0/1 string
      */
     private void addMarkerPattern(int id, String markerString) {
-        if (id < 0 || id > M) {
+        if (id < 0 || id > dictionarySize) {
             throw new IndexOutOfBoundsException("out-of-range marker dictionary id: " + id);
         }
         if (bitdata[id] != null) {
@@ -105,7 +99,7 @@ public class ArucoDictionary {
     @Override
     public String toString() {
         return String.format("%s [M=%d, N=%d, maxCorrectionBits=%d]",
-                getClass().getSimpleName(), M, N, maxCorrectableBits);
+                getClass().getSimpleName(), dictionarySize, markerBitSize, maxCorrectableBits);
     }
 
     /**
@@ -118,14 +112,14 @@ public class ArucoDictionary {
      * marker id and four rotations: {@code BitVectors[id][rot]}
      */
     private BitVector[][] makeBitVectors(String[] markerStrings) {
-        if (markerStrings.length != this.M) {
+        if (markerStrings.length != this.dictionarySize) {
             throw new IllegalArgumentException("wrong length of markerString array: "
                     + markerStrings.length);
         }
-        int[] rotperm = makeRotationPermutation(N); // permutation vector for 2D matrix rotation
-        BitVector[][] allBitVectors = new BitVector[M][4];
+        int[] rotperm = makeRotationPermutation(markerBitSize); // permutation vector for 2D matrix rotation
+        BitVector[][] allBitVectors = new BitVector[dictionarySize][4];
         // process all marker ids:
-        for (int id = 0; id < M; id++) {
+        for (int id = 0; id < dictionarySize; id++) {
             char[] markerPattern = markerStrings[id].toCharArray();
             allBitVectors[id][0] = toBitVector(markerPattern);   // r=0: canonical (unrotated)
             // make rotated patterns for r = 1, 2, 3
@@ -230,10 +224,10 @@ public class ArucoDictionary {
      * Exceptions are thrown for any irregularities encountered.
      */
     public void checkIntegrity() {
-        if (bitdata.length != M) {
+        if (bitdata.length != dictionarySize) {
             throw new IllegalStateException("wrong length of bitdata: " + bitdata.length);
         }
-        for (int i = 0; i < M; i++) {
+        for (int i = 0; i < dictionarySize; i++) {
             if (bitdata[i] == null || bitdata[i].length != 4) {
                 throw new IllegalStateException("bitdata[] missing or corrupted for marker id=" + i);
             }
@@ -255,7 +249,7 @@ public class ArucoDictionary {
      * @return the number of marker codes.
      */
     public int getNumberOfCodes() {
-        return this.M;
+        return this.dictionarySize;
     }
 
     /**
@@ -264,7 +258,7 @@ public class ArucoDictionary {
      * @return the size of the marker in x/y
      */
     public int getMarkerSize() {
-        return this.N;
+        return this.markerBitSize;
     }
 
     public int getMaxCorrectableBits() {
@@ -310,7 +304,7 @@ public class ArucoDictionary {
         // Scan the dictionary for a pattern match at least until a zero-distance
         // pattern is found:
         outer:
-        for (int m = 0; m < M; m++) {       // all M marker id's
+        for (int m = 0; m < dictionarySize; m++) {       // all M marker id's
             for (int r = 0; r < 4; r++) {   // all 4 rotations
                 int dist = candidate.hammingDistance(bitdata[m][r]);
                 // System.out.println(" checking " + )
@@ -363,27 +357,27 @@ public class ArucoDictionary {
     // -------------------------------------------------------------------------
 
     /**
-     * Returns a {@link Marker} instance for the specified dictionary entry,
+     * Returns a {@link ArucoMarker} instance for the specified dictionary entry,
      * with rotation = 0 and 1 border bit.
      * @param id the marker's id
-     * @return a {@link Marker} instance
+     * @return a {@link ArucoMarker} instance
      */
-    public Marker getMarker(int id) {
+    public ArucoMarker getMarker(int id) {
         return getMarker(id, 0, 1);
     }
 
     /**
-     * Returns a {@link Marker} instance for the specified dictionary entry, rotation and
+     * Returns a {@link ArucoMarker} instance for the specified dictionary entry, rotation and
      * number of additional border bits.
      * @param id the marker's id
      * @param rot the marker's rotation (0,...,3)
      * @param borderBits the number of additional border bits
-     * @return a {@link Marker} instance
+     * @return a {@link ArucoMarker} instance
      */
-    public Marker getMarker(int id, int rot, int borderBits) {
+    public ArucoMarker getMarker(int id, int rot, int borderBits) {
         if (borderBits < 0)
             throw new IllegalArgumentException("borderBits must be >= 0");
-        return new Marker(this.getBits(id, rot), this.N, borderBits);
+        return new ArucoMarker(-1, this.getBits(id, rot), this.markerBitSize, borderBits);
     }
 
 }

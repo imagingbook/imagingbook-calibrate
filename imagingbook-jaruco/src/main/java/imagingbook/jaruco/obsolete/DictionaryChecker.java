@@ -32,7 +32,7 @@ public class DictionaryChecker {
             System.out.println("Dict = " + pd.name());
             Dictionary dict = pd.getDict();
             System.out.println("Size = " + dict.getMarkerSize());
-            System.out.println("Marker bits = " + dict.getMarkerSize() * dict.getMarkerSize());
+            System.out.println("ArucoMarker bits = " + dict.getMarkerSize() * dict.getMarkerSize());
             System.out.println("  codes = " + dict.getNumberOfCodes());
 
             int[] errCnt = new int[4]; // one for each rotation r
