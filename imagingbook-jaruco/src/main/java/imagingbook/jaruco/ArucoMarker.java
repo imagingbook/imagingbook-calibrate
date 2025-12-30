@@ -3,6 +3,7 @@ package imagingbook.jaruco;
 import com.lowagie.text.pdf.PdfGraphics2D;
 import ij.process.ByteProcessor;
 import imagingbook.common.util.bits.BitVector;
+import imagingbook.jaruco.boards.GridElement;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -12,12 +13,13 @@ import java.awt.geom.Rectangle2D;
 /**
  * Describes the geometry of a Aruco dictionary marker for visualization.
  */
-public class ArucoMarker {
+public class ArucoMarker implements GridElement {
 
     private final int id;
     private final int rot;
     private final ArucoDictionary dictionary;
     private final int borderBits;
+    private int gridX, gridY;           // x/y board position
 
     /**
      * Constructor.
@@ -31,6 +33,26 @@ public class ArucoMarker {
         this.rot = rot;
         this.dictionary = dictionary;
         this.borderBits = borderBits;
+        this.gridX = -1;
+        this.gridY = -1;
+    }
+
+    // --------------------------------------------------------------------------------------------
+
+    @Override
+    public void setGridPos(int u, int v) {
+        this.gridX = u;
+        this.gridY = v;
+    }
+
+    @Override
+    public int getGridPosX() {
+        return gridX;
+    }
+
+    @Override
+    public int getGridPosY() {
+        return gridY;
     }
 
     // --------------------------------------------------------------------------------------------
