@@ -2,7 +2,7 @@ package imagingbook.jaruco.boards;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
-import imagingbook.jaruco.ArucoMarker;
+import imagingbook.jaruco.marker.ArucoMarker;
 
 public class BoardMarker extends ArucoMarker implements BoardElement {
 

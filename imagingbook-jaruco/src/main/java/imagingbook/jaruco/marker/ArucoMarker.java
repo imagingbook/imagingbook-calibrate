@@ -1,8 +1,9 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.marker;
 
 import com.lowagie.text.pdf.PdfGraphics2D;
 import ij.process.ByteProcessor;
 import imagingbook.common.util.bits.BitVector;
+import imagingbook.jaruco.dict.ArucoDictionary;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

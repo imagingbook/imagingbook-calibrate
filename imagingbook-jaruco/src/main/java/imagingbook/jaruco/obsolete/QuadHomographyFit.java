@@ -2,7 +2,7 @@ package imagingbook.jaruco.obsolete;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.points.LinearFit2d;
-import imagingbook.jaruco.SegmentedPolygon;
+import imagingbook.jaruco.marker.SegmentedPolygon;
 import org.apache.commons.math4.legacy.linear.*;
 
 import java.util.Arrays;

@@ -1,7 +1,7 @@
 package imagingbook.jaruco.obsolete;
 
 import imagingbook.common.util.ParameterBundle;
-import imagingbook.jaruco.ArucoMarkerDetector;
+import imagingbook.jaruco.marker.ArucoMarkerDetector;
 
 @Deprecated
 public class DetectorParameters implements ParameterBundle<ArucoMarkerDetector> {

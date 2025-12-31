@@ -3,8 +3,8 @@ package imagingbook.jaruco.boards;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Polygon2d;
-import imagingbook.jaruco.ArucoDictionary;
-import imagingbook.jaruco.ArucoMarker;
+import imagingbook.jaruco.dict.ArucoDictionary;
+import imagingbook.jaruco.marker.ArucoMarker;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

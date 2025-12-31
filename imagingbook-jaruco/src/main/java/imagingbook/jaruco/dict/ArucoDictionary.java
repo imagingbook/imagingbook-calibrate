@@ -4,11 +4,12 @@
  * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.jaruco;
+package imagingbook.jaruco.dict;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import imagingbook.common.util.bits.BitVector;
+import imagingbook.jaruco.marker.ArucoMarker;
 import imagingbook.jaruco.util.MatrixRotationUtils;
 
 import java.io.IOException;

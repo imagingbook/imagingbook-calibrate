@@ -1,4 +1,4 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.marker;
 
 import imagingbook.common.geometry.basic.PntUtils;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package imagingbook.jaruco.boards;
 
-import static imagingbook.jaruco.ArucoDictionaryPredefined.DICT_5X5_100;
-import static imagingbook.jaruco.ArucoDictionaryPredefined.DICT_5X5_1000;
+import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_100;
+import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_1000;
 
 public enum GridBoardPredefined {
     DICT_5X5_GridBoard_8x5_A4L {

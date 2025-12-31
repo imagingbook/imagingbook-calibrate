@@ -6,6 +6,9 @@ import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ColoredStroke;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
+import imagingbook.jaruco.dict.ArucoDictionary;
+import imagingbook.jaruco.dict.ArucoDictionaryPredefined;
+import imagingbook.jaruco.marker.ArucoMarkerDetector;
 
 import java.awt.Color;
 import java.awt.Font;

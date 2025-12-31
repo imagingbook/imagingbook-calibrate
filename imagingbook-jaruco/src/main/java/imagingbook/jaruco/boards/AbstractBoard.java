@@ -9,7 +9,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import ij.process.ByteProcessor;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.image.ImageGraphics;
-import imagingbook.jaruco.ArucoDictionary;
+import imagingbook.jaruco.dict.ArucoDictionary;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -203,12 +203,6 @@ public abstract class AbstractBoard {
      * @return the number of markers
      */
     public abstract int getMarkerCount();
-
-    // /**
-    //  * Returns an array with all marker ids.
-    //  * @return all marker ids
-    //  */
-    // public abstract int[] getIds();
 
     // -----------------------------------------------------------------------------
 

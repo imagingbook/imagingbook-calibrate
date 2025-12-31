@@ -1,6 +1,5 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.util;
 
-import imagingbook.jaruco.util.MatrixRotationUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

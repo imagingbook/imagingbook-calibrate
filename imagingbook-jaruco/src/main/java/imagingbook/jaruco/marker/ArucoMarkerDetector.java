@@ -1,4 +1,4 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.marker;
 
 
 import ij.process.ByteProcessor;
@@ -10,12 +10,13 @@ import imagingbook.common.regions.RegionContourSegmentation;
 import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.common.util.ParameterBundle;
 import imagingbook.common.util.bits.BitVector;
-import imagingbook.jaruco.ArucoDictionary.DictionaryLookupResult;
+import imagingbook.jaruco.dict.ArucoDictionary;
+import imagingbook.jaruco.dict.ArucoDictionary.DictionaryLookupResult;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.jaruco.MarkerLocator.Type.ParabolicFit;
+import static imagingbook.jaruco.marker.MarkerLocator.Type.ParabolicFit;
 
 /**
  * Performs Aruco marker detection.

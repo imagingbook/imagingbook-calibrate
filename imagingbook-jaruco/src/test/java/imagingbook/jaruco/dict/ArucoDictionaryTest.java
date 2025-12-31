@@ -1,10 +1,10 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.dict;
 
 import imagingbook.common.util.bits.BitVector;
 import imagingbook.jaruco.util.MatrixRotationUtils;
 import org.junit.jupiter.api.Test;
 
-import static imagingbook.jaruco.ArucoDictionary.toBitVector;
+import static imagingbook.jaruco.dict.ArucoDictionary.toBitVector;
 import static imagingbook.jaruco.util.MatrixRotationUtils.makeRotationPermutation;
 import static org.junit.jupiter.api.Assertions.*;
 

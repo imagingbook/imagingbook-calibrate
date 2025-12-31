@@ -1,4 +1,4 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.marker;
 
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
@@ -7,6 +7,7 @@ import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.image.ImageMapper;
 import imagingbook.common.util.bits.BitVector;
+import imagingbook.jaruco.dict.ArucoDictionary;
 
 import java.util.Arrays;
 

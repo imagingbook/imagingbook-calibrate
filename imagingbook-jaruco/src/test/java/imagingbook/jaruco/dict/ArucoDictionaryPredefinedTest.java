@@ -1,4 +1,4 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.dict;
 
 import imagingbook.common.util.bits.BitVector;
 import org.junit.jupiter.api.Test;  // JUnit5 !!

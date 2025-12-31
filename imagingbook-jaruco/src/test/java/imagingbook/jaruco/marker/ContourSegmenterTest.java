@@ -1,4 +1,4 @@
-package imagingbook.jaruco;
+package imagingbook.jaruco.marker;
 
 import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.Polygon2d;

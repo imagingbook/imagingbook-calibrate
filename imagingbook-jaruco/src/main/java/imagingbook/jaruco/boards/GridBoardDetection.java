@@ -2,8 +2,8 @@ package imagingbook.jaruco.boards;
 
 import ij.process.ByteProcessor;
 import imagingbook.common.geometry.basic.Polygon2d;
-import imagingbook.jaruco.ArucoMarkerDetector;
-import imagingbook.jaruco.ArucoDictionary;
+import imagingbook.jaruco.marker.ArucoMarkerDetector;
+import imagingbook.jaruco.dict.ArucoDictionary;
 
 import java.util.List;
 

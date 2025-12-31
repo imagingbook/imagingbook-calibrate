@@ -5,8 +5,8 @@ import ij.ImagePlus;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
-import imagingbook.jaruco.ArucoDictionary;
-import imagingbook.jaruco.ArucoDictionaryPredefined;
+import imagingbook.jaruco.dict.ArucoDictionary;
+import imagingbook.jaruco.dict.ArucoDictionaryPredefined;
 
 /**
  * This ImageJ plugin demonstrates the basic use of {@link GenericDialog} to create a new byte image.

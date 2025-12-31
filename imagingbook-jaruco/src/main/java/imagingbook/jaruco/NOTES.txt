@@ -3,3 +3,31 @@ Detection of ChArUco Boards:
 https://docs.opencv.org/4.x/df/d4a/tutorial_charuco_detection.html
 https://docs.opencv.org/4.x/de/d05/classcv_1_1aruco_1_1GridBoard.html
 
+
+Panotools:
+
+https://www.panotools.org/dersch/
+https://www.panotools.org/dersch/barrel/barrel.html
+https://wiki.panotools.org/General_lens_model
+
+https://wiki.panotools.org/Lens_correction_model
+https://wiki.panotools.org/Straight_line_control_points
+https://wiki.panotools.org/Lens_Correction_in_PanoTools
+
+https://wiki.panotools.org/PTLens
+https://wiki.panotools.org/Fulla
+
+PTlens
+
+
+Fulla:
+
+
+https://discuss.pixls.us/t/reverse-engineering-nikon-z-series-lens-correction/36733/62?page=4
+
+
+ADOBE:
+https://helpx.adobe.com/content/dam/help/en/photoshop/pdf/DNG_Spec_1_7_1_0.pdf
+
+Spline interpolation:
+https://kluge.in-chemnitz.de/opensource/spline/ (https://github.com/ttk592/spline/)
