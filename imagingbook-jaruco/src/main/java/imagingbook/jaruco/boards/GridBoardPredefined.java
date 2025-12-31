@@ -23,6 +23,7 @@ public enum GridBoardPredefined {
         }
     };
 
+    // TODO: hide makeInstance()
     abstract GridBoard makeInstance();
 
     public GridBoard getInstance() {

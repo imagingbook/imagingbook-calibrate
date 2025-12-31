@@ -123,9 +123,14 @@ public class ArucoMarkerDetector {
         if (lookup == null) {
             return;
         }
+
         // E. Rotate corners to canonical to align with ArUco pattern printouts
         // (corner 0 is the top-left corner of the marker)
-        Polygon2d finalCorners = initialCorners.rotate(-lookup.rotation());
+        // Corners are in CW order (in image coordinate system)
+        Polygon2d finalCorners = initialCorners.rotate(-lookup.rotation()); // correct but CCW
+          // TODO: bring corners to CW order (clumsy!!)
+        finalCorners = new Polygon2d(finalCorners.getPnt(0), finalCorners.getPnt(3), finalCorners.getPnt(2), finalCorners.getPnt(1));
+
         // Merge everything into the result.
         DetectionResult result = new DetectionResult(lookup, finalCorners);
         detections.add(result);
