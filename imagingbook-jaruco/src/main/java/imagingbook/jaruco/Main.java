@@ -95,7 +95,7 @@ public class Main {
 
             // process all detected markers
             for (ArucoMarkerDetector.DetectionResult marker : detectedMarkers) {
-                Polygon2d corners = marker.corners();
+                Polygon2d corners = marker.getCorners();
 
                 ola.setFont(CornerFont);
                 ola.setTextColor(CornerColor);
@@ -116,7 +116,7 @@ public class Main {
                 ola.setTextColor(MarkerColor);
                 // ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
                 ola.addText(center.getX(), center.getY(),
-                        marker.lookup().markerId() + "/" + marker.lookup().rotation() + "/" + marker.lookup().hammingDistance());
+                        marker.getLookup().markerId() + "/" + marker.getLookup().rotation() + "/" + marker.getLookup().hammingDistance());
 
                 // if parabolas exist, draw them:
                 // if (parabCurves != null) {

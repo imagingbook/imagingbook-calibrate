@@ -140,9 +140,30 @@ public class ArucoMarkerDetector {
     // -------------------------------------------------------------------------
 
     /**
-     * Represents the result of a single marker detection.
+     * Represents the result of a single marker detection. Supports sorting by marker id.
      */
-     public record DetectionResult(
-            DictionaryLookupResult lookup,
-            Polygon2d corners) { }
+    public static class DetectionResult implements Comparable<DetectionResult> {
+
+        final DictionaryLookupResult lookup;
+        final Polygon2d corners;
+
+        public DetectionResult(DictionaryLookupResult lookup, Polygon2d corners) {
+            this.lookup = lookup;
+            this.corners = corners;
+        }
+
+        public DictionaryLookupResult getLookup() {
+            return lookup;
+        }
+
+        public Polygon2d getCorners() {
+            return corners;
+        }
+
+        @Override
+        public int compareTo(DetectionResult other) {
+            return Integer.compare(this.lookup.markerId(), other.lookup.markerId());
+        }
+
+    }
 }

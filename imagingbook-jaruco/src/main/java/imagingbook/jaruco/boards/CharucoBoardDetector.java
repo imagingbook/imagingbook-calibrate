@@ -57,15 +57,17 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
         System.out.println("markers detected: " + gbd.getDetectedMarkerCount());
 
         List<PntPair> matches =  gbd.getAllMarkerPointMatches();
-        System.out.println("marker point matches: " + matches.size());
-        for (PntPair pntPair : matches) {
-            System.out.println(pntPair);
-        }
+        // System.out.println("marker point matches: " + matches.size());
+        // for (PntPair pntPair : matches) {
+        //     System.out.println(pntPair);
+        // }
 
         List<Integer> ids = gbd.getDetectedMarkerIds();
         for (Integer id : ids) {
             System.out.println("   id: " + id);
         }
+        System.out.println("all board markers found: " + gbd.allBoardMarkersFound());
+
     }
 
 

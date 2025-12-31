@@ -349,7 +349,7 @@ public class ArucoDictionary {
      * @param rotation
      * @param hammingDistance
      */
-    public record DictionaryLookupResult(
+    public record DictionaryLookupResult (
             String dictionaryName,
             int markerId,
             int rotation,
