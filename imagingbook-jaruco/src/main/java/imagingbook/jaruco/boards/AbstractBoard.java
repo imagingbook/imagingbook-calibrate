@@ -61,7 +61,7 @@ public abstract class AbstractBoard {
     abstract boolean checkDictionarySize();
 
     /**
-     * Set the name of this board (used by {@link GridBoardPredefined#getInstance()}).
+     * Set the name of this board (used by {@link GridBoard.Predefined#getInstance()}).
      * @param name the board's name
      */
     void setName(String name) {
@@ -251,7 +251,7 @@ public abstract class AbstractBoard {
      * will try to save the document to file {@code <currendDir>/tmp/board.pdf}.
      * The {@code pageSize} argument may be {@code null}, in
      * which case the board's own PDF size is used. If this is {@code null} too, an exception
-     * is thrown. Note that each pre-defined board listed in {@link GridBoardPredefined} do have a
+     * is thrown. Note that each pre-defined board listed in {@link GridBoard.Predefined} do have a
      * specific document size and name.
      *
      * @param path the file {@link Path}

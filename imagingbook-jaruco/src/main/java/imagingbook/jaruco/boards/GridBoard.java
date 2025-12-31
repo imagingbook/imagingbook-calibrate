@@ -9,12 +9,47 @@ import imagingbook.jaruco.marker.ArucoMarker;
 import java.awt.Graphics2D;
 import java.nio.file.Path;
 
+import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_100;
+import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_1000;
+
 /**
  * Represents a marke board with all markers in the same plane and in a regular M x N grid layout.
  * The board contains only markers from the specified dictionary, without any additional
  * geometric shapes.
  */
 public class GridBoard extends AbstractBoard {
+
+    public enum Predefined {
+        DICT_5X5_GridBoard_8x5_A4L {
+            @Override
+            GridBoard makeInstance() {
+                return new GridBoard(8, 5, 35.0, 25.0, DICT_5X5_100.getInstance(), 1, PageFmt.A4_Landscape);
+            }
+        },
+        DICT_5X5_GridBoard_12x8_A4L {
+            @Override
+            GridBoard makeInstance() {
+                return new GridBoard(12, 8, 21.0, 15.0, DICT_5X5_100.getInstance(), 1, PageFmt.A4_Landscape);
+            }
+        },
+        DICT_5X5_GridBoard_18x12_A3L {
+            @Override
+            GridBoard makeInstance() {
+                return new GridBoard(18, 12, 21.0, 15.0, DICT_5X5_1000.getInstance(), 1, PageFmt.A3_Landscape);
+            }
+        };
+
+        // TODO: hide makeInstance()
+        abstract GridBoard makeInstance();
+
+        public GridBoard getInstance() {
+            GridBoard gb = makeInstance();
+            gb.setName(this.name());
+            return gb;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
 
     private final BoardElement[][] boardElements;             // holds all MxN board elements
     private final int[][] markerMap;                     // marker column/row grid coordinates
@@ -126,9 +161,9 @@ public class GridBoard extends AbstractBoard {
     // -------------------------------------------------------------------
 
     public static void main(String[] args) {
-        GridBoard board = GridBoardPredefined.DICT_5X5_GridBoard_18x12_A3L.getInstance();
-        // GridBoard gb = GridBoardPredefined.DICT_5X5_GridBoard_8x5_A4L.getInstance();
-        // GridBoard gb = GridBoardPredefined.DICT_5X5_1000_GridBoard_12x8_A4.getInstance();
+        GridBoard board = GridBoard.Predefined.DICT_5X5_GridBoard_18x12_A3L.getInstance();
+        // GridBoard gb = GridBoard.Predefined.DICT_5X5_GridBoard_8x5_A4L.getInstance();
+        // GridBoard gb = GridBoard.Predefined.DICT_5X5_1000_GridBoard_12x8_A4.getInstance();
         System.out.printf("board size = %.2f x %.2f mm\n", board.getBoardWidth(), board.getBoardHeight());
         System.out.println(board.toString());
         ImageProcessor ip = board.createImage(1200);
@@ -136,4 +171,6 @@ public class GridBoard extends AbstractBoard {
 
         System.out.println("pdf path = " + board.saveAsPdf(Path.of("tmp/board.pdf")));
     }
+
+
 }

@@ -11,7 +11,29 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.nio.file.Path;
 
+import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_100;
+
 public class CharucoBoard extends AbstractBoard {
+
+    public enum Predefined {
+        DICT_5x5_CharucoBoard_12x8_A4L {
+            @Override
+            CharucoBoard makeInstance() {
+                return new CharucoBoard(12, 8, 22.0, 16.0, DICT_5X5_100.getInstance(), 1, PageFmt.A4_Landscape);
+            }
+        };
+
+        // TODO: hide makeInstance()
+        abstract CharucoBoard makeInstance();
+
+        public CharucoBoard getInstance() {
+            CharucoBoard gb = makeInstance();
+            gb.setName(this.name());
+            return gb;
+        }
+    }
+
+    // ----------------------------------------------------------------------------------------
 
     private final BoardElement[][] boardElements;        // hold all MxN board elements
     private final int[][] markerMap;                     // marker column/row grid coordinates
@@ -141,10 +163,11 @@ public class CharucoBoard extends AbstractBoard {
     // -------------------------------------------------------------------
 
     public static void main(String[] args) {
-        GridBoard board = GridBoardPredefined.DICT_5X5_GridBoard_18x12_A3L.getInstance();
-        // GridBoard board = GridBoardPredefined.DICT_5X5_GridBoard_8x5_A4L.getInstance();
-        // GridBoard board = GridBoardPredefined.DICT_5X5_1000_GridBoard_12x8_A4.getInstance();
-        // CharucoBoard board = new CharucoBoard(12, 8, 15.0, 21.0, DICT_5X5_100.getInstance(), 1, PageFmt.A4_Landscape);
+        // GridBoard board = GridBoard.Predefined.DICT_5X5_GridBoard_18x12_A3L.getInstance();
+        // GridBoard board = GridBoard.Predefined.DICT_5X5_GridBoard_8x5_A4L.getInstance();
+        // GridBoard board = GridBoard.Predefined.DICT_5X5_1000_GridBoard_12x8_A4.getInstance();
+        // CharucoBoard board = new CharucoBoard(12, 8, 22.0, 16.0, DICT_5X5_100.getInstance(), 1, PageFmt.A4_Landscape);
+        CharucoBoard board = CharucoBoard.Predefined.DICT_5x5_CharucoBoard_12x8_A4L.getInstance();
         System.out.printf("board size = %.2f x %.2f mm\n", board.getBoardWidth(), board.getBoardHeight());
         System.out.println(board.toString());
         ImageProcessor ip = board.createImage(1200);
