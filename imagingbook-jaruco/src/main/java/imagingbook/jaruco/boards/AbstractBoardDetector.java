@@ -41,7 +41,7 @@ public abstract class AbstractBoardDetector {
         return detects;
     }
 
-    boolean allBoardMarkersFound() {
+    public boolean allBoardMarkersFound() {
         return detResults.size() == board.getMarkerCount();
     }
 

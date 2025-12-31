@@ -114,36 +114,41 @@ public class Calibrator {
         Pnt2d[][] obsPts = imgPntSet.toArray(new Pnt2d[0][]);
 		
 		// Step 1: Calculate the homographies for each of the given N views:
+		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         Homography[] homographies = new Homography[M];
         for(int i = 0; i < M; i++) {
             homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, true);
         }
 		
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
+		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
 		RealMatrix Ainit = CameraIntrinsics.from(homographies);
 		initCam = new Camera(Ainit, params.distortionModel);
         System.out.println("initial camera = " + initCam);
 		
 		// Step 3: calculate the extrinsic view parameters (3D view transforms)
+		debug("Step 3: calculate the extrinsic view parameters (3D view transforms)");
         initViews = new ViewTransform[M];
         for (int i = 0; i < M; i++) {
             initViews[i] = ViewTransform.from(Ainit, homographies[i]);
         }
 		
 		// Step 4: Determine the lens distortion from initial estimates:
+		debug("Step 4: Determine the lens distortion from initial estimates:");
         LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPts, obsPts);
         System.out.println("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		Camera improvedCam = new Camera(Ainit, distortion);
         System.out.println("improved camera = " + improvedCam);
 
 		// Step 5: Refine all parameters by non-linear optimization
+		debug("Step 5: Refine all parameters by non-linear optimization");
         System.out.println("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
 		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?
 				new NonlinearOptimizerNumeric(improvedCam, modelPts, obsPts) :
 				new NonlinearOptimizerAnalytic(improvedCam, modelPts, obsPts);
 		optimizer.optimize(initViews);
 		finalCam = optimizer.getFinalCamera();
-        System.out.println("final camera = " + finalCam);
+        debug("final camera = " + finalCam);
 		finalViews = optimizer.getFinalViews();
 		return finalCam;
 	}
@@ -235,5 +240,11 @@ public class Calibrator {
     public ViewTransform[] getFinalViews() {
     	return finalViews;
     }
+
+	void debug(String msg) {
+		if (params.debug) {
+			System.out.println(msg);
+		}
+	}
     
 }

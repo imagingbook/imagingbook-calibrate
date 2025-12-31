@@ -6,6 +6,7 @@ module imagingbook.jaruco {
     requires org.apache.commons.math4.legacy.core;
     requires imagingbook.core;
     requires com.github.librepdf.openpdf;
+    requires imagingbook.calibrate.lib;
     //requires java.desktop; // needed for PdfGraphics2D
 
     exports imagingbook.jaruco;
