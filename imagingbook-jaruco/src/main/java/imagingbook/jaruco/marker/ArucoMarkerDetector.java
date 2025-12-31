@@ -129,10 +129,11 @@ public class ArucoMarkerDetector {
         // Corners are in CW order (in image coordinate system)
         Polygon2d finalCorners = initialCorners.rotate(-lookup.rotation()); // correct but CCW
           // TODO: bring corners to CW order (clumsy!!)
-        finalCorners = new Polygon2d(finalCorners.getPnt(0), finalCorners.getPnt(3), finalCorners.getPnt(2), finalCorners.getPnt(1));
+        // finalCorners = new Polygon2d(finalCorners.getPnt(0), finalCorners.getPnt(3), finalCorners.getPnt(2), finalCorners.getPnt(1));
 
+        // Bring finalCorners to CW order (using special reverse()!)
+        DetectionResult result = new DetectionResult(lookup, finalCorners.reverse());
         // Merge everything into the result.
-        DetectionResult result = new DetectionResult(lookup, finalCorners);
         detections.add(result);
     }
 
