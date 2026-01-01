@@ -27,6 +27,9 @@ public abstract class CameraIntrinsics {
      */
     public static RealMatrix from(Homography[] homographies) {
         return getCameraIntrinsics(homographies);
+		// return getCameraIntrinsicsZhang1(homographies);
+		// return getCameraIntrinsicsZhang2(homographies);
+		// return getCameraIntrinsicsZhang3(homographies);
     }
 
 	/**

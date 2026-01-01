@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static imagingbook.jaruco.marker.MarkerLocator.Type.ParabolicFit;
+import static imagingbook.jaruco.marker.MarkerLocator.Type.StraightFit;
 
 /**
  * Performs Aruco marker detection.
@@ -36,7 +37,7 @@ public class ArucoMarkerDetector {
         /** Fraction of the dictionary's correctable bit errors to actually use (used by {@link ArucoDictionary} */
         public double maxCorrectionRate = 1.0;
         /** Type of {@link MarkerLocator} to use. */
-        public MarkerLocator.Type locatorType = ParabolicFit;
+        public MarkerLocator.Type locatorType = StraightFit; //ParabolicFit;
         /** Fraction of quad side length used for fitting (used by {@link StraightMarkerLocator}) */
         public double cornerSupportFraction = 0.05;
     }

@@ -10,6 +10,8 @@ import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.fitting.points.ProjectiveFit2d;
+import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.util.ParameterBundle;
 
 import org.apache.commons.math4.legacy.linear.RealMatrix;
@@ -46,6 +48,8 @@ public class Calibrator {
         public LensDistortion distortionModel = Radial2TermDistortion.INSTANCE;
 		/** Normalize point coordinates for numerical stability in {@link Homography}. */
 		public boolean normalizePoints = true;
+		/** Perform non-linear refinement of homographies (usually not needed). */
+		public boolean refineHomographies = false;
         /** Assume that the camera has no skew (currently not used). */
 		public boolean assumeZeroSkew = false;
 		/** Use numeric (instead of analytic) calculation of the Jacobian in {@link NonlinearOptimizer}. */
@@ -117,14 +121,16 @@ public class Calibrator {
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         Homography[] homographies = new Homography[M];
         for(int i = 0; i < M; i++) {
-            homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, true);
+            homographies[i] = Homography.from(modelPts, obsPts[i],
+					params.normalizePoints, params.refineHomographies);
+			debug("homography" + i + ": \n" + homographies[i]);
         }
 		
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
 		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
 		RealMatrix Ainit = CameraIntrinsics.from(homographies);
 		initCam = new Camera(Ainit, params.distortionModel);
-        System.out.println("initial camera = " + initCam);
+        debug("initial camera = " + initCam);
 		
 		// Step 3: calculate the extrinsic view parameters (3D view transforms)
 		debug("Step 3: calculate the extrinsic view parameters (3D view transforms)");
@@ -243,7 +249,7 @@ public class Calibrator {
 
 	void debug(String msg) {
 		if (params.debug) {
-			System.out.println(msg);
+			System.out.println("[Debug] " + msg);
 		}
 	}
     
