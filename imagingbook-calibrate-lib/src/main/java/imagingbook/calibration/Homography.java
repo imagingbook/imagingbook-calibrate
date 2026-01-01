@@ -116,4 +116,8 @@ public class Homography  extends Array2DRowRealMatrix {
         return Q;
     }
 
+    public String toString() {
+        return Matrix.toString((RealMatrix)this);
+    }
+
 }

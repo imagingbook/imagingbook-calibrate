@@ -7,21 +7,25 @@
 package imagingbook.calibration;
 
 import imagingbook.calibration.util.MathUtil;
-import imagingbook.calibration.util.PointStatistics;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
+import imagingbook.common.geometry.fitting.points.ProjectiveFit2d;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
-import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresFactory;
+import org.apache.commons.math4.legacy.fitting.leastsquares.EvaluationRmsChecker;
+import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
+import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem.Evaluation;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
+import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
-import static org.apache.commons.math4.legacy.linear.MatrixUtils.createRealMatrix;
+import java.util.Arrays;
 
+// TODO: check implementation of normalizePoints!
 class HomographyEstimator {
 
     /**
@@ -32,7 +36,7 @@ class HomographyEstimator {
     /**
      * Maximum number of Levenberg-Marquardt iterations.
      */
-    public static int MaxLmIterations = 1000;
+    public static int MaxLmIterations = 100;
 
     private final boolean normalizePoints;
     private final boolean doRefinement;
@@ -60,40 +64,13 @@ class HomographyEstimator {
         if (ptsA.length < 4)
             throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
 
-        final int n = ptsA.length;
-        AffineMapping2D Na = (normalizePoints) ?
-                PointStatistics.getNormalisationMapping(ptsA) : new AffineMapping2D();
-        AffineMapping2D Nb = (normalizePoints) ?
-                PointStatistics.getNormalisationMapping(ptsB) : new AffineMapping2D();
-
-        RealMatrix MM = createRealMatrix(n * 2, 9);
-        for (int j = 0, r = 0; j < ptsA.length; j++) {
-            Pnt2d pA = Na.applyTo(ptsA[j]);   // mapPoint(Na, ptsA[j].toDoubleArray());
-            Pnt2d pB = Nb.applyTo(ptsB[j]);   // mapPoint(Nb, ptsB[j].toDoubleArray());
-            final double xA = pA.getX();
-            final double yA = pA.getY();
-            final double xB = pB.getX();
-            final double yB = pB.getY();
-            MM.setRow(r + 0, new double[]{xA, yA, 1, 0, 0, 0, -(xA * xB), -(yA * xB), -(xB)});
-            MM.setRow(r + 1, new double[]{0, 0, 0, xA, yA, 1, -(xA * yB), -(yA * yB), -(yB)});
-            r = r + 2;
-        }
-        // find h, such that MM . h ~ 0:
-        double[] h = MathUtil.solveHomogeneousSystem(MM).toArray();
-        // assemble homography matrix H from h:
-        RealMatrix Hinit = createRealMatrix(new double[][] {
-                {h[0], h[1], h[2]},
-                {h[3], h[4], h[5]},
-                {h[6], h[7], h[8]}});
-
-        // de-normalize the homography H (when point sets were normalized)
-        RealMatrix HNa = createRealMatrix(Na.getTransformationMatrix());    // 3x3 matrix of Ha
-        RealMatrix HNbi = createRealMatrix(Nb.getInverse().getTransformationMatrix());   // 3x3 inverse of Hb
-        RealMatrix H = HNbi.multiply(Hinit).multiply(HNa);  // H = MatrixUtils.inverse(Nb).multiply(H).multiply(Na);
-        Homography hom = new Homography(H);                 // this does normalization
+        double[][] Ha = new ProjectiveFit2d(ptsA, ptsB).getTransformationMatrix();
+        Homography hom = new Homography(Ha);                 // this does normalization
+        // System.out.println("   HomographyEstimator: initial = \n" + hom);
 
         if (doRefinement) {
             hom = refineHomography(hom, ptsA, ptsB);
+            // System.out.println("   HomographyEstimatior: refined = \n" + hom);
         }
         return new Homography(hom);
     }
@@ -119,37 +96,45 @@ class HomographyEstimator {
         MultivariateVectorFunction value = getValueFunction(pntsA);
         MultivariateMatrixFunction jacobian = getJacobianFunction(pntsA);
 
-        LeastSquaresProblem problem = LeastSquaresFactory.create(
-                LeastSquaresFactory.model(value, jacobian),
-                MatrixUtils.createRealVector(observed),
-                MathUtil.getRowPackedVector(Hinit),
-                null,  // ConvergenceChecker
-                MaxLmEvaluations,
-                MaxLmIterations);
+        double[] hstart = Arrays.copyOf(MathUtil.getRowPackedVector(Hinit).toArray(), 8);   // only first 8 values
+
+        LeastSquaresProblem problem = new LeastSquaresBuilder()
+                .model(value, jacobian)
+                .target(MatrixUtils.createRealVector(observed))
+                .start(new ArrayRealVector(hstart))
+                .checker(new LoggingChecker(new EvaluationRmsChecker(1e-6, 1e-6)))
+                .maxIterations(MaxLmIterations)
+                .maxEvaluations(MaxLmIterations)
+                .build();
 
         LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
         LeastSquaresOptimizer.Optimum result = lm.optimize(problem);
 
         RealVector optimum = result.getPoint();
-        RealMatrix Hopt = MathUtil.fromRowPackedVector(optimum, 3, 3);
+        double[] opt = optimum.toArray();
+        RealMatrix Hopt = MatrixUtils.createRealMatrix(3, 3);// MathUtil.fromRowPackedVector(optimum, 3, 3);
+        Hopt.setEntry(0, 0, opt[0]); Hopt.setEntry(0, 1, opt[1]); Hopt.setEntry(0, 2, opt[2]);
+        Hopt.setEntry(1, 0, opt[3]); Hopt.setEntry(1, 1, opt[4]); Hopt.setEntry(1, 2, opt[5]);
+        Hopt.setEntry(2, 0, opt[6]); Hopt.setEntry(2, 1, opt[7]); Hopt.setEntry(2, 2, 1.0);
+
         int iterations = result.getIterations();
         if (iterations >= MaxLmIterations) {
             throw new RuntimeException("refineHomography(): max. number of iterations exceeded");
         }
-        // System.out.println("LM optimizer iterations " + iterations);
+        System.out.println("   LM optimizer iterations = " + result.getIterations());
+        System.out.println("   LM optimizer avg |residual| = " + (result.getResiduals().getNorm()/M));
         return new Homography(Hopt);
     }
 
-    private static MultivariateVectorFunction getValueFunction(final Pnt2d[] X) {
-        // System.out.println("MultivariateVectorFunction getValueFunction");
+    private static MultivariateVectorFunction getValueFunction(Pnt2d[] X) {
         return new MultivariateVectorFunction() {
             @Override
             public double[] value(double[] h) {
-                final double[] Y = new double[X.length * 2];
+                double[] Y = new double[X.length * 2];
                 for (int j = 0; j < X.length; j++) {
-                    final double x = X[j].getX();
-                    final double y = X[j].getY();
-                    final double w = h[6] * x + h[7] * y + h[8];
+                    double x = X[j].getX();
+                    double y = X[j].getY();
+                    double w = h[6] * x + h[7] * y + 1; // h[8];
                     Y[j * 2 + 0] = (h[0] * x + h[1] * y + h[2]) / w;
                     Y[j * 2 + 1] = (h[3] * x + h[4] * y + h[5]) / w;
                 }
@@ -158,25 +143,45 @@ class HomographyEstimator {
         };
     }
 
-    private static MultivariateMatrixFunction getJacobianFunction(final Pnt2d[] X) {
+    private static MultivariateMatrixFunction getJacobianFunction(Pnt2d[] X) {
         return new MultivariateMatrixFunction() {
             @Override
             public double[][] value(double[] h) {
-                final double[][] J = new double[2 * X.length][];
+                double[][] J = new double[2 * X.length][];
                 for (int i = 0; i < X.length; i++) {
-                    final double x = X[i].getX();
-                    final double y = X[i].getY();
-                    final double w = h[6] * x + h[7] * y + h[8];
-                    final double w2 = w * w;
-                    final double sx = h[0] * x + h[1] * y + h[2];
-                    J[2 * i + 0] = new double[]{x / w, y / w, 1 / w, 0, 0, 0, -sx * x / w2, -sx * y / w2, -sx / w2};
-                    final double sy = h[3] * x + h[4] * y + h[5];
-                    J[2 * i + 1] = new double[]{0, 0, 0, x / w, y / w, 1 / w, -sy * x / w2, -sy * y / w2, -sy / w2};
+                    double x = X[i].getX();
+                    double y = X[i].getY();
+                    double sx = h[0] * x + h[1] * y + h[2];
+                    double sy = h[3] * x + h[4] * y + h[5];
+                    double w = h[6] * x + h[7] * y + 1;         // h[8] = 1 (fixed);
+                    double w2 = w * w;
+                    J[2 * i + 0] = new double[]{x/w, y/w, 1/w, 0, 0, 0, -sx * x/w2, -sx * y/w2};
+                    J[2 * i + 1] = new double[]{0, 0, 0, x/w, y/w, 1/w, -sy * x/w2, -sy * y/w2};
                 }
                 return J;
             }
         };
     }
+
+    /**
+     * Convergence checker which allows logging of residuals etc.
+     */
+    static class LoggingChecker implements ConvergenceChecker<Evaluation> {
+        private final ConvergenceChecker<Evaluation> delegate;
+
+        public LoggingChecker(ConvergenceChecker<Evaluation> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean converged(int iteration, Evaluation previous, Evaluation current) {
+            // Log residuals here
+            // System.out.println("Iteration " + iteration + " residuals: " + current.getResiduals().getNorm());
+            // System.out.println("point = " + Matrix.toString(current.getPoint().toArray()));
+            return delegate.converged(iteration, previous, current);
+        }
+    }
+
 
     // helper method (may be used in tests too)
     protected static double[] mapPoint(RealMatrix M3x3, double[] p) {
