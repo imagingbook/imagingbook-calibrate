@@ -12,6 +12,7 @@ import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.points.ProjectiveFit2d;
 import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
+import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
 
 import org.apache.commons.math4.legacy.linear.RealMatrix;
@@ -249,6 +250,7 @@ public class Calibrator {
 
 	void debug(String msg) {
 		if (params.debug) {
+			PrintPrecision.set(6);
 			System.out.println("[Debug] " + msg);
 		}
 	}

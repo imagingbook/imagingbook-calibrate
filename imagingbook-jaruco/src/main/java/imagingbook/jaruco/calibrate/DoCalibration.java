@@ -66,9 +66,9 @@ public class DoCalibration {
         String[] paths = {
                 "DSC_2691g.jpg",
                 "DSC_2692g.jpg",
-                // "DSC_2693g.jpg",
-                // "DSC_2694g.jpg",    // fails with ParabolicFit!!
-                // "DSC_2696g.jpg",
+                "DSC_2693g.jpg",
+                "DSC_2694g.jpg",    // fails with ParabolicFit!!
+                "DSC_2696g.jpg",
                 // "DSC_2698g.jpg",
                 // "DSC_2699g.jpg",
                 // "DSC_2700g.jpg",
