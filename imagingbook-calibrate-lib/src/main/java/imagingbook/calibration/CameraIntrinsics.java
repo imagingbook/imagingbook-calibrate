@@ -12,6 +12,7 @@ import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.CholeskyDecomposition;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
 
 /**
  * This class defines methods for estimating the intrinsic camera parameters from multiple homographies. Alternative
@@ -173,28 +174,58 @@ public abstract class CameraIntrinsics {
 	 */
     private static RealMatrix getCameraIntrinsics(Homography[] homographies) {
 		final int M = homographies.length;
-		int rows = 2 * M;
+		int rows = 2 * M + 1;
 		double[][] V = new double[rows][];
 
 		for (int i = 0; i < M; i++) {
-			RealMatrix H = homographies[i];
-			V[2*i] = getVpq(H, 0, 1); // v01
-			V[2*i + 1] = Matrix.subtract(getVpq(H, 0, 0), getVpq(H, 1, 1)); // v00-v11
+			RealMatrix Hi = homographies[i];
+			V[2*i + 0] = getVpq(Hi, 0, 1); // v01
+			V[2*i + 1] = Matrix.subtract(getVpq(Hi, 0, 0), getVpq(Hi, 1, 1)); // v00-v11
 		}
+		// impose skewless constraint (gamma = 0) by default
+		V[rows - 1] = new double[] { 0, 1, 0, 0, 0, 0 };
 
-		if (M == 2) {
-			V[V.length - 1] = new double[] { 0, 1, 0, 0, 0, 0 };
-		}
-		
+		// if (M == 2) {
+		// 	V[V.length - 1] = new double[] { 0, 1, 0, 0, 0, 0 };
+		// }
+
 		RealMatrix VM = MatrixUtils.createRealMatrix(V);
-		
 		double[] b = MathUtil.solveHomogeneousSystem(VM).toArray();	// solve VM.b=0
+
+		// *************************************************************************************
+		System.out.println("\nhom. solution b = " + Matrix.toString(b));
+
+		System.out.println("\nVM = " + Matrix.toString(VM));
+		SingularValueDecomposition svd = new SingularValueDecomposition(VM);
+		System.out.println("\nsingular vals = " + Matrix.toString(svd.getSingularValues()));
+		System.out.println("\ndecomp V = " + Matrix.toString(svd.getV()));
+		// *************************************************************************************
+		// {
+		// 	double v0 = (b[1] * b[3] - b[0] * b[4]) / (b[0] * b[2] - b[1] * b[1]);
+		// 	double lamda = b[5] - (b[3] * b[3] + v0 * (b[1] * b[3] - b[0] * b[4])) / b[0];
+		// 	double alpha = Math.sqrt(lamda / b[0]);
+		// 	double beta = Math.sqrt(lamda * b[0] / (b[0] * b[2] - b[1] * b[1]));
+		// 	double gamma = -b[1] * alpha * alpha * beta / lamda;
+		// 	double u0 = gamma * v0 / beta - b[3] * alpha * alpha / lamda;
+		// 	RealMatrix Ainit = MatrixUtils.createRealMatrix(new double[][] {
+		// 			{ alpha, gamma, u0 },
+		// 			{ 0, beta, v0 },
+		// 			{ 0, 0, 1 }
+		// 	});
+		//
+		// 	System.out.println("\nAiniz = " + Matrix.toString(Ainit));
+		// }
+
+		//------------------------------------------
+
 		
 		RealMatrix B = MatrixUtils.createRealMatrix(new double[][]
 				{{b[0], b[1], b[3]},
 				 {b[1], b[2], b[4]},
 				 {b[3], b[4], b[5]}});
-		
+
+		System.out.println("\nB = " + Matrix.toString(B));
+
 		if (B.getEntry(0, 0) < 0 || B.getEntry(1, 1) < 0 || B.getEntry(2, 2) < 0) {	
 			B = B.scalarMultiply(-1);	// make sure B is positive definite 
 		}

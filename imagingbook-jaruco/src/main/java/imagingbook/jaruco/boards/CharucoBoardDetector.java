@@ -44,7 +44,7 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
     public static void main(String[] args) {
         // String path = SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg";
         // String path = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
-        String path = SAMPLE_IMAGE_DIR + "DSC_2691g.jpg";
+        String path = SAMPLE_IMAGE_DIR + "DSC_2691.jpg";
         ImagePlus im = IjUtils.openImage(path);
         im.show();
 

@@ -158,7 +158,7 @@ public class ArucoDictionary {
 
     /**
      * Factory method. Create a ArUco dictionary from the contents of a
-     * (gnu-zipped) JASON file. An exception is thrown if the resource is
+     * (gnu-zipped) JSON file. An exception is thrown if the resource is
      * not found at the specified location.
      *
      * @param clazz the class at the root of the relative path

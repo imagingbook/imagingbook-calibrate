@@ -35,9 +35,13 @@ public enum ImageCornerSet {
     }
     private final CornerSet instance;
 
-    public double[][] getCorners() {
-        return instance.getCorners();
+    public CornerSet getInstance(){
+        return instance;
     }
+
+    // public double[][] getCorners() {
+    //     return instance.getCorners();
+    // }
 
     public static void main(String[] args) {
         // for (int i = 2693; i < 2716; i++) {
@@ -46,7 +50,7 @@ public enum ImageCornerSet {
 
         // double[][] icorners = DSC_2691.getCorners();
         for (ImageCornerSet cornerSet : ImageCornerSet.values()) {
-            double[][] icorners = cornerSet.getCorners();
+            double[][] icorners = cornerSet.getInstance().getCorners();
             System.out.println(cornerSet + " corners: " + icorners.length);
         }
 

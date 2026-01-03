@@ -37,7 +37,7 @@ public abstract class AbstractBoardDetector {
     List<DetectionResult> detectMarkers(AbstractBoard board, ByteProcessor ip) {
         ArucoMarkerDetector markerDetector = new ArucoMarkerDetector(board.getDictionary());
         List<DetectionResult> detects = markerDetector.detectMarkers(ip);
-        Collections.sort(detects);
+        Collections.sort(detects);  // sort by marker id
         return detects;
     }
 

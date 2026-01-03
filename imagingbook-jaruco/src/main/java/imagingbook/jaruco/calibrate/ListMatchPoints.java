@@ -7,14 +7,13 @@ import imagingbook.calibration.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.Polygon2d;
-import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
+import imagingbook.common.math.Matrix;
 import imagingbook.jaruco.boards.AbstractBoard;
 import imagingbook.jaruco.boards.AbstractBoardDetector.PntPair;
 import imagingbook.jaruco.boards.CharucoBoard;
 import imagingbook.jaruco.boards.CharucoBoardDetector;
-import imagingbook.jaruco.data.DICT_5x5_CharucoBoard_12x8_A4L.ImageCornerSet;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -22,40 +21,38 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DoCalibration {
+public class ListMatchPoints {
 
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
-    static String[] paths = {
-            "DSC_2691.jpg",
-            "DSC_2692.jpg",
-            "DSC_2693.jpg",
-            "DSC_2694.jpg",    // fails with ParabolicFit!!
-            "DSC_2696.jpg",
-            // "DSC_2698.jpg",
-            // "DSC_2699.jpg",
-            // "DSC_2700.jpg",
-            // "DSC_2701g.jpg",    // problems with marker detection!!
-            // "DSC_2702.jpg",
-            // "DSC_2704.jpg",
-            // "DSC_2705.jpg",
-            // "DSC_2706.jpg",
-            // "DSC_2707.jpg",
-            // "DSC_2708.jpg",
-            // "DSC_2709g.jpg",
-            // "DSC_2710g.jpg",
-            // "DSC_2711g.jpg",
-            // "DSC_2712g.jpg",
-            // "DSC_2713g.jpg",
-            // "DSC_2715g.jpg"
-    };
+
+
+
     static int USE_ONLY_POINTS = 64;
 
+
     public static void main(String[] args) {
-        ImageCornerSet[] cornerSets = {
-                ImageCornerSet.DSC_2691,
-                ImageCornerSet.DSC_2692,
-                ImageCornerSet.DSC_2693,
-                ImageCornerSet.DSC_2694
+        String[] paths = {
+                // "DSC_2691.jpg",
+                // "DSC_2692.jpg",
+                // "DSC_2693.jpg",
+                // "DSC_2694.jpg",    // fails with ParabolicFit!!
+                // "DSC_2696.jpg",
+                // "DSC_2698.jpg",
+                // "DSC_2699.jpg",
+                // "DSC_2700.jpg",
+                                    // "DSC_2701g.jpg",    // problems with marker detection!!
+                // "DSC_2702.jpg",
+                // "DSC_2704.jpg",
+                // "DSC_2705.jpg",
+                // "DSC_2706.jpg",
+                // "DSC_2707.jpg",
+                // "DSC_2708.jpg",
+                // "DSC_2709g.jpg",
+                // "DSC_2710g.jpg",
+                // "DSC_2711g.jpg",
+                // "DSC_2712g.jpg",
+                // "DSC_2713g.jpg",
+                // "DSC_2715g.jpg"
         };
 
         int[] SELECTED = {}; //{ 0, 21, 171, 190};
@@ -63,39 +60,37 @@ public class DoCalibration {
         CharucoBoard board = CharucoBoard.Predefined.DICT_5x5_CharucoBoard_12x8_A4L.getInstance();
         // Pnt2d[] modelPoints = Arrays.copyOfRange(getModelPoints(board), 0, USE_ONLY_POINTS);
         Pnt2d[] modelPoints = getModelPoints(board);
+        // modelPoints = selectPoints(modelPoints, SELECTED);    // , 0, 21, 171, 190
         System.out.println(" modelPoints = " + modelPoints.length);
+        double[][] modelPointsA = PntUtils.toDoubleArray(modelPoints);
+        System.out.println("public static double[][] model = \n" + Matrix.toString(modelPointsA) + ";");
         // showBoard(board, modelPoints);
 
-        // set up calibrator
-        Calibrator.Parameters params = new Calibrator.Parameters();
-        params.normalizePoints = true;
-        params.useNumericJacobian = true;
-        params.debug = true;
-        Calibrator calibrator = new Calibrator(params, modelPoints);
 
-        for (ImageCornerSet cornerSet : cornerSets) {
-            System.out.println("adding corner set " + cornerSet);
-            // Pnt2d[] obsPoints = getObservedPoints(matches);
-            Pnt2d[] obsPoints = cornerSet.getInstance().getCornerPoints();
-            // showObserved(bp, obsPoints, path);
+        for (String path : paths) {
+            // System.out.println("loading image " + path);
+            ImagePlus im = IjUtils.openImage(SAMPLE_IMAGE_DIR + path);
+            // im.show();
+            ByteProcessor bp = im.getProcessor().convertToByteProcessor();
+            CharucoBoardDetector gbd = new CharucoBoardDetector(board, bp);
+            // System.out.println("   all board markers found: " + gbd.allBoardMarkersFound());
 
-            calibrator.addView(obsPoints);
+            List<PntPair> matches =  gbd.getAllMarkerPointMatches();
+            // Pnt2d[] obsPoints = Arrays.copyOfRange(getObservedPoints(matches),  0, USE_ONLY_POINTS);
+            Pnt2d[] obsPoints = getObservedPoints(matches);
+            // obsPoints = selectPoints(obsPoints, SELECTED);    // , 0, 21, 171, 190
+            System.out.println(path + ": obsPoints = " + obsPoints.length);
+
+            double[][] obsPointsA = PntUtils.toDoubleArray(obsPoints);
+            System.out.println("public static double[][] " + path + " = \n" + Matrix.toString(obsPointsA) + ";");
+
+            showObserved(bp, obsPoints, path);
+
         }
-        // if (true) return;
-
-
-        Camera camFinal = calibrator.calibrate();
-        if (camFinal == null) {
-            System.out.println("Calibration failed");
-        }
-        else {
-            System.out.println("Calibration complete, camera = " + camFinal);
-        }
-
-
     }
 
-    // --------------------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------
+
 
     static Pnt2d[] getModelPoints(AbstractBoard board) {
         List<Pnt2d> modelPoints = new ArrayList<>();

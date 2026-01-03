@@ -50,7 +50,7 @@ public class Calibrator {
 		/** Normalize point coordinates for numerical stability in {@link Homography}. */
 		public boolean normalizePoints = true;
 		/** Perform non-linear refinement of homographies (usually not needed). */
-		public boolean refineHomographies = false;
+		public boolean refineHomographies = true;
         /** Assume that the camera has no skew (currently not used). */
 		public boolean assumeZeroSkew = false;
 		/** Use numeric (instead of analytic) calculation of the Jacobian in {@link NonlinearOptimizer}. */
@@ -122,8 +122,7 @@ public class Calibrator {
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         Homography[] homographies = new Homography[M];
         for(int i = 0; i < M; i++) {
-            homographies[i] = Homography.from(modelPts, obsPts[i],
-					params.normalizePoints, params.refineHomographies);
+            homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, params.refineHomographies);
 			debug("homography" + i + ": \n" + homographies[i]);
         }
 		

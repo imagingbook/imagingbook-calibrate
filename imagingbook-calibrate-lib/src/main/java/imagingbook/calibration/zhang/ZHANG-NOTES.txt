@@ -1,0 +1,44 @@
+OpenCV implementation
+
+
+C:\_GITHUB\opencv-super\opencv\modules\calib3d\src\calibration.cpp:
+
+Line 169: static double calibrateCameraInternal( const Mat& objectPoints,
+                                       const Mat& imagePoints, const Mat& npoints,
+                                       Size imageSize, int iFixedPoint, Mat& cameraMatrix, Mat& distCoeffs,
+                                       Mat rvecs, Mat tvecs, Mat newObjPoints, Mat stdDevs,
+                                       Mat perViewErr, int flags, const TermCriteria& termCrit )
+
+Line 337: call to initIntrinsicParams2D( matM, _m, npoints, imageSize, A, aspectRatio );
+
+Line 61:
+static void initIntrinsicParams2D( const Mat& objectPoints,
+                         const Mat& imagePoints, const Mat& npoints,
+                         Size imageSize, OutputArray cameraMatrix,
+                         double aspectRatio )
+
+Homography: C:\_GITHUB\opencv-super\opencv\modules\calib3d\src\fundam.cpp
+cv::Mat cv::findHomography( InputArray _points1, InputArray _points2,
+                            int method, double ransacReprojThreshold, OutputArray _mask,
+                            const int maxIters, const double confidence)
+
+------------------
+
+Tutorials:
+
+https://docs.opencv.org/4.x/d4/d94/tutorial_camera_calibration.html
+https://docs.opencv.org/4.x/da/d13/tutorial_aruco_calibration.html
+https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html
+
+Charuco camera calibration (C++):
+https://gist.github.com/lukschwalb/9a72e98908882093ce72508583f8a319
+https://amroamroamro.github.io/mexopencv/opencv_contrib/aruco_calibrate_camera_charuco_demo.html
+https://de.scribd.com/document/491105853/aruco-exp-tut
+https://github.com/opencv/opencv/blob/4.x/samples/cpp/calibration.cpp
+https://forum.opencv.org/t/problem-with-charuco-calibration/18391  ***
+
+Tools:
+
+https://peterklemperer.com/blog/2017/10/29/opencv-charuco-camera-calibration/
+C:\_GITHUB\opencv-super\opencv\build-release_vs\bin\Release\opencv_interactive-calibration.exe
+(search and run from CLion!)
