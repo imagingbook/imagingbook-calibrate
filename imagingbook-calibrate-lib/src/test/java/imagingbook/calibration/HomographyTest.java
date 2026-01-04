@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
+import imagingbook.calibration.homography.Homography;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.testutils.DeterministicRandom;
@@ -109,14 +110,14 @@ public class HomographyTest {
         for (int i = 0; i < POINTS_B.length; i++) {
             PBnoisy[i] = POINTS_B[i].plus(noise * rand.nextDouble(), noise * rand.nextDouble());    // add uniform noise
         }
-        Homography Hestm = Homography.from(POINTS_A, PBnoisy, true, true);  // TODO: check without num. refinement!
+        Homography Hest = Homography.from(POINTS_A, PBnoisy, true, true);  // TODO: check without num. refinement!
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
 
         // check if points are unchanged:
         double dsum = 0;
         double dmax = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < PBnoisy.length; i++) {
-            Pnt2d pMapped = Hestm.applyTo(POINTS_A[i]); // apply estimated homography
+            Pnt2d pMapped = Hest.applyTo(POINTS_A[i]); // apply estimated homography
             double di = PBnoisy[i].distance(pMapped);
             dsum = dsum + di;
             dmax = Math.max(dmax, di);

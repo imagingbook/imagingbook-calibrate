@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
+import imagingbook.calibration.homography.Homography;
 import imagingbook.calibration.math3legacy.Rotation;
 import imagingbook.calibration.math3legacy.RotationConvention;
 import imagingbook.calibration.util.MathUtil;

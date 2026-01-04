@@ -1,21 +1,19 @@
 /*******************************************************************************
  * Permission to use and distribute this software is granted under the BSD 2-Clause
  * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
- * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
+ * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration;
+package imagingbook.calibration.homography;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.fitting.points.ProjectiveFit2d;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
 import org.apache.commons.math4.legacy.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem.Evaluation;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
@@ -25,68 +23,32 @@ import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
 import java.util.Arrays;
 
-// TODO: check implementation of normalizePoints!
-class HomographyEstimator_backup {
+public final class HomographyRefinement {
 
-    /**
-     * Maximum number of Levenberg-Marquardt evaluations.
-     */
-    public static int MaxLmEvaluations = 1000;
+    public static int DefaultMaxLmEvaluations = 1000;
+    public static int DefaultMaxLmIterations = 100;
 
-    /**
-     * Maximum number of Levenberg-Marquardt iterations.
-     */
-    public static int MaxLmIterations = 100;
+    private final int maxLmEvaluations;
+    private final int maxLmIterations;
 
-    private final boolean normalizePoints;
-    private final boolean doRefinement;
-
-    /**
-     * The only constructor.
-     * @param normalizePoints
-     * @param doRefinement
-     */
-    public HomographyEstimator_backup(boolean normalizePoints, boolean doRefinement) {
-        this.normalizePoints = normalizePoints;
-        this.doRefinement = doRefinement;
+    public HomographyRefinement() {
+        this(DefaultMaxLmEvaluations, DefaultMaxLmIterations);
     }
 
-    /**
-     * Estimates the homography (projective) transformation from two given 2D
-     * point sequences assumed to be in correspondence (and of same length).
-     * @param ptsA the 1st sequence of 2D points
-     * @param ptsB the 1st sequence of 2D points
-     * @return
-     */
-    protected Homography getHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
-        if (ptsA.length != ptsB.length)
-            throw new IllegalArgumentException("point sequences A, B have different lengths");
-        if (ptsA.length < 4)
-            throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
-
-        double[][] Ha = new ProjectiveFit2d(ptsA, ptsB).getTransformationMatrix();
-        Homography hom = new Homography(Ha);                 // this does normalization
-        // System.out.println("   HomographyEstimator: initial = \n" + hom);
-
-        if (doRefinement) {
-            hom = refineHomography(hom, ptsA, ptsB);
-            // System.out.println("   HomographyEstimatior: refined = \n" + hom);
-        }
-        return new Homography(hom);
+    public HomographyRefinement(int maxLmEvaluations, int maxLmIterations) {
+        this.maxLmEvaluations = maxLmEvaluations;
+        this.maxLmIterations = maxLmIterations;
     }
-
-    // -------------------------------------------------------------------------
 
     /**
      * Refines the initial homography by non-linear (Levenberg-Marquart)
      * optimization.
-     *
      * @param Hinit the initial (estimated) homography
      * @param pntsA the 1st sequence of 2D points
      * @param pntsB the 2nd sequence of 2D points
      * @return the refined homography
      */
-    private Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
+    public Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
         final int M = pntsA.length;
         double[] observed = new double[2 * M];
         for (int i = 0; i < M; i++) {
@@ -103,8 +65,8 @@ class HomographyEstimator_backup {
                 .target(MatrixUtils.createRealVector(observed))
                 .start(new ArrayRealVector(hstart))
                 .checker(new LoggingChecker(new EvaluationRmsChecker(1e-6, 1e-6)))
-                .maxIterations(MaxLmIterations)
-                .maxEvaluations(MaxLmIterations)
+                .maxIterations(maxLmIterations)
+                .maxEvaluations(maxLmEvaluations)
                 .build();
 
         LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
@@ -118,7 +80,7 @@ class HomographyEstimator_backup {
         Hopt.setEntry(2, 0, opt[6]); Hopt.setEntry(2, 1, opt[7]); Hopt.setEntry(2, 2, 1.0);
 
         int iterations = result.getIterations();
-        if (iterations >= MaxLmIterations) {
+        if (iterations >= maxLmIterations) {
             throw new RuntimeException("refineHomography(): max. number of iterations exceeded");
         }
         System.out.println("   LM optimizer iterations = " + result.getIterations());
@@ -166,15 +128,15 @@ class HomographyEstimator_backup {
     /**
      * Convergence checker which allows logging of residuals etc.
      */
-    static class LoggingChecker implements ConvergenceChecker<Evaluation> {
-        private final ConvergenceChecker<Evaluation> delegate;
+    static class LoggingChecker implements ConvergenceChecker<LeastSquaresProblem.Evaluation> {
+        private final ConvergenceChecker<LeastSquaresProblem.Evaluation> delegate;
 
-        public LoggingChecker(ConvergenceChecker<Evaluation> delegate) {
+        public LoggingChecker(ConvergenceChecker<LeastSquaresProblem.Evaluation> delegate) {
             this.delegate = delegate;
         }
 
         @Override
-        public boolean converged(int iteration, Evaluation previous, Evaluation current) {
+        public boolean converged(int iteration, LeastSquaresProblem.Evaluation previous, LeastSquaresProblem.Evaluation current) {
             // Log residuals here
             // System.out.println("Iteration " + iteration + " residuals: " + current.getResiduals().getNorm());
             // System.out.println("point = " + Matrix.toString(current.getPoint().toArray()));
@@ -182,33 +144,4 @@ class HomographyEstimator_backup {
         }
     }
 
-
-    // helper method (may be used in tests too)
-    protected static double[] mapPoint(RealMatrix M3x3, double[] p) {
-        if (p.length != 2) {
-            throw new IllegalArgumentException("vector p must be of length 2 but is " + p.length);
-        }
-        double[] pA = MathUtil.toHomogeneous(p);
-        double[] pAt = M3x3.operate(pA);
-        return MathUtil.toCartesian(pAt); // need to de-homogenize, since pAt[2] == 1?
-    }
-
-//    /**
-//     * Estimate homographies for a single sequence of model points but multiple sequence
-//     * of observed points. All point sequences must be in correspondence and of same length.
-//     * @param modelPts
-//     * @param obsPoints
-//     * @param normalizePoints
-//     * @param doRefinement
-//     * @return
-//     */
-//    @Deprecated
-//    public static Homography[] estimateHomographies(Pnt2d[] modelPts, Pnt2d[][] obsPoints, boolean normalizePoints, boolean doRefinement) {
-//        final int M = obsPoints.length;
-//        Homography[] homographies = new Homography[M];
-//            for(int i = 0; i < M; i++) {
-//                homographies[i] = Homography.from(modelPts, obsPoints[i], normalizePoints, doRefinement);
-//        }
-//        return homographies;
-//    }
 }

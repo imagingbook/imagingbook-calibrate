@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Permission to use and distribute this software is granted under the BSD 2-Clause
  * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
- * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
+ * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration;
+package imagingbook.calibration.homography;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -20,10 +20,11 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
  * and methods for estimating such transformations from sets of 2D point pairs.
  * Implements RealMatrix, each instance being a 3x3 matrix.
  * Homographies are normalized (element (2, 2) is 1) and immutable.
+ * TODO: don't like this, remove inheritance from ArrayRealMatrix
  *
  * @author WB
  */
-public class Homography  extends Array2DRowRealMatrix {
+public class Homography extends Array2DRowRealMatrix {
     /** Max. number of Levenberg-Marquardt evaluations. */
 	public static int MaxLmEvaluations = 1000;
     /** Max. number of Levenberg-Marquardt iterations. */
@@ -85,8 +86,8 @@ public class Homography  extends Array2DRowRealMatrix {
      * @return the estimated homography (a normalized 3 x 3 matrix)
      */
 	public static Homography from(Pnt2d[] ptsA, Pnt2d[] ptsB, boolean normalizePoints, boolean doRefinement) {
-        HomographyEstimator estimator = new HomographyEstimator(normalizePoints, doRefinement);
-        return new Homography(estimator.estimateHomography(ptsA, ptsB));
+        HomographyEstimator estimator = new HomographyEstimatorH(normalizePoints, doRefinement);
+        return estimator.getHomography(ptsA, ptsB);
     }
 
     // ------------------------------------------------------------

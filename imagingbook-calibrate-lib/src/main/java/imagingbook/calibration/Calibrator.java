@@ -8,10 +8,9 @@ package imagingbook.calibration;
 
 import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
+import imagingbook.calibration.homography.Homography;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.fitting.points.ProjectiveFit2d;
-import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
 
