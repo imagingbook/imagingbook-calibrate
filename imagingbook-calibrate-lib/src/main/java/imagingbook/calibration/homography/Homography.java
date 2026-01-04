@@ -86,7 +86,7 @@ public class Homography extends Array2DRowRealMatrix {
      * @return the estimated homography (a normalized 3 x 3 matrix)
      */
 	public static Homography from(Pnt2d[] ptsA, Pnt2d[] ptsB, boolean normalizePoints, boolean doRefinement) {
-        HomographyEstimator estimator = new HomographyEstimatorH(normalizePoints, doRefinement);
+        AbstractHomographyEstimator estimator = new HomographyEstimLinearHom(normalizePoints, doRefinement);
         return estimator.getHomography(ptsA, ptsB);
     }
 

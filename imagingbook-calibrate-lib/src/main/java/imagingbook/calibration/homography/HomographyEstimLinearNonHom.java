@@ -8,6 +8,7 @@ package imagingbook.calibration.homography;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.fitting.points.ProjectiveFit2d;
 import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
@@ -24,22 +25,42 @@ import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
 import java.util.Arrays;
 
-public final class HomographyRefinement {
 
-    public static int DefaultMaxLmEvaluations = 1000;
-    public static int DefaultMaxLmIterations = 100;
+/**
+ * Homography estimator based on solving a 3x3 non-homogeneous linear system.
+ */
+public class HomographyEstimLinearNonHom extends AbstractHomographyEstimator {
 
-    private final int maxLmEvaluations;
-    private final int maxLmIterations;
-
-    public HomographyRefinement() {
-        this(DefaultMaxLmEvaluations, DefaultMaxLmIterations);
+    /**
+     * Constructor.
+     * @param normalizePoints
+     * @param doRefinement
+     */
+    public HomographyEstimLinearNonHom(boolean normalizePoints, boolean doRefinement) {
+        super(normalizePoints, doRefinement);
     }
 
-    public HomographyRefinement(int maxLmEvaluations, int maxLmIterations) {
-        this.maxLmEvaluations = maxLmEvaluations;
-        this.maxLmIterations = maxLmIterations;
+    @Override
+    Homography estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
+        if (ptsA.length != ptsB.length)
+            throw new IllegalArgumentException("point sequences A, B have different lengths");
+        if (ptsA.length < 4)
+            throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
+
+        double[][] Ha = new ProjectiveFit2d(ptsA, ptsB).getTransformationMatrix();
+        Homography hom = new Homography(Ha);                 // this does normalization
+        System.out.println("   HomographyEstimLinearNonHom: initial = \n" + hom);
+
+        if (doRefinement) {
+            hom = refine(hom, ptsA, ptsB);
+        }
+        return hom;
     }
+
+    // NON-LINEAR REFINEMENT (using only 8 homography parameters, keeping h22 = 1 fixed) ----------
+
+    public static int maxLmEvaluations = 1000;
+    public static int maxLmIterations = 1000;
 
     /**
      * Refines the initial homography by non-linear (Levenberg-Marquart)
@@ -49,7 +70,7 @@ public final class HomographyRefinement {
      * @param pntsB the 2nd sequence of 2D points
      * @return the refined homography
      */
-    public Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
+    private Homography refine(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
         final int M = pntsA.length;
         double[] observed = new double[2 * M];
         for (int i = 0; i < M; i++) {
@@ -60,7 +81,7 @@ public final class HomographyRefinement {
         MultivariateMatrixFunction jacobian = getJacobianFunction(pntsA);
 
         double[] hstart = Arrays.copyOf(MathUtil.getRowPackedVector(Hinit).toArray(), 8);   // only first 8 values
-        System.out.println("   HomographyRefinement: hstart = \n" + Matrix.toString(hstart));
+        System.out.println("HomographyEstimLinearNonHom.refine(): hstart = \n" + Matrix.toString(hstart));
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
                 .model(value, jacobian)
@@ -76,7 +97,7 @@ public final class HomographyRefinement {
 
         RealVector optimum = result.getPoint();
         double[] opt = optimum.toArray();
-        RealMatrix Hopt = MatrixUtils.createRealMatrix(3, 3);// MathUtil.fromRowPackedVector(optimum, 3, 3);
+        RealMatrix Hopt = MatrixUtils.createRealMatrix(3, 3); // MathUtil.fromRowPackedVector(optimum, 3, 3);
         Hopt.setEntry(0, 0, opt[0]); Hopt.setEntry(0, 1, opt[1]); Hopt.setEntry(0, 2, opt[2]);
         Hopt.setEntry(1, 0, opt[3]); Hopt.setEntry(1, 1, opt[4]); Hopt.setEntry(1, 2, opt[5]);
         Hopt.setEntry(2, 0, opt[6]); Hopt.setEntry(2, 1, opt[7]); Hopt.setEntry(2, 2, 1.0);
@@ -117,7 +138,7 @@ public final class HomographyRefinement {
                     double y = X[i].getY();
                     double sx = h[0] * x + h[1] * y + h[2];
                     double sy = h[3] * x + h[4] * y + h[5];
-                    double w = h[6] * x + h[7] * y + 1;         // h[8] = 1 (fixed);
+                    double w =  h[6] * x + h[7] * y + 1;         // h[8] = 1 (fixed);
                     double w2 = w * w;
                     J[2 * i + 0] = new double[]{x/w, y/w, 1/w, 0, 0, 0, -sx * x/w2, -sx * y/w2};
                     J[2 * i + 1] = new double[]{0, 0, 0, x/w, y/w, 1/w, -sy * x/w2, -sy * y/w2};

@@ -11,14 +11,12 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
-public abstract class HomographyEstimator {
+public abstract class AbstractHomographyEstimator {
 
     final boolean normalizePoints;
     final boolean doRefinement;
 
-    RealMatrix Na, Nb;  // normalization matrices
-
-    HomographyEstimator(boolean normalizePoints, boolean doRefinement) {
+    AbstractHomographyEstimator(boolean normalizePoints, boolean doRefinement) {
         this.normalizePoints = normalizePoints;
         this.doRefinement = doRefinement;
     }
@@ -37,23 +35,15 @@ public abstract class HomographyEstimator {
         if (ptsA.length < 4) {
             throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
         }
-        // TODO: move point normalization here!
-        // if (normalizePoints) {
-        //     this.Na = getNormalisationMatrix(ptsA);
-        //     this.Nb = getNormalisationMatrix(ptsB);
-        // }
 
-        Homography hom = estimateHomography(ptsA, ptsB);    // implemented by subclasses
-
-        if (doRefinement) {
-            hom = refineHomography(hom, ptsA, ptsB);
-        }
-        return hom;
+        return estimateHomography(ptsA, ptsB);    // implemented by subclasses
     }
 
     abstract Homography estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB);
 
-    RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
+    // -------------------------------------------------------------------------------------------
+
+    static RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
         final int N = pnts.length;
         double[] x = new double[N];
         double[] y = new double[N];
@@ -82,11 +72,20 @@ public abstract class HomographyEstimator {
         return matrixA;
     }
 
+    static double[] map2dHomogeneous(double[] p, RealMatrix M3x3) {
+        if (p.length != 2) {
+            throw new IllegalArgumentException("transform(): vector p must be of length 2 but is " + p.length);
+        }
+        double[] pA = MathUtil.toHomogeneous(p);
+        double[] pAt = M3x3.operate(pA);
+        return MathUtil.toCartesian(pAt); // need to de-homogenize, since pAt[2] == 1?
+    }
+
     // ------------------------------------------------------------
 
-    public Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
-        return new HomographyRefinement().refineHomography(Hinit, pntsA, pntsB);
-    }
+    // public Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
+    //     return new HomographyRefinement().refineHomography(Hinit, pntsA, pntsB);
+    // }
 
     /**
      * Estimates the homographies between a fixed set of 2D model points and multiple observations (image point sets).

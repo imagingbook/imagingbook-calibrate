@@ -8,7 +8,9 @@ package imagingbook.calibration;
 
 import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
+import imagingbook.calibration.homography.AbstractHomographyEstimator;
 import imagingbook.calibration.homography.Homography;
+import imagingbook.calibration.homography.HomographyEstimLinearNonHom;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
@@ -120,8 +122,10 @@ public class Calibrator {
 		// Step 1: Calculate the homographies for each of the given N views:
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         Homography[] homographies = new Homography[M];
+		AbstractHomographyEstimator hestmtr = new HomographyEstimLinearNonHom(params.normalizePoints, params.refineHomographies);
         for(int i = 0; i < M; i++) {
-            homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, params.refineHomographies);
+            // homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, params.refineHomographies);
+			homographies[i] = hestmtr.getHomography(modelPts, obsPts[i]);
 			debug("homography" + i + ": \n" + homographies[i]);
         }
 		
