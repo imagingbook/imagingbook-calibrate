@@ -100,7 +100,7 @@ public class Homography extends Array2DRowRealMatrix {
     public Pnt2d applyTo(Pnt2d p) {
         double[] pA = MathUtil.toHomogeneous(p.toDoubleArray());
         double[] pAt = this.operate(pA);
-        return Pnt2d.from(MathUtil.toCartesian(pAt));
+        return Pnt2d.from(MathUtil.fromHomogeneous(pAt));
     }
 
     /**

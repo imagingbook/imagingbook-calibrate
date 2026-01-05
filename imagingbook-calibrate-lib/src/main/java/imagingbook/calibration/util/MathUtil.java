@@ -6,7 +6,6 @@
  ******************************************************************************/
 package imagingbook.calibration.util;
 
-import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.exception.DivideByZeroException;
 
@@ -30,13 +29,13 @@ public abstract class MathUtil {
 
     private MathUtil() {}
 
-    public static double[] toArray(Pnt2d p) {
-        return new double[] {p.getX(), p.getY()};
-    }
+    // public static double[] toArray(Pnt2d p) {
+    //     return new double[] {p.getX(), p.getY()};
+    // }
 
-    public static Pnt2d toPnt2d(double[] xy) {
-        return Pnt2d.from(xy);
-    }
+    // public static Pnt2d toPnt2d(double[] xy) {
+    //     return Pnt2d.from(xy);
+    // }
 
     public static RealVector crossProduct3x3(RealVector A, RealVector B) {
         final double[] a = A.toArray();
@@ -49,25 +48,72 @@ public abstract class MathUtil {
         return MatrixUtils.createRealVector(c);
     }
 
+    /**
+     * Creates a new {@link RealVector} instance from the elements of the supplied
+     * {@link RealMatrix} arranged in row-major order.
+     * @param A a {@link RealMatrix}
+     * @return a {@link RealVector}
+     */
     public static RealVector getRowPackedVector(RealMatrix A) {
+        // double[][] AA = A.getData();
+        // double[] V = new double[AA.length * AA[0].length];
+        // int k = 0;
+        // for (int i = 0; i < AA.length; i++) {
+        //     for (int j = 0; j < AA[0].length; j++) {
+        //         V[k] = AA[i][j];
+        //         k++;
+        //     }
+        // }
+        // return MatrixUtils.createRealVector(V);
+        return getRowPackedVector(A, -1);
+    }
+
+    /**
+     * Creates a new {@link RealVector} of the specified length {@code n} from the elements of the supplied
+     * {@link RealMatrix}, extracted in row-major order. If {@code n} is smaller than the number of
+     * matrix element, the remaining elements ignored. If {@code n} is greater, the unused vector
+     * elements are filled with zeros.
+     * @param A a {@link RealMatrix}
+     * @param n the length of the output vector (set 0 to extract all matrix elements)
+     * @return a {@link RealVector}
+     */
+    public static RealVector getRowPackedVector(RealMatrix A, int n) {
         double[][] AA = A.getData();
-        double[] V = new double[AA.length * AA[0].length];
+        double[] V = (n > 0) ?
+                new double[n] :
+                new double[A.getColumnDimension() * A.getRowDimension()];
         int k = 0;
-        for (int i = 0; i < AA.length; i++) {
+        outer: for (int i = 0; i < AA.length; i++) {
             for (int j = 0; j < AA[0].length; j++) {
-                V[k++] = AA[i][j];
+                V[k] = AA[i][j];
+                k++;
+                if (k >= V.length) break outer;
             }
         }
         return MatrixUtils.createRealVector(V);
+
     }
 
+    /**
+     * Creates a new {@link RealMatrix} instance from the element of a {@link RealVector},
+     * by filling the matrix in row-major order. If the supplied vector is shorter than
+     * the number of array elements, the remaining matrix elements are filled
+     * with zeros. If the vector is too long, all superfluous vector elements are ignored.
+     * TODO: move to imagingbook.common
+     * @param V a {@link RealVector}
+     * @param rows the number of matrix rows
+     * @param columns the number of matrix columns
+     * @return a new {@link RealMatrix} instance
+     */
     public static RealMatrix fromRowPackedVector(RealVector V, int rows, int columns) {
         double[][] AA = new double[rows][columns];
         double[] data = V.toArray();
         int k = 0;
-        for (int i = 0; i < rows; i++) {
+        outer: for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                AA[i][j] = data[k++];
+                AA[i][j] = data[k];
+                k++;
+                if (k >= data.length) break outer;
             }
         }
         return MatrixUtils.createRealMatrix(AA);
@@ -93,7 +139,7 @@ public abstract class MathUtil {
     /**
      * Converts a Cartesian vector to an equivalent homogeneous vector by attaching an additional 1-element. The
      * resulting homogeneous vector is one element longer than the specified Cartesian vector. See also
-     * {@link #toCartesian(double[])}.
+     * {@link #fromHomogeneous(double[])}.
      *
      * @param ac a Cartesian vector
      * @return an equivalent homogeneous vector
@@ -115,7 +161,7 @@ public abstract class MathUtil {
      * @return the equivalent Cartesian vector
      * @throws DivideByZeroException if the last vector element is zero
      */
-    public static double[] toCartesian(double[] ah) throws DivideByZeroException {
+    public static double[] fromHomogeneous(double[] ah) throws DivideByZeroException {
         double[] xc = new double[ah.length - 1];
         final double s = 1 / ah[ah.length - 1];
         if (!Double.isFinite(s))	// isZero(s)

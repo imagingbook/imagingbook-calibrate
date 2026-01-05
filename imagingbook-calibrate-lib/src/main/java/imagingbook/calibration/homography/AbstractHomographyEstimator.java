@@ -78,7 +78,7 @@ public abstract class AbstractHomographyEstimator {
         }
         double[] pA = MathUtil.toHomogeneous(p);
         double[] pAt = M3x3.operate(pA);
-        return MathUtil.toCartesian(pAt); // need to de-homogenize, since pAt[2] == 1?
+        return MathUtil.fromHomogeneous(pAt); // need to de-homogenize, since pAt[2] == 1?
     }
 
     // ------------------------------------------------------------

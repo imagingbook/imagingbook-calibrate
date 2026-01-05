@@ -120,14 +120,14 @@ public class View_Interpolation_Demo implements PlugIn, JavaDocHelp {
             // 3D points p0,...,p3 define a model square in the Z=0 plane
             for (int j = 0; j < 4; j++) {
                 modelSq[j] = modelPoints[i + j];
-                imageSq[j] = MathUtil.toPnt2d(cam.project(view, modelSq[j]));
+                imageSq[j] = Pnt2d.from(cam.project(view, modelSq[j]));
             }
             // make the 3D pyramid peak and project to 2D:
             double[] modelPeak3d = new double[3];
             modelPeak3d[0] = (modelSq[0].getX() + modelSq[2].getX()) / 2;	// X
             modelPeak3d[1] = (modelSq[0].getY() + modelSq[2].getY()) / 2;	// Y
             modelPeak3d[2] = PeakHeightZ;	// Z
-            Pnt2d pk = MathUtil.toPnt2d(cam.project(view, modelPeak3d));
+            Pnt2d pk = Pnt2d.from(cam.project(view, modelPeak3d));
             // make and add the projected pyramid for this model quad:
             shapes.add(makePyramidShape(imageSq, pk));
         }

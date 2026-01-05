@@ -133,7 +133,7 @@ public class Camera {
 		Pnt2d[] imagePoints = new Pnt2d[PP.length];
 		for (int j = 0; j < PP.length; j++) {
 			double[] uv = project(view, PP[j]);
-			imagePoints[j] = MathUtil.toPnt2d(uv);
+			imagePoints[j] = Pnt2d.from(uv);
 		}
 		return imagePoints;
 	}

@@ -187,7 +187,7 @@ public class Calibrator {
     	double sqError = 0;
 		for (int j = 0; j < modelPts.length; j++) {
 			double[] uv = cam.project(view, modelPts[j]);
-			double[] UV = MathUtil.toArray(observed[j]);
+			double[] UV = observed[j].toDoubleArray();
 			double du = uv[0] - UV[0];
 			double dv = uv[1] - UV[1];
 			sqError = sqError + du * du + dv * dv;
