@@ -50,21 +50,25 @@ public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
 	 */
 	@Override
 	Homography estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
-		int n = ptsA.length;
 		System.out.println("HomographyEstimLinearHom.estimateHomography() " + normalizePoints + " " + doRefinement);
-		RealMatrix Na = (normalizePoints) ?
-				getNormalisationMatrix(ptsA) : MatrixUtils.createRealIdentityMatrix(3);
-		RealMatrix Nb = (normalizePoints) ?
-				getNormalisationMatrix(ptsB) : MatrixUtils.createRealIdentityMatrix(3);
-		RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
+		if (ptsA.length != ptsB.length)
+			throw new IllegalArgumentException("point sequences A, B have different lengths");
+		if (ptsA.length < 4)
+			throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
+		int n = ptsA.length;
 
+		// matrices for statistical normalization
+		RealMatrix Na = (normalizePoints) ? getNormalisationMatrix(ptsA) : null;
+		RealMatrix Nb = (normalizePoints) ? getNormalisationMatrix(ptsB) : null;
+
+		RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
 		for (int i = 0, r = 0; i < ptsA.length; i++, r+=2) {
-			final double[] pA = map2dHomogeneous(MathUtil.toArray(ptsA[i]), Na);
-			final double[] pB = map2dHomogeneous(MathUtil.toArray(ptsB[i]), Nb);
-			final double xA = pA[0];
-			final double yA = pA[1];
-			final double xB = pB[0];
-			final double yB = pB[1];
+			double[] pA = map2dHomogeneous(ptsA[i].toDoubleArray(), Na);
+			double[] pB = map2dHomogeneous(ptsB[i].toDoubleArray(), Nb);
+			double xA = pA[0];
+			double yA = pA[1];
+			double xB = pB[0];
+			double yB = pB[1];
 			M.setRow(r + 0, new double[]{xA, yA, 1, 0, 0, 0, -xA * xB, -yA * xB, -xB});
 			M.setRow(r + 1, new double[]{0, 0, 0, xA, yA, 1, -xA * yB, -yA * yB, -yB});
 			// r = r + 2;

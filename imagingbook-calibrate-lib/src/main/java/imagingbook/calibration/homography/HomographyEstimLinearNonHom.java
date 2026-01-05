@@ -8,6 +8,7 @@ package imagingbook.calibration.homography;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.fitting.points.LinearFit2d;
 import imagingbook.common.geometry.fitting.points.ProjectiveFit2d;
 import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
@@ -18,9 +19,11 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimize
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
+import org.apache.commons.math4.legacy.linear.DecompositionSolver;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
+import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
 import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
 import java.util.Arrays;
@@ -42,19 +45,99 @@ public class HomographyEstimLinearNonHom extends AbstractHomographyEstimator {
 
     @Override
     Homography estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
+        System.out.println("HomographyEstimLinearNonHom.estimateHomography() " + normalizePoints + " " + doRefinement);
         if (ptsA.length != ptsB.length)
             throw new IllegalArgumentException("point sequences A, B have different lengths");
         if (ptsA.length < 4)
             throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
+        int n = ptsA.length;
 
-        double[][] Ha = new ProjectiveFit2d(ptsA, ptsB).getTransformationMatrix();
-        Homography hom = new Homography(Ha);                 // this does normalization
+        // matrices for statistical normalization
+        RealMatrix Na = (normalizePoints) ? getNormalisationMatrix(ptsA) : null;
+        RealMatrix Nb = (normalizePoints) ? getNormalisationMatrix(ptsB) : null;
+
+        double[] ba = new double[2 * n];
+        double[][] Ma = new double[2 * n][];
+        for (int i = 0; i < n; i++) {
+            double[] pA = map2dHomogeneous(ptsA[i].toDoubleArray(), Na);
+            double[] pB = map2dHomogeneous(ptsB[i].toDoubleArray(), Nb);
+            double xA = pA[0];
+            double yA = pA[1];
+            double xB = pB[0];
+            double yB = pB[1];
+            ba[2 * i + 0] = xB;
+            ba[2 * i + 1] = yB;
+            Ma[2 * i + 0] = new double[] { xA, yA, 1, 0, 0, 0, -xB * xA, -xB * yA };
+            Ma[2 * i + 1] = new double[] { 0, 0, 0, xA, yA, 1, -yB * xA, -yB * yA };
+        }
+
+        RealMatrix M = MatrixUtils.createRealMatrix(Ma);
+        RealVector b = MatrixUtils.createRealVector(ba);
+        DecompositionSolver solver = new SingularValueDecomposition(M).getSolver();
+        // find least-squares solution to M * h = b :
+        RealVector h = solver.solve(b);
+
+        RealMatrix H = MatrixUtils.createRealMatrix(3, 3);
+        H.setEntry(0, 0, h.getEntry(0));
+        H.setEntry(0, 1, h.getEntry(1));
+        H.setEntry(0, 2, h.getEntry(2));
+        H.setEntry(1, 0, h.getEntry(3));
+        H.setEntry(1, 1, h.getEntry(4));
+        H.setEntry(1, 2, h.getEntry(5));
+        H.setEntry(2, 0, h.getEntry(6));
+        H.setEntry(2, 1, h.getEntry(7));
+        H.setEntry(2, 2, 1.0);
+
+        // de-normalize the homography
+        if (normalizePoints) {
+            H = MatrixUtils.inverse(Nb).multiply(H).multiply(Na);
+        }
+        Homography hom = new Homography(H);
         System.out.println("   HomographyEstimLinearNonHom: initial = \n" + hom);
 
         if (doRefinement) {
             hom = refine(hom, ptsA, ptsB);
         }
         return hom;
+    }
+
+
+
+
+
+    public void ProjectiveFit2d(Pnt2d[] ptsA, Pnt2d[] ptsB) {
+
+        int n = ptsA.length;
+
+        double[] ba = new double[2 * n];
+        double[][] Ma = new double[2 * n][];
+        for (int i = 0; i < n; i++) {
+            double px = ptsA[i].getX();
+            double py = ptsA[i].getY();
+            double qx = ptsB[i].getX();
+            double qy = ptsB[i].getY();
+            ba[2 * i + 0] = qx;
+            ba[2 * i + 1] = qy;
+            Ma[2 * i + 0] = new double[] { px, py, 1, 0, 0, 0, -qx * px, -qx * py };
+            Ma[2 * i + 1] = new double[] { 0, 0, 0, px, py, 1, -qy * px, -qy * py };
+        }
+
+        RealMatrix M = MatrixUtils.createRealMatrix(Ma);
+        RealVector b = MatrixUtils.createRealVector(ba);
+        DecompositionSolver solver = new SingularValueDecomposition(M).getSolver();
+        RealVector h = solver.solve(b);
+        RealMatrix H = MatrixUtils.createRealMatrix(3, 3);
+        H.setEntry(0, 0, h.getEntry(0));
+        H.setEntry(0, 1, h.getEntry(1));
+        H.setEntry(0, 2, h.getEntry(2));
+        H.setEntry(1, 0, h.getEntry(3));
+        H.setEntry(1, 1, h.getEntry(4));
+        H.setEntry(1, 2, h.getEntry(5));
+        H.setEntry(2, 0, h.getEntry(6));
+        H.setEntry(2, 1, h.getEntry(7));
+        H.setEntry(2, 2, 1.0);
+
+        // err = Math.sqrt(LinearFit2d.getSquaredError(P, Q, A.getData()));
     }
 
     // NON-LINEAR REFINEMENT (using only 8 homography parameters, keeping h22 = 1 fixed) ----------
