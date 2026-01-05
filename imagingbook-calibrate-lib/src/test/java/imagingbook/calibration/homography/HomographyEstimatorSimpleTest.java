@@ -18,7 +18,7 @@ import java.util.random.RandomGenerator;
 
 import static org.junit.Assert.assertTrue;
 
-public class HomographyEstimLinearNonHomTest {
+public class HomographyEstimatorSimpleTest {
 
     static final double tol = 1e-6;
     static double NOISE = 0.1;
@@ -40,11 +40,11 @@ public class HomographyEstimLinearNonHomTest {
     static final Pnt2d[] POINTS_B = new Homography(Hreal).applyTo(POINTS_A);
 
     // check homography estimate from perfect match works regardless of options used:
-    // NOTE: point normalization not implemented for HomographyEstimLinearNonHom!
+    // NOTE: point normalization not implemented for HomographyEstimatorSimple!
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate00() {
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearNonHom(false, false);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(false, false);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -52,7 +52,7 @@ public class HomographyEstimLinearNonHomTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate10() {
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearNonHom(true, false);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, false);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -60,7 +60,7 @@ public class HomographyEstimLinearNonHomTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate01() {
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearNonHom(false, true);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(false, true);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -68,7 +68,7 @@ public class HomographyEstimLinearNonHomTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate11() {
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearNonHom(true, true);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -83,7 +83,7 @@ public class HomographyEstimLinearNonHomTest {
             PBnoisy[i] = POINTS_B[i].plus(noise * rand.nextDouble(), noise * rand.nextDouble());    // add uniform noise
         }
 
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearNonHom(true, true); // TODO: check without num. refinement!
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true); // TODO: check without num. refinement!
         Homography Hest = hestmtr.getHomography(POINTS_A, PBnoisy);
         System.out.println("Hest = \n" + Matrix.toString(Hest));
 

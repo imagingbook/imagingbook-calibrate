@@ -11,12 +11,15 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
-public abstract class AbstractHomographyEstimator {
+public abstract class HomographyEstimator {
+
+    public static int DefaultMaxLmEvaluations = 1000;
+    public static int DefaultMaxLmIterations = 1000;
 
     final boolean normalizePoints;
     final boolean doRefinement;
 
-    AbstractHomographyEstimator(boolean normalizePoints, boolean doRefinement) {
+    HomographyEstimator(boolean normalizePoints, boolean doRefinement) {
         this.normalizePoints = normalizePoints;
         this.doRefinement = doRefinement;
     }
@@ -36,10 +39,27 @@ public abstract class AbstractHomographyEstimator {
             throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
         }
 
-        return estimateHomography(ptsA, ptsB);    // implemented by subclasses
+        Homography Hinit = estimateHomography(ptsA, ptsB);    // implemented by subclasses
+        if (doRefinement) {
+            return refineHomography(Hinit, ptsA, ptsB);
+        }
+        return Hinit;
     }
 
     abstract Homography estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB);
+    abstract Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB, int maxLmEvaluations, int maxLmIterations);
+
+    /**
+     * Refines the initial homography by non-linear (Levenberg-Marquart)
+     * optimization.
+     * @param Hinit the initial (estimated) homography
+     * @param pntsA the 1st sequence of 2D points (the model points)
+     * @param pntsB the 2nd sequence of 2D points (the observed image points)
+     * @return the refined homography
+     */
+    public Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
+        return refineHomography(Hinit, pntsA, pntsB, DefaultMaxLmEvaluations, DefaultMaxLmIterations);
+    }
 
     // -------------------------------------------------------------------------------------------
 

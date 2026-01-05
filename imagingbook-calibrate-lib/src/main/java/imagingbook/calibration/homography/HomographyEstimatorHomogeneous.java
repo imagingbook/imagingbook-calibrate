@@ -27,17 +27,15 @@ import static imagingbook.common.math.Matrix.getRowPackedVector;
 
 /**
  * Homography estimator based on solving a 3x3 homogeneous linear system.
- *
- * @author WB
  */
-public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
+public class HomographyEstimatorHomogeneous extends HomographyEstimator {
 
 
-	public HomographyEstimLinearHom() {
+	public HomographyEstimatorHomogeneous() {
 		this(true, true);
 	}
 
-	public HomographyEstimLinearHom(boolean normalizePoints, boolean doRefinement) {
+	public HomographyEstimatorHomogeneous(boolean normalizePoints, boolean doRefinement) {
 		super(normalizePoints, doRefinement);
 	}
 
@@ -53,7 +51,7 @@ public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
 	 */
 	@Override
 	Homography estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
-		System.out.println("HomographyEstimLinearHom.estimateHomography() " + normalizePoints + " " + doRefinement);
+		System.out.println("HomographyEstimatorHomogeneous.estimateHomography() " + normalizePoints + " " + doRefinement);
 		if (ptsA.length != ptsB.length)
 			throw new IllegalArgumentException("point sequences A, B have different lengths");
 		if (ptsA.length < 4)
@@ -81,6 +79,7 @@ public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
 
 		// find h, such that M . h = 0:
 		double[] h = MathUtil.solveHomogeneousSystem(M).toArray();
+		System.out.println("   HomographyEstimatorHomogeneous: |h| = " + Matrix.normL2(h));
 
 		// assemble homography matrix H from h:
 		RealMatrix H = MatrixUtils.createRealMatrix(new double[][]
@@ -98,28 +97,15 @@ public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
 			H = H.scalarMultiply(1.0 / H.getEntry(2, 2));
 		}
 		Homography hom = new Homography(H);
-		System.out.println("   HomographyEstimLinearHom: initial = \n" + hom);
-		if (doRefinement) {
-			return refine(hom, ptsA, ptsB);
-		}
+		System.out.println("   HomographyEstimatorHomogeneous: initial = \n" + hom);
+
 		return hom;
 	}
 
 	// NON-LINEAR REFINEMENT (using all 9 homography parameters) ----------------------------------
 
-	public static int maxLmEvaluations = 1000;
-	public static int maxLmIterations = 1000;
-
-	/**
-	 * Refines the initial homography by non-linear (Levenberg-Marquart)
-	 * optimization.
-	 * @param Hinit the initial (estimated) homography
-	 * @param pntsA the 1st sequence of 2D points (the model points)
-	 * @param pntsB the 2nd sequence of 2D points (the observed image points)
-	 * @return the refined homography
-	 */
-	private Homography refine(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
-
+	@Override
+	Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB, int maxLmEvaluations, int maxLmIterations) {
 		final int M = pntsA.length;
 		double[] observed = new double[2 * M];
 		for (int i = 0; i < M; i++) {
@@ -130,7 +116,7 @@ public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
 		MultivariateMatrixFunction jacobian = getJacobianFunction(pntsA);
 
 		double[] hstart = getRowPackedVector(Hinit).toArray();	// use all 9 values!
-		System.out.println("HomographyEstimLinearHom.refine(): hstart = \n" + Matrix.toString(hstart));
+		System.out.println("HomographyEstimatorHomogeneous.refine(): hstart = \n" + Matrix.toString(hstart));
 
 		LeastSquaresProblem problem = new LeastSquaresBuilder()
 				.model(value, jacobian)

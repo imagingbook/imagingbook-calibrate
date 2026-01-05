@@ -18,7 +18,7 @@ import java.util.random.RandomGenerator;
 
 import static org.junit.Assert.assertTrue;
 
-public class HomographyEstimLinearHomTest {
+public class HomographyEstimatorHomogeneousTest {
 
     static final double tol = 1e-6;
     static double NOISE = 0.1;
@@ -43,7 +43,7 @@ public class HomographyEstimLinearHomTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate00() {
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearHom(false, false);
+        HomographyEstimator hestmtr = new HomographyEstimatorHomogeneous(false, false);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -51,7 +51,7 @@ public class HomographyEstimLinearHomTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate10() {
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearHom(true, false);
+        HomographyEstimator hestmtr = new HomographyEstimatorHomogeneous(true, false);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -59,7 +59,7 @@ public class HomographyEstimLinearHomTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate01() {
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearHom(false, true);
+        HomographyEstimator hestmtr = new HomographyEstimatorHomogeneous(false, true);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -67,7 +67,7 @@ public class HomographyEstimLinearHomTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate11() {
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearHom(true, true);
+        HomographyEstimator hestmtr = new HomographyEstimatorHomogeneous(true, true);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -82,7 +82,7 @@ public class HomographyEstimLinearHomTest {
             PBnoisy[i] = POINTS_B[i].plus(noise * rand.nextDouble(), noise * rand.nextDouble());    // add uniform noise
         }
 
-        AbstractHomographyEstimator hestmtr = new HomographyEstimLinearHom(true, true); // TODO: check without num. refinement!
+        HomographyEstimator hestmtr = new HomographyEstimatorHomogeneous(true, true); // TODO: check without num. refinement!
         Homography Hest = hestmtr.getHomography(POINTS_A, PBnoisy);
         System.out.println("Hestm = \n" + Matrix.toString(Hest));
 
