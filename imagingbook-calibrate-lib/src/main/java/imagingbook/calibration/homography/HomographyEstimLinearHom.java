@@ -22,6 +22,9 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
+import static imagingbook.common.math.Matrix.fromRowPackedVector;
+import static imagingbook.common.math.Matrix.getRowPackedVector;
+
 /**
  * Homography estimator based on solving a 3x3 homogeneous linear system.
  *
@@ -63,8 +66,10 @@ public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
 
 		RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
 		for (int i = 0, r = 0; i < ptsA.length; i++, r+=2) {
-			double[] pA = map2dHomogeneous(ptsA[i].toDoubleArray(), Na);
-			double[] pB = map2dHomogeneous(ptsB[i].toDoubleArray(), Nb);
+			double[] pA = (normalizePoints) ?
+					map2dHomogeneous(ptsA[i].toDoubleArray(), Na) : ptsA[i].toDoubleArray();
+			double[] pB = (normalizePoints) ?
+					map2dHomogeneous(ptsB[i].toDoubleArray(), Nb) : ptsB[i].toDoubleArray();
 			double xA = pA[0];
 			double yA = pA[1];
 			double xB = pB[0];
@@ -84,7 +89,9 @@ public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
 				{h[6], h[7], h[8]}});
 
 		// de-normalize the homography
-		H = MatrixUtils.inverse(Nb).multiply(H).multiply(Na);
+		if (normalizePoints) {
+			H = MatrixUtils.inverse(Nb).multiply(H).multiply(Na);
+		}
 
 		// rescale M such that H[2][2] = 1 (unless H[2][2] close to 0)
 		if (Math.abs(H.getEntry(2, 2)) > 10e-8) {
@@ -122,7 +129,7 @@ public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
 		MultivariateVectorFunction value = getValueFunction(pntsA);
 		MultivariateMatrixFunction jacobian = getJacobianFunction(pntsA);
 
-		double[] hstart = MathUtil.getRowPackedVector(Hinit).toArray();	// use all 9 values!
+		double[] hstart = getRowPackedVector(Hinit).toArray();	// use all 9 values!
 		System.out.println("HomographyEstimLinearHom.refine(): hstart = \n" + Matrix.toString(hstart));
 
 		LeastSquaresProblem problem = new LeastSquaresBuilder()
@@ -140,7 +147,7 @@ public class HomographyEstimLinearHom extends AbstractHomographyEstimator {
 		RealVector optimum = result.getPoint();
 		double[] opt = optimum.toArray();
 
-		RealMatrix Hopt = MathUtil.fromRowPackedVector(optimum, 3, 3);
+		RealMatrix Hopt = fromRowPackedVector(optimum, 3, 3);
 
 		int iterations = result.getIterations();
 		if (iterations >= maxLmIterations) {

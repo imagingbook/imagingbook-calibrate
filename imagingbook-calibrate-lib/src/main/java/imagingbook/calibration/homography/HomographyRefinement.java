@@ -24,6 +24,8 @@ import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
 import java.util.Arrays;
 
+import static imagingbook.common.math.Matrix.getRowPackedVector;
+
 public final class HomographyRefinement {
 
     public static int DefaultMaxLmEvaluations = 1000;
@@ -59,7 +61,7 @@ public final class HomographyRefinement {
         MultivariateVectorFunction value = getValueFunction(pntsA);
         MultivariateMatrixFunction jacobian = getJacobianFunction(pntsA);
 
-        double[] hstart = Arrays.copyOf(MathUtil.getRowPackedVector(Hinit).toArray(), 8);   // only first 8 values
+        double[] hstart = Arrays.copyOf(getRowPackedVector(Hinit).toArray(), 8);   // only first 8 values
         System.out.println("   HomographyRefinement: hstart = \n" + Matrix.toString(hstart));
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()

@@ -28,6 +28,8 @@ import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
 import java.util.Arrays;
 
+import static imagingbook.common.math.Matrix.getRowPackedVector;
+
 
 /**
  * Homography estimator based on solving a 3x3 non-homogeneous linear system.
@@ -59,8 +61,10 @@ public class HomographyEstimLinearNonHom extends AbstractHomographyEstimator {
         double[] ba = new double[2 * n];
         double[][] Ma = new double[2 * n][];
         for (int i = 0; i < n; i++) {
-            double[] pA = map2dHomogeneous(ptsA[i].toDoubleArray(), Na);
-            double[] pB = map2dHomogeneous(ptsB[i].toDoubleArray(), Nb);
+            double[] pA = (normalizePoints) ?
+                    map2dHomogeneous(ptsA[i].toDoubleArray(), Na) : ptsA[i].toDoubleArray();
+            double[] pB = (normalizePoints) ?
+                    map2dHomogeneous(ptsB[i].toDoubleArray(), Nb) : ptsB[i].toDoubleArray();
             double xA = pA[0];
             double yA = pA[1];
             double xB = pB[0];
@@ -163,7 +167,7 @@ public class HomographyEstimLinearNonHom extends AbstractHomographyEstimator {
         MultivariateVectorFunction value = getValueFunction(pntsA);
         MultivariateMatrixFunction jacobian = getJacobianFunction(pntsA);
 
-        double[] hstart = Arrays.copyOf(MathUtil.getRowPackedVector(Hinit).toArray(), 8);   // only first 8 values
+        double[] hstart = Arrays.copyOf(getRowPackedVector(Hinit).toArray(), 8);   // only first 8 values
         System.out.println("HomographyEstimLinearNonHom.refine(): hstart = \n" + Matrix.toString(hstart));
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
