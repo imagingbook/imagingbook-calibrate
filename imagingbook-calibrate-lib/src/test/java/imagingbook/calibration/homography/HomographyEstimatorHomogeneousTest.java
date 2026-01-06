@@ -7,6 +7,7 @@
 package imagingbook.calibration.homography;
 
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.math.Matrix;
 import imagingbook.testutils.DeterministicRandom;
 import imagingbook.testutils.NumericTestUtils;
@@ -104,5 +105,14 @@ public class HomographyEstimatorHomogeneousTest {
         // System.out.println("dmax = " + dmax);
         assertTrue("davg >= 0.5 * noise", davg < Math.max(0.5 * noise, 1e-6));
         assertTrue("dmax >= 0.5 * noise", dmax < Math.max(0.5 * noise, 1e-6));
+    }
+
+    @Test
+    public void CharucoBoardHomographyTest() {
+        Pnt2d[] boardPts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.BOARD_POINTS);
+        Pnt2d[] imagePts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.IMAGE_POINTS);
+        HomographyEstimator hestmtr = new HomographyEstimatorHomogeneous(true, true);
+        Homography Hest = hestmtr.getHomography(boardPts, imagePts);
+        System.out.println("Hest = \n" + Matrix.toString(Hest));
     }
 }
