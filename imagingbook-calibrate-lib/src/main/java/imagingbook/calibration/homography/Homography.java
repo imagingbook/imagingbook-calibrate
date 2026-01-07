@@ -20,17 +20,8 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
  * and methods for estimating such transformations from sets of 2D point pairs.
  * Implements RealMatrix, each instance being a 3x3 matrix.
  * Homographies are normalized (element (2, 2) is 1) and immutable.
- * TODO: don't like this, remove inheritance from ArrayRealMatrix
- *
- * @author WB
  */
 public class Homography extends Array2DRowRealMatrix {
-    /** Max. number of Levenberg-Marquardt evaluations. */
-	public static int MaxLmEvaluations = 1000;
-    /** Max. number of Levenberg-Marquardt iterations. */
-	public static int MaxLmIterations = 1000;
-
-	// ------------------------------------------------------------
 
     public Homography(double[][] H) {
         super(normalize(H));
@@ -87,7 +78,7 @@ public class Homography extends Array2DRowRealMatrix {
      */
     @Deprecated
 	public static Homography from(Pnt2d[] ptsA, Pnt2d[] ptsB, boolean normalizePoints, boolean doRefinement) {
-        HomographyEstimator estimator = new HomographyEstimatorSimple(normalizePoints, doRefinement, 1000, 100);
+        HomographyEstimator estimator = new HomographyEstimatorSimplistic(normalizePoints, doRefinement, 1000, 100);
         return estimator.getHomography(ptsA, ptsB);
     }
 
