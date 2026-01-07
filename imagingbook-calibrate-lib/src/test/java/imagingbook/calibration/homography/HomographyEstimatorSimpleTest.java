@@ -40,15 +40,24 @@ public class HomographyEstimatorSimpleTest {
 
     static final Pnt2d[] POINTS_B = new Homography(Hreal).applyTo(POINTS_A);
 
+    static void list_Points_B() {
+        System.out.println("POINTS_B:");
+        for (Pnt2d p : POINTS_B) {
+            System.out.println(p);
+        }
+    }
+
     // check homography estimate from perfect match works regardless of options used:
     // NOTE: point normalization not implemented for HomographyEstimatorSimple!
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate00() {
+        // list_Points_B();
         HomographyEstimator hestmtr = new HomographyEstimatorSimple(false, false);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
+        System.out.println("final error = " + HomographyEstimator.getReprojectionError(POINTS_A, POINTS_B, Hestm));
     }
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
@@ -115,6 +124,7 @@ public class HomographyEstimatorSimpleTest {
         HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true);
         Homography Hest = hestmtr.getHomography(boardPts, imagePts);
         System.out.println("Hest = \n" + Matrix.toString(Hest));
+        System.out.println("final error = " + HomographyEstimator.getReprojectionError(boardPts, imagePts, Hest));
     }
 
 }

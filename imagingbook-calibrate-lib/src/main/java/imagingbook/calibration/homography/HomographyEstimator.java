@@ -8,6 +8,7 @@ package imagingbook.calibration.homography;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
@@ -100,6 +101,37 @@ public abstract class HomographyEstimator {
         double[] pAt = M3x3.operate(pA);
         return MathUtil.fromHomogeneous(pAt); // need to de-homogenize, since pAt[2] == 1?
     }
+
+    static Pnt2d map2dHomogeneous(Pnt2d p, RealMatrix M3x3) {
+        double[] pA = MathUtil.toHomogeneous(p.toDoubleArray());
+        double[] pAt = M3x3.operate(pA);
+        return Pnt2d.from(MathUtil.fromHomogeneous(pAt)); // need to de-homogenize, since pAt[2] == 1?
+    }
+
+    static Pnt2d[] normalizePointSet(Pnt2d[] pts, RealMatrix M3x3) {
+        Pnt2d[] ptsN = new Pnt2d[pts.length];
+        for (int i = 0; i < pts.length; i++) {
+            ptsN[i] = map2dHomogeneous(pts[i], M3x3);
+        }
+        return ptsN;
+    }
+
+    public static double getReprojectionError(Pnt2d[] ptsA, Pnt2d[] ptsB, RealMatrix H) {
+        int n = ptsA.length;
+        double[] Ya = new double[2 * n];
+        double[] Yb = new double[2 * n];
+        for (int i = 0; i < n; i++) {
+            double[] A = map2dHomogeneous(ptsA[i].toDoubleArray(), H);
+            // System.out.printf("    A=%s -> %s : B=%s\n", ptsA[i], Pnt2d.from(A), ptsB[i]);
+            Ya[2*i + 0] = A[0];
+            Ya[2*i + 1] = A[1];
+            Yb[2*i + 0] = ptsB[i].getX();
+            Yb[2*i + 1] = ptsB[i].getY();
+        }
+        double[] R = Matrix.subtract(Yb, Ya);
+        return Matrix.normL2(R);
+    }
+
 
     // ------------------------------------------------------------
 

@@ -92,6 +92,8 @@ public class HomographyEstimatorSimple extends HomographyEstimator {
         if (normalizePoints) {
             H = MatrixUtils.inverse(Nb).multiply(H).multiply(Na);
         }
+
+        System.out.println("   HomographyEstimatorSimple: reproj. error = " + getReprojectionError(ptsA, ptsB, H));
         Homography hom = new Homography(H);
         System.out.println("   HomographyEstimatorSimple: initial = \n" + hom);
 
