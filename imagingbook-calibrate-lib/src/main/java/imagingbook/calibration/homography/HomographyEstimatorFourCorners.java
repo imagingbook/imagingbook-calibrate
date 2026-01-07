@@ -18,13 +18,11 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOp
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
+import org.apache.commons.math4.legacy.linear.LUDecomposition;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
-import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
 import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
-
-import java.util.Arrays;
 
 import static imagingbook.common.math.Matrix.getRowPackedVector;
 
@@ -92,11 +90,14 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 	}
 
 	/**
-	 *
-	 * @param Hinit
-	 * @param pntsA
-	 * @param pntsB
-	 * @return
+	 * Performs homography refinement using the four-corner method, with projected corner
+	 * coordinates as the parameters of the optimizer.
+	 * Note that all coordinates are assumed to be in normalized coordinate space and
+	 * also {@code Hinit} refers to normalized coordinates!
+	 * @param Hinit	the initial homography
+	 * @param pntsA the first point sequence
+	 * @param pntsB the second point sequence
+	 * @return the refined homography
 	 */
 	RealMatrix refineHomography(RealMatrix Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
 		final int N = pntsA.length;
@@ -113,17 +114,18 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 		RealMatrix Hcur = Hinit;
 		// 5. Project corner points to image domain and set up initial parameter vector p:
 		Pnt2d[] CC = projectPoints(C, Hcur);
-		System.out.println("CC = " + Arrays.toString(CC));
+		// System.out.println("CC = " + Arrays.toString(CC));
 		double[] pInit = flattenPointVector(CC);
 
 		// --------------------------------------------
 
+		FourCornerHomography fph = new FourCornerHomography(C);
+
 		MultivariateVectorFunction valueFun = p -> {
 			Pnt2d[] Cm = cornersFromParameters(p);
-			RealMatrix Hm = get4PointHomography(C, Cm);
+			RealMatrix Hm = fph.getHom(Cm);
 			Pnt2d[] Am = projectPoints(pntsA, Hm);
-            double[] Y = flattenPointVector(Am);	// current 'value'
-            return Y;
+            return flattenPointVector(Am);	// current 'value' vector Y
         };
 
 		MultivariateMatrixFunction jacobianFun = p -> {
@@ -134,7 +136,7 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 				// 1. Create a copy of the parameters to perturb
 				double[] pk = p.clone();
 				pk[k] += epsilon;
-				// 2. Call your value function
+				// 2. Call the value function
 				double[] Yk = valueFun.value(pk);
 				// 3. Fill the k-th column of the Jacobian
 				for (int j = 0; j < 2 * N; j++) {
@@ -146,7 +148,6 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 
 		LeastSquaresProblem problem = new LeastSquaresBuilder()
 				.model(valueFun, jacobianFun)
-				// .model(modelFun)
 				.target(MatrixUtils.createRealVector(Z))
 				.start(new ArrayRealVector(pInit))
 				.checker(new LoggingChecker(new EvaluationRmsChecker(1e-6, 1e-6)))
@@ -160,7 +161,7 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 
 		double[] pOpt = result.getPoint().toArray();
 		Pnt2d[] Copt = cornersFromParameters(pOpt);
-		RealMatrix Hopt = get4PointHomography(C, Copt);
+		RealMatrix Hopt = fph.getHom(Copt);
 		return Hopt;
 	}
 
@@ -185,57 +186,6 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 		}
 	}
 
-	Pnt2d[] projectPoints(Pnt2d[] pnts, RealMatrix H) {
-		Pnt2d[] pntsProj = new Pnt2d[pnts.length];
-		for (int i = 0; i < pnts.length; i++) {
-			pntsProj[i] = Pnt2d.from(map2dHomogeneous(pnts[i].toDoubleArray(), H));
-		}
-		return pntsProj;
-	}
-
-	/**
-	 * Maps between n &gt; 4 point pairs, finds a least-squares solution
-	 * for the homography parameters.
-	 * NOTE: this is UNFINISHED code! check against DLT estimation of homography
-	 * @param P sequence of points (source)
-	 * @param Q sequence of points (target)
-	 * @return a new projective mapping
-	 */
-	static RealMatrix get4PointHomography(Pnt2d[] P, Pnt2d[] Q) {
-		final int n = P.length;
-		if (n < 4) {
-			throw new IllegalArgumentException(": fromNPoints() needs at least 4 points pairs");
-		}
-		double[] ba = new double[2 * n];
-		double[][] Ma = new double[2 * n][];
-		for (int i = 0; i < n; i++) {
-			double x = P[i].getX();
-			double y = P[i].getY();
-			double u = Q[i].getX();
-			double v = Q[i].getY();
-			ba[2 * i + 0] = u;
-			ba[2 * i + 1] = v;
-			Ma[2 * i + 0] = new double[] { x, y, 1, 0, 0, 0, -u * x, -u * y };
-			Ma[2 * i + 1] = new double[] { 0, 0, 0, x, y, 1, -v * x, -v * y };
-		}
-
-		RealMatrix M = new Array2DRowRealMatrix(Ma, false); //MatrixUtils.createRealMatrix(Ma);
-		RealVector b = new ArrayRealVector(ba, false); //MatrixUtils.createRealVector(ba);
-		DecompositionSolver solver = new SingularValueDecomposition(M).getSolver();
-		RealVector h = solver.solve(b);
-		RealMatrix A = MatrixUtils.createRealMatrix(3, 3);
-		A.setEntry(0, 0, h.getEntry(0));
-		A.setEntry(0, 1, h.getEntry(1));
-		A.setEntry(0, 2, h.getEntry(2));
-		A.setEntry(1, 0, h.getEntry(3));
-		A.setEntry(1, 1, h.getEntry(4));
-		A.setEntry(1, 2, h.getEntry(5));
-		A.setEntry(2, 0, h.getEntry(6));
-		A.setEntry(2, 1, h.getEntry(7));
-		A.setEntry(2, 2, 1.0);
-		return A;
-	}
-
 	// -------- helper methods --------------------------------------------------------------
 
 	private static double[] flattenPointVector(Pnt2d[] pnts) {
@@ -254,6 +204,67 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 			pnts[i] = Pnt2d.from(p[2*i], p[2*i + 1]);
 		}
 		return pnts;
+	}
+
+	Pnt2d[] projectPoints(Pnt2d[] pnts, RealMatrix H) {
+		Pnt2d[] pntsProj = new Pnt2d[pnts.length];
+		for (int i = 0; i < pnts.length; i++) {
+			pntsProj[i] = Pnt2d.from(map2dHomogeneous(pnts[i].toDoubleArray(), H));
+		}
+		return pntsProj;
+	}
+
+	/**
+	 * Small inner class for efficient calculation of 4-corner homographies (exactly 4
+	 * corresponding points).
+	 * The matrix elements for the constant x/y coordinates of the source corners are only calculated
+	 * once. Only the variable u/v coordinates of the projected corners are filled in each iteration.
+	 *
+	 * <pre>
+	 * Ma[2 * i + 0] = new double[] { x, y, 1, 0, 0, 0, -u * x, -u * y };
+	 * Ma[2 * i + 1] = new double[] { 0, 0, 0, x, y, 1, -v * x, -v * y };
+	 * </pre>
+	 */
+	static class FourCornerHomography {
+
+		private final double[][] Ma = new double[8][];
+		private final double[] ba = new double[8];
+
+		FourCornerHomography(Pnt2d[] P) {
+			// fill in fixed elements of Ma (x/y dependent)
+			for (int i = 0, j = 0; i < 4; i++, j+=2) {	// j = 2i
+				double x = P[i].getX();
+				double y = P[i].getY();
+				Ma[j + 0] = new double[] { x, y, 1, 0, 0, 0, 0, 0 };
+				Ma[j + 1] = new double[] { 0, 0, 0, x, y, 1, 0, 0 };
+			}
+		}
+
+		RealMatrix getHom(Pnt2d[] Q) {
+			for (int i = 0, j = 0; i < 4; i++, j+=2) {	// j = 2i
+				// fill in variable elements of Ma (u/v dependent)
+				double u = Q[i].getX();
+				double v = Q[i].getY();
+				ba[j + 0] = u;
+				ba[j + 1] = v;
+				double x = Ma[j + 0][0];
+				double y = Ma[j + 0][1];
+				Ma[j + 0][6] = -u * x; // new double[] { x, y, 1, 0, 0, 0, -u * x, -u * y };
+				Ma[j + 0][7] = -u * y;
+				Ma[j + 1][6] = -v * x; // new double[] { 0, 0, 0, x, y, 1, -v * x, -v * y };
+				Ma[j + 1][7] = -v * y;
+			}
+			RealMatrix M = new Array2DRowRealMatrix(Ma, false);
+			RealVector b = new ArrayRealVector(ba, false);
+			DecompositionSolver solver = new LUDecomposition(M).getSolver();
+			double[] h = solver.solve(b).toArray();
+			double[][] Ha = {
+					{h[0], h[1], h[2]},
+					{h[3], h[4], h[5]},
+					{h[6], h[7],  1  }};
+			return new Array2DRowRealMatrix(Ha, false);
+		}
+
 	}
 
 }

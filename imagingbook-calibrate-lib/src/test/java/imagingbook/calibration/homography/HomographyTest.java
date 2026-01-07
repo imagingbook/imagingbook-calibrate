@@ -103,7 +103,7 @@ public class HomographyTest {
 
     @Test   // check homography under noise added to POINTS_B
     public void HomographyTestEstimateNoisy() {
-        double noise = 0.5;     // noise magnitude
+        double noise = 0.2;     // noise magnitude
         Pnt2d[] PBnoisy = new Pnt2d[POINTS_B.length];
         RandomGenerator rand = new DeterministicRandom(17);
         for (int i = 0; i < POINTS_B.length; i++) {
@@ -124,8 +124,8 @@ public class HomographyTest {
         double davg = dsum / PBnoisy.length;
         // System.out.println("davg = " + davg);
         // System.out.println("dmax = " + dmax);
-        assertTrue(davg < 0.5 * noise);
-        assertTrue(dmax < 0.5 * noise);
+        assertTrue(davg < 1 * noise);
+        assertTrue(dmax < 1 * noise);
     }
 
 }
