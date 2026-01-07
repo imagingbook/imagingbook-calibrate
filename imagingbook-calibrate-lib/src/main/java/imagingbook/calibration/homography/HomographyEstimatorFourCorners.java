@@ -24,8 +24,6 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
-import static imagingbook.common.math.Matrix.getRowPackedVector;
-
 /**
  * Homography estimator based on solving a 3x3 homogeneous linear system.
  */

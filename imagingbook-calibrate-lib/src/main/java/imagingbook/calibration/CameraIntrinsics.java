@@ -179,7 +179,7 @@ public abstract class CameraIntrinsics {
 		double[][] V = new double[rows][];
 
 		for (int i = 0; i < M; i++) {
-			RealMatrix Hi = homographies[i];
+			Homography Hi = homographies[i];
 			V[2*i + 0] = getVpq(Hi, 0, 1); // v01
 			V[2*i + 1] = Matrix.subtract(getVpq(Hi, 0, 0), getVpq(Hi, 1, 1)); // v00-v11
 		}

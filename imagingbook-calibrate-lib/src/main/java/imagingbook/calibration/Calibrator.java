@@ -10,7 +10,7 @@ import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
 import imagingbook.calibration.homography.HomographyEstimator;
 import imagingbook.calibration.homography.Homography;
-import imagingbook.calibration.homography.HomographyEstimatorSimple;
+import imagingbook.calibration.homography.HomographyEstimatorSimplistic;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
@@ -121,7 +121,7 @@ public class Calibrator {
 		// Step 1: Calculate the homographies for each of the given N views:
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         Homography[] homographies = new Homography[M];
-		HomographyEstimator hestmtr = new HomographyEstimatorSimple(params.normalizePoints, params.refineHomographies, 1000, 100);
+		HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(params.normalizePoints, params.refineHomographies, 1000, 100);
         for(int i = 0; i < M; i++) {
             // homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, params.refineHomographies);
 			homographies[i] = hestmtr.getHomography(modelPts, obsPts[i]);
