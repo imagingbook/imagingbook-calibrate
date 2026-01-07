@@ -121,7 +121,7 @@ public class Calibrator {
 		// Step 1: Calculate the homographies for each of the given N views:
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         Homography[] homographies = new Homography[M];
-		HomographyEstimator hestmtr = new HomographyEstimatorSimple(params.normalizePoints, params.refineHomographies);
+		HomographyEstimator hestmtr = new HomographyEstimatorSimple(params.normalizePoints, params.refineHomographies, 1000, 100);
         for(int i = 0; i < M; i++) {
             // homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, params.refineHomographies);
 			homographies[i] = hestmtr.getHomography(modelPts, obsPts[i]);

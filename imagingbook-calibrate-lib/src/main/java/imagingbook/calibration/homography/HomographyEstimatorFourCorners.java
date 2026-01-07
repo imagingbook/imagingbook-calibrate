@@ -8,16 +8,13 @@ package imagingbook.calibration.homography;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
-import org.apache.commons.math4.legacy.core.Pair;
 import org.apache.commons.math4.legacy.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
@@ -29,60 +26,49 @@ import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
 import java.util.Arrays;
 
-import static imagingbook.common.math.Matrix.fromRowPackedVector;
 import static imagingbook.common.math.Matrix.getRowPackedVector;
 
 /**
  * Homography estimator based on solving a 3x3 homogeneous linear system.
  */
-public class HomographyEstimatorFourPoint extends HomographyEstimator {
+public class HomographyEstimatorFourCorners extends HomographyEstimator {
 
+	private int maxLmEvaluations = 1000;
+	private int maxLmIterations = 100;
 
-	public HomographyEstimatorFourPoint() {
-		this(true, true);
+	public HomographyEstimatorFourCorners() {
+		super(true, true);
 	}
 
-	public HomographyEstimatorFourPoint(boolean normalizePoints, boolean doRefinement) {
+	public HomographyEstimatorFourCorners(boolean normalizePoints, boolean doRefinement,
+										  int maxLmEvaluations, int maxLmIterations) {
 		super(normalizePoints, doRefinement);
+		this.maxLmEvaluations = maxLmEvaluations;
+		this.maxLmIterations = maxLmIterations;
 	}
-
-	// ------------------------------------------------------------
 
 	/**
-	 * Estimates the homography (projective) transformation from two given 2D point sets.
-	 * The correspondence between the points is assumed to be known.
-	 * The estimate is obtained by solving a homogeneous linear system over all 9 elements
-	 * of the homography matrix.
+	 * Estimates the homography (projective) transformation from two given 2D point sets,
+	 * which are normalized if the {@code normalizePoints} flag is set in the constructor.
+	 * The two point sequences must be in correspondence.
+	 * The initial estimate is obtained by solving a homogeneous linear system over all 9 elements
+	 * of the homography matrix (also known as "Direct Linear Transform" or DLT method).
+	 * If the supplied point sets are normalized, the returned homography matrix must be
+	 * re-adjusted accordingly. See {@link HomographyEstimator#getHomography(Pnt2d[], Pnt2d[])}.
+	 * Not that point set normalization is performed in super-class {@link HomographyEstimator},
+	 * thus the supplied point sets are typically normalized already.
 	 *
 	 * @param ptsA the 1st sequence of 2D points
 	 * @param ptsB the 2nd sequence of 2D points
 	 * @return the estimated homography (3 x 3 matrix)
 	 */
 	@Override
-	Homography estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
-		System.out.println("HomographyEstimatorFourPoint.estimateHomography() " + normalizePoints + " " + doRefinement);
-		// System.out.println("ptsA = " + Arrays.toString(ptsA));
-		// System.out.println("ptsB = " + Arrays.toString(ptsB));
-
-
-		if (ptsA.length != ptsB.length)
-			throw new IllegalArgumentException("point sequences A, B have different lengths");
-		if (ptsA.length < 4)
-			throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
-		int n = ptsA.length;
-
-		// always normalize point sets:
-		RealMatrix Na = getNormalisationMatrix(ptsA);
-		RealMatrix Nb = getNormalisationMatrix(ptsB);
-		Pnt2d[] ptsAn = normalizePointSet(ptsA, Na);
-		Pnt2d[] ptsBn = normalizePointSet(ptsB, Nb);
-		// System.out.println("ptsAn = " + Arrays.toString(ptsAn));
-		// System.out.println("ptsBn = " + Arrays.toString(ptsBn));
-
-		RealMatrix M = MatrixUtils.createRealMatrix(n * 2, 9);
+	RealMatrix estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
+		final int n = ptsA.length;
+		RealMatrix M = MatrixUtils.createRealMatrix(2 * n, 9);
 		for (int i = 0; i < ptsA.length; i++) {
-			double[] pA = ptsAn[i].toDoubleArray();
-			double[] pB = ptsBn[i].toDoubleArray();
+			double[] pA = ptsA[i].toDoubleArray();
+			double[] pB = ptsB[i].toDoubleArray();
 			double xA = pA[0];
 			double yA = pA[1];
 			double xB = pB[0];
@@ -90,67 +76,29 @@ public class HomographyEstimatorFourPoint extends HomographyEstimator {
 			M.setRow(2 * i + 0, new double[]{xA, yA, 1, 0, 0, 0, -xA * xB, -yA * xB, -xB});
 			M.setRow(2 * i + 1, new double[]{0, 0, 0, xA, yA, 1, -xA * yB, -yA * yB, -yB});
 		}
-
 		// find h, such that M . h = 0:
 		double[] h = MathUtil.solveHomogeneousSystem(M).toArray();
-		System.out.println("   FourPoint: h (normalized) = " + Matrix.toString(h));
-		System.out.println("   FourPoint: |h| (normalized) = " + Matrix.normL2(h));
+		// System.out.println("   FourPoint: h (normalized) = " + Matrix.toString(h));
+		// System.out.println("   FourPoint: |h| (normalized) = " + Matrix.normL2(h));
 
 		// assemble homography matrix H from h:
 		RealMatrix Hinit = MatrixUtils.createRealMatrix(new double[][]
 				{{h[0], h[1], h[2]},
-				{h[3], h[4], h[5]},
-				{h[6], h[7], h[8]}});
-
-		System.out.println("   FourPoint: H (initial, normalized) = \n" + Matrix.toString(Hinit));
-		System.out.println("   initial reproj. error (normalized) = " + getReprojectionError(ptsAn, ptsBn, Hinit));
-
-		RealMatrix HinitDen = MatrixUtils.inverse(Nb).multiply(Hinit).multiply(Na);
-		System.out.println("   FourPoint: Hinit denormalized = \n" + Matrix.toString(new Homography(HinitDen)));
-		System.out.println("   initial reproj. error (denormalized) = " + getReprojectionError(ptsA, ptsB, HinitDen));
-
-		// --------------------
-		RealMatrix Hn = refine(Hinit, ptsAn, ptsBn, 1000, 100);
-		// --------------------
-		System.out.println("   FourPoint: H (refined, normalized) = \n" + Matrix.toString(Hn));
-		System.out.println("   normalized reproj. error = " + getReprojectionError(ptsAn, ptsBn, Hn));
-
-
-		RealMatrix H = MatrixUtils.inverse(Nb).multiply(Hn).multiply(Na);
-		System.out.println("FourPoint: H (refined, denormalized) = \n" + Matrix.toString(H));
-		System.out.println("   denormalized reproj. error = " + getReprojectionError(ptsA, ptsB, H));
-
-		// rescale M such that H[2][2] = 1 (unless H[2][2] close to 0)
-		if (Math.abs(H.getEntry(2, 2)) > 10e-8) {
-			H = H.scalarMultiply(1.0 / H.getEntry(2, 2));
-		}
-
-		return new Homography(H);
-	}
-
-	// ---------------------------------------------------
-
-
-
-	// NON-LINEAR REFINEMENT (using all 9 homography parameters) ----------------------------------
-	// deactivate default refinement:
-	@Override
-	Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB, int maxLmEvaluations, int maxLmIterations) {
+				 {h[3], h[4], h[5]},
+				 {h[6], h[7], h[8]}});
+		// System.out.println("   FourPoint: H (initial, normalized) = \n" + Matrix.toString(Hinit));
+		// System.out.println("   initial reproj. error (normalized) = " + getReprojectionError(ptsA, ptsB, Hinit));
 		return Hinit;
 	}
 
-
 	/**
-	 * Internal refinement using 4-corner algorithm and normalized point sets.
+	 *
 	 * @param Hinit
 	 * @param pntsA
 	 * @param pntsB
-	 * @param maxLmEvaluations
-	 * @param maxLmIterations
 	 * @return
 	 */
-	RealMatrix refine(RealMatrix Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB, int maxLmEvaluations, int maxLmIterations) {
-		System.out.println("REFINING now ...");
+	RealMatrix refineHomography(RealMatrix Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
 		final int N = pntsA.length;
 		// 2. Choose "virtual" corner points in source domain:
 		Pnt2d[] C = {
@@ -161,19 +109,17 @@ public class HomographyEstimatorFourPoint extends HomographyEstimator {
 		};
 		// 3. Set up the (fixed) target vector from observed image points:
 		double[] Z = flattenPointVector(pntsB);
-
 		// 4. Set Hcur <- Hinit
 		RealMatrix Hcur = Hinit;
-
 		// 5. Project corner points to image domain and set up initial parameter vector p:
 		Pnt2d[] CC = projectPoints(C, Hcur);
 		System.out.println("CC = " + Arrays.toString(CC));
-		double[] pInit = getParameterVector(CC);
+		double[] pInit = flattenPointVector(CC);
 
 		// --------------------------------------------
 
 		MultivariateVectorFunction valueFun = p -> {
-			Pnt2d[] Cm = pointsFromParameters(p);
+			Pnt2d[] Cm = cornersFromParameters(p);
 			RealMatrix Hm = get4PointHomography(C, Cm);
 			Pnt2d[] Am = projectPoints(pntsA, Hm);
             double[] Y = flattenPointVector(Am);	// current 'value'
@@ -198,48 +144,6 @@ public class HomographyEstimatorFourPoint extends HomographyEstimator {
             return J;
         };
 
-
-
-		// // --------------------------------------
-		// // 1. Create the combined Jacobian function
-		// MultivariateJacobianFunction modelFun = new MultivariateJacobianFunction() {
-		// 	@Override
-		// 	public Pair<RealVector, RealMatrix> value(RealVector point) {
-		// 		double[] p = point.toArray();
-		// 		// calculate tha current 'value' part:
-		// 		Pnt2d[] Cm = pointsFromParameters(p);
-		// 		RealMatrix Hcur = get4PointHomography(C, Cm);
-		// 		Pnt2d[] Am = projectPoints(pntsA, Hcur);
-		// 		double[] Y = flattenPointVector(Am);	// current 'value'
-		//
-		// 		// calculate the Jacobian for p = Hcur:
-		// 		double[][] jacobian = new double[2 * N][8];
-		// 		double epsilon = 1e-6; // The "nudge"
-		// 		for (int k = 0; k < 8; k++) {	// for each parameter pk
-		// 			// 1. Create a copy of the parameters to perturb
-		// 			double[] perturbedP = p.clone();
-		// 			perturbedP[k] += epsilon;
-		//
-		// 			// 2. Call your value function
-		// 			double[] perturbedY = valueFun.value(perturbedP);
-		//
-		// 			// 3. Fill the j-th column of the Jacobian
-		// 			for (int i = 0; i < numObs; i++) {
-		// 				jacobian[i][k] = (perturbedY[i] - currentY[i]) / epsilon;
-		// 			}
-		// 		}
-		//
-		//
-		// 		return new Pair<>(
-		// 				new ArrayRealVector(Y, false),
-		// 				MatrixUtils.createRealMatrix(jacobian)
-		// 		);
-		// 	}
-		// };
-
-
-		// -----------------------
-
 		LeastSquaresProblem problem = new LeastSquaresBuilder()
 				.model(valueFun, jacobianFun)
 				// .model(modelFun)
@@ -255,24 +159,8 @@ public class HomographyEstimatorFourPoint extends HomographyEstimator {
 		LeastSquaresOptimizer.Optimum result = lm.optimize(problem);
 
 		double[] pOpt = result.getPoint().toArray();
-		Pnt2d[] Copt = pointsFromParameters(pOpt);
+		Pnt2d[] Copt = cornersFromParameters(pOpt);
 		RealMatrix Hopt = get4PointHomography(C, Copt);
-
-		System.out.println("LM optimizer iterations = " + result.getIterations());
-		System.out.println("LM optimizer total |residual| = " + (result.getResiduals().getNorm()));
-		System.out.println("LM optimizer avg |residual| = " + (result.getResiduals().getNorm()/N));
-
-		// calculate residual check:
-		double[] res = new double[2*N];
-		double[] Yopt = valueFun.value(pOpt);
-		double[] R =  Matrix.subtract(Yopt, Z);
-		double r = Matrix.normL2(R);
-		System.out.println("LM optimizer CHECK residual = " + r);
-
-		// if (Math.abs(Hopt.getEntry(2, 2)) > 10e-8) {
-		// 	Hopt = Hopt.scalarMultiply(1.0 / Hopt.getEntry(2, 2));
-		// }
-		System.out.println("FINISHED REFINING! ");
 		return Hopt;
 	}
 
@@ -291,8 +179,8 @@ public class HomographyEstimatorFourPoint extends HomographyEstimator {
 								 LeastSquaresProblem.Evaluation previous,
 								 LeastSquaresProblem.Evaluation current) {
 			// Log residuals here
-			System.out.println("Iteration " + iteration + " residuals: " + current.getResiduals().getNorm());
-			System.out.println("point = " + Matrix.toString(current.getPoint().toArray()));
+			// System.out.println("Iteration " + iteration + " residuals: " + current.getResiduals().getNorm());
+			// System.out.println("point = " + Matrix.toString(current.getPoint().toArray()));
 			return delegate.converged(iteration, previous, current);
 		}
 	}
@@ -305,7 +193,7 @@ public class HomographyEstimatorFourPoint extends HomographyEstimator {
 		return pntsProj;
 	}
 
-		/**
+	/**
 	 * Maps between n &gt; 4 point pairs, finds a least-squares solution
 	 * for the homography parameters.
 	 * NOTE: this is UNFINISHED code! check against DLT estimation of homography
@@ -350,9 +238,9 @@ public class HomographyEstimatorFourPoint extends HomographyEstimator {
 
 	// -------- helper methods --------------------------------------------------------------
 
-	static double[] flattenPointVector(Pnt2d[] pnts) {
+	private static double[] flattenPointVector(Pnt2d[] pnts) {
 		final int N = pnts.length;
-		double[] vec = new double[2*N];
+		double[] vec = new double[2 * N];
 		for (int i = 0; i < N; i++) {
 			vec[2 * i + 0] = pnts[i].getX();
 			vec[2 * i + 1] = pnts[i].getY();
@@ -360,27 +248,12 @@ public class HomographyEstimatorFourPoint extends HomographyEstimator {
 		return vec;
 	}
 
-	static double[] getParameterVector(Pnt2d[] pnts) {
-		double[] p = new double[8];
-		for (int i = 0; i < 4; i++) {
-			p[2*i + 0] = pnts[i].getX();
-			p[2*i + 1] = pnts[i].getY();
-		}
-		return p;
-	}
-
-	static Pnt2d[] pointsFromParameters(double[] p) {
+	private  Pnt2d[] cornersFromParameters(double[] p) {
 		Pnt2d[] pnts = new Pnt2d[4];
 		for (int i = 0; i < 4; i++) {
 			pnts[i] = Pnt2d.from(p[2*i], p[2*i + 1]);
 		}
 		return pnts;
 	}
-
-	static double[] homographyFromParameters(double[] p) {
-
-		return null;
-	}
-
 
 }

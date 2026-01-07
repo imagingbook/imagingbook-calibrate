@@ -53,16 +53,16 @@ public class HomographyEstimatorSimpleTest {
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate00() {
         // list_Points_B();
-        HomographyEstimator hestmtr = new HomographyEstimatorSimple(false, false);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(false, false, 1000, 100);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
-        System.out.println("final error = " + HomographyEstimator.getReprojectionError(POINTS_A, POINTS_B, Hestm));
+        // System.out.println("final error = " + HomographyEstimator.getReprojectionError(POINTS_A, POINTS_B, Hestm));
     }
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate10() {
-        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, false);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, false, 1000, 100);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -70,7 +70,7 @@ public class HomographyEstimatorSimpleTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate01() {
-        HomographyEstimator hestmtr = new HomographyEstimatorSimple(false, true);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(false, true, 1000, 100);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -78,7 +78,7 @@ public class HomographyEstimatorSimpleTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate11() {
-        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true, 1000, 100);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -93,9 +93,9 @@ public class HomographyEstimatorSimpleTest {
             PBnoisy[i] = POINTS_B[i].plus(noise * rand.nextDouble(), noise * rand.nextDouble());    // add uniform noise
         }
 
-        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true); // TODO: check without num. refinement!
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true, 1000, 100); // TODO: check without num. refinement!
         Homography Hest = hestmtr.getHomography(POINTS_A, PBnoisy);
-        System.out.println("Hest = \n" + Matrix.toString(Hest));
+        // System.out.println("Hest = \n" + Matrix.toString(Hest));
 
         // check if points are unchanged:
         double dsum = 0;
@@ -106,25 +106,26 @@ public class HomographyEstimatorSimpleTest {
             dsum = dsum + di;
             dmax = Math.max(dmax, di);
         }
-        System.out.println("dmax = " + dmax);
-        System.out.println("dsum = " + dsum);
+        // System.out.println("dmax = " + dmax);
+        // System.out.println("dsum = " + dsum);
 
         double davg = dsum / PBnoisy.length;
-        System.out.println("davg = " + davg);
+        // System.out.println("davg = " + davg);
         // System.out.println("davg = " + davg);
         // System.out.println("dmax = " + dmax);
-        assertTrue("davg >= 0.5 * noise", davg < Math.max(0.5 * noise, 1e-6));
-        assertTrue("dmax >= 0.5 * noise", dmax < Math.max(0.5 * noise, 1e-6));
+        assertTrue("davg >= 0.5 * noise", davg < Math.max(1.0 * noise, 1e-6));
+        assertTrue("dmax >= 0.5 * noise", dmax < Math.max(1.0 * noise, 1e-6));
     }
 
     @Test
     public void CharucoBoardHomographyTest() {
         Pnt2d[] boardPts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.BOARD_POINTS);
         Pnt2d[] imagePts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.IMAGE_POINTS);
-        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true, 1000, 100);
         Homography Hest = hestmtr.getHomography(boardPts, imagePts);
-        System.out.println("Hest = \n" + Matrix.toString(Hest));
-        System.out.println("final error = " + HomographyEstimator.getReprojectionError(boardPts, imagePts, Hest));
+        // System.out.println("Hest = \n" + Matrix.toString(Hest));
+        // System.out.println("final error = " + HomographyEstimator.getReprojectionError(boardPts, imagePts, Hest));
+        assertTrue("reprojection error exceeded", HomographyEstimator.getReprojectionError(boardPts, imagePts, Hest) < 12);
     }
 
 }

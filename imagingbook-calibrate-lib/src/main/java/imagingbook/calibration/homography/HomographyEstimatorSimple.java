@@ -29,38 +29,37 @@ import static imagingbook.common.math.Matrix.getRowPackedVector;
 
 /**
  * Homography estimator based on solving a 3x3 non-homogeneous linear system.
+ * Refinement is done with a Levenberg-Marquart optimizer directly on the 8 original homography
+ * parameters, keeping the scale fixed. This is numerically less than clean but
+ * nevertheless seems to work well.
  */
 public class HomographyEstimatorSimple extends HomographyEstimator {
+
+    private int maxLmEvaluations = 1000;
+    private int maxLmIterations = 100;
 
     /**
      * Constructor.
      * @param normalizePoints
      * @param doRefinement
+     * @param maxLmEvaluations
+     * @param maxLmIterations
      */
-    public HomographyEstimatorSimple(boolean normalizePoints, boolean doRefinement) {
+    public HomographyEstimatorSimple(boolean normalizePoints, boolean doRefinement, int maxLmEvaluations, int maxLmIterations) {
         super(normalizePoints, doRefinement);
+        this.maxLmEvaluations = maxLmEvaluations;
+        this.maxLmIterations = maxLmIterations;
     }
 
     @Override
-    Homography estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
-        System.out.println("HomographyEstimatorSimple.estimateHomography() " + normalizePoints + " " + doRefinement);
-        if (ptsA.length != ptsB.length)
-            throw new IllegalArgumentException("point sequences A, B have different lengths");
-        if (ptsA.length < 4)
-            throw new IllegalArgumentException("cannot estimate homography from less than 4 point pairs");
+    RealMatrix estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
+        // System.out.println("HomographyEstimatorSimple.estimateHomography() " + normalizePoints + " " + doRefinement);
         int n = ptsA.length;
-
-        // matrices for statistical normalization
-        RealMatrix Na = (normalizePoints) ? getNormalisationMatrix(ptsA) : null;
-        RealMatrix Nb = (normalizePoints) ? getNormalisationMatrix(ptsB) : null;
-
         double[] ba = new double[2 * n];
         double[][] Ma = new double[2 * n][];
         for (int i = 0; i < n; i++) {
-            double[] pA = (normalizePoints) ?
-                    map2dHomogeneous(ptsA[i].toDoubleArray(), Na) : ptsA[i].toDoubleArray();
-            double[] pB = (normalizePoints) ?
-                    map2dHomogeneous(ptsB[i].toDoubleArray(), Nb) : ptsB[i].toDoubleArray();
+            double[] pA = ptsA[i].toDoubleArray();
+            double[] pB = ptsB[i].toDoubleArray();
             double xA = pA[0];
             double yA = pA[1];
             double xB = pB[0];
@@ -88,36 +87,54 @@ public class HomographyEstimatorSimple extends HomographyEstimator {
         H.setEntry(2, 1, h.getEntry(7));
         H.setEntry(2, 2, 1.0);
 
-        // de-normalize the homography
-        if (normalizePoints) {
-            H = MatrixUtils.inverse(Nb).multiply(H).multiply(Na);
-        }
-
-        System.out.println("   HomographyEstimatorSimple: reproj. error = " + getReprojectionError(ptsA, ptsB, H));
-        Homography hom = new Homography(H);
-        System.out.println("   HomographyEstimatorSimple: initial = \n" + hom);
-
-        return hom;
+        // System.out.println("   HomographyEstimatorSimple: reproj. error = " + getReprojectionError(ptsA, ptsB, H));
+        // System.out.println("   HomographyEstimatorSimple: initial = \n" + Matrix.toString(H));
+        return H;
     }
 
     // NON-LINEAR REFINEMENT (using only 8 homography parameters, keeping h22 = 1 fixed) ----------
 
     @Override
-    Homography refineHomography(Homography Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB, int maxLmEvaluations, int maxLmIterations) {
+    RealMatrix refineHomography(RealMatrix Hinit, Pnt2d[] pntsA, Pnt2d[] pntsB) {
         final int M = pntsA.length;
         double[] observed = new double[2 * M];
         for (int i = 0; i < M; i++) {
             observed[i * 2 + 0] = pntsB[i].getX();
             observed[i * 2 + 1] = pntsB[i].getY();
         }
-        MultivariateVectorFunction value = getValueFunction(pntsA);
-        MultivariateMatrixFunction jacobian = getJacobianFunction(pntsA);
+
+        MultivariateVectorFunction valueFun = h -> {
+            double[] Y = new double[2 * M];
+            for (int j = 0; j < M; j++) {
+                double x = pntsA[j].getX();
+                double y = pntsA[j].getY();
+                double w = h[6] * x + h[7] * y + 1; // h[8];
+                Y[j * 2 + 0] = (h[0] * x + h[1] * y + h[2]) / w;
+                Y[j * 2 + 1] = (h[3] * x + h[4] * y + h[5]) / w;
+            }
+            return Y;
+        };
+
+        MultivariateMatrixFunction jacobianFun = h -> {
+                double[][] J = new double[2 * M][];
+                for (int i = 0; i < M; i++) {
+                    double x = pntsA[i].getX();
+                    double y = pntsA[i].getY();
+                    double sx = h[0] * x + h[1] * y + h[2];
+                    double sy = h[3] * x + h[4] * y + h[5];
+                    double w =  h[6] * x + h[7] * y + 1;         // h[8] = 1 (fixed);
+                    double w2 = w * w;
+                    J[2 * i + 0] = new double[]{x/w, y/w, 1/w, 0, 0, 0, -sx * x/w2, -sx * y/w2};
+                    J[2 * i + 1] = new double[]{0, 0, 0, x/w, y/w, 1/w, -sy * x/w2, -sy * y/w2};
+                }
+                return J;
+            };
 
         double[] hstart = Arrays.copyOf(getRowPackedVector(Hinit).toArray(), 8);   // only first 8 values
-        System.out.println("HomographyEstimatorSimple.refine(): hstart = \n" + Matrix.toString(hstart));
+        // System.out.println("HomographyEstimatorSimple.refine(): hstart = \n" + Matrix.toString(hstart));
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
-                .model(value, jacobian)
+                .model(valueFun, jacobianFun)
                 .target(MatrixUtils.createRealVector(observed))
                 .start(new ArrayRealVector(hstart))
                 .checker(new LoggingChecker(new EvaluationRmsChecker(1e-6, 1e-6)))
@@ -135,50 +152,9 @@ public class HomographyEstimatorSimple extends HomographyEstimator {
         Hopt.setEntry(1, 0, opt[3]); Hopt.setEntry(1, 1, opt[4]); Hopt.setEntry(1, 2, opt[5]);
         Hopt.setEntry(2, 0, opt[6]); Hopt.setEntry(2, 1, opt[7]); Hopt.setEntry(2, 2, 1.0);
 
-        int iterations = result.getIterations();
-        if (iterations >= maxLmIterations) {
-            throw new RuntimeException("refineHomography(): max. number of iterations exceeded");
-        }
-        System.out.println("   LM optimizer iterations = " + result.getIterations());
-        System.out.println("   LM optimizer avg |residual| = " + (result.getResiduals().getNorm()/M));
+        // System.out.println("   LM optimizer iterations = " + result.getIterations());
+        // System.out.println("   LM optimizer avg |residual| = " + (result.getResiduals().getNorm()/M));
         return new Homography(Hopt);
-    }
-
-    private static MultivariateVectorFunction getValueFunction(Pnt2d[] X) {
-        return new MultivariateVectorFunction() {
-            @Override
-            public double[] value(double[] h) {
-                double[] Y = new double[X.length * 2];
-                for (int j = 0; j < X.length; j++) {
-                    double x = X[j].getX();
-                    double y = X[j].getY();
-                    double w = h[6] * x + h[7] * y + 1; // h[8];
-                    Y[j * 2 + 0] = (h[0] * x + h[1] * y + h[2]) / w;
-                    Y[j * 2 + 1] = (h[3] * x + h[4] * y + h[5]) / w;
-                }
-                return Y;
-            }
-        };
-    }
-
-    private static MultivariateMatrixFunction getJacobianFunction(Pnt2d[] X) {
-        return new MultivariateMatrixFunction() {
-            @Override
-            public double[][] value(double[] h) {
-                double[][] J = new double[2 * X.length][];
-                for (int i = 0; i < X.length; i++) {
-                    double x = X[i].getX();
-                    double y = X[i].getY();
-                    double sx = h[0] * x + h[1] * y + h[2];
-                    double sy = h[3] * x + h[4] * y + h[5];
-                    double w =  h[6] * x + h[7] * y + 1;         // h[8] = 1 (fixed);
-                    double w2 = w * w;
-                    J[2 * i + 0] = new double[]{x/w, y/w, 1/w, 0, 0, 0, -sx * x/w2, -sx * y/w2};
-                    J[2 * i + 1] = new double[]{0, 0, 0, x/w, y/w, 1/w, -sy * x/w2, -sy * y/w2};
-                }
-                return J;
-            }
-        };
     }
 
     /**
@@ -194,8 +170,8 @@ public class HomographyEstimatorSimple extends HomographyEstimator {
         @Override
         public boolean converged(int iteration, LeastSquaresProblem.Evaluation previous, LeastSquaresProblem.Evaluation current) {
             // Log residuals here
-            System.out.println("Iteration " + iteration + " residuals: " + current.getResiduals().getNorm());
-            System.out.println("point = " + Matrix.toString(current.getPoint().toArray()));
+            // System.out.println("Iteration " + iteration + " residuals: " + current.getResiduals().getNorm());
+            // System.out.println("point = " + Matrix.toString(current.getPoint().toArray()));
             return delegate.converged(iteration, previous, current);
         }
     }
