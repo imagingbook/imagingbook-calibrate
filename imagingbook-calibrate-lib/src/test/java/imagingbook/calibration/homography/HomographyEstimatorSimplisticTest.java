@@ -37,7 +37,8 @@ public class HomographyEstimatorSimplisticTest {
             Pnt2d.from(2, 3)
     };
 
-    static final Pnt2d[] POINTS_B = new Homography(Hreal).applyTo(POINTS_A);
+    // static final Pnt2d[] POINTS_B = new Homography(Hreal).applyTo(POINTS_A);
+    static final Pnt2d[] POINTS_B = HomographyEstimator.projectPoints(POINTS_A, Hreal);
 
     static void list_Points_B() {
         System.out.println("POINTS_B:");
@@ -93,14 +94,15 @@ public class HomographyEstimatorSimplisticTest {
         }
 
         HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(true, true, 1000, 100); // TODO: check without num. refinement!
-        Homography Hest = hestmtr.getHomography(POINTS_A, PBnoisy);
+        RealMatrix Hest = hestmtr.getHomography(POINTS_A, PBnoisy);
         // System.out.println("Hest = \n" + Matrix.toString(Hest));
 
         // check if points are unchanged:
         double dsum = 0;
         double dmax = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < PBnoisy.length; i++) {
-            Pnt2d pMapped = Hest.applyTo(POINTS_A[i]); // apply estimated homography
+            // Pnt2d pMapped = Hest.applyTo(POINTS_A[i]); // apply estimated homography
+            Pnt2d pMapped = HomographyEstimator.projectOnePoint(POINTS_A[i], Hest); // apply estimated homography
             double di = PBnoisy[i].distance(pMapped);
             dsum = dsum + di;
             dmax = Math.max(dmax, di);
@@ -121,7 +123,7 @@ public class HomographyEstimatorSimplisticTest {
         Pnt2d[] boardPts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.BOARD_POINTS);
         Pnt2d[] imagePts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.IMAGE_POINTS);
         HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(true, true, 1000, 100);
-        Homography Hest = hestmtr.getHomography(boardPts, imagePts);
+        RealMatrix Hest = hestmtr.getHomography(boardPts, imagePts);
         // System.out.println("Hest = \n" + Matrix.toString(Hest));
         // System.out.println("final error = " + HomographyEstimator.getReprojectionError(boardPts, imagePts, Hest));
         assertTrue("reprojection error exceeded", HomographyEstimator.getReprojectionError(boardPts, imagePts, Hest) < 12);

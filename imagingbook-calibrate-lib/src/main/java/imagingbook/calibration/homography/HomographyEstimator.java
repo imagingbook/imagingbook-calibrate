@@ -8,6 +8,7 @@ package imagingbook.calibration.homography;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.math.Arithmetic;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
@@ -36,7 +37,7 @@ public abstract class HomographyEstimator {
      * @param ptsB the 1st sequence of 2D points
      * @return the estimated homography
      */
-    public final Homography getHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
+    public final RealMatrix getHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
         if (ptsA.length != ptsB.length) {
             throw new IllegalArgumentException("point sequences A, B have different lengths");
         }
@@ -67,7 +68,9 @@ public abstract class HomographyEstimator {
         // de-normalize the homography matrix:
         RealMatrix H = (normalizePoints) ? MatrixUtils.inverse(Nb).multiply(Href).multiply(Na) : Href;
 
-        return new Homography(H);
+        // if possible, rescale H to H(2,2) = 1:
+        return (Arithmetic.isZero(H.getEntry(2, 2), 1e-15)) ?
+                H : H.scalarMultiply(1.0 / H.getEntry(2, 2));
     }
 
     /**
@@ -193,11 +196,11 @@ public abstract class HomographyEstimator {
      * @param obsPoints a sequence 2D image point sets (one set per view).
      * @return the sequence of estimated homographies (3 x 3 matrices), one for each view
      */
-    public Homography[] getHomographies(Pnt2d[] modelPts, Pnt2d[][] obsPoints) {
+    public RealMatrix[] getHomographies(Pnt2d[] modelPts, Pnt2d[][] obsPoints) {
     	final int M = obsPoints.length;
-    	Homography[] homographies = new Homography[M];
+        RealMatrix[] homographies = new RealMatrix[M];
     	for (int i = 0; i < M; i++) {
-            Homography H = getHomography(modelPts, obsPoints[i]);
+            RealMatrix H = getHomography(modelPts, obsPoints[i]);
             // Homography H = doNonlinearRefinement ?
     		// 		refineHomography(Hinit, modelPts, obsPoints[i]) : Hinit;
     		homographies[i] = H;

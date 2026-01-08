@@ -27,7 +27,7 @@ public abstract class CameraIntrinsics {
      * @param homographies a set of homography matrices
      * @return the estimated 3 x 3 intrinsic transformation matrix
      */
-    public static RealMatrix from(Homography[] homographies) {
+    public static RealMatrix from(RealMatrix[] homographies) {
         return getCameraIntrinsics(homographies);
 		// return getCameraIntrinsicsZhang1(homographies);
 		// return getCameraIntrinsicsZhang2(homographies);
@@ -173,13 +173,13 @@ public abstract class CameraIntrinsics {
 	 * @param homographies a set of homography matrices
 	 * @return the estimated 3 x 3 intrinsic transformation matrix
 	 */
-    private static RealMatrix getCameraIntrinsics(Homography[] homographies) {
+    private static RealMatrix getCameraIntrinsics( RealMatrix[] homographies) {
 		final int M = homographies.length;
 		int rows = 2 * M + 1;
 		double[][] V = new double[rows][];
 
 		for (int i = 0; i < M; i++) {
-			Homography Hi = homographies[i];
+			RealMatrix Hi = homographies[i];
 			V[2*i + 0] = getVpq(Hi, 0, 1); // v01
 			V[2*i + 1] = Matrix.subtract(getVpq(Hi, 0, 0), getVpq(Hi, 1, 1)); // v00-v11
 		}

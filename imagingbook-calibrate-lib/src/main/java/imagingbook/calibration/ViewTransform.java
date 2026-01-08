@@ -80,7 +80,7 @@ public class ViewTransform {
      * @param H homography
      * @return a new ViewTransform instance
      */
-    public static ViewTransform from(RealMatrix A, Homography H) {
+    public static ViewTransform from(RealMatrix A,  RealMatrix H) {
         RealVector h0 = H.getColumnVector(0);
         RealVector h1 = H.getColumnVector(1);
         RealVector h2 = H.getColumnVector(2);
