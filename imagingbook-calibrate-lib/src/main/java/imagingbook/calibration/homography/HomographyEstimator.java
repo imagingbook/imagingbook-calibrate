@@ -11,6 +11,10 @@ import imagingbook.common.math.Arithmetic;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
+/**
+ * Abstract super-class for homography estimators. Handles point set normalization and
+ * optional refinement.
+ */
 public abstract class HomographyEstimator {
 
     final boolean normalizePoints;
@@ -29,9 +33,14 @@ public abstract class HomographyEstimator {
     /**
      * Estimates the homography (projective) transformation from two given 2D
      * point sequences assumed to be in correspondence (and of same length).
+     * Use of point set normalization (to be specified in the constructor)
+     * is recommended for numerical stability
+     * (see {@link HomographyEstimator#HomographyEstimator(boolean, boolean)}).
+     * The resulting 3x3 homography matrix is scaled to H(2,2) = 1 if possible.
+     *
      * @param ptsA the 1st sequence of 2D points
      * @param ptsB the 1st sequence of 2D points
-     * @return the estimated homography
+     * @return the estimated homography matrix
      */
     public final RealMatrix getHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
         if (ptsA.length != ptsB.length) {

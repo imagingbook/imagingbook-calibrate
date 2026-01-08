@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class HomographyEstimatorFourCornersTest {
+public class HomographyEstimatorFourCornerTest {
 
     static final double tol = 1e-6;
     static double NOISE = 0.1;
@@ -33,7 +33,6 @@ public class HomographyEstimatorFourCornersTest {
             Pnt2d.from(2, 3)
     };
 
-    // static final Pnt2d[] POINTS_B = new Homography(Hreal).applyTo(POINTS_A);
     static final Pnt2d[] POINTS_B = HomographyUtils.projectPoints(POINTS_A, Hreal);
 
     // TODO: more tests!
@@ -42,7 +41,7 @@ public class HomographyEstimatorFourCornersTest {
     public void CharucoBoardHomographyTest() {
         Pnt2d[] boardPts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.BOARD_POINTS);
         Pnt2d[] imagePts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.IMAGE_POINTS);
-        HomographyEstimator hestmtr = new HomographyEstimatorFourCorners(true, true, 1000, 100);
+        HomographyEstimator hestmtr = new HomographyEstimatorFourCorner(true, true, 1000, 100);
         RealMatrix Hfinal = hestmtr.getHomography(boardPts, imagePts);
         // System.out.println("Hfinal = \n" + Matrix.toString(Hfinal));
         // System.out.println("final error = " + HomographyEstimator.getReprojectionError(boardPts, imagePts, Hfinal));

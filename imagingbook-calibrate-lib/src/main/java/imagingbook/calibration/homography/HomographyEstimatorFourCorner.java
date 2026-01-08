@@ -26,18 +26,21 @@ import org.apache.commons.math4.legacy.optim.ConvergenceChecker;
 
 /**
  * Homography estimator based on solving a 3x3 homogeneous linear system.
+ * The so-called "4-corner" method is used for subsequent non-linear homography refinement,
+ * where the 8-parameter vector is constructed from coordinates of 4 projected corners (instead of
+ * homography matrix elements). This should give improved numerical stability.
  */
-public class HomographyEstimatorFourCorners extends HomographyEstimator {
+public class HomographyEstimatorFourCorner extends HomographyEstimator {
 
 	private int maxLmEvaluations = 1000;
 	private int maxLmIterations = 100;
 
-	public HomographyEstimatorFourCorners() {
+	public HomographyEstimatorFourCorner() {
 		super(true, true);
 	}
 
-	public HomographyEstimatorFourCorners(boolean normalizePoints, boolean doRefinement,
-										  int maxLmEvaluations, int maxLmIterations) {
+	public HomographyEstimatorFourCorner(boolean normalizePoints, boolean doRefinement,
+										 int maxLmEvaluations, int maxLmIterations) {
 		super(normalizePoints, doRefinement);
 		this.maxLmEvaluations = maxLmEvaluations;
 		this.maxLmIterations = maxLmIterations;
@@ -90,8 +93,9 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 	/**
 	 * Performs homography refinement using the four-corner method, with projected corner
 	 * coordinates as the parameters of the optimizer.
-	 * Note that all coordinates are assumed to be in normalized coordinate space and
-	 * also {@code Hinit} refers to normalized coordinates!
+	 * Note that all coordinates are assumed to be in normalized coordinate space.
+	 * Also, the inital homography {@code Hinit} and the refined homography returned by this method
+	 * refer to normalized coordinates!
 	 * @param Hinit	the initial homography
 	 * @param pntsA the first point sequence
 	 * @param pntsB the second point sequence
@@ -164,7 +168,7 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 	}
 
 	/**
-	 * Convergence checker which allows logging of residuals etc.
+	 * LM convergence checker which allows logging of residuals etc.
 	 */
 	static class LoggingChecker implements ConvergenceChecker<LeastSquaresProblem.Evaluation> {
 		private final ConvergenceChecker<LeastSquaresProblem.Evaluation> delegate;
@@ -187,9 +191,9 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 	// -------- helper methods --------------------------------------------------------------
 
 	private static double[] flattenPointVector(Pnt2d[] pnts) {
-		final int N = pnts.length;
-		double[] vec = new double[2 * N];
-		for (int i = 0; i < N; i++) {
+		final int n = pnts.length;
+		double[] vec = new double[2 * n];
+		for (int i = 0; i < n; i++) {
 			vec[2 * i + 0] = pnts[i].getX();
 			vec[2 * i + 1] = pnts[i].getY();
 		}
@@ -199,38 +203,28 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 	private  Pnt2d[] cornersFromParameters(double[] p) {
 		Pnt2d[] pnts = new Pnt2d[4];
 		for (int i = 0; i < 4; i++) {
-			pnts[i] = Pnt2d.from(p[2*i], p[2*i + 1]);
+			pnts[i] = Pnt2d.from(p[2 * i], p[2 * i + 1]);
 		}
 		return pnts;
 	}
-
-	// @Deprecated
-	// Pnt2d[] projectPoints(Pnt2d[] pnts, RealMatrix H) {
-	// 	Pnt2d[] pntsProj = new Pnt2d[pnts.length];
-	// 	for (int i = 0; i < pnts.length; i++) {
-	// 		pntsProj[i] = Pnt2d.from(map2dHomogeneous(pnts[i].toDoubleArray(), H));
-	// 	}
-	// 	return pntsProj;
-	// }
 
 	/**
 	 * Small inner class for efficient calculation of 4-corner homographies (exactly 4
 	 * corresponding points).
 	 * The matrix elements for the constant x/y coordinates of the source corners are only calculated
 	 * once. Only the variable u/v coordinates of the projected corners are filled in each iteration.
-	 *
 	 * <pre>
 	 * Ma[2 * i + 0] = new double[] { x, y, 1, 0, 0, 0, -u * x, -u * y };
 	 * Ma[2 * i + 1] = new double[] { 0, 0, 0, x, y, 1, -v * x, -v * y };
 	 * </pre>
 	 */
 	static class FourCornerHomography {
-
+		// fixed data containers, re-used in each LM iteration
 		private final double[][] Ma = new double[8][];
 		private final double[] ba = new double[8];
 
 		FourCornerHomography(Pnt2d[] P) {
-			// fill in fixed elements of Ma (x/y dependent)
+			// fill in constant source elements of Ma (x/y dependent)
 			for (int i = 0, j = 0; i < 4; i++, j+=2) {	// j = 2i
 				double x = P[i].getX();
 				double y = P[i].getY();
@@ -241,20 +235,21 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 
 		RealMatrix getHom(Pnt2d[] Q) {
 			for (int i = 0, j = 0; i < 4; i++, j+=2) {	// j = 2i
-				// fill in variable elements of Ma (u/v dependent)
+				// fill in variable target elements of Ma (u/v dependent)
 				double u = Q[i].getX();
 				double v = Q[i].getY();
 				ba[j + 0] = u;
 				ba[j + 1] = v;
 				double x = Ma[j + 0][0];
 				double y = Ma[j + 0][1];
-				Ma[j + 0][6] = -u * x; // new double[] { x, y, 1, 0, 0, 0, -u * x, -u * y };
+				Ma[j + 0][6] = -u * x; // { x, y, 1, 0, 0, 0, -u * x, -u * y };
 				Ma[j + 0][7] = -u * y;
-				Ma[j + 1][6] = -v * x; // new double[] { 0, 0, 0, x, y, 1, -v * x, -v * y };
+				Ma[j + 1][6] = -v * x; // { 0, 0, 0, x, y, 1, -v * x, -v * y };
 				Ma[j + 1][7] = -v * y;
 			}
 			RealMatrix M = new Array2DRowRealMatrix(Ma, false);
 			RealVector b = new ArrayRealVector(ba, false);
+			// solve 4-point homography (exact)
 			DecompositionSolver solver = new LUDecomposition(M).getSolver();
 			double[] h = solver.solve(b).toArray();
 			double[][] Ha = {

@@ -9,7 +9,6 @@ package imagingbook.calibration;
 import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
 import imagingbook.calibration.homography.HomographyEstimator;
-import imagingbook.calibration.homography.Homography;
 import imagingbook.calibration.homography.HomographyEstimatorSimplistic;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;

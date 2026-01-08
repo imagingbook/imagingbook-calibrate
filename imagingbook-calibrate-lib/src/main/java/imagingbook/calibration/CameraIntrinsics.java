@@ -6,7 +6,6 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.homography.Homography;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.math.Matrix;
 

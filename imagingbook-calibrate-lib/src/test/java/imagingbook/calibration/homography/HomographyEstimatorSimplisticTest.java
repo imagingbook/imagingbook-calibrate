@@ -8,6 +8,7 @@ package imagingbook.calibration.homography;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
+import imagingbook.common.geometry.mappings.linear.LinearMapping2D;
 import imagingbook.testutils.DeterministicRandom;
 import imagingbook.testutils.NumericTestUtils;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
@@ -100,9 +101,11 @@ public class HomographyEstimatorSimplisticTest {
         // check if points are unchanged:
         double dsum = 0;
         double dmax = Double.NEGATIVE_INFINITY;
+        LinearMapping2D mapping = new LinearMapping2D(Hest);
         for (int i = 0; i < PBnoisy.length; i++) {
             // Pnt2d pMapped = Hest.applyTo(POINTS_A[i]); // apply estimated homography
-            Pnt2d pMapped = HomographyUtils.projectOnePoint(POINTS_A[i], Hest); // apply estimated homography
+            Pnt2d pMapped = mapping.applyTo(POINTS_A[i]); // apply estimated homography
+            // Pnt2d pMapped = HomographyUtils.projectOnePoint(POINTS_A[i], Hest); // apply estimated homography
             double di = PBnoisy[i].distance(pMapped);
             dsum = dsum + di;
             dmax = Math.max(dmax, di);
