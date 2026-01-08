@@ -10,6 +10,9 @@ import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
 import imagingbook.calibration.homography.HomographyEstimator;
 import imagingbook.calibration.homography.HomographyEstimatorSimplistic;
+import imagingbook.calibration.intrinsics.CameraIntrinsics;
+import imagingbook.calibration.intrinsics.IntrinsicsEstimator;
+import imagingbook.calibration.intrinsics.IntrinsicsEstimatorZhang;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
@@ -129,7 +132,9 @@ public class Calibrator {
 		
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
 		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
-		RealMatrix Ainit = CameraIntrinsics.from(homographies);
+		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
+		RealMatrix Ainit = intrEstimtr.estimate(homographies);
+		// RealMatrix Ainit = CameraIntrinsics.from(homographies);
 		initCam = new Camera(Ainit, params.distortionModel);
         debug("initial camera = " + initCam);
 		

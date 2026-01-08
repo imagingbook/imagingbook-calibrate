@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Permission to use and distribute this software is granted under the BSD 2-Clause
  * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
- * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
+ * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration;
+package imagingbook.calibration.intrinsics;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.math.Matrix;
@@ -19,6 +19,7 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
  * versions are provided (only one is actually used though).
  * @author WB
  */
+@Deprecated
 public abstract class CameraIntrinsics {
 
     /**
@@ -26,6 +27,7 @@ public abstract class CameraIntrinsics {
      * @param homographies a set of homography matrices
      * @return the estimated 3 x 3 intrinsic transformation matrix
      */
+	@Deprecated
     public static RealMatrix from(RealMatrix[] homographies) {
         return getCameraIntrinsics(homographies);
 		// return getCameraIntrinsicsZhang1(homographies);

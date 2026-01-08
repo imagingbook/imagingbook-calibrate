@@ -76,8 +76,8 @@ public class CalibratorTest {
         // System.out.println("Initial camera = " + Arrays.toString(calibrator.getInitialCamera().getParameterVector()));
         // Initial camera = [877.1610736944268, 876.8009085961099, 0.17515644031677685, 301.0436734292903, 220.4104056624287, 0.0, 0.0]
 
-        double[] pf = finCam.getParameterVector();
-        double[] pr = refCam.getParameterVector();
+        // double[] pf = finCam.getParameterVector();
+        // double[] pr = refCam.getParameterVector();
         // assertArrayEquals(pr, pf, 1e-3);
 
         ViewTransform[] finViews = calibrator.getFinalViews();
