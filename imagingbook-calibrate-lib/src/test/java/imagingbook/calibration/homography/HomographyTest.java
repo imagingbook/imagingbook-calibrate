@@ -52,22 +52,22 @@ public class HomographyTest {
         NumericTestUtils.assert2dArrayEquals(H1.getData(), H2.getData(), tol);
     }
 
-    @Test
-    public void normalizeHomographyTest2() {
-        Homography H = new Homography();
-        NumericTestUtils.assert2dArrayEquals(Matrix.idMatrix(3), H.getData(), tol);
-    }
+    // @Test
+    // public void normalizeHomographyTest2() {
+    //     Homography H = new Homography();
+    //     NumericTestUtils.assert2dArrayEquals(Matrix.idMatrix(3), H.getData(), tol);
+    // }
 
-    @Test   // trivial test checking identity map
-    public void homographyTestIdentity() {
-        Homography H = new Homography();
-        Pnt2d[] PB = H.applyTo(POINTS_A);
-        assertEquals(POINTS_A.length, PB.length);
-        // check if points are unchanged:
-        for (int i = 0; i < PB.length; i++) {
-            assertArrayEquals(POINTS_A[i].toDoubleArray(), PB[i].toDoubleArray(), tol);
-        }
-    }
+    // @Test   // trivial test checking identity map
+    // public void homographyTestIdentity() {
+    //     Homography H = new Homography();
+    //     Pnt2d[] PB = H.applyTo(POINTS_A);
+    //     assertEquals(POINTS_A.length, PB.length);
+    //     // check if points are unchanged:
+    //     for (int i = 0; i < PB.length; i++) {
+    //         assertArrayEquals(POINTS_A[i].toDoubleArray(), PB[i].toDoubleArray(), tol);
+    //     }
+    // }
 
     // check homography estimate from perfect match works regardless of options used:
 

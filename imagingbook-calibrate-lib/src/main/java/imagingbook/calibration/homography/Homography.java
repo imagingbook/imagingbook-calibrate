@@ -31,9 +31,9 @@ public class Homography extends Array2DRowRealMatrix {
         this(H.getData());
     }
 
-    public Homography() {
-        this(Matrix.idMatrix(3));
-    }
+    // public Homography() {
+    //     this(Matrix.idMatrix(3));
+    // }
 
     // ------------------------------------------------------------
 
@@ -109,8 +109,8 @@ public class Homography extends Array2DRowRealMatrix {
         return Q;
     }
 
-    public String toString() {
-        return Matrix.toString((RealMatrix)this);
-    }
+    // public String toString() {
+    //     return Matrix.toString((RealMatrix)this);
+    // }
 
 }
