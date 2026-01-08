@@ -111,7 +111,7 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 		// 4. Set Hcur <- Hinit
 		RealMatrix Hcur = Hinit;
 		// 5. Project corner points to image domain and set up initial parameter vector p:
-		Pnt2d[] CC = projectPoints(C, Hcur);
+		Pnt2d[] CC = HomographyUtils.projectPoints(C, Hcur);
 		// System.out.println("CC = " + Arrays.toString(CC));
 		double[] pInit = flattenPointVector(CC);
 
@@ -122,7 +122,7 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 		MultivariateVectorFunction valueFun = p -> {
 			Pnt2d[] Cm = cornersFromParameters(p);
 			RealMatrix Hm = fph.getHom(Cm);
-			Pnt2d[] Am = projectPoints(pntsA, Hm);
+			Pnt2d[] Am = HomographyUtils.projectPoints(pntsA, Hm);
             return flattenPointVector(Am);	// current 'value' vector Y
         };
 

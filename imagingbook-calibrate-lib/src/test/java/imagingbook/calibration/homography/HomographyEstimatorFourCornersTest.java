@@ -8,7 +8,6 @@ package imagingbook.calibration.homography;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
-import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
@@ -35,7 +34,7 @@ public class HomographyEstimatorFourCornersTest {
     };
 
     // static final Pnt2d[] POINTS_B = new Homography(Hreal).applyTo(POINTS_A);
-    static final Pnt2d[] POINTS_B = HomographyEstimator.projectPoints(POINTS_A, Hreal);
+    static final Pnt2d[] POINTS_B = HomographyUtils.projectPoints(POINTS_A, Hreal);
 
     // TODO: more tests!
 
@@ -47,7 +46,7 @@ public class HomographyEstimatorFourCornersTest {
         RealMatrix Hfinal = hestmtr.getHomography(boardPts, imagePts);
         // System.out.println("Hfinal = \n" + Matrix.toString(Hfinal));
         // System.out.println("final error = " + HomographyEstimator.getReprojectionError(boardPts, imagePts, Hfinal));
-        assertTrue("reprojection error exceeded", HomographyEstimator.getReprojectionError(boardPts, imagePts, Hfinal) < 11);
+        assertTrue("reprojection error exceeded", HomographyUtils.getReprojectionError(boardPts, imagePts, Hfinal) < 11);
     }
 
 }

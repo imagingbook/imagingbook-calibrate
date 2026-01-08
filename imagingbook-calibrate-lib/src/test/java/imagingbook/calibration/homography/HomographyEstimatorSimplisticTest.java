@@ -38,7 +38,7 @@ public class HomographyEstimatorSimplisticTest {
     };
 
     // static final Pnt2d[] POINTS_B = new Homography(Hreal).applyTo(POINTS_A);
-    static final Pnt2d[] POINTS_B = HomographyEstimator.projectPoints(POINTS_A, Hreal);
+    static final Pnt2d[] POINTS_B = HomographyUtils.projectPoints(POINTS_A, Hreal);
 
     static void list_Points_B() {
         System.out.println("POINTS_B:");
@@ -102,7 +102,7 @@ public class HomographyEstimatorSimplisticTest {
         double dmax = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < PBnoisy.length; i++) {
             // Pnt2d pMapped = Hest.applyTo(POINTS_A[i]); // apply estimated homography
-            Pnt2d pMapped = HomographyEstimator.projectOnePoint(POINTS_A[i], Hest); // apply estimated homography
+            Pnt2d pMapped = HomographyUtils.projectOnePoint(POINTS_A[i], Hest); // apply estimated homography
             double di = PBnoisy[i].distance(pMapped);
             dsum = dsum + di;
             dmax = Math.max(dmax, di);
@@ -126,7 +126,7 @@ public class HomographyEstimatorSimplisticTest {
         RealMatrix Hest = hestmtr.getHomography(boardPts, imagePts);
         // System.out.println("Hest = \n" + Matrix.toString(Hest));
         // System.out.println("final error = " + HomographyEstimator.getReprojectionError(boardPts, imagePts, Hest));
-        assertTrue("reprojection error exceeded", HomographyEstimator.getReprojectionError(boardPts, imagePts, Hest) < 12);
+        assertTrue("reprojection error exceeded", HomographyUtils.getReprojectionError(boardPts, imagePts, Hest) < 12);
     }
 
 }

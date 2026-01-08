@@ -7,14 +7,8 @@
 package imagingbook.calibration.homography;
 
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.math.Matrix;
-import imagingbook.testutils.DeterministicRandom;
-import imagingbook.testutils.NumericTestUtils;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
-import org.junit.Test;
-
-import java.util.random.RandomGenerator;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -40,7 +34,7 @@ public class HomographyTest {
     };
 
     // static final Pnt2d[] POINTS_B = new Homography(Hreal).applyTo(POINTS_A);
-    static final Pnt2d[] POINTS_B = HomographyEstimator.projectPoints(POINTS_A, Hreal);
+    static final Pnt2d[] POINTS_B = HomographyUtils.projectPoints(POINTS_A, Hreal);
 
     // -----------------------------------------------------------------------
 
