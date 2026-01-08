@@ -204,13 +204,14 @@ public class HomographyEstimatorFourCorners extends HomographyEstimator {
 		return pnts;
 	}
 
-	Pnt2d[] projectPoints(Pnt2d[] pnts, RealMatrix H) {
-		Pnt2d[] pntsProj = new Pnt2d[pnts.length];
-		for (int i = 0; i < pnts.length; i++) {
-			pntsProj[i] = Pnt2d.from(map2dHomogeneous(pnts[i].toDoubleArray(), H));
-		}
-		return pntsProj;
-	}
+	// @Deprecated
+	// Pnt2d[] projectPoints(Pnt2d[] pnts, RealMatrix H) {
+	// 	Pnt2d[] pntsProj = new Pnt2d[pnts.length];
+	// 	for (int i = 0; i < pnts.length; i++) {
+	// 		pntsProj[i] = Pnt2d.from(map2dHomogeneous(pnts[i].toDoubleArray(), H));
+	// 	}
+	// 	return pntsProj;
+	// }
 
 	/**
 	 * Small inner class for efficient calculation of 4-corner homographies (exactly 4

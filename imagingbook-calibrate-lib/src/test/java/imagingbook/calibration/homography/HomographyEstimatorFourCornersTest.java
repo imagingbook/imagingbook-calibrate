@@ -46,7 +46,7 @@ public class HomographyEstimatorFourCornersTest {
         Homography Hfinal = hestmtr.getHomography(boardPts, imagePts);
         // System.out.println("Hfinal = \n" + Matrix.toString(Hfinal));
         // System.out.println("final error = " + HomographyEstimator.getReprojectionError(boardPts, imagePts, Hfinal));
-        assertTrue("reprojection error exceeded", HomographyEstimator.getReprojectionError(boardPts, imagePts, Hfinal) < 12);
+        assertTrue("reprojection error exceeded", HomographyEstimator.getReprojectionError(boardPts, imagePts, Hfinal) < 11);
     }
 
 }

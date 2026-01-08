@@ -8,9 +8,11 @@ package imagingbook.calibration.homography;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.math.Matrix;
+import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
+
+import static imagingbook.common.math.Arithmetic.sqr;
 
 public abstract class HomographyEstimator {
 
@@ -48,8 +50,8 @@ public abstract class HomographyEstimator {
         if (normalizePoints) {
             Na = getNormalisationMatrix(ptsA);
             Nb = getNormalisationMatrix(ptsB);
-            ptsAn = transformPoints(ptsA, Na);
-            ptsBn = transformPoints(ptsB, Nb);
+            ptsAn = projectPoints(ptsA, Na);
+            ptsBn = projectPoints(ptsB, Nb);
         }
         else {
             ptsAn = ptsA;
@@ -59,16 +61,11 @@ public abstract class HomographyEstimator {
         // get an initial homography estimate (with normalized coordinates):
         RealMatrix Hinit = estimateHomography(ptsAn, ptsBn);    // implemented by subclasses
 
-        // if (normalizePoints) {
-        //     RealMatrix HinitDen = MatrixUtils.inverse(Nb).multiply(Hinit).multiply(Na);
-        //     System.out.println("   FourPoint: Hinit denormalized = \n" + Matrix.toString(new Homography(HinitDen)));
-        //     System.out.println("   initial reproj. error (denormalized) = " + getReprojectionError(ptsA, ptsB, HinitDen));
-        // }
-
         // optionally refine this estimate (still with normalized coordinates):
-        RealMatrix Hn = (doRefinement) ? refineHomography(Hinit, ptsAn, ptsBn) : Hinit;
+        RealMatrix Href = (doRefinement) ? refineHomography(Hinit, ptsAn, ptsBn) : Hinit;
+
         // de-normalize the homography matrix:
-        RealMatrix H = (normalizePoints) ? MatrixUtils.inverse(Nb).multiply(Hn).multiply(Na) : Hn;
+        RealMatrix H = (normalizePoints) ? MatrixUtils.inverse(Nb).multiply(Href).multiply(Na) : Href;
 
         return new Homography(H);
     }
@@ -106,34 +103,27 @@ public abstract class HomographyEstimator {
      * @return the affine transformation matrix for normalizing the point set
      */
     public static RealMatrix getNormalisationMatrix(Pnt2d[] pnts) {
-        final int N = pnts.length;
-        double[] x = new double[N];
-        double[] y = new double[N];
-
-        for (int i = 0; i < N; i++) {
+        final int n = pnts.length;
+        double[] x = new double[n];
+        double[] y = new double[n];
+        for (int i = 0; i < n; i++) {
             x[i] = pnts[i].getX();
             y[i] = pnts[i].getY();
         }
-
         // calculate the means in x/y
         double meanx = MathUtil.mean(x);
         double meany = MathUtil.mean(y);
-
         // calculate the variances in x/y
         double varx = MathUtil.variance(x);
         double vary = MathUtil.variance(y);
-
         double sx = Math.sqrt(2 / varx);
         double sy = Math.sqrt(2 / vary);
 
-        RealMatrix matrixA = MatrixUtils.createRealMatrix(new double[][]{
-                {sx, 0, -sx * meanx},
-                {0, sy, -sy * meany},
-                {0, 0, 1}});
-
-        return matrixA;
+        return new Array2DRowRealMatrix(new double[][]
+                {{sx, 0, -sx * meanx},
+                 {0, sy, -sy * meany},
+                 {0, 0, 1}}, false);
     }
-
 
     /**
      * Applies a 3x3 transformation matrix to the given 2D point {@code p} in homogeneous
@@ -142,7 +132,7 @@ public abstract class HomographyEstimator {
      * @param M3x3 the transformation matrix
      * @return the transformed point
      */
-    public static double[] map2dHomogeneous(double[] p, RealMatrix M3x3) {
+    public static double[] projectOnePoint(double[] p, RealMatrix M3x3) {
         if (p.length != 2) {
             throw new IllegalArgumentException("transform(): vector p must be of length 2 but is " + p.length);
         }
@@ -158,10 +148,9 @@ public abstract class HomographyEstimator {
      * @param M3x3 the transformation matrix
      * @return the transformed point
      */
-    public static Pnt2d map2dHomogeneous(Pnt2d p, RealMatrix M3x3) {
-        return Pnt2d.from(map2dHomogeneous(p.toDoubleArray(), M3x3));
+    public static Pnt2d projectOnePoint(Pnt2d p, RealMatrix M3x3) {
+        return Pnt2d.from(projectOnePoint(p.toDoubleArray(), M3x3));
     }
-
 
     /**
      * Applies a 3x3 transformation matrix to the given 2D point set {@code pts} in homogeneous
@@ -170,31 +159,30 @@ public abstract class HomographyEstimator {
      * @param M3x3 the transformation matrix
      * @return the transformed point set
      */
-    public static Pnt2d[] transformPoints(Pnt2d[] pts, RealMatrix M3x3) {
+    public static Pnt2d[] projectPoints(Pnt2d[] pts, RealMatrix M3x3) {
         Pnt2d[] ptsN = new Pnt2d[pts.length];
         for (int i = 0; i < pts.length; i++) {
-            ptsN[i] = map2dHomogeneous(pts[i], M3x3);
+            ptsN[i] = projectOnePoint(pts[i], M3x3);
         }
         return ptsN;
     }
 
-
-    public static double getReprojectionError(Pnt2d[] ptsA, Pnt2d[] ptsB, RealMatrix H) {
-        int n = ptsA.length;
-        double[] Ya = new double[2 * n];
-        double[] Yb = new double[2 * n];
-        for (int i = 0; i < n; i++) {
-            double[] A = map2dHomogeneous(ptsA[i].toDoubleArray(), H);
-            // System.out.printf("    A=%s -> %s : B=%s\n", ptsA[i], Pnt2d.from(A), ptsB[i]);
-            Ya[2*i + 0] = A[0];
-            Ya[2*i + 1] = A[1];
-            Yb[2*i + 0] = ptsB[i].getX();
-            Yb[2*i + 1] = ptsB[i].getY();
+    /**
+     * Calculates and returns the total reprojection error || H*A - B ||.
+     * @param A first point sequence (to be projected)
+     * @param B second point sequence (reference)
+     * @param H 3x3 projection matrix
+     * @return the reprojection error
+     */
+    public static double getReprojectionError(Pnt2d[] A, Pnt2d[] B, RealMatrix H) {
+        double sum = 0;
+        for (int i = 0; i < A.length; i++) {
+            double[] pa = projectOnePoint(A[i].toDoubleArray(), H);
+            sum += sqr(B[i].getX() - pa[0]);
+            sum += sqr(B[i].getY() - pa[1]);
         }
-        double[] R = Matrix.subtract(Yb, Ya);
-        return Matrix.normL2(R);
+        return Math.sqrt(sum);
     }
-
 
     // ------------------------------------------------------------
 
@@ -209,10 +197,10 @@ public abstract class HomographyEstimator {
     	final int M = obsPoints.length;
     	Homography[] homographies = new Homography[M];
     	for (int i = 0; i < M; i++) {
-            Homography Hinit = getHomography(modelPts, obsPoints[i]);
+            Homography H = getHomography(modelPts, obsPoints[i]);
             // Homography H = doNonlinearRefinement ?
     		// 		refineHomography(Hinit, modelPts, obsPoints[i]) : Hinit;
-    		homographies[i] = Hinit;
+    		homographies[i] = H;
     	}
     	return homographies;
     }
