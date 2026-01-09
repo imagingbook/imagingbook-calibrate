@@ -8,6 +8,7 @@ package imagingbook.calibration.intrinsics;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.math.Matrix;
+import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math4.legacy.linear.CholeskyDecomposition;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
@@ -41,12 +42,13 @@ public class IntrinsicsEstimatorZhang implements IntrinsicsEstimator {
         double[] b = MathUtil.solveHomogeneousSystem(VM).toArray();	// solve VM.b=0
 
         // *************************************************************************************
-        System.out.println("\nhom. solution b = " + Matrix.toString(b));
-
+        PrintPrecision.set(8);
         System.out.println("\nVM = " + Matrix.toString(VM));
         SingularValueDecomposition svd = new SingularValueDecomposition(VM);
         System.out.println("\nsingular vals = " + Matrix.toString(svd.getSingularValues()));
-        System.out.println("\ndecomp V = " + Matrix.toString(svd.getV()));
+        // System.out.println("\ndecomp V = " + Matrix.toString(svd.getV()));
+        System.out.println("\nhom. solution b = " + Matrix.toString(b));
+
         // *************************************************************************************
 
         RealMatrix B = MatrixUtils.createRealMatrix(new double[][]

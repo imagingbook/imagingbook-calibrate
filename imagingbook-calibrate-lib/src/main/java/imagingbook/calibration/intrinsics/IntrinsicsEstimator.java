@@ -14,7 +14,7 @@ public interface IntrinsicsEstimator {
 
     // version without transpose
     default double[] getVpq(RealMatrix H, int p, int q) {
-        final double[] vpq = new double[] {
+        return new double[] {
                 H.getEntry(0, p) * H.getEntry(0, q),
                 H.getEntry(0, p) * H.getEntry(1, q) + H.getEntry(1, p) * H.getEntry(0, q),
                 H.getEntry(1, p) * H.getEntry(1, q),
@@ -22,6 +22,5 @@ public interface IntrinsicsEstimator {
                 H.getEntry(2, p) * H.getEntry(1, q) + H.getEntry(1, p) * H.getEntry(2, q),
                 H.getEntry(2, p) * H.getEntry(2, q)
         };
-        return vpq;
     }
 }

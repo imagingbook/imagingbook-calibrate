@@ -8,6 +8,7 @@ package imagingbook.calibration.intrinsics;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.math.Matrix;
+import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
@@ -26,6 +27,8 @@ public class IntrinsicsEstimatorZhang2 implements IntrinsicsEstimator {
 
         for (int i = 0; i < M; i++) {
             RealMatrix H = homographies[i];
+            PrintPrecision.set(8);
+            System.out.println("IntrinsicsEstimatorZhang2: H" + i + " = \n" + Matrix.toString(H) );
             V[2*i] = getVpq(H, 0, 1); // v01
             V[2*i + 1] = Matrix.subtract(getVpq(H, 0, 0), getVpq(H, 1, 1)); // v00-v11
         }
@@ -34,15 +37,25 @@ public class IntrinsicsEstimatorZhang2 implements IntrinsicsEstimator {
             V[V.length - 1] = new double[] { 0, 1, 0, 0, 0, 0 };
         }
 
+        System.out.println("IntrinsicsEstimatorZhang2: V = \n" + Matrix.toString(V) );
+
         RealMatrix VM = MatrixUtils.createRealMatrix(V);
         double[] b = MathUtil.solveHomogeneousSystem(VM).toArray();	// solve VM.b=0
 
+        System.out.println("IntrinsicsEstimatorZhang3: b = \n" + Matrix.toString(b) );
+
         final double vc 	= (b[1] * b[3] - b[0] * b[4]) / (b[0] * b[2] - b[1] * b[1]);
+        System.out.println("    vc = " + vc);
         final double lambda = b[5] - (b[3] * b[3] + vc * (b[1] * b[3] - b[0] * b[4])) / b[0];
+        System.out.println("    lambda = " + lambda);
         final double alpha 	= Math.sqrt(lambda / b[0]);
+        System.out.println("    alpha = " + alpha);
         final double beta 	= Math.sqrt(lambda * b[0] / (b[0] * b[2] - b[1] * b[1]));
+        System.out.println("    beta = " + beta);
         final double gamma 	= -b[1] * alpha * alpha * beta / lambda;
+        System.out.println("    gamma = " + gamma);
         final double uc 	= gamma * vc / beta - b[3] * alpha * alpha / lambda;	// beta! 1998 report seems correct!
+        System.out.println("    uc = " + uc);
 
         RealMatrix A = MatrixUtils.createRealMatrix(new double[][] {
                 { alpha, gamma, uc },

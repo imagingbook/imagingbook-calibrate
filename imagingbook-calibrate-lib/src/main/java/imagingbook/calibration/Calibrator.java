@@ -12,7 +12,10 @@ import imagingbook.calibration.homography.HomographyEstimator;
 import imagingbook.calibration.homography.HomographyEstimatorSimplistic;
 import imagingbook.calibration.intrinsics.CameraIntrinsics;
 import imagingbook.calibration.intrinsics.IntrinsicsEstimator;
+import imagingbook.calibration.intrinsics.IntrinsicsEstimatorConstrained;
 import imagingbook.calibration.intrinsics.IntrinsicsEstimatorZhang;
+import imagingbook.calibration.intrinsics.IntrinsicsEstimatorZhang2;
+import imagingbook.calibration.intrinsics.IntrinsicsEstimatorZhang3;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
@@ -49,7 +52,7 @@ public class Calibrator {
 	public static class Parameters implements ParameterBundle<Calibrator> {
         /** Lens distortion model to be used. */
         public LensDistortion distortionModel = Radial2TermDistortion.INSTANCE;
-		/** Normalize point coordinates for numerical stability in {@link Homography}. */
+		/** Normalize point coordinates for numerical stability in homography estimation. */
 		public boolean normalizePoints = true;
 		/** Perform non-linear refinement of homographies (usually not needed). */
 		public boolean refineHomographies = true;
@@ -114,9 +117,9 @@ public class Calibrator {
 	 */
 	public Camera calibrate() {
 		M = imgPntSet.size();	// number of views to process
-		if (M < 2) {
-			throw new IllegalStateException("Calibration: at least two views needed");
-		}
+		// if (M < 2) {
+		// 	throw new IllegalStateException("Calibration: at least two views needed");
+		// }
         // M views with N observed points each
         Pnt2d[][] obsPts = imgPntSet.toArray(new Pnt2d[0][]);
 		
@@ -124,7 +127,7 @@ public class Calibrator {
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         RealMatrix[] homographies = new  RealMatrix[M];
 		HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(params.normalizePoints, params.refineHomographies, 1000, 100);
-        for(int i = 0; i < M; i++) {
+        for (int i = 0; i < M; i++) {
             // homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, params.refineHomographies);
 			homographies[i] = hestmtr.getHomography(modelPts, obsPts[i]);
 			debug("homography" + i + ": \n" + homographies[i]);
@@ -132,7 +135,8 @@ public class Calibrator {
 		
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
 		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
-		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
+		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
+		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorConstrained(6048, 4024);
 		RealMatrix Ainit = intrEstimtr.estimate(homographies);
 		// RealMatrix Ainit = CameraIntrinsics.from(homographies);
 		initCam = new Camera(Ainit, params.distortionModel);
