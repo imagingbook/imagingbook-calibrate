@@ -62,6 +62,9 @@ public class Do_Calibration implements PlugIn, JavaDocHelp {
 			return;
 		}
 
+		int imgWidth = testIm.getWidth();
+		int imgHeight = testIm.getHeight();
+
 		int M = testIm.getNSlices();    // number of views
 		if (M < 2) {
 			IJ.error("Image must be a stack with 2+ images!");
@@ -84,7 +87,7 @@ public class Do_Calibration implements PlugIn, JavaDocHelp {
 		params.useNumericJacobian = true;
 		params.debug = false;
 
-		Calibrator zcalib = new Calibrator(params, modelPoints);
+		Calibrator zcalib = new Calibrator(params, modelPoints, imgWidth, imgHeight);
 		for (int i = 0; i < M; i++) {
 			zcalib.addView(obsPoints[i]);
 		}

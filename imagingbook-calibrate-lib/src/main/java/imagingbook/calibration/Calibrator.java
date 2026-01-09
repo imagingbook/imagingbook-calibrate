@@ -10,16 +10,11 @@ import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
 import imagingbook.calibration.homography.HomographyEstimator;
 import imagingbook.calibration.homography.HomographyEstimatorSimplistic;
-import imagingbook.calibration.intrinsics.CameraIntrinsics;
 import imagingbook.calibration.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibration.intrinsics.IntrinsicsEstimatorConstrained;
-import imagingbook.calibration.intrinsics.IntrinsicsEstimatorZhang;
-import imagingbook.calibration.intrinsics.IntrinsicsEstimatorZhang2;
-import imagingbook.calibration.intrinsics.IntrinsicsEstimatorZhang3;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
-
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 import java.util.ArrayList;
@@ -68,6 +63,8 @@ public class Calibrator {
 	private final Pnt2d[] modelPts;			// the sequence of 2D points in the planar model
 	private final List<Pnt2d[]> imgPntSet; 	// list of vectors containing observed 2D image points for each view
 	private final Parameters params;
+	private final int imgWidth, imgHeight;
+
 	private Camera initCam, finalCam;
 	private ViewTransform[] initViews, finalViews;
 
@@ -79,13 +76,18 @@ public class Calibrator {
 
 	/**
 	 * The only constructor.
-	 * @param params a parameter object (default parameters are used if {@code null} is passed)
-	 * @param model a sequence of 2D points specifying the x/y coordinates of the planar calibration pattern (assuming
-	 * zero z-coordinates)
+	 *
+	 * @param params    a parameter object (default parameters are used if {@code null} is passed)
+	 * @param model     a sequence of 2D points specifying the x/y coordinates of the planar calibration pattern (assuming
+	 *                  zero z-coordinates)
+	 * @param imgWidth image width (used to estimate the principal point)
+	 * @param imgHeight image height (used to estimate the principal point)
 	 */
-	public Calibrator(Parameters params, Pnt2d[] model) {
+	public Calibrator(Parameters params, Pnt2d[] model, int imgWidth, int imgHeight) {
 		this.params = (params != null) ? params : new Parameters();
 		this.modelPts = model;
+		this.imgWidth = imgWidth;
+		this.imgHeight = imgHeight;
 		this.imgPntSet = new ArrayList<>();
         assert params != null;
         // this.normalizePointSets = params.normalizePointSets;
@@ -136,7 +138,7 @@ public class Calibrator {
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
 		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
 		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
-		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorConstrained(6048, 4024);
+		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
 		RealMatrix Ainit = intrEstimtr.estimate(homographies);
 		// RealMatrix Ainit = CameraIntrinsics.from(homographies);
 		initCam = new Camera(Ainit, params.distortionModel);

@@ -12,7 +12,7 @@ import imagingbook.calibration.distortion.RadialLateralDistortion;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.junit.Test;
-import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 public class CalibratorTest {
@@ -31,7 +31,7 @@ public class CalibratorTest {
         params.useNumericJacobian = true;
         params.debug = false;
 
-        Calibrator calibrator = new Calibrator(params, modelPoints);
+        Calibrator calibrator = new Calibrator(params, modelPoints, -1, -1);
         assertNotNull(calibrator);
         calibrator.addViews(obsPoints);
 
@@ -64,7 +64,7 @@ public class CalibratorTest {
         params.useNumericJacobian = true;
         params.debug = false;
 
-        Calibrator calibrator = new Calibrator(params, modelPoints);
+        Calibrator calibrator = new Calibrator(params, modelPoints, -1, -1);
         assertNotNull(calibrator);
         calibrator.addViews(obsPoints);
 
@@ -97,7 +97,7 @@ public class CalibratorTest {
         params.useNumericJacobian = true;
         params.debug = false;
 
-        Calibrator calibrator = new Calibrator(params, modelPoints);
+        Calibrator calibrator = new Calibrator(params, modelPoints, -1, -1);
         assertNotNull(calibrator);
         calibrator.addViews(obsPoints);
 

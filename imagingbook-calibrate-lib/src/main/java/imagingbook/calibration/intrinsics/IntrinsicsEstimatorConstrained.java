@@ -22,7 +22,9 @@ import static imagingbook.common.math.Arithmetic.sqr;
 
 /**
  * Estimates intrinsic camera parameters assuming that there is no skew (gamma = 0) and
- * the principal projection point is at the image center.
+ * the principal projection point is at the image center. This method is numerically
+ * much more robust than the full-parameter estimation used in
+ * {@link IntrinsicsEstimatorZhang}.
  */
 public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
 

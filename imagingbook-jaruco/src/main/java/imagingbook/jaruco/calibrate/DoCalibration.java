@@ -5,21 +5,16 @@ import ij.process.ByteProcessor;
 import imagingbook.calibration.Calibrator;
 import imagingbook.calibration.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.Polygon2d;
-import imagingbook.common.geometry.mappings.linear.ProjectiveMapping2D;
-import imagingbook.common.ij.IjUtils;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.jaruco.boards.AbstractBoard;
 import imagingbook.jaruco.boards.AbstractBoardDetector.PntPair;
 import imagingbook.jaruco.boards.CharucoBoard;
-import imagingbook.jaruco.boards.CharucoBoardDetector;
 import imagingbook.jaruco.data.DICT_5x5_CharucoBoard_12x8_A4L.ImageCornerSet;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class DoCalibration {
@@ -71,7 +66,7 @@ public class DoCalibration {
         params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.debug = true;
-        Calibrator calibrator = new Calibrator(params, modelPoints);
+        Calibrator calibrator = new Calibrator(params, modelPoints, 6048, 4024);
 
         for (ImageCornerSet cornerSet : cornerSets) {
             System.out.println("adding corner set " + cornerSet);

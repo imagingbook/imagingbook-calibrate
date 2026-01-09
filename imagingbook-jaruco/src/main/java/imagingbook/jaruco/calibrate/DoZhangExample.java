@@ -26,7 +26,7 @@ public class DoZhangExample {
         params.useNumericJacobian = true;
         params.debug = true;
 
-        Calibrator zcalib = new Calibrator(params, modelPoints);
+        Calibrator zcalib = new Calibrator(params, modelPoints, 640, 480);
         for (int i = 0; i < M; i++) {
             zcalib.addView(obsPoints[i]);
         }
