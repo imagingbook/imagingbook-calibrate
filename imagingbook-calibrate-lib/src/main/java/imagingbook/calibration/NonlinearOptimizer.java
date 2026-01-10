@@ -45,17 +45,17 @@ public abstract class NonlinearOptimizer {
     /**
      * Super-constructor, invoked by constructors of inheriting classes.
      * @param initCam the initial camera parameters
-     * @param modelPts the 3D model points
-     * @param obsPts the observed sensor points
+     * @param modelPntSet the 3D model points
+     * @param obsPntSet the observed sensor points
      */
-	NonlinearOptimizer(Camera initCam, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
+	NonlinearOptimizer(Camera initCam, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
         this.initCam = initCam;
         this.camParCount = initCam.getParameterCount();
         this.viewParCount = ViewTransform.PARAMETER_COUNT;
-		this.modelPts = modelPts;
-		this.obsPts = obsPts.toArray(new Pnt2d[0][]);
-		this.M = obsPts.size();
-		this.N = modelPts.length;
+		this.modelPts = modelPntSet.get(0);	// TODO: fix!
+		this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
+		this.M = obsPntSet.size();
+		this.N = modelPts.length;	// TODO: not constant!!
 	}
 
 	/**
@@ -178,7 +178,6 @@ public abstract class NonlinearOptimizer {
 
 	/**
 	 * Returns the optimized camera parameters.
-	 *
 	 * @return the optimized camera parameters
 	 */
 	Camera getFinalCamera() {
@@ -187,7 +186,6 @@ public abstract class NonlinearOptimizer {
 
 	/**
 	 * Returns the optimized view parameters.
-	 *
 	 * @return the optimized view parameters
 	 */
 	ViewTransform[] getFinalViews() {

@@ -24,13 +24,13 @@ import java.util.List;
 class LensDistortionEstimator {
 
     private final ViewTransform[] views;
-    private final Pnt2d[] modelPts;
+    private final Pnt2d[][] modelPts;
     private final Pnt2d[][] obsPts;
 
-    protected LensDistortionEstimator(ViewTransform[] views, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
+    protected LensDistortionEstimator(ViewTransform[] views, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
         this.views = views;
-        this.modelPts = modelPts;
-        this.obsPts = obsPts.toArray(new Pnt2d[0][]);
+        this.modelPts = modelPntSet.toArray(new Pnt2d[0][]);
+        this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
     }
 
     /**
@@ -58,12 +58,13 @@ class LensDistortionEstimator {
         final RealVector d = new ArrayRealVector(2 * M * N);
 
         // matrix double-line counter l
-        for (int i = 0, l = 0; i < M; i++) {    // iterate over M views:
-            Pnt2d[] obs = obsPts[i];
-            ViewTransform vt = views[i];
+        for (int k = 0, l = 0; k < M; k++) {    // iterate over M views:
+            Pnt2d[] mod = modelPts[k];
+            Pnt2d[] obs = obsPts[k];
+            ViewTransform vt = views[k];
 
             for (int j = 0; j < N; j++, l+=2) {   // iterate over M observed points
-                final Pnt2d mpt = modelPts[j];    // model point
+                final Pnt2d mpt = mod[j];    // model point
                 // get point positions in the ideal image plane (normalized projection, f=1)
                 double[] xy = cam.projectNormalized(vt, mpt);
                 double x = xy[0], y = xy[1];
@@ -79,9 +80,9 @@ class LensDistortionEstimator {
                 final int l1 = l + 1;
                 // rowUV is a 2 x P matrix (submatrix of D):
                 double[][] rowsUV = distortion.getDMatrixRowsUV(x, y, du, dv);
-                for (int k = 0; k < P; k++) {
-                    D.setEntry(l0, k, rowsUV[0][k]);
-                    D.setEntry(l1, k, rowsUV[1][k]);
+                for (int p = 0; p < P; p++) {
+                    D.setEntry(l0, p, rowsUV[0][p]);
+                    D.setEntry(l1, p, rowsUV[1][p]);
                 }
                 // mount vector d with difference between observed and predicted sensor points
                 Pnt2d UV = obs[j];  // observed point

@@ -187,12 +187,12 @@ public class Calibration {
             initViews[i] = ViewTransform.from(Ainit, homographies[i]);
         }
 
-		Pnt2d[] modelPts = modelPntSet.get(0); 	// TODO: fix!!
-		Pnt2d[][] obsPts = imgPntSet.toArray(new Pnt2d[0][]);
+		// Pnt2d[] modelPts = modelPntSet.get(0); 	// TODO: fix!!
+		// Pnt2d[][] obsPts = imgPntSet.toArray(new Pnt2d[0][]);
 
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Determine the lens distortion from initial estimates:");
-        LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPts, imgPntSet);
+        LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPntSet, imgPntSet);
         debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		Camera improvedCam = new Camera(Ainit, distortion);
         debug("improved camera = " + improvedCam);
@@ -201,8 +201,8 @@ public class Calibration {
 		debug("Step 5: Refine all parameters by non-linear optimization");
         debug("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
 		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?
-				new NonlinearOptimizerNumeric(improvedCam, modelPts, imgPntSet) :
-				new NonlinearOptimizerAnalytic(improvedCam, modelPts, imgPntSet);
+				new NonlinearOptimizerNumeric(improvedCam, modelPntSet, imgPntSet) :
+				new NonlinearOptimizerAnalytic(improvedCam, modelPntSet, imgPntSet);
 		optimizer.optimize(initViews);
 		finalCam = optimizer.getFinalCamera();
         debug("final camera = " + finalCam);

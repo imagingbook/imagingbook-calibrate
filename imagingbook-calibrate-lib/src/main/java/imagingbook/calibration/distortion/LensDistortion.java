@@ -120,11 +120,11 @@ public interface LensDistortion {
      *  (M views with N observed points).
      *  @param cam the initial (linear) camera model
      *  @param views a sequence of extrinsic view transformations
-     *  @param modelPts the set of 2D model points (on the planar calibration target)
-     *  @param obsPts a sequence of 2D image point sets, one set for each view
+     *  @param modelPntSet the set of 2D model points (on the planar calibration target), one set for each view
+     *  @param obsPntSet a sequence of 2D image point sets, one set for each view
      */
-    public static LensDistortion from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
-        LensDistortionEstimator estimator = new LensDistortionEstimator(views, modelPts, obsPts);
+    public static LensDistortion from(Camera cam, ViewTransform[] views, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
+        LensDistortionEstimator estimator = new LensDistortionEstimator(views, modelPntSet, obsPntSet);
         return estimator.getEstimate(cam);
     }
 }

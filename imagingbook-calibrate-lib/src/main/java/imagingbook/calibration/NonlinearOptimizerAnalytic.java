@@ -28,8 +28,8 @@ import static java.lang.Math.sqrt;
  */
 public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 
-	NonlinearOptimizerAnalytic(Camera initCam, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
-		super(initCam, modelPts, obsPts);
+	NonlinearOptimizerAnalytic(Camera initCam, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
+		super(initCam, modelPntSet, obsPntSet);
         if (camParCount > 7)
             throw new IllegalArgumentException("analytic optimizer cannot handle more than 7 parameters");
 	}

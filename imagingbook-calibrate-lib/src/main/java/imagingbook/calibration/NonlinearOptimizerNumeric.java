@@ -23,8 +23,8 @@ import java.util.List;
  */
 public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	
-	NonlinearOptimizerNumeric(Camera initCam, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
-		super(initCam, modelPts, obsPts);
+	NonlinearOptimizerNumeric(Camera initCam, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
+		super(initCam, modelPntSet, obsPntSet);
 	}
 	
 	@Override
