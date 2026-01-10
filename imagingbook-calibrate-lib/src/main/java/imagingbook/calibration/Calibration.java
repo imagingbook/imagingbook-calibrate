@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
 /**
  * <p>This is the main camera calibration class.
  * Instances of {@link Calibration} are supposed to be used in the following way:</p>
@@ -68,196 +67,142 @@ public class Calibration {
 
 	// --------------------------------------------------------------------------------------------
 
-	private int M;							// the number of camera views
-	@Deprecated
-	// private Pnt2d[] modelPts;			// the sequence of 2D points in the planar model
-
+	private int M;								// number of views
 	private final List<Pnt2d[]> modelPntSet;
-	private final List<Pnt2d[]> imgPntSet; 	// list of vectors containing observed 2D image points for each view
-
+	private final List<Pnt2d[]> imagePntSet; 	// list of vectors containing observed 2D image points for each view
+	private RealMatrix[] homographies = null;
 	private final Parameters params;
 	private final int imgWidth, imgHeight;
-
-	// private final HomographyEstimator homographyEstimator;
-	// private final List<RealMatrix> homographyList;
 	private Camera initCam, finalCam;
 	private ViewTransform[] initViews, finalViews;
-	
-	// ------- constructors ------------------------------
+
+	// --------------------------------------------------------------
 
 	/**
 	 * The only constructor.
-	 *
 	 * @param params a parameter object (default parameters are used if {@code null} is passed)
 	 * @param imgWidth image width (used to estimate the principal point)
 	 * @param imgHeight image height (used to estimate the principal point)
 	 */
 	public Calibration(Parameters params, int imgWidth, int imgHeight) {
 		this.params = (params != null) ? params : new Parameters();
-		// this.modelPts = model;
 		this.imgWidth = imgWidth;
 		this.imgHeight = imgHeight;
-
 		this.modelPntSet = new ArrayList<>();
-		this.imgPntSet = new ArrayList<>();
-
-		// this.homographyEstimator = new HomographyEstimatorSimple(
-		// 				this.params.normalizePoints,
-		// 				this.params.refineHomographies,
-		// 				1000, 100);
-        // this.homographyList = new ArrayList<>();
+		this.imagePntSet = new ArrayList<>();
+		this.M = 0;
 	}
 
     // ------------ setup methods ----------------------------------------
 
-    // /**
-    //  * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
-    //  * @param pts a sequence of 2D image points
-    //  */
-	// @Deprecated
-    // public void addView(Pnt2d[] pts) {
-    //     imgPntSet.add(pts);
-    // }
-
-	// @Deprecated
-	// public void addViews(Pnt2d[][] views) {
-	// 	for (Pnt2d[] pts : views) {
-	// 		addView(pts);
-	// 	}
-	// }
-
-
 	/**
-	 * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
+	 * Adds a new "view" as a pair of 2D point sets: model points and image points.
 	 * Model and image points must be of the same length and in correspondence.
 	 * @param modelPts a sequence of 2D model points
 	 * @param imagePts a sequence of 2D image points
 	 */
 	public void addView(Pnt2d[] modelPts, Pnt2d[] imagePts) {
+		if (homographies != null) {
+			throw new IllegalStateException("no views can be added after calibration");
+		}
 		if (modelPts.length != imagePts.length) {
 			throw new IllegalArgumentException("model and image pt arrays must have same length");
 		}
+		if (modelPts.length < 4) {
+			throw new IllegalArgumentException("view must contain at least 4 point pairs: " +
+					modelPts.length);
+		}
 		modelPntSet.add(modelPts);
-		imgPntSet.add(imagePts);
-
-		// RealMatrix Hk = homographyEstimator.getHomography(modelPts, imagePts);
-		// if (Hk == null) {
-		// 	throw new IllegalArgumentException("homography estimation failed");
-		// }
-		// homographyList.add(Hk);
-		// imgPntSet.add(imagePts);
+		imagePntSet.add(imagePts);
+		M++;
 	}
 
     // -------------------------------------------------------------------
 
 	/**
 	 * Performs the actual camera calibration based on the provided sequence of views.
+	 * At least one view is required to run calibration.
+	 * Use {@link #addView(Pnt2d[], Pnt2d[])} to add views.
 	 * @return the estimated camera intrinsics as a {@link Camera} object
 	 */
 	public Camera calibrate() {
-		M = modelPntSet.size();	// number of views to process
 		if (M < 1) {
-			throw new IllegalStateException("Calibration: at least one view needed");
+			throw new IllegalStateException("min. one view needed to run calibration, use addView()");
 		}
-        // M views with N observed points each
 
-		
-		// Step 1: Calculate the homographies for each of the given N views:
+		// Step 1: Calculate the homographies for each of the given M views:
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
-        RealMatrix[] homographies = new  RealMatrix[M];
-		HomographyEstimator hestmtr = new HomographyEstimatorSimple(params.normalizePoints, params.refineHomographies, 1000, 100);
+        homographies = new  RealMatrix[M];
+		HomographyEstimator hestmtr =
+				new HomographyEstimatorSimple(
+						params.normalizePoints,
+						params.refineHomographies, 1000, 100);
         for (int k = 0; k < M; k++) {
-			homographies[k] = hestmtr.getHomography(modelPntSet.get(k), imgPntSet.get(k));
+			homographies[k] = hestmtr.getHomography(modelPntSet.get(k), imagePntSet.get(k));
 			debug("homography" + k + ": \n" + homographies[k]);
         }
 
-		
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
 		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
 		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
-		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
-		RealMatrix Ainit = intrEstimtr.estimate(homographies);
+		IntrinsicsEstimator intrEstm = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
+		RealMatrix Ainit = intrEstm.estimate(homographies);
 		initCam = new Camera(Ainit, params.distortionModel);
         debug("initial camera = " + initCam);
 		
-		// Step 3: calculate the extrinsic view parameters (3D view transforms)
+		// Step 3: Calculate the extrinsic view parameters (3D view transforms)
 		debug("Step 3: calculate the extrinsic view parameters (3D view transforms)");
         initViews = new ViewTransform[M];
         for (int i = 0; i < M; i++) {
             initViews[i] = ViewTransform.from(Ainit, homographies[i]);
         }
 
-		// Pnt2d[] modelPts = modelPntSet.get(0); 	// TODO: fix!!
-		// Pnt2d[][] obsPts = imgPntSet.toArray(new Pnt2d[0][]);
-
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Determine the lens distortion from initial estimates:");
-        LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPntSet, imgPntSet);
+        LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPntSet, imagePntSet);
         debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		Camera improvedCam = new Camera(Ainit, distortion);
         debug("improved camera = " + improvedCam);
 
-		// Step 5: Refine all parameters by non-linear optimization
+		// Step 5: Refine all parameters by overall non-linear optimization
 		debug("Step 5: Refine all parameters by non-linear optimization");
         debug("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
-		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?
-				new NonlinearOptimizerNumeric(improvedCam, modelPntSet, imgPntSet) :
-				new NonlinearOptimizerAnalytic(improvedCam, modelPntSet, imgPntSet);
-		optimizer.optimize(initViews);
-		finalCam = optimizer.getFinalCamera();
+		NonlinearOptimizer optim = (params.useNumericJacobian) ?
+				new NonlinearOptimizerNumeric(improvedCam, modelPntSet, imagePntSet) :
+				new NonlinearOptimizerAnalytic(improvedCam, modelPntSet, imagePntSet);
+		optim.optimize(initViews);
+		finalCam = optim.getFinalCamera();
         debug("final camera = " + finalCam);
-		finalViews = optimizer.getFinalViews();
+		finalViews = optim.getFinalViews();
 		return finalCam;
 	}
 
-
 	//---------------------------------------------------------------------------
-	
-	// @SuppressWarnings("unused")
-	// private void printHomographies(RealMatrix[] homographies) {
-	// 	int i = 0;
-	// 	for (RealMatrix H : homographies) {
-	// 		i++;
-	// 		System.out.println("Homography " + i + ":");
-	// 		System.out.println(Matrix.toString(H.getData()));
-	// 	}
-	// }
 
-	/**
-	 * Calculates the squared projection error for a single view, associated with a set of observed image points.
-	 *
-	 * @param cam a camera model (camera intrinsics)
-	 * @param view a view transformation (camera extrinsics)
-	 * @param observed a set of observed image points
-	 * @return the squared projection error (measured in pixel units)
-	 */
-    public double getProjectionError(Camera cam, ViewTransform view, Pnt2d[] observed) {
-    	// double sqError = 0;
-		// for (int j = 0; j < modelPts.length; j++) {
-		// 	double[] uv = cam.project(view, modelPts[j]);
-		// 	double[] UV = observed[j].toDoubleArray();
-		// 	double du = uv[0] - UV[0];
-		// 	double dv = uv[1] - UV[1];
-		// 	sqError = sqError + du * du + dv * dv;
-		// }
-    	// return sqError;
-		// TODO: fix!!
-		return 99;
+	public double getReprojectionError(int k) {
+		return getReprojectionError(finalCam, finalViews[k], modelPntSet.get(k), imagePntSet.get(k));
+	}
+
+    public double getReprojectionError(Camera cam, ViewTransform view, Pnt2d[] modelPts, Pnt2d[] imagePts) {
+        if (modelPts.length != imagePts.length) {
+            throw new IllegalStateException("model and image pt arrays must have same length");
+        }
+    	 double sqError = 0;
+		 for (int j = 0; j < modelPts.length; j++) {
+		 	double[] uv = cam.project(view, modelPts[j]);
+		 	double[] UV = imagePts[j].toDoubleArray();
+		 	double du = uv[0] - UV[0];
+		 	double dv = uv[1] - UV[1];
+		 	sqError = sqError + du * du + dv * dv;
+		 }
+    	 return sqError;
     }
 
-	/**
-	 * Calculates the squared projection error for a sequence of views, associated with a sequence of observed image
-	 * point sets.
-	 *
-	 * @param cam a camera model (camera intrinsics)
-	 * @param views a sequence of view transformations (camera extrinsics)
-	 * @param observed a sequence of sets of observed image points
-	 * @return the squared projection error (measured in pixel units)
-	 */
-    public double getProjectionError(Camera cam, ViewTransform[] views, Pnt2d[][] observed) {
+    public double getTotalReprojectionError() {
+        checkState();
     	double totalError = 0;
-    	for (int i = 0; i < views.length; i++) {
-    		totalError = totalError + getProjectionError(cam, views[i], observed[i]);
+    	for (int k = 0; k < M; k++) {
+    		totalError = totalError + getReprojectionError(k);
     	}
     	return totalError;
     }
@@ -265,39 +210,75 @@ public class Calibration {
     // ----------------------------------------------------------------------
 
 	/**
+	 * Returns the number of views used for this calibration.
+	 * @return the number of views
+	 */
+	public int getNumberOfViews() {
+		return M;
+	}
+
+	public Pnt2d[] getModelPoints(int k) {
+		return modelPntSet.get(k);
+	}
+
+	public Pnt2d[] getImagePoints(int k) {
+		return imagePntSet.get(k);
+	}
+
+	/**
+	 * Returns the initial homography estimates for the specified view.
+	 * @param k the view number
+	 * @return the estimated homography
+	 */
+	public RealMatrix getHomography(int k) {
+        checkState();
+		return homographies[k];
+	}
+
+	/**
 	 * Returns the initial camera model (no lens distortion).
-	 *
 	 * @return the initial camera model
 	 */
     public Camera getInitialCamera() {
+        checkState();
     	return initCam;
     }
 
 	/**
 	 * Returns the final camera model (including lens distortion).
-	 *
 	 * @return the final camera model
 	 */
     public Camera getFinalCamera() {
+        checkState();
     	return finalCam;
     }
 
 	/**
-	 * Returns the sequence of initial camera views (extrinsics, no lens distortion).
-	 *
-	 * @return the sequence of initial camera views
+	 * Returns the specified initial view transform (extrinsics, no lens distortion).
+	 * @param k the view number
+	 * @return the initial view transform
 	 */
-    public ViewTransform[] getInitialViews() {
-    	return initViews;
+    public ViewTransform getInitialViewTransform(int k) {
+        checkState();
+    	return initViews[k];
     }
 
 	/**
-	 * Returns the sequence of final camera views (extrinsics, including lens distortion).
-	 *
-	 * @return the sequence of final camera views
+	 * Returns the specified final view transform (extrinsics, no lens distortion).
+	 * @param k the view number
+	 * @return the initial view transform
 	 */
-    public ViewTransform[] getFinalViews() {
-    	return finalViews;
+	public ViewTransform getFinalViewTransform(int k) {
+        checkState();
+		return finalViews[k];
+	}
+
+	// ----------------------------------------------------------------------
+
+    private void checkState() {
+        if (homographies == null) {
+            throw new IllegalStateException("calibration not initialized, run calibrate() first");
+        }
     }
 
 	void debug(String msg) {

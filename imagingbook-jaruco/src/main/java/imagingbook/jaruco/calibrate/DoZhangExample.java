@@ -13,7 +13,6 @@ public class DoZhangExample {
     static boolean ListCameraViews = true;
 
     public static void main(String[] args) {
-
         Pnt2d[] modelPoints = ZhangData.getModelPoints();
         Camera camReference = ZhangData.getCamera();
         Pnt2d[][] obsPoints = ZhangData.getAllObservedPoints();
@@ -27,8 +26,8 @@ public class DoZhangExample {
         params.debug = false;
 
         Calibration zcalib = new Calibration(params, 640, 480);
-        for (int i = 0; i < M; i++) {
-            zcalib.addView(modelPoints, obsPoints[i]);
+        for (int k = 0; k < M; k++) {
+            zcalib.addView(modelPoints, obsPoints[k]);
         }
 
         // Perform calibration ------------------------------------------
@@ -38,7 +37,6 @@ public class DoZhangExample {
             System.out.println("Calibration failed");
             return;
         }
-        ViewTransform[] finalViews = zcalib.getFinalViews();
 
         // Show results ------------------------------------------
 
@@ -50,11 +48,12 @@ public class DoZhangExample {
 
         if (ListCameraViews) {
             IJ.log("\n**** Camera view parameters (3D rotation and translation): ****");
-            for (int i = 0; i < M; i++) {
-                IJ.log("View " + i + ":\n" + finalViews[i].toString());
+            for (int k = 0; k < M; k++) {
+                ViewTransform view = zcalib.getFinalViewTransform(k);
+                IJ.log("View " + k + ":\n" + view.toString());
             }
-            IJ.log(String.format("\nSquared projection error: %.3f\n",
-                    zcalib.getProjectionError(camFinal, finalViews, obsPoints)));
+
+            IJ.log(String.format("\nSquared projection error: %.3f\n", zcalib.getTotalReprojectionError()));
         }
     }
 }

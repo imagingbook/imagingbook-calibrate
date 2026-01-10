@@ -99,7 +99,6 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 			IJ.error("Calibration failed");
 			return;
 		}
-		ViewTransform[] finalViews = zcalib.getFinalViews();
 
 		// Show results ------------------------------------------
 
@@ -111,11 +110,12 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 
 		if (ListCameraViews) {
 			IJ.log("\n**** Camera view parameters (3D rotation and translation): ****");
-			for (int i = 0; i < M; i++) {
-				IJ.log("View " + i + ":\n" + finalViews[i].toString());
+			for (int k = 0; k < M; k++) {
+				ViewTransform view = zcalib.getFinalViewTransform(k);
+				IJ.log("View " + k + ":\n" + view.toString());
 			}
 			IJ.log(String.format("\nSquared projection error: %.3f\n",
-					zcalib.getProjectionError(camFinal, finalViews, obsPoints)));
+					zcalib.getTotalReprojectionError()));
 		}
 
 		ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
@@ -123,10 +123,11 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 		// draw the projected model (squares) given the camera/view parameters:
 		if (ShowProjectedModel) {
 			ola.setStroke(new ColoredStroke(StrokeWidth, ProjectedModelColor.getColor()));
-			for (int i = 0; i < M; i++) {
-				int sliceNo = i + 1;
+			for (int k = 0; k < M; k++) {
+				int sliceNo = k + 1;
 				ola.setStackPosition(sliceNo);
-				Pnt2d[] projPnts = camFinal.project(finalViews[i], modelPoints);
+				ViewTransform view = zcalib.getFinalViewTransform(k);
+				Pnt2d[] projPnts = camFinal.project(view, modelPoints);
 				for (Shape s : makeQuads(projPnts)) {
 					ola.addShape(s);
 				}
