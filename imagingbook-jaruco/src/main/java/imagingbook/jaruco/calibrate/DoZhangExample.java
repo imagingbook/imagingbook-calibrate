@@ -1,7 +1,7 @@
 package imagingbook.jaruco.calibrate;
 
 import ij.IJ;
-import imagingbook.calibration.Calibrator;
+import imagingbook.calibration.Calibration;
 import imagingbook.calibration.Camera;
 import imagingbook.calibration.ViewTransform;
 import imagingbook.calibration.zhang.data.ZhangData;
@@ -21,14 +21,14 @@ public class DoZhangExample {
 
         // Set up the calibrator ------------------------------------------
 
-        Calibrator.Parameters params = new Calibrator.Parameters();
+        Calibration.Parameters params = new Calibration.Parameters();
         params.normalizePoints = true;
         params.useNumericJacobian = true;
-        params.debug = true;
+        params.debug = false;
 
-        Calibrator zcalib = new Calibrator(params, modelPoints, 640, 480);
+        Calibration zcalib = new Calibration(params, modelPoints, 640, 480);
         for (int i = 0; i < M; i++) {
-            zcalib.addView(obsPoints[i]);
+            zcalib.addView(modelPoints, obsPoints[i]);
         }
 
         // Perform calibration ------------------------------------------

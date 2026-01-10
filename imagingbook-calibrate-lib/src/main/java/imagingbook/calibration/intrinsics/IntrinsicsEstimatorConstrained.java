@@ -35,6 +35,7 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
      * @param height the image height (in pixels)
      */
     public IntrinsicsEstimatorConstrained(int width, int height) {
+        System.out.println("IntrinsicsEstimatorConstrained(): width=" + width + ", height=" + height);
         this.uc = 0.5 * width;
         this.vc = 0.5 * height;
         this.T = new Array2DRowRealMatrix(new double[][]
@@ -60,18 +61,18 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
         }
 
         PrintPrecision.set(10);
-        System.out.println("IntrinsicsEstimatorConstrained: V = \n" + Matrix.toString(V));
-        System.out.println("IntrinsicsEstimatorConstrained: c = " + Matrix.toString(c));
+        // System.out.println("IntrinsicsEstimatorConstrained: V = \n" + Matrix.toString(V));
+        // System.out.println("IntrinsicsEstimatorConstrained: c = " + Matrix.toString(c));
 
         RealMatrix VV = new Array2DRowRealMatrix(V, false);
         RealVector cc = new ArrayRealVector(c, false);
-        System.out.println("IntrinsicsEstimatorConstrained: cond(V) = " +
-                Matrix.getConditionNumber(VV));
+        // System.out.println("IntrinsicsEstimatorConstrained: cond(V) = " +
+        //         Matrix.getConditionNumber(VV));
 
         // solve V.w = c
         DecompositionSolver solver = new QRDecomposition(VV).getSolver();
         RealVector w = solver.solve(cc);
-        System.out.println("IntrinsicsEstimatorConstrained: w = " + Matrix.toString(w));
+        // System.out.println("IntrinsicsEstimatorConstrained: w = " + Matrix.toString(w));
 
         double wa = w.getEntry(0);
         double wb = w.getEntry(1);

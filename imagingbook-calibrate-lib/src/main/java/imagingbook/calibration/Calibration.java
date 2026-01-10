@@ -12,7 +12,6 @@ import imagingbook.calibration.homography.HomographyEstimator;
 import imagingbook.calibration.homography.HomographyEstimatorSimple;
 import imagingbook.calibration.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibration.intrinsics.IntrinsicsEstimatorConstrained;
-import imagingbook.calibration.intrinsics.IntrinsicsEstimatorZhang;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
@@ -24,28 +23,35 @@ import java.util.List;
 
 
 /**
- * This is an implementation of the camera calibration method 
- * described in
- *   Z. Zhang, "A flexible new technique for camera calibration",
- *   IEEE Transactions on Pattern Analysis and Machine Intelligence, 
- *   22(11), pp. 1330-1334, 2000.
- * See also 
- * <a href="http://research.microsoft.com/en-us/um/people/zhang/Calib/">
- * http://research.microsoft.com/en-us/um/people/zhang/Calib/</a>
- * and
- * <a href="http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf">
- * http://research.microsoft.com/en-us/um/people/zhang/Papers/TR98-71.pdf</a>
- * 
+ * <p>This is the main camera calibration class.
+ * Instances of {@link Calibration} are supposed to be used in the following way:</p>
+ * <ol>
+ *   <li>Instantiate {@link Calibration} with the required parameters.</li>
+ *   <li>Successively add "views" to the calibrator using 
+ *   {@link Calibration#addView(Pnt2d[], Pnt2d[])},
+ *   each view being a pair of corresponding 2D model points and observed image
+ *   points. At least one view is required but more views give more accurate results.</li>
+ *   <li>Call {@link Calibration#calibrate()} to perform actual camera calibration.</li>
+ *   <li>Query the {@link Calibration} instance for intermediate and final results.</li>
+ * </ol>
+ * <p> Note that {@link Calibration#calibrate()} may be only called once on a given {@link Calibration}
+ * instance and results can only be queried after calling {@link Calibration#calibrate()}.
+ * At least one view must have been added before executing {@link Calibration#calibrate()}.
+ * All view data are assumed to be taken with the same camera and lens but not necessarily with
+ * the same reference model. The resulting camera parameters are in pixel units, which can
+ * be easily converted to metric units from the dimensions of the camera sensor, of which the
+ * calibrator itself is unaware.</p>
+ *
  * @author W. Burger
- * @version 2018/12/29
+ * @version 2026/01/10
  */
-public class Calibrator {
+public class Calibration {
 
 	/**
-	 * Inner class representing a set of parameters for instantiating new objects of type of {@link Calibrator}.
+	 * Inner class representing a set of parameters for instantiating new objects of type of {@link Calibration}.
 	 * Parameters can be specified by setting the associated public fields.
 	 */
-	public static class Parameters implements ParameterBundle<Calibrator> {
+	public static class Parameters implements ParameterBundle<Calibration> {
         /** Lens distortion model to be used. */
         public LensDistortion distortionModel = Radial2TermDistortion.INSTANCE;
 		/** Normalize point coordinates for numerical stability in homography estimation. */
@@ -80,34 +86,47 @@ public class Calibrator {
 	 * @param imgWidth image width (used to estimate the principal point)
 	 * @param imgHeight image height (used to estimate the principal point)
 	 */
-	public Calibrator(Parameters params, Pnt2d[] model, int imgWidth, int imgHeight) {
+	public Calibration(Parameters params, Pnt2d[] model, int imgWidth, int imgHeight) {
 		this.params = (params != null) ? params : new Parameters();
 		this.modelPts = model;
 		this.imgWidth = imgWidth;
 		this.imgHeight = imgHeight;
 		this.imgPntSet = new ArrayList<>();
         assert params != null;
-        // this.normalizePointSets = params.normalizePointSets;
-        // this.useNumericJacobian = params.useNumericJacobian;
-        // this.debug = params.debug;
 	}
 
     // ------------ setup methods ----------------------------------------
 
-    /**
-     * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
-     * @param pts a sequence of 2D image points
-     */
-    public void addView(Pnt2d[] pts) {
-        imgPntSet.add(pts);
-    }
+    // /**
+    //  * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
+    //  * @param pts a sequence of 2D image points
+    //  */
+	// @Deprecated
+    // public void addView(Pnt2d[] pts) {
+    //     imgPntSet.add(pts);
+    // }
 
-    public void addViews(Pnt2d[][] views) {
-        for (Pnt2d[] pts : views) {
-            addView(pts);
-        }
-    }
+	// @Deprecated
+	// public void addViews(Pnt2d[][] views) {
+	// 	for (Pnt2d[] pts : views) {
+	// 		addView(pts);
+	// 	}
+	// }
 
+
+	/**
+	 * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
+	 * Model and image points must be of the same lenbgth and in correspondence.
+	 * @param modelPts a sequence of 2D model points
+	 * @param imagePts a sequence of 2D image points
+	 */
+	public void addView(Pnt2d[] modelPts, Pnt2d[] imagePts) {
+		if (modelPts.length != imagePts.length) {
+			throw new IllegalArgumentException("model and image pt arrays must have same length");
+		}
+		imgPntSet.add(imagePts);
+	}
+	
     // -------------------------------------------------------------------
 
 	/**
@@ -134,10 +153,9 @@ public class Calibrator {
 		
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
 		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
-		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
-		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
+		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
+		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
 		RealMatrix Ainit = intrEstimtr.estimate(homographies);
-		// RealMatrix Ainit = CameraIntrinsics.from(homographies);
 		initCam = new Camera(Ainit, params.distortionModel);
         debug("initial camera = " + initCam);
 		

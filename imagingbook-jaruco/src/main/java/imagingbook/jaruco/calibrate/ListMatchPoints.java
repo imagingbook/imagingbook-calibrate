@@ -2,8 +2,6 @@ package imagingbook.jaruco.calibrate;
 
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
-import imagingbook.calibration.Calibrator;
-import imagingbook.calibration.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.common.geometry.basic.Polygon2d;
@@ -18,7 +16,6 @@ import imagingbook.jaruco.boards.CharucoBoardDetector;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ListMatchPoints {

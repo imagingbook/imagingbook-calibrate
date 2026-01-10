@@ -10,8 +10,8 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
-import imagingbook.calibration.Calibrator;
-import imagingbook.calibration.Calibrator.Parameters;
+import imagingbook.calibration.Calibration;
+import imagingbook.calibration.Calibration.Parameters;
 import imagingbook.calibration.Camera;
 import imagingbook.calibration.ViewTransform;
 import imagingbook.calibration.zhang.data.CalibrationImage;
@@ -40,7 +40,7 @@ import static imagingbook.common.ij.DialogUtils.formatText;
  * @author W. Burger
  * @version 2022/04/14
  */
-public class Do_Calibration implements PlugIn, JavaDocHelp {
+public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 
 	private static ImageResource testImResource = CalibrationImage.CalibImageStack;
 
@@ -82,14 +82,14 @@ public class Do_Calibration implements PlugIn, JavaDocHelp {
 
 		// Set up the calibrator ------------------------------------------
 
-		Parameters params = new Calibrator.Parameters();
+		Parameters params = new Calibration.Parameters();
 		params.normalizePoints = true;
 		params.useNumericJacobian = true;
 		params.debug = false;
 
-		Calibrator zcalib = new Calibrator(params, modelPoints, imgWidth, imgHeight);
+		Calibration zcalib = new Calibration(params, modelPoints, imgWidth, imgHeight);
 		for (int i = 0; i < M; i++) {
-			zcalib.addView(obsPoints[i]);
+			zcalib.addView(modelPoints, obsPoints[i]);
 		}
 
 		// Perform calibration ------------------------------------------

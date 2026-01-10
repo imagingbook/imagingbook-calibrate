@@ -14,7 +14,7 @@ import org.junit.Test;
 public class PackagePluginsTest {
 
     private static Class<?>[] PLUGINS = {
-            Do_Calibration.class,
+            Do_Calibration_Plugin.class,
             Open_Image_Stack.class
     };
 

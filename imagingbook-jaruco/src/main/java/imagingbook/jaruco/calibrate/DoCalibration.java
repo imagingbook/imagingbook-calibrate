@@ -2,7 +2,7 @@ package imagingbook.jaruco.calibrate;
 
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
-import imagingbook.calibration.Calibrator;
+import imagingbook.calibration.Calibration;
 import imagingbook.calibration.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
@@ -61,12 +61,12 @@ public class DoCalibration {
         System.out.println(" modelPoints = " + modelPoints.length);
         // showBoard(board, modelPoints);
 
-        // set up calibrator
-        Calibrator.Parameters params = new Calibrator.Parameters();
+        // set up calibration
+        Calibration.Parameters params = new Calibration.Parameters();
         params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.debug = true;
-        Calibrator calibrator = new Calibrator(params, modelPoints, 6048, 4024);
+        Calibration calibration = new Calibration(params, modelPoints, 6048, 4024);
 
         for (ImageCornerSet cornerSet : cornerSets) {
             System.out.println("adding corner set " + cornerSet);
@@ -74,12 +74,12 @@ public class DoCalibration {
             Pnt2d[] obsPoints = cornerSet.getInstance().getCornerPoints();
             // showObserved(bp, obsPoints, path);
 
-            calibrator.addView(obsPoints);
+            calibration.addView(modelPoints, obsPoints);
         }
         // if (true) return;
 
 
-        Camera camFinal = calibrator.calibrate();
+        Camera camFinal = calibration.calibrate();
         if (camFinal == null) {
             System.out.println("Calibration failed");
         }

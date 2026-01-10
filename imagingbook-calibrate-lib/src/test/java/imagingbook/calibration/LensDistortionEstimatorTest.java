@@ -22,7 +22,7 @@ public class LensDistortionEstimatorTest {
     static Pnt2d[] modelPts = ZhangData.getModelPoints();
     static Pnt2d[][] obsPts = ZhangData.getAllObservedPoints();
     static ViewTransform[] views = ZhangData.getAllViewTransforms();   // cheating a bit, using final views from Zhang
-    // initial estimate obtained from Calibrator
+    // initial estimate obtained from Calibration
     static double[] camIntrinsics = {877.16, 876.80, 0.1751, 301.04, 220.41};
 
 
