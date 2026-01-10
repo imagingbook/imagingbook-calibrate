@@ -11,6 +11,7 @@ import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Nonlinear optimizer based on the Levenberg-Marquart method, where the Jacobian matrix is calculated numerically
@@ -22,7 +23,7 @@ import java.util.Arrays;
  */
 public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	
-	NonlinearOptimizerNumeric(Camera initCam, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+	NonlinearOptimizerNumeric(Camera initCam, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
 		super(initCam, modelPts, obsPts);
 	}
 	

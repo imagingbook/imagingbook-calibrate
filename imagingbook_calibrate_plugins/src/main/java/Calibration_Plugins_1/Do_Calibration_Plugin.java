@@ -87,7 +87,7 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 		params.useNumericJacobian = true;
 		params.debug = false;
 
-		Calibration zcalib = new Calibration(params, modelPoints, imgWidth, imgHeight);
+		Calibration zcalib = new Calibration(params, imgWidth, imgHeight);
 		for (int i = 0; i < M; i++) {
 			zcalib.addView(modelPoints, obsPoints[i]);
 		}

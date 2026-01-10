@@ -16,6 +16,8 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
 
+import java.util.List;
+
 /**
  *  Class for estimating radial distortion parameters.
  */
@@ -25,10 +27,10 @@ class LensDistortionEstimator {
     private final Pnt2d[] modelPts;
     private final Pnt2d[][] obsPts;
 
-    protected LensDistortionEstimator(ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+    protected LensDistortionEstimator(ViewTransform[] views, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
         this.views = views;
         this.modelPts = modelPts;
-        this.obsPts = obsPts;
+        this.obsPts = obsPts.toArray(new Pnt2d[0][]);
     }
 
     /**

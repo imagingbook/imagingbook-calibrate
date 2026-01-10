@@ -10,7 +10,7 @@ import imagingbook.calibration.Camera;
 import imagingbook.calibration.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 
-import java.lang.reflect.Constructor;
+import java.util.List;
 
 /**
  * The mother of all radial  distortion models.
@@ -123,7 +123,7 @@ public interface LensDistortion {
      *  @param modelPts the set of 2D model points (on the planar calibration target)
      *  @param obsPts a sequence of 2D image point sets, one set for each view
      */
-    public static LensDistortion from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+    public static LensDistortion from(Camera cam, ViewTransform[] views, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
         LensDistortionEstimator estimator = new LensDistortionEstimator(views, modelPts, obsPts);
         return estimator.getEstimate(cam);
     }

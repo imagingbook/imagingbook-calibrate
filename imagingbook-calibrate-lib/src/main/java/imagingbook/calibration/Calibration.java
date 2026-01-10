@@ -65,13 +65,21 @@ public class Calibration {
 		/** Turn on debugging output. */
 		public boolean debug = false;					
 	}
-	
+
+	// --------------------------------------------------------------------------------------------
+
 	private int M;							// the number of camera views
-	private final Pnt2d[] modelPts;			// the sequence of 2D points in the planar model
+	@Deprecated
+	// private Pnt2d[] modelPts;			// the sequence of 2D points in the planar model
+
+	private final List<Pnt2d[]> modelPntSet;
 	private final List<Pnt2d[]> imgPntSet; 	// list of vectors containing observed 2D image points for each view
+
 	private final Parameters params;
 	private final int imgWidth, imgHeight;
 
+	// private final HomographyEstimator homographyEstimator;
+	// private final List<RealMatrix> homographyList;
 	private Camera initCam, finalCam;
 	private ViewTransform[] initViews, finalViews;
 	
@@ -80,19 +88,24 @@ public class Calibration {
 	/**
 	 * The only constructor.
 	 *
-	 * @param params    a parameter object (default parameters are used if {@code null} is passed)
-	 * @param model     a sequence of 2D points specifying the x/y coordinates of the planar calibration pattern (assuming
-	 *                  zero z-coordinates)
+	 * @param params a parameter object (default parameters are used if {@code null} is passed)
 	 * @param imgWidth image width (used to estimate the principal point)
 	 * @param imgHeight image height (used to estimate the principal point)
 	 */
-	public Calibration(Parameters params, Pnt2d[] model, int imgWidth, int imgHeight) {
+	public Calibration(Parameters params, int imgWidth, int imgHeight) {
 		this.params = (params != null) ? params : new Parameters();
-		this.modelPts = model;
+		// this.modelPts = model;
 		this.imgWidth = imgWidth;
 		this.imgHeight = imgHeight;
+
+		this.modelPntSet = new ArrayList<>();
 		this.imgPntSet = new ArrayList<>();
-        assert params != null;
+
+		// this.homographyEstimator = new HomographyEstimatorSimple(
+		// 				this.params.normalizePoints,
+		// 				this.params.refineHomographies,
+		// 				1000, 100);
+        // this.homographyList = new ArrayList<>();
 	}
 
     // ------------ setup methods ----------------------------------------
@@ -116,7 +129,7 @@ public class Calibration {
 
 	/**
 	 * Adds a new observation (a sequence of 2D image points) of the planar calibration pattern.
-	 * Model and image points must be of the same lenbgth and in correspondence.
+	 * Model and image points must be of the same length and in correspondence.
 	 * @param modelPts a sequence of 2D model points
 	 * @param imagePts a sequence of 2D image points
 	 */
@@ -124,9 +137,17 @@ public class Calibration {
 		if (modelPts.length != imagePts.length) {
 			throw new IllegalArgumentException("model and image pt arrays must have same length");
 		}
+		modelPntSet.add(modelPts);
 		imgPntSet.add(imagePts);
+
+		// RealMatrix Hk = homographyEstimator.getHomography(modelPts, imagePts);
+		// if (Hk == null) {
+		// 	throw new IllegalArgumentException("homography estimation failed");
+		// }
+		// homographyList.add(Hk);
+		// imgPntSet.add(imagePts);
 	}
-	
+
     // -------------------------------------------------------------------
 
 	/**
@@ -134,22 +155,22 @@ public class Calibration {
 	 * @return the estimated camera intrinsics as a {@link Camera} object
 	 */
 	public Camera calibrate() {
-		M = imgPntSet.size();	// number of views to process
-		// if (M < 2) {
-		// 	throw new IllegalStateException("Calibration: at least two views needed");
-		// }
+		M = modelPntSet.size();	// number of views to process
+		if (M < 1) {
+			throw new IllegalStateException("Calibration: at least one view needed");
+		}
         // M views with N observed points each
-        Pnt2d[][] obsPts = imgPntSet.toArray(new Pnt2d[0][]);
+
 		
 		// Step 1: Calculate the homographies for each of the given N views:
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         RealMatrix[] homographies = new  RealMatrix[M];
 		HomographyEstimator hestmtr = new HomographyEstimatorSimple(params.normalizePoints, params.refineHomographies, 1000, 100);
-        for (int i = 0; i < M; i++) {
-            // homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, params.refineHomographies);
-			homographies[i] = hestmtr.getHomography(modelPts, obsPts[i]);
-			debug("homography" + i + ": \n" + homographies[i]);
+        for (int k = 0; k < M; k++) {
+			homographies[k] = hestmtr.getHomography(modelPntSet.get(k), imgPntSet.get(k));
+			debug("homography" + k + ": \n" + homographies[k]);
         }
+
 		
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
 		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
@@ -165,10 +186,13 @@ public class Calibration {
         for (int i = 0; i < M; i++) {
             initViews[i] = ViewTransform.from(Ainit, homographies[i]);
         }
-		
+
+		Pnt2d[] modelPts = modelPntSet.get(0); 	// TODO: fix!!
+		Pnt2d[][] obsPts = imgPntSet.toArray(new Pnt2d[0][]);
+
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Determine the lens distortion from initial estimates:");
-        LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPts, obsPts);
+        LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPts, imgPntSet);
         debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		Camera improvedCam = new Camera(Ainit, distortion);
         debug("improved camera = " + improvedCam);
@@ -177,8 +201,8 @@ public class Calibration {
 		debug("Step 5: Refine all parameters by non-linear optimization");
         debug("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
 		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?
-				new NonlinearOptimizerNumeric(improvedCam, modelPts, obsPts) :
-				new NonlinearOptimizerAnalytic(improvedCam, modelPts, obsPts);
+				new NonlinearOptimizerNumeric(improvedCam, modelPts, imgPntSet) :
+				new NonlinearOptimizerAnalytic(improvedCam, modelPts, imgPntSet);
 		optimizer.optimize(initViews);
 		finalCam = optimizer.getFinalCamera();
         debug("final camera = " + finalCam);
@@ -208,15 +232,17 @@ public class Calibration {
 	 * @return the squared projection error (measured in pixel units)
 	 */
     public double getProjectionError(Camera cam, ViewTransform view, Pnt2d[] observed) {
-    	double sqError = 0;
-		for (int j = 0; j < modelPts.length; j++) {
-			double[] uv = cam.project(view, modelPts[j]);
-			double[] UV = observed[j].toDoubleArray();
-			double du = uv[0] - UV[0];
-			double dv = uv[1] - UV[1];
-			sqError = sqError + du * du + dv * dv;
-		}
-    	return sqError;
+    	// double sqError = 0;
+		// for (int j = 0; j < modelPts.length; j++) {
+		// 	double[] uv = cam.project(view, modelPts[j]);
+		// 	double[] UV = observed[j].toDoubleArray();
+		// 	double du = uv[0] - UV[0];
+		// 	double dv = uv[1] - UV[1];
+		// 	sqError = sqError + du * du + dv * dv;
+		// }
+    	// return sqError;
+		// TODO: fix!!
+		return 99;
     }
 
 	/**

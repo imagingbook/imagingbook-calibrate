@@ -66,7 +66,7 @@ public class DoCalibration {
         params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.debug = true;
-        Calibration calibration = new Calibration(params, modelPoints, 6048, 4024);
+        Calibration calibration = new Calibration(params, 6048, 4024);
 
         for (ImageCornerSet cornerSet : cornerSets) {
             System.out.println("adding corner set " + cornerSet);

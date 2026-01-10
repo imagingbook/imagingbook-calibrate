@@ -7,8 +7,6 @@
 package imagingbook.calibration;
 
 import imagingbook.calibration.distortion.Radial2TermDistortion;
-import imagingbook.calibration.distortion.Radial3TermDistortion;
-import imagingbook.calibration.distortion.RadialLateralDistortion;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
@@ -32,7 +30,7 @@ public class CalibrationTest {
         params.useNumericJacobian = true;
         params.debug = false;
 
-        Calibration calibration = new Calibration(params, modelPoints, 640, 480);
+        Calibration calibration = new Calibration(params, 640, 480);
         assertNotNull(calibration);
         for (int k = 0; k < obsPoints.length; k++) {
             calibration.addView(modelPoints, obsPoints[k]);

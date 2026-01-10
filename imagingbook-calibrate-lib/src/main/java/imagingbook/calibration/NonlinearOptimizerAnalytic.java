@@ -10,6 +10,8 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
 
+import java.util.List;
+
 import static java.lang.Math.cos;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
@@ -26,7 +28,7 @@ import static java.lang.Math.sqrt;
  */
 public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 
-	NonlinearOptimizerAnalytic(Camera initCam, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+	NonlinearOptimizerAnalytic(Camera initCam, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
 		super(initCam, modelPts, obsPts);
         if (camParCount > 7)
             throw new IllegalArgumentException("analytic optimizer cannot handle more than 7 parameters");

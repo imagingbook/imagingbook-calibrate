@@ -18,6 +18,7 @@ import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Abstract super-class for non-linear optimizers used for final, overall optimization of calibration parameters. The
@@ -47,13 +48,13 @@ public abstract class NonlinearOptimizer {
      * @param modelPts the 3D model points
      * @param obsPts the observed sensor points
      */
-	NonlinearOptimizer(Camera initCam, Pnt2d[] modelPts, Pnt2d[][] obsPts) {
+	NonlinearOptimizer(Camera initCam, Pnt2d[] modelPts, List<Pnt2d[]> obsPts) {
         this.initCam = initCam;
         this.camParCount = initCam.getParameterCount();
         this.viewParCount = ViewTransform.PARAMETER_COUNT;
 		this.modelPts = modelPts;
-		this.obsPts = obsPts;
-		this.M = obsPts.length;
+		this.obsPts = obsPts.toArray(new Pnt2d[0][]);
+		this.M = obsPts.size();
 		this.N = modelPts.length;
 	}
 
