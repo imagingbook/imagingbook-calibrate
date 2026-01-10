@@ -43,11 +43,11 @@ public class IntrinsicsEstimatorZhang implements IntrinsicsEstimator {
 
         // *************************************************************************************
         PrintPrecision.set(8);
-        System.out.println("\nVM = " + Matrix.toString(VM));
+        // System.out.println("\nVM = " + Matrix.toString(VM));
         SingularValueDecomposition svd = new SingularValueDecomposition(VM);
-        System.out.println("\nsingular vals = " + Matrix.toString(svd.getSingularValues()));
+        // System.out.println("\nsingular vals = " + Matrix.toString(svd.getSingularValues()));
         // System.out.println("\ndecomp V = " + Matrix.toString(svd.getV()));
-        System.out.println("\nhom. solution b = " + Matrix.toString(b));
+        // System.out.println("\nhom. solution b = " + Matrix.toString(b));
 
         // *************************************************************************************
 
@@ -56,7 +56,7 @@ public class IntrinsicsEstimatorZhang implements IntrinsicsEstimator {
                  {b[1], b[2], b[4]},
                  {b[3], b[4], b[5]}});
 
-        System.out.println("\nB = " + Matrix.toString(B));
+        // System.out.println("\nB = " + Matrix.toString(B));
 
         if (B.getEntry(0, 0) < 0 || B.getEntry(1, 1) < 0 || B.getEntry(2, 2) < 0) {
             B = B.scalarMultiply(-1);	// make sure B is positive definite

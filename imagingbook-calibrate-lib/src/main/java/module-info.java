@@ -20,4 +20,5 @@ module imagingbook.calibrate.lib {
     exports imagingbook.calibration.distortion;
     exports imagingbook.calibration.homography;
     exports imagingbook.calibration.intrinsics;
+    exports imagingbook.calibration.intrinsics.obsolete;
 }

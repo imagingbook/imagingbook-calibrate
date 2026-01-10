@@ -14,9 +14,6 @@ import org.apache.commons.math4.legacy.linear.DecompositionSolver;
 import org.apache.commons.math4.legacy.linear.QRDecomposition;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
-import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
-
-import java.util.Arrays;
 
 import static imagingbook.common.math.Arithmetic.sqr;
 
@@ -28,9 +25,6 @@ import static imagingbook.common.math.Arithmetic.sqr;
  */
 public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
 
-    private final int width;
-    private final int height;
-
     private final double uc;
     private final double vc;
     private final RealMatrix T;
@@ -41,8 +35,6 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
      * @param height the image height (in pixels)
      */
     public IntrinsicsEstimatorConstrained(int width, int height) {
-        this.width = width;
-        this.height = height;
         this.uc = 0.5 * width;
         this.vc = 0.5 * height;
         this.T = new Array2DRowRealMatrix(new double[][]
@@ -51,13 +43,12 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
                  {0, 0, 1}}, false);
     }
 
-
     @Override
     public RealMatrix estimate(RealMatrix[] homographies) {
         final int M = homographies.length;
         double[][] V = new double[2 * M][];
         double[] c = new double[2 * M];
-        double PRECOND = 1e6;           // constant to precondition the linear system (probably not needed)
+        double PRECOND = 1e6;    // constant to precondition the linear system (probably not needed)
 
         for (int k = 0; k < M; k++) {
             checkIfNormalized(homographies[k]);
@@ -72,10 +63,10 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
         System.out.println("IntrinsicsEstimatorConstrained: V = \n" + Matrix.toString(V));
         System.out.println("IntrinsicsEstimatorConstrained: c = " + Matrix.toString(c));
 
-
         RealMatrix VV = new Array2DRowRealMatrix(V, false);
         RealVector cc = new ArrayRealVector(c, false);
-        System.out.println("IntrinsicsEstimatorConstrained: cond(V) = " + getConditionNumber(VV));
+        System.out.println("IntrinsicsEstimatorConstrained: cond(V) = " +
+                Matrix.getConditionNumber(VV));
 
         // solve V.w = c
         DecompositionSolver solver = new QRDecomposition(VV).getSolver();
@@ -90,30 +81,15 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
 
         double alpha = Math.sqrt(PRECOND / w.getEntry(0));
         double beta  = Math.sqrt(PRECOND / w.getEntry(1));
-
-
         return new Array2DRowRealMatrix(new double[][]
                 {{alpha, 0, uc},
                  {0,  beta, vc},
                  {0,   0,   1}}, false);
-
     }
 
     private static void checkIfNormalized(RealMatrix homography) {
         if (Double.compare(homography.getEntry(2, 2), 1.0) != 0) {
-            throw new RuntimeException("homography must have a normalized matrix");
+            throw new RuntimeException("homography matrix must be normalized");
         }
     }
-
-    private static double getConditionNumber(RealMatrix A) {
-        SingularValueDecomposition svd = new SingularValueDecomposition(A);
-        double[] singularValues = svd.getSingularValues();
-
-        // For a 2x2 or 2Mx2 matrix, index 0 is max, index 1 is min
-        double conditionNumber = singularValues[0] / singularValues[singularValues.length - 1];
-
-        // System.out.println("Condition Number: " + conditionNumber);
-        return conditionNumber;
-    }
-
 }

@@ -11,7 +11,10 @@ import imagingbook.calibration.distortion.Radial3TermDistortion;
 import imagingbook.calibration.distortion.RadialLateralDistortion;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.math.Matrix;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -38,10 +41,12 @@ public class CalibratorTest {
         // Perform calibration ------------------------------------------
         Camera finCam = calibrator.calibrate();
         assertNotNull(finCam);
-        Camera refCam = ZhangData.getCamera();  // reference camera
-        assertNotNull(refCam);
-        // System.out.println("Initial camera = " + Arrays.toString(calibrator.getInitialCamera().getParameterVector()));
+        System.out.println("finCam = " + Matrix.toString(finCam.getParameterVector()));
         // Initial camera = [877.1610736944268, 876.8009085961099, 0.17515644031677685, 301.0436734292903, 220.4104056624287, 0.0, 0.0]
+
+        Camera refCam = ZhangData.getCamera();  // reference camera
+        System.out.println("refCam = " + Matrix.toString(refCam.getParameterVector()));
+        assertNotNull(refCam);
 
         double[] pf = finCam.getParameterVector();
         double[] pr = refCam.getParameterVector();

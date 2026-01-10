@@ -4,8 +4,9 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration.intrinsics;
+package imagingbook.calibration.intrinsics.obsolete;
 
+import imagingbook.calibration.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;

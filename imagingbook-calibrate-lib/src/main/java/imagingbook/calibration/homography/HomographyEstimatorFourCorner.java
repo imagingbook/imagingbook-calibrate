@@ -223,6 +223,10 @@ public class HomographyEstimatorFourCorner extends HomographyEstimator {
 		private final double[][] Ma = new double[8][];
 		private final double[] ba = new double[8];
 
+		/**
+		 * Constructor.
+		 * @param P the constant source (model) points
+		 */
 		FourCornerHomography(Pnt2d[] P) {
 			// fill in constant source elements of Ma (x/y dependent)
 			for (int i = 0, j = 0; i < 4; i++, j+=2) {	// j = 2i

@@ -32,7 +32,7 @@ import static imagingbook.common.math.Matrix.getRowPackedVector;
  * parameters, keeping the scale fixed. This is numerically less than clean but
  * nevertheless seems to work well.
  */
-public class HomographyEstimatorSimplistic extends HomographyEstimator {
+public class HomographyEstimatorSimple extends HomographyEstimator {
 
     private int maxLmEvaluations = 1000;
     private int maxLmIterations = 100;
@@ -44,7 +44,7 @@ public class HomographyEstimatorSimplistic extends HomographyEstimator {
      * @param maxLmEvaluations
      * @param maxLmIterations
      */
-    public HomographyEstimatorSimplistic(boolean normalizePoints, boolean doRefinement, int maxLmEvaluations, int maxLmIterations) {
+    public HomographyEstimatorSimple(boolean normalizePoints, boolean doRefinement, int maxLmEvaluations, int maxLmIterations) {
         super(normalizePoints, doRefinement);
         this.maxLmEvaluations = maxLmEvaluations;
         this.maxLmIterations = maxLmIterations;
@@ -52,7 +52,7 @@ public class HomographyEstimatorSimplistic extends HomographyEstimator {
 
     @Override
     RealMatrix estimateHomography(Pnt2d[] ptsA, Pnt2d[] ptsB) {
-        // System.out.println("HomographyEstimatorSimplistic.estimateHomography() " + normalizePoints + " " + doRefinement);
+        // System.out.println("HomographyEstimatorSimple.estimateHomography() " + normalizePoints + " " + doRefinement);
         int n = ptsA.length;
         double[] ba = new double[2 * n];
         double[][] Ma = new double[2 * n][];
@@ -86,8 +86,8 @@ public class HomographyEstimatorSimplistic extends HomographyEstimator {
         H.setEntry(2, 1, h.getEntry(7));
         H.setEntry(2, 2, 1.0);
 
-        // System.out.println("   HomographyEstimatorSimplistic: reproj. error = " + getReprojectionError(ptsA, ptsB, H));
-        // System.out.println("   HomographyEstimatorSimplistic: initial = \n" + Matrix.toString(H));
+        // System.out.println("   HomographyEstimatorSimple: reproj. error = " + getReprojectionError(ptsA, ptsB, H));
+        // System.out.println("   HomographyEstimatorSimple: initial = \n" + Matrix.toString(H));
         return H;
     }
 
@@ -130,7 +130,7 @@ public class HomographyEstimatorSimplistic extends HomographyEstimator {
             };
 
         double[] hstart = Arrays.copyOf(getRowPackedVector(Hinit).toArray(), 8);   // only first 8 values
-        // System.out.println("HomographyEstimatorSimplistic.refine(): hstart = \n" + Matrix.toString(hstart));
+        // System.out.println("HomographyEstimatorSimple.refine(): hstart = \n" + Matrix.toString(hstart));
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
                 .model(valueFun, jacobianFun)

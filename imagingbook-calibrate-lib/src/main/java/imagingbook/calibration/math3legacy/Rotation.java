@@ -7,7 +7,8 @@
 
 /*
 Note: This class was ported from org.apache.commons.math3.geometry.euclidean.Rotation.java
-(see original license above).
+(see original license above), since this class did not make it into COmmons Math 4.
+See org.apache.commons.geometry.euclidean.threed.rotation for a possible substitute.
  */
 package imagingbook.calibration.math3legacy;
 

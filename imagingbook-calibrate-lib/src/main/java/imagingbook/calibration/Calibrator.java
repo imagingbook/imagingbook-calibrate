@@ -9,9 +9,10 @@ package imagingbook.calibration;
 import imagingbook.calibration.distortion.LensDistortion;
 import imagingbook.calibration.distortion.Radial2TermDistortion;
 import imagingbook.calibration.homography.HomographyEstimator;
-import imagingbook.calibration.homography.HomographyEstimatorSimplistic;
+import imagingbook.calibration.homography.HomographyEstimatorSimple;
 import imagingbook.calibration.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibration.intrinsics.IntrinsicsEstimatorConstrained;
+import imagingbook.calibration.intrinsics.IntrinsicsEstimatorZhang;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
@@ -67,10 +68,6 @@ public class Calibrator {
 
 	private Camera initCam, finalCam;
 	private ViewTransform[] initViews, finalViews;
-
-    // private boolean normalizePointSets = true;
-    // private boolean useNumericJacobian = false;
-    // private boolean debug = false;
 	
 	// ------- constructors ------------------------------
 
@@ -128,7 +125,7 @@ public class Calibrator {
 		// Step 1: Calculate the homographies for each of the given N views:
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         RealMatrix[] homographies = new  RealMatrix[M];
-		HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(params.normalizePoints, params.refineHomographies, 1000, 100);
+		HomographyEstimator hestmtr = new HomographyEstimatorSimple(params.normalizePoints, params.refineHomographies, 1000, 100);
         for (int i = 0; i < M; i++) {
             // homographies[i] = Homography.from(modelPts, obsPts[i], params.normalizePoints, params.refineHomographies);
 			homographies[i] = hestmtr.getHomography(modelPts, obsPts[i]);
@@ -137,8 +134,8 @@ public class Calibrator {
 		
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
 		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
-		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
-		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
+		IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
+		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
 		RealMatrix Ainit = intrEstimtr.estimate(homographies);
 		// RealMatrix Ainit = CameraIntrinsics.from(homographies);
 		initCam = new Camera(Ainit, params.distortionModel);
@@ -154,13 +151,13 @@ public class Calibrator {
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Determine the lens distortion from initial estimates:");
         LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPts, obsPts);
-        System.out.println("initial distortion = " + Arrays.toString(distortion.getParameters()));
+        debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		Camera improvedCam = new Camera(Ainit, distortion);
-        System.out.println("improved camera = " + improvedCam);
+        debug("improved camera = " + improvedCam);
 
 		// Step 5: Refine all parameters by non-linear optimization
 		debug("Step 5: Refine all parameters by non-linear optimization");
-        System.out.println("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
+        debug("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
 		NonlinearOptimizer optimizer = (params.useNumericJacobian) ?
 				new NonlinearOptimizerNumeric(improvedCam, modelPts, obsPts) :
 				new NonlinearOptimizerAnalytic(improvedCam, modelPts, obsPts);

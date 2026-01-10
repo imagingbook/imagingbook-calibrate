@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibration.intrinsics;
+package imagingbook.calibration.intrinsics.obsolete;
 
 import imagingbook.calibration.util.MathUtil;
 import imagingbook.common.math.Matrix;
@@ -220,7 +220,6 @@ public abstract class CameraIntrinsics {
 
 		//------------------------------------------
 
-		
 		RealMatrix B = MatrixUtils.createRealMatrix(new double[][]
 				{{b[0], b[1], b[3]},
 				 {b[1], b[2], b[4]},

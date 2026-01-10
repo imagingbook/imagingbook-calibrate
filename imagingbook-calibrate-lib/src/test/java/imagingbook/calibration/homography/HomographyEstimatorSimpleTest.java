@@ -19,7 +19,7 @@ import java.util.random.RandomGenerator;
 
 import static org.junit.Assert.assertTrue;
 
-public class HomographyEstimatorSimplisticTest {
+public class HomographyEstimatorSimpleTest {
 
     static final double tol = 1e-6;
     static double NOISE = 0.1;
@@ -49,12 +49,12 @@ public class HomographyEstimatorSimplisticTest {
     }
 
     // check homography estimate from perfect match works regardless of options used:
-    // NOTE: point normalization not implemented for HomographyEstimatorSimplistic!
+    // NOTE: point normalization not implemented for HomographyEstimatorSimple!
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate00() {
         // list_Points_B();
-        HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(false, false, 1000, 100);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(false, false, 1000, 100);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -63,7 +63,7 @@ public class HomographyEstimatorSimplisticTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate10() {
-        HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(true, false, 1000, 100);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, false, 1000, 100);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -71,7 +71,7 @@ public class HomographyEstimatorSimplisticTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate01() {
-        HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(false, true, 1000, 100);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(false, true, 1000, 100);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -79,7 +79,7 @@ public class HomographyEstimatorSimplisticTest {
 
     @Test   // check if the estimated homography between POINTS_A, POINTS_B is the same as Hreal
     public void HomographyTestEstimate11() {
-        HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(true, true, 1000, 100);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true, 1000, 100);
         RealMatrix Hestm = hestmtr.getHomography(POINTS_A, POINTS_B);
         // System.out.println("Hestm = \n" + Matrix.toString(Hestm));
         NumericTestUtils.assert2dArrayEquals(Hreal.getData(), Hestm.getData(), tol);
@@ -94,7 +94,7 @@ public class HomographyEstimatorSimplisticTest {
             PBnoisy[i] = POINTS_B[i].plus(noise * rand.nextDouble(), noise * rand.nextDouble());    // add uniform noise
         }
 
-        HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(true, true, 1000, 100); // TODO: check without num. refinement!
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true, 1000, 100); // TODO: check without num. refinement!
         RealMatrix Hest = hestmtr.getHomography(POINTS_A, PBnoisy);
         // System.out.println("Hest = \n" + Matrix.toString(Hest));
 
@@ -125,7 +125,7 @@ public class HomographyEstimatorSimplisticTest {
     public void CharucoBoardHomographyTest() {
         Pnt2d[] boardPts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.BOARD_POINTS);
         Pnt2d[] imagePts = PntUtils.fromDoubleArray(HomographyCharucoTestData_DSC_2691.IMAGE_POINTS);
-        HomographyEstimator hestmtr = new HomographyEstimatorSimplistic(true, true, 1000, 100);
+        HomographyEstimator hestmtr = new HomographyEstimatorSimple(true, true, 1000, 100);
         RealMatrix Hest = hestmtr.getHomography(boardPts, imagePts);
         // System.out.println("Hest = \n" + Matrix.toString(Hest));
         // System.out.println("final error = " + HomographyEstimator.getReprojectionError(boardPts, imagePts, Hest));
