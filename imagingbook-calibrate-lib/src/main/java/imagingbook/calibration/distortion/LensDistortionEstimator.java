@@ -24,12 +24,12 @@ import java.util.List;
 class LensDistortionEstimator {
 
     private final ViewTransform[] views;
-    private final Pnt2d[][] modelPts;
+    private final Pnt2d[][] modPts;
     private final Pnt2d[][] obsPts;
 
-    protected LensDistortionEstimator(ViewTransform[] views, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
+    protected LensDistortionEstimator(ViewTransform[] views, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
         this.views = views;
-        this.modelPts = modelPntSet.toArray(new Pnt2d[0][]);
+        this.modPts = modPntSet.toArray(new Pnt2d[0][]);
         this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
     }
 
@@ -47,23 +47,23 @@ class LensDistortionEstimator {
      */
     protected LensDistortion getEstimate(Camera cam) {
         final int M = views.length;		// the number of views
-        final int N = modelPts.length;	// the number of model points
+        final int N = modPts[0].length;	// the number of model points TODO: this varies!!!
         final LensDistortion distortion = cam.getDistortion();
         final int P = distortion.getParameterCount();    // number of distortion parameters
 
         // the estimated projection center on the sensor plane
         final double uc = cam.getUc();
         final double vc = cam.getVc();
-        final RealMatrix D = MatrixUtils.createRealMatrix(2 * M * N, P);
+        final RealMatrix D = MatrixUtils.createRealMatrix(2 * M * N, P);    // TODO: this varies!!!
         final RealVector d = new ArrayRealVector(2 * M * N);
 
         // matrix double-line counter l
         for (int k = 0, l = 0; k < M; k++) {    // iterate over M views:
-            Pnt2d[] mod = modelPts[k];
+            Pnt2d[] mod = modPts[k];
             Pnt2d[] obs = obsPts[k];
             ViewTransform vt = views[k];
 
-            for (int j = 0; j < N; j++, l+=2) {   // iterate over M observed points
+            for (int j = 0; j < N; j++, l+=2) {   // iterate over N observed points
                 final Pnt2d mpt = mod[j];    // model point
                 // get point positions in the ideal image plane (normalized projection, f=1)
                 double[] xy = cam.projectNormalized(vt, mpt);

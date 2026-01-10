@@ -47,69 +47,67 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 		@Override
 	    public double[][] value(double[] params) {
 			final int K = params.length;
-	        double[][] J = new double[2 * M * N][K];	// the Jacobian matrix (initialized to zeroes!)
-	        double[] refValues = new double[2 * M * N];	// values obtained with undisturbed parameters 
+	        double[][] J = new double[2 * pointCount][K];	// the Jacobian matrix (initialized to zeroes!)
+	        double[] refValues = new double[2 * pointCount];	// values obtained with undisturbed parameters
 	        
 	        double[] a = Arrays.copyOfRange(params, 0, camParCount);	// camera parameters
 	        Camera camOrig = initCam.copyOf(a);
 	        
 	        // Step 0: calculate all 2MN reference output values (for undisturbed parameters)
 	       
-	        for (int r = 0, i = 0; i < M; i++) {	// for all views, r = row
-	        	int m = camParCount + viewParCount * i;
+	        for (int k = 0, r = 0; k < M; k++) {	// for all views, r = row
+	        	int m = camParCount + viewParCount * k;
 				double[] w = Arrays.copyOfRange(params, m, m + viewParCount);
 				ViewTransform view = new ViewTransform(w);
-	        	for (int j = 0; j < N; j++) {	// for all model points: calculate reference values
-	        		double[] uv = camOrig.project(view, modelPts[j]);
+	        	for (int j = 0; j < modPts[k].length; j++, r+=2) {	// for all model points: calculate reference values
+	        		double[] uv = camOrig.project(view, modPts[k][j]);
 	        		refValues[r + 0] = uv[0];
 	        		refValues[r + 1] = uv[1];
-	        		r = r + 2;
 	        	}        	 
 	        }
 	        
 	        // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
 	        
-	        for (int k = 0; k < a.length; k++) {	// for all camera parameters
-	        	double ak = a[k];					// keep original parameter value       	
+	        for (int p = 0; p < a.length; p++) {	// for all camera parameters
+	        	double ak = a[p];					// keep original parameter value
 	        	double delta = estimateDelta(ak);
-	        	a[k] = a[k] + delta;		// modify parameter s_k
+	        	a[p] = a[p] + delta;		// modify parameter s_k
 	        	Camera camMod = camOrig.copyOf(a);	// modified camera
 	        	
-		        for (int r = 0, i = 0; i < M; i++) {	// for all views, r = row
-		        	int m = camParCount + i * viewParCount;
+		        for (int k = 0, r = 0; k < M; k++) {	// for all views k, r = row
+		        	int m = camParCount + k * viewParCount;
 		        	double[] w = Arrays.copyOfRange(params, m, m + viewParCount);
 		        	ViewTransform view = new ViewTransform(w);
-		        	for (int j = 0; j < N; j++) {	// for all model points: calculate disturbed value
-		        		Pnt2d Pj = modelPts[j];
+		        	for (int j = 0; j < modPts[k].length; j++, r+=2) {	// for all model points: calculate disturbed value
+		        		Pnt2d Pj = modPts[k][j];
 		        		double[] uvMod = camMod.project(view, Pj);
-		        		J[r + 0][k] = (uvMod[0] - refValues[r + 0]) / delta;   // dX
-		        		J[r + 1][k] = (uvMod[1] - refValues[r + 1]) / delta;   // dY
-		        		r = r + 2;
+		        		J[r + 0][p] = (uvMod[0] - refValues[r + 0]) / delta;   // dX
+		        		J[r + 1][p] = (uvMod[1] - refValues[r + 1]) / delta;   // dY
 		        	}    
 		        }
-		        a[k] = ak; 	// return parameter s_k to original
+		        a[p] = ak; 	// return parameter s_k to original
 	        }
 	        
 	        // Step 2: calculate the diagonal blocks, one for each view
 	        
-	        for (int i = 0; i < M; i++) {	// for all views/blocks
-	        	final int start = camParCount + i * viewParCount;
+	        for (int k = 0; k < M; k++) {	// for all views/blocks
+	        	final int start = camParCount + k * viewParCount;
 	        	double[] w = Arrays.copyOfRange(params, start, start + viewParCount);
-	        	final int c = a.length + i * w.length;		// leftmost matrix column of block i
-	        	for (int k = 0; k < w.length; k++) {	// for all parameters in w
-	        		double wk = w[k];					// keep original parameter w_k
-	        		double delta = estimateDelta(wk);
-	        		w[k] =  w[k] + delta;				// modify parameter w_k
+	        	final int c = a.length + k * w.length;		// leftmost matrix column of block i
+	        	for (int p = 0; p < w.length; p++) {	// for all parameters in w
+	        		double wp = w[p];					// keep original parameter w_k
+	        		double delta = estimateDelta(wp);
+	        		w[p] =  w[p] + delta;				// modify parameter w_k
 	        		ViewTransform view = new ViewTransform(w);
-	        		int r = 2 * i * N;	// row
-	        		for (int j = 0; j < N; j++) {		// for all model points: calculate disturbed value
-	        			Pnt2d Pj = modelPts[j];
+	        		int r = 2 * k * modPts[k].length;	// row
+	        		for (int j = 0; j < modPts[k].length; j++) {		// for all model points: calculate disturbed value
+	        			Pnt2d Pj = modPts[k][j];
 	        			double[] uvMod = camOrig.project(view, Pj);
-	        			J[r + 0][c + k] = (uvMod[0] - refValues[r + 0]) / delta;   // dX
-	        			J[r + 1][c + k] = (uvMod[1] - refValues[r + 1]) / delta;   // dY
+	        			J[r + 0][c + p] = (uvMod[0] - refValues[r + 0]) / delta;   // dX
+	        			J[r + 1][c + p] = (uvMod[1] - refValues[r + 1]) / delta;   // dY
 	        			r = r + 2;
 	        		} 
-	        		w[k] = wk; // w[k] - DELTA;		// return parameter w_k to original
+	        		w[p] = wp; // w[k] - DELTA;		// return parameter w_k to original
 	        	}
 	        }
 	        
@@ -128,51 +126,50 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	    	//long starttime = System.nanoTime();
 	    	//System.out.println("getJacobianMatrix - NUMERICAL");
 	    	// M = number of views, N = number of model points
-	        double[][] J = new double[2 * M * N][params.length];	// the Jacobian matrix
-	        double[] refValues = new double[2 * M * N];	// function values obtained with undisturbed parameters 
+	        double[][] J = new double[2 * pointCount][params.length];	// the Jacobian matrix
+	        double[] refValues = new double[2 * pointCount];	// function values obtained with undisturbed parameters
 	        
 	        double[] s = Arrays.copyOfRange(params, 0, camParCount);
 	        Camera cam = initCam.copyOf(s);
 	        
 	        // Step 0: calculate all 2MN reference output values (for undisturbed parameters)
 	        
-	        for (int row = 0, m = 0; m < M; m++) {	// for all views
-	        	int start = camParCount + m * viewParCount;
+	        for (int k = 0, r = 0; k < M; k++) {	// for all views k
+	        	int start = camParCount + k * viewParCount;
 				double[] w = Arrays.copyOfRange(params, start, start + viewParCount);
 				ViewTransform view = new ViewTransform(w);
-	        	for (int j = 0; j < N; j++) {	// for all model points: calculate reference values
-	        		double[] uv = cam.project(view, modelPts[j]);
-	        		refValues[row + 0] = uv[0];
-	        		refValues[row + 1] = uv[1];
-	        		row = row + 2;
+	        	for (int j = 0; j < modPts[k].length; j++, r+=2) {	// for all model points: calculate reference values
+	        		double[] uv = cam.project(view, modPts[k][j]);
+	        		refValues[r + 0] = uv[0];
+	        		refValues[r + 1] = uv[1];
 	        	}        	 
 	        }
 	        
 	        // Step 1: calculate all entries of the Jacobian (brute force!)
 	        
-	        for (int k = 0; k < params.length; k++) {	// for ALL parameters
-	        	int col = k;
+	        for (int p = 0; p < params.length; p++) {	// for ALL parameters
+	        	int col = p;
 	        	// calculate step width and modify the parameter vector c:
-	        	double pk = params[k];
-	        	double delta = estimateDelta(pk);
-	        	params[k] = params[k] + delta;		// modify parameter c_k
+	        	double wp = params[p];
+	        	double delta = estimateDelta(wp);
+	        	params[p] = params[p] + delta;		// modify parameter c_k
 	        	
 	        	double[] smod = Arrays.copyOfRange(params, 0, camParCount);
 	        	Camera camMod = cam.copyOf(smod);	// modified camera
 	        	
-		        for (int row = 0, m = 0; m < M; m++) {	// for all views
-		        	int start = camParCount + m * viewParCount;
+		        for (int k = 0, r = 0; k < M; k++) {	// for all views k
+		        	int start = camParCount + k * viewParCount;
 		        	double[] w = Arrays.copyOfRange(params, start, start + viewParCount);
 		        	ViewTransform view = new ViewTransform(w);
-		        	for (int n = 0; n < N; n++) {	// for all model points: calculate disturbed value
-		        		Pnt2d Pj = modelPts[n];
+		        	for (int j = 0; j < modPts[k].length; j++) {	// for all model points: calculate disturbed value
+		        		Pnt2d Pj = modPts[k][j];
 		        		double[] uvMod = camMod.project(view, Pj);
-		        		J[row + 0][col] = (uvMod[0] - refValues[row + 0]) / delta;   // du
-		        		J[row + 1][col] = (uvMod[1] - refValues[row + 1]) / delta;   // dv	
-		        		row = row + 2;
-		        	}    
+		        		J[r + 0][col] = (uvMod[0] - refValues[r + 0]) / delta;   // du
+		        		J[r + 1][col] = (uvMod[1] - refValues[r + 1]) / delta;   // dv
+		        		r = r + 2;
+		        	}
 		        }
-		        params[k] = pk;
+		        params[p] = wp;
 	        }
 	       
 	        long endtime = System.nanoTime();
@@ -201,9 +198,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	
 }
 
-/*
-
-Benchmarks for calculating the Jacobian:
+/* Benchmarks for calculating the Jacobian:
 
 Numeric/Block
 time diff = 3767805 ns
@@ -231,8 +226,5 @@ time diff = 1035330 ns
 time diff = 1041550 ns
 time diff = 1043416 ns
 time diff = 1073895 ns
-
-
-
 
 */

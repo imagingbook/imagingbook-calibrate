@@ -52,14 +52,13 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 		 */
 		@Override
 		public double[][] value(double[] params) {
-			final double[][] J = new double[2 * M * N][];
+			final double[][] J = new double[2 * pointCount][];
 			int r = 0;	// row
-			for (int i = 0; i < M; i++) {	// for all views
-				for (int j = 0; j < N; j++) {	// for all points
-					final double[][] Jij = subJacobian(i, j, params);
-					J[r + 0] = Jij[0];	// row 0 (x-coordinate)
-					J[r + 1] = Jij[1];	// row 1 (y-coordinate)
-					r = r + 2;
+			for (int k = 0; k < M; k++) {	// for all views
+				for (int j = 0; j < modPts[k].length; j++, r+=2) {	// for all points
+					final double[][] Jkj = subJacobian(k, j, params);
+					J[r + 0] = Jkj[0];	// row 0 (x-coordinate)
+					J[r + 1] = Jkj[1];	// row 1 (y-coordinate)
 				}
 			}
 			return J;
@@ -68,16 +67,16 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 		/**
 		 * Calculates the sub-Jacobian for view 'i' / model point 'j' with the current parameter vector 'params' .
 		 *
-		 * @param i the point index (= 0,...,M)
-		 * @param j the view index (= 0,...,N)
+		 * @param k the view index (= 0,...,M)
+		 * @param j the point index (= 0,...,N)
 		 * @param params the current parameters (of length K)
 		 * @return the two rows (2 x K sub-matrix) of the Jacobian for the given point
 		 */
-		private double[][] subJacobian(int i, int j, double[] params) {
+		private double[][] subJacobian(int k, int j, double[] params) {
 			final double[][] A0 = new double[2][camParCount + viewParCount];
 
-			final double X = modelPts[j].getX();
-			final double Y = modelPts[j].getY();
+			final double X = modPts[k][j].getX();
+			final double Y = modPts[k][j].getY();
 
             // extract internal camera parameters:
 			final double alpha = params[0];
@@ -89,12 +88,12 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 			final double k1 = params[6];
 
             // extract external view parameters:
-			final double wx = params[i * viewParCount + camParCount + 0];
-			final double wy = params[i * viewParCount + camParCount + 1];
-			final double wz = params[i * viewParCount + camParCount + 2];
-			final double tx = params[i * viewParCount + camParCount + 3];
-			final double ty = params[i * viewParCount + camParCount + 4];
-			final double tz = params[i * viewParCount + camParCount + 5];
+			final double wx = params[k * viewParCount + camParCount + 0];
+			final double wy = params[k * viewParCount + camParCount + 1];
+			final double wz = params[k * viewParCount + camParCount + 2];
+			final double tx = params[k * viewParCount + camParCount + 3];
+			final double ty = params[k * viewParCount + camParCount + 4];
+			final double tz = params[k * viewParCount + camParCount + 5];
 
 			// begin matlab code
 			final double t2 = wx * wx;
@@ -438,8 +437,8 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
 			final double[][] Jij = new double[2][camParCount + viewParCount * M];
 			System.arraycopy(A0[0], 0, Jij[0], 0, camParCount);
 			System.arraycopy(A0[1], 0, Jij[1], 0, camParCount);
-			System.arraycopy(A0[0], 7, Jij[0], camParCount + i * viewParCount, viewParCount);
-			System.arraycopy(A0[1], 7, Jij[1], camParCount + i * viewParCount, viewParCount);
+			System.arraycopy(A0[0], 7, Jij[0], camParCount + k * viewParCount, viewParCount);
+			System.arraycopy(A0[1], 7, Jij[1], camParCount + k * viewParCount, viewParCount);
 			//System.out.format("**** Jij = %d / %d\n", Jij.length, Jij[0].length);
 			return Jij;
 		}
