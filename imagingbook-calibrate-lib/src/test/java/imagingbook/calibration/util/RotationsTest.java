@@ -7,8 +7,6 @@
 package imagingbook.calibration.util;
 
 import imagingbook.common.math.Matrix;
-import imagingbook.common.math.PrintPrecision;
-
 import imagingbook.testutils.NumericTestUtils;
 import org.junit.Test;
 
@@ -26,9 +24,7 @@ import static org.junit.Assert.assertTrue;
 public class RotationsTest {
 
     static double threshold = 1e-6;
-    static {
-        PrintPrecision.set(6);
-    }
+
 
     static final double[][] R1 = {  // some orthogonal rotation matrix
             {0.283662, 0.000000, 0.958924},

@@ -31,8 +31,9 @@ public class PointStatisticsTest {
         }
         // calculate normalization mapping
         AffineMapping2D mapA = PointStatistics.getNormalisationMapping(pntsA);
-        PrintPrecision.set(7);
-        // System.out.println(Matrix.toString(mapA.getTransformationMatrix()));
+        // try (var prec = PrintPrecision.set(7)) {
+        //     System.out.println(Matrix.toString(mapA.getTransformationMatrix()));
+        // }
         double[][] matR = {
                 {0.0078230, 0.0000000, -3.0617705},
                 {0.0000000, 0.0124156, -3.3979145},

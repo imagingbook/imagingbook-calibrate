@@ -6,7 +6,6 @@
  ******************************************************************************/
 package imagingbook.calibration.intrinsics;
 
-import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
@@ -60,7 +59,7 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
             c[2 * k + 1] = (sqr(H[2][1]) - sqr(H[2][0])) * PRECOND;
         }
 
-        PrintPrecision.set(10);
+        // PrintPrecision.setTo(10);
         // System.out.println("IntrinsicsEstimatorConstrained: V = \n" + Matrix.toString(V));
         // System.out.println("IntrinsicsEstimatorConstrained: c = " + Matrix.toString(c));
 

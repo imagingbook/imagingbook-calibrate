@@ -42,7 +42,7 @@ public class IntrinsicsEstimatorZhang implements IntrinsicsEstimator {
         double[] b = MathUtil.solveHomogeneousSystem(VM).toArray();	// solve VM.b=0
 
         // *************************************************************************************
-        PrintPrecision.set(8);
+        // PrintPrecision.setTo(8);
         // System.out.println("\nVM = " + Matrix.toString(VM));
         SingularValueDecomposition svd = new SingularValueDecomposition(VM);
         // System.out.println("\nsingular vals = " + Matrix.toString(svd.getSingularValues()));

@@ -283,8 +283,9 @@ public class Calibration {
 
 	void debug(String msg) {
 		if (params.debug) {
-			PrintPrecision.set(6);
-			System.out.println("[Debug] " + msg);
+			try(var prec = PrintPrecision.set(6)) {
+				System.out.println("[Debug] " + msg);
+			}
 		}
 	}
     

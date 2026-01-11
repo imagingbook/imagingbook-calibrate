@@ -28,8 +28,9 @@ public class IntrinsicsEstimatorZhang2 implements IntrinsicsEstimator {
 
         for (int i = 0; i < M; i++) {
             RealMatrix H = homographies[i];
-            PrintPrecision.set(8);
-            System.out.println("IntrinsicsEstimatorZhang2: H" + i + " = \n" + Matrix.toString(H) );
+            try (var prec = PrintPrecision.set(8)) {
+                System.out.println("IntrinsicsEstimatorZhang2: H" + i + " = \n" + Matrix.toString(H));
+            }
             V[2*i] = getVpq(H, 0, 1); // v01
             V[2*i + 1] = Matrix.subtract(getVpq(H, 0, 0), getVpq(H, 1, 1)); // v00-v11
         }
