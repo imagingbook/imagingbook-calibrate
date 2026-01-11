@@ -34,7 +34,7 @@ public enum CalibrationImage implements ImageResource {
 
 	@Override
 	public String getFileName() {
-		return (this.filename != null) ? this.filename : this.autoName();
+		return (this.filename != null) ? this.filename : this.getAutoName();
 	}
 	
 	// @Override
