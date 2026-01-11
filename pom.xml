@@ -44,7 +44,8 @@
         <module>imagingbook-jaruco</module>
 		<module>imagingbook_calibrate_plugins</module>
 		<module>imagingbook-calibrate-data</module>
-	</modules>
+        <module>imagingbook-jaruco-data</module>
+    </modules>
 
 	<properties>
 		<imagingbook.doctitle>Implementation of Zhang's Camera Calibration</imagingbook.doctitle>
