@@ -32,12 +32,13 @@ public class CalibrationTest {
 
         Calibration calibration = new Calibration(params, 640, 480);
         assertNotNull(calibration);
-        for (int k = 0; k < obsPoints.length; k++) {
+        for (int k = 0; k < M; k++) {
             calibration.addView(modelPoints, obsPoints[k]);
         }
 
         // Perform calibration ------------------------------------------
-        Camera finCam = calibration.calibrate();
+        calibration.calibrate();
+        Camera finCam = calibration.getFinalCamera();
         assertNotNull(finCam);
         System.out.println("finCam = " + Matrix.toString(finCam.getParameterVector()));
         // Initial camera = [877.1610736944268, 876.8009085961099, 0.17515644031677685, 301.0436734292903, 220.4104056624287, 0.0, 0.0]
@@ -50,11 +51,10 @@ public class CalibrationTest {
         double[] pr = refCam.getParameterVector();
         assertArrayEquals(pr, pf, 1e-3);
 
-        ViewTransform[] finViews = calibration.getFinalViews();
-        assertEquals(M, finViews.length);
         assertEquals(M, refViews.length);
-        for (int i = 0; i < M; i++) {
-            assertArrayEquals(refViews[i].getParameters(), finViews[i].getParameters(), 1e-3);
+        for (int k = 0; k < M; k++) {
+            ViewTransform finView = calibration.getFinalViewTransform(k);
+            assertArrayEquals(refViews[k].getParameters(), finView.getParameters(), 1e-3);
         }
     }
 

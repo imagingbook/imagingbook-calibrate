@@ -79,7 +79,8 @@ public class DoCalibration {
         // if (true) return;
 
 
-        Camera camFinal = calibration.calibrate();
+        calibration.calibrate();
+        Camera camFinal = calibration.getFinalCamera();
         if (camFinal == null) {
             System.out.println("Calibration failed");
         }

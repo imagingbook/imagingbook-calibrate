@@ -120,12 +120,10 @@ public class Calibration {
     // -------------------------------------------------------------------
 
 	/**
-	 * Performs the actual camera calibration based on the provided sequence of views.
-	 * At least one view is required to run calibration.
-	 * Use {@link #addView(Pnt2d[], Pnt2d[])} to add views.
-	 * @return the estimated camera intrinsics as a {@link Camera} object
+	 * Performs the actual camera calibration based on the provided sequence of views. At least one
+	 * view is required to run calibration. Use {@link #addView(Pnt2d[], Pnt2d[])} to add views.
 	 */
-	public Camera calibrate() {
+	public void calibrate() {
 		if (M < 1) {
 			throw new IllegalStateException("min. one view needed to run calibration, use addView()");
 		}
@@ -174,7 +172,6 @@ public class Calibration {
 		finalCam = optim.getFinalCamera();
         debug("final camera = " + finalCam);
 		finalViews = optim.getFinalViews();
-		return finalCam;
 	}
 
 	//---------------------------------------------------------------------------

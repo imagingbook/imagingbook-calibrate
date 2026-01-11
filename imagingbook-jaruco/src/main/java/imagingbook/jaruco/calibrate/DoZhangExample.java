@@ -32,7 +32,8 @@ public class DoZhangExample {
 
         // Perform calibration ------------------------------------------
 
-        Camera camFinal = zcalib.calibrate();
+        zcalib.calibrate();
+        Camera camFinal = zcalib.getFinalCamera();
         if (camFinal == null) {
             System.out.println("Calibration failed");
             return;

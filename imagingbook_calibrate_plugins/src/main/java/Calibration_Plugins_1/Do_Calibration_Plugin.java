@@ -94,7 +94,8 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 
 		// Perform calibration ------------------------------------------
 
-		Camera camFinal = zcalib.calibrate();
+		zcalib.calibrate();
+		Camera camFinal = zcalib.getFinalCamera();
 		if (camFinal == null) {
 			IJ.error("Calibration failed");
 			return;
