@@ -21,7 +21,7 @@ public class DoCalibration {
 
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
     static String[] paths = {
-            "DSC_2691.jpg",
+            // "DSC_2691.jpg",
             // "DSC_2692.jpg",
             // "DSC_2693.jpg",
             // "DSC_2694.jpg",    // fails with ParabolicFit!!
@@ -48,9 +48,9 @@ public class DoCalibration {
     public static void main(String[] args) {
         ImageCornerSet[] cornerSets = {
                 ImageCornerSet.DSC_2691,
-                // ImageCornerSet.DSC_2692,
-                // ImageCornerSet.DSC_2693,
-                // ImageCornerSet.DSC_2694
+                ImageCornerSet.DSC_2692,
+                ImageCornerSet.DSC_2693,
+                ImageCornerSet.DSC_2694
         };
 
         int[] SELECTED = {}; //{ 0, 21, 171, 190};

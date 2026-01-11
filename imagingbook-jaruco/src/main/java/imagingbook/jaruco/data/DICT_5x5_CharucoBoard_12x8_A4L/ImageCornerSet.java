@@ -43,17 +43,17 @@ public enum ImageCornerSet {
     //     return instance.getCorners();
     // }
 
-    public static void main(String[] args) {
-        // for (int i = 2693; i < 2716; i++) {
-        //     System.out.format("  DSC_%d(new DSC_%d()),\n", i, i);
-        // }
-
-        // double[][] icorners = DSC_2691.getCorners();
-        for (ImageCornerSet cornerSet : ImageCornerSet.values()) {
-            double[][] icorners = cornerSet.getInstance().getCorners();
-            System.out.println(cornerSet + " corners: " + icorners.length);
-        }
-
-    }
+    // public static void main(String[] args) {
+    //     // for (int i = 2693; i < 2716; i++) {
+    //     //     System.out.format("  DSC_%d(new DSC_%d()),\n", i, i);
+    //     // }
+    //
+    //     // double[][] icorners = DSC_2691.getCorners();
+    //     for (ImageCornerSet cornerSet : ImageCornerSet.values()) {
+    //         double[][] icorners = cornerSet.getInstance().getCorners();
+    //         System.out.println(cornerSet + " corners: " + icorners.length);
+    //     }
+    //
+    // }
 }
 
