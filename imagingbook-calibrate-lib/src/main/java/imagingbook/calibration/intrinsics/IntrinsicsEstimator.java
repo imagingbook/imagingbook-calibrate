@@ -8,19 +8,11 @@ package imagingbook.calibration.intrinsics;
 
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
+/**
+ * Common interface for camera intrinsics estimators.
+ */
 public interface IntrinsicsEstimator {
 
     public RealMatrix estimate(RealMatrix[] homographies);
 
-    // version without transpose
-    default double[] getVpq(RealMatrix H, int p, int q) {
-        return new double[] {
-                H.getEntry(0, p) * H.getEntry(0, q),
-                H.getEntry(0, p) * H.getEntry(1, q) + H.getEntry(1, p) * H.getEntry(0, q),
-                H.getEntry(1, p) * H.getEntry(1, q),
-                H.getEntry(2, p) * H.getEntry(0, q) + H.getEntry(0, p) * H.getEntry(2, q),
-                H.getEntry(2, p) * H.getEntry(1, q) + H.getEntry(1, p) * H.getEntry(2, q),
-                H.getEntry(2, p) * H.getEntry(2, q)
-        };
-    }
 }

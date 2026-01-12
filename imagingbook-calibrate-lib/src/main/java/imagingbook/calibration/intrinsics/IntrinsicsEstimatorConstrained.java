@@ -52,16 +52,12 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
 
         for (int k = 0; k < M; k++) {
             checkIfNormalized(homographies[k]);
-            double[][] H = T.multiply(homographies[k]).getData();    // translate homography
+            double[][] H = T.multiply(homographies[k]).getData(); // translate homography to center at (uc, vc)
             V[2 * k + 0] = new double[] {H[0][0] * H[0][1], H[1][0] * H[1][1]};
             V[2 * k + 1] = new double[] {sqr(H[0][0]) - sqr(H[0][1]), sqr(H[1][0]) - sqr(H[1][1])};
             c[2 * k + 0] = -H[2][0] * H[2][1] * PRECOND;
             c[2 * k + 1] = (sqr(H[2][1]) - sqr(H[2][0])) * PRECOND;
         }
-
-        // PrintPrecision.setTo(10);
-        // System.out.println("IntrinsicsEstimatorConstrained: V = \n" + Matrix.toString(V));
-        // System.out.println("IntrinsicsEstimatorConstrained: c = " + Matrix.toString(c));
 
         RealMatrix VV = new Array2DRowRealMatrix(V, false);
         RealVector cc = new ArrayRealVector(c, false);

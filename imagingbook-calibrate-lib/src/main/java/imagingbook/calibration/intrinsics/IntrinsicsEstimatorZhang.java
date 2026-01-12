@@ -67,4 +67,15 @@ public class IntrinsicsEstimatorZhang implements IntrinsicsEstimator {
         RealMatrix A = MatrixUtils.inverse(L).transpose().scalarMultiply(L.getEntry(2, 2));
         return A;
     }
+
+    private static double[] getVpq(RealMatrix H, int p, int q) {
+        return new double[] {
+                H.getEntry(0, p) * H.getEntry(0, q),
+                H.getEntry(0, p) * H.getEntry(1, q) + H.getEntry(1, p) * H.getEntry(0, q),
+                H.getEntry(1, p) * H.getEntry(1, q),
+                H.getEntry(2, p) * H.getEntry(0, q) + H.getEntry(0, p) * H.getEntry(2, q),
+                H.getEntry(2, p) * H.getEntry(1, q) + H.getEntry(1, p) * H.getEntry(2, q),
+                H.getEntry(2, p) * H.getEntry(2, q)
+        };
+    }
 }

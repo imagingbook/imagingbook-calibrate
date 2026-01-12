@@ -55,7 +55,6 @@ public class DoCalibration {
                 DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2694
         };
 
-
         int[] SELECTED = {}; //{ 0, 21, 171, 190};
 
         CharucoBoard board = CharucoBoard.Predefined.DICT_5x5_CharucoBoard_12x8_A4L.getInstance();
@@ -69,18 +68,22 @@ public class DoCalibration {
         params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.debug = true;
+
+        // ---------------------------------------------------------------------------------
         Calibration calibration = new Calibration(params, 6048, 4024);
+        // ---------------------------------------------------------------------------------
 
         for (Pnt2dOrderedSet cornerSet : imgCorners) {
-            System.out.println("adding corner set " + cornerSet);
+            System.out.println("adding point set " + cornerSet);
             Pnt2d[] obsPoints = cornerSet.getPoints();
             // showObserved(bp, obsPoints, path);
             calibration.addView(modelPoints, obsPoints);
         }
-        // if (true) return;
 
-
+        // ---------------------------------------------------------------------------------
         calibration.calibrate();
+        // ---------------------------------------------------------------------------------
+
         Camera camFinal = calibration.getFinalCamera();
         if (camFinal == null) {
             System.out.println("Calibration failed");
