@@ -1,4 +1,4 @@
-package imagingbook.jaruco.data;
+package imagingbook.jaruco.cornerdata;
 
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;

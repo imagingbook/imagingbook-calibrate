@@ -18,10 +18,21 @@ import java.io.InputStream;
  */
 public interface JsonResource extends NamedResource {
 
+    public final String DefaultFileExtension = "json";
+
+    /**
+     * Implementing enum classes may override this method if another default file extension is required.
+     * @return the file extension for resource files, e.g. "json" (without dot,
+     * see {@link #DefaultFileExtension}).
+     */
+    public default String getFileExtension() {
+        return DefaultFileExtension;
+    }
+
     @Override
     public default String getFileName() {
         String itemname = this.toString();
-        return itemname + ".json";
+        return itemname + "." + getFileExtension();
     }
 
     /**

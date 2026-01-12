@@ -1,6 +1,6 @@
-package imagingbook.jaruco.data.DICT_5x5_CharucoBoard_12x8_A4L;
+package imagingbook.jaruco.cornerdata.DICT_5x5_CharucoBoard_12x8_A4L;
 
-import imagingbook.jaruco.data.CornerSet;
+import imagingbook.jaruco.cornerdata.CornerSet;
 
 /**
  * DICT_5x5_CharucoBoard_12x8_A4L image corner data.
@@ -8,6 +8,7 @@ import imagingbook.jaruco.data.CornerSet;
  * Usage:
  * {@code double[][] icorners = DICT_5x5_CharucoBoard_12x8_A4L.DSC_2691.getCorners();}
  */
+@Deprecated
 public enum ImageCornerSet {
     DSC_2691(new DSC_2691()),
     DSC_2692(new DSC_2692()),

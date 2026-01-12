@@ -1,6 +1,6 @@
-package imagingbook.jaruco.data.DICT_5x5_CharucoBoard_12x8_A4L;
+package imagingbook.jaruco.cornerdata.DICT_5x5_CharucoBoard_12x8_A4L;
 
-import imagingbook.jaruco.data.CornerSet;
+import imagingbook.jaruco.cornerdata.CornerSet;
 
 public final class DSC_2702 extends CornerSet {
 

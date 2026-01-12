@@ -10,7 +10,7 @@ import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.jaruco.boards.AbstractBoard;
 import imagingbook.jaruco.boards.AbstractBoardDetector.PntPair;
 import imagingbook.jaruco.boards.CharucoBoard;
-import imagingbook.jaruco.data.DICT_5x5_CharucoBoard_12x8_A4L.ImageCornerSet;
+import imagingbook.jaruco.cornerdata.DICT_5x5_CharucoBoard_12x8_A4L.ImageCornerSet;
 
 import java.awt.Color;
 import java.awt.Font;
