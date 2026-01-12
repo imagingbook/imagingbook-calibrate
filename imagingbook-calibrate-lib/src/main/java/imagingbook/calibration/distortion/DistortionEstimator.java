@@ -20,13 +20,18 @@ import java.util.List;
 
 /**
  *  Class for estimating radial distortion parameters.
+ *  Image width and height are required for normalizing the radius.
  */
 public class DistortionEstimator {
 
     private final DistortionModel distModel;
+    private final int imgWidth;
+    private final int imgHeight;
 
-    public DistortionEstimator(DistortionModel distModel) {
+    public DistortionEstimator(DistortionModel distModel, int imgWidth, int imgHeight) {
         this.distModel = distModel;
+        this.imgWidth = imgWidth;
+        this.imgHeight = imgHeight;
     }
 
     /**

@@ -159,7 +159,8 @@ public class Calibration {
 
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Estimate lens distortion from initial camera and view data:");
-		DistortionEstimator distEstim = new DistortionEstimator(params.distortionModel);
+		DistortionEstimator distEstim =
+				new DistortionEstimator(params.distortionModel, imgWidth, imgHeight);
         // DistortionModel distortion = DistortionModel.from(initCam, initViews, modelPntSet, imagePntSet);
         // debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		// Camera improvedCam = new Camera(Ainit, distortion);
