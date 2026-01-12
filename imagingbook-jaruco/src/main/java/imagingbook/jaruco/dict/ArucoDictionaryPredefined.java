@@ -15,7 +15,7 @@ package imagingbook.jaruco.dict;
  * {@code /opencv/modules/objdetect/src/aruco/apriltag/predefined_dictionaries_apriltag.hpp}.
  */
 
-public enum ArucoDictionaryPredefined {
+public enum ArucoDictionaryPredefined { // TODO: implement JsonResource
     DICT_ARUCO_ORIGINAL,
 
     DICT_4X4_50,
@@ -43,15 +43,15 @@ public enum ArucoDictionaryPredefined {
     DICT_APRILTAG_36h10,
     DICT_APRILTAG_36h11;
 
-    static final String RELATIVE_DIR = "dict-gz/";
-    static final String FILE_EXTENSION = ".json.gz";
+    static final String RELATIVE_DIR = "ArucoDictionaryPredefined-data"; // "dict-gz";
+    static final String FILE_EXTENSION = "json.gz";
 
     private ArucoDictionary instance = null;    // singleton instance, only loaded once
 
     // lazy evaluation: data don't get loaded unless needed:
     public ArucoDictionary getInstance() {
         if (instance == null) {   // dictionary not yet initialized
-            String resourcePath = RELATIVE_DIR + this.name() + FILE_EXTENSION;
+            String resourcePath = RELATIVE_DIR + "/" + this.name() + "." + FILE_EXTENSION;
             // System.out.println("Loading dictionary from " + resourcePath);
             ArucoDictionary dict = ArucoDictionary.fromResource(this.getClass(), resourcePath);
             dict.setName(this.name());
