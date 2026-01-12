@@ -18,7 +18,7 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobian
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 
-public class RadialLateralDistortionModel implements LensDistortionModel {
+public class RadialLateralDistortionModel implements DistortionModel {
 
     public static final int PARAM_COUNT = 5;
     public static final RadialLateralDistortionModel INSTANCE = new RadialLateralDistortionModel();
@@ -59,7 +59,7 @@ public class RadialLateralDistortionModel implements LensDistortionModel {
     // ------------------------------------------------------------------------
 
     @Override
-    public LensDistortionModel copyOf(double[] params, double error) {
+    public DistortionModel copyOf(double[] params, double error) {
         return new RadialLateralDistortionModel(params, error);
     }
 

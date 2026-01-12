@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.distortion.LensDistortionModel;
+import imagingbook.calibration.distortion.DistortionModel;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 
@@ -31,7 +31,7 @@ public class Camera {
 	 * </pre>
 	 */
 	private final double[][] A;		// 2 x 3 2D affine transformation matrix
-    private final LensDistortionModel distortion;
+    private final DistortionModel distortion;
 
     /**
      * Basic constructor.
@@ -42,7 +42,7 @@ public class Camera {
      * @param vc
      * @param distortion
      */
-    public Camera(double alpha, double beta, double gamma, double uc, double vc, LensDistortionModel distortion) {
+    public Camera(double alpha, double beta, double gamma, double uc, double vc, DistortionModel distortion) {
         this.A = makeAffineCameraMatrix(alpha, beta, gamma, uc, vc);
         this.distortion = distortion;
     }
@@ -52,7 +52,7 @@ public class Camera {
      * @param a vector of linear camera parameters
      * @param distortion instance of lens distortion model
      */
-    public Camera(double[] a, LensDistortionModel distortion) {
+    public Camera(double[] a, DistortionModel distortion) {
         this(a[0], a[1], a[2], a[3], a[4], distortion);
     }
 		
@@ -77,14 +77,14 @@ public class Camera {
 	 * @param A the (min.) 2 x 3 matrix holding the intrinsic camera parameters
 	 * @param distortion a lens distortion model instance
 	 */
-	public Camera(RealMatrix A, LensDistortionModel distortion) {
+	public Camera(RealMatrix A, DistortionModel distortion) {
         this.distortion = distortion; // ? new Radial2TermDistortionModel(0, 0) : new Radial2TermDistortionModel(K);
         this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 	}
 
 	// --------------------------------------------------------------------------
 
-    public LensDistortionModel getDistortion() {
+    public DistortionModel getDistortion() {
         return this.distortion;
     }
 

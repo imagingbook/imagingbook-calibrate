@@ -15,20 +15,20 @@ import java.util.List;
 /**
  * The mother of all radial  distortion models.
  */
-public interface LensDistortionModel {
+public interface DistortionModel {
 
     /**
      * Copies an existing distortion model instance with modifies parameters.
      * @param params a parameter vector of required length
      * @return
      */
-    LensDistortionModel copyOf(double[] params, double error);
+    DistortionModel copyOf(double[] params, double error);
 
     /**
      * Copies an existing distortion model instance with unmodified parameters.
      * @return
      */
-    default LensDistortionModel copyOf() {
+    default DistortionModel copyOf() {
         return copyOf(getParameters(), getError());
     }
 
@@ -108,25 +108,26 @@ public interface LensDistortionModel {
 
     // -------------------------------------------------------------------------
 
-    /**
-     *  Estimates lens distortion from multiple views, starting from an initial (linear) camera model.
-     *  Given an initial estimate of the camera intrinsics (without lens distortion),
-     *  the task is to find the optimal distortion parameter vector k = (k0, k1)
-     *  by minimum least-squares optimization of
-     *  <pre>
-     *    D * k = d ,
-     *  </pre>
-     *  where matrix D is of size 2MN x 2, vector k of size 2, and vector d of size 2MN
-     *  (M views with N observed points).
-     *  @param cam the initial (linear) camera model
-     *  @param views a sequence of extrinsic view transformations
-     *  @param modelPntSet the set of 2D model points (on the planar calibration target), one set for each view
-     *  @param obsPntSet a sequence of 2D image point sets, one set for each view
-     */
-    public static LensDistortionModel from(Camera cam, ViewTransform[] views, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
-        LensDistortionEstimator estimator = new LensDistortionEstimator(views, modelPntSet, obsPntSet);
-        return estimator.getEstimate(cam);
-    }
+    // /**
+    //  *  Estimates lens distortion from multiple views, starting from an initial (linear) camera model.
+    //  *  Given an initial estimate of the camera intrinsics (without lens distortion),
+    //  *  the task is to find the optimal distortion parameter vector k = (k0, k1)
+    //  *  by minimum least-squares optimization of
+    //  *  <pre>
+    //  *    D * k = d ,
+    //  *  </pre>
+    //  *  where matrix D is of size 2MN x 2, vector k of size 2, and vector d of size 2MN
+    //  *  (M views with N observed points).
+    //  *  @param cam the initial (linear) camera model
+    //  *  @param views a sequence of extrinsic view transformations
+    //  *  @param modelPntSet the set of 2D model points (on the planar calibration target), one set for each view
+    //  *  @param obsPntSet a sequence of 2D image point sets, one set for each view
+    //  */
+    // @Deprecated
+    // public static DistortionModel from(Camera cam, ViewTransform[] views, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
+    //     DistortionEstimator estimator = new DistortionEstimator(modelPntSet, obsPntSet);
+    //     return null; //estimator.getEstimate(cam, views);
+    // }
 }
 
 /*

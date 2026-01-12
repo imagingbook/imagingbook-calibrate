@@ -6,7 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.distortion.LensDistortionModel;
+import imagingbook.calibration.distortion.DistortionEstimator;
+import imagingbook.calibration.distortion.DistortionModel;
 import imagingbook.calibration.distortion.Radial2TermDistortionModel;
 import imagingbook.calibration.homography.HomographyEstimator;
 import imagingbook.calibration.homography.HomographyEstimatorSimple;
@@ -52,7 +53,7 @@ public class Calibration {
 	 */
 	public static class Parameters implements ParameterBundle<Calibration> {
         /** Lens distortion model to be used. */
-        public LensDistortionModel distortionModel = Radial2TermDistortionModel.INSTANCE;
+        public DistortionModel distortionModel = Radial2TermDistortionModel.INSTANCE;
 		/** Normalize point coordinates for numerical stability in homography estimation. */
 		public boolean normalizePoints = true;
 		/** Perform non-linear refinement of homographies (usually not needed). */
@@ -74,7 +75,8 @@ public class Calibration {
 	private final Parameters params;
 	private final int imgWidth, imgHeight;
 	private Camera initCam, finalCam;
-	private ViewTransform[] initViews, finalViews;
+	private List<ViewTransform> initViews;
+	private List<ViewTransform> finalViews;
 
 	// --------------------------------------------------------------
 
@@ -150,16 +152,18 @@ public class Calibration {
 		
 		// Step 3: Calculate the extrinsic view parameters (3D view transforms)
 		debug("Step 3: calculate the extrinsic view parameters (3D view transforms)");
-        initViews = new ViewTransform[M];
+        initViews = new ArrayList<>();
         for (int i = 0; i < M; i++) {
-            initViews[i] = ViewTransform.from(Ainit, homographies[i]);
+            initViews.add(ViewTransform.from(Ainit, homographies[i]));
         }
 
 		// Step 4: Determine the lens distortion from initial estimates:
-		debug("Step 4: Determine the lens distortion from initial estimates:");
-        LensDistortionModel distortion = LensDistortionModel.from(initCam, initViews, modelPntSet, imagePntSet);
-        debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
-		Camera improvedCam = new Camera(Ainit, distortion);
+		debug("Step 4: Estimate lens distortion from initial camera and view data:");
+		DistortionEstimator distEstim = new DistortionEstimator(params.distortionModel);
+        // DistortionModel distortion = DistortionModel.from(initCam, initViews, modelPntSet, imagePntSet);
+        // debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
+		// Camera improvedCam = new Camera(Ainit, distortion);
+		Camera improvedCam = distEstim.getEstimate(initCam, initViews, modelPntSet, imagePntSet);
         debug("improved camera = " + improvedCam);
 
 		// Step 5: Refine all parameters by overall non-linear optimization
@@ -168,16 +172,16 @@ public class Calibration {
 		NonlinearOptimizer optim = (params.useNumericJacobian) ?
 				new NonlinearOptimizerNumeric(improvedCam, modelPntSet, imagePntSet) :
 				new NonlinearOptimizerAnalytic(improvedCam, modelPntSet, imagePntSet);
-		optim.optimize(initViews);
+		optim.optimize(initViews.toArray(new ViewTransform[0]));	// TODO: fix to accept list!
 		finalCam = optim.getFinalCamera();
         debug("final camera = " + finalCam);
-		finalViews = optim.getFinalViews();
+		finalViews = Arrays.asList(optim.getFinalViews());	// TODO: fix to return list!
 	}
 
 	//---------------------------------------------------------------------------
 
 	public double getReprojectionError(int k) {
-		return getReprojectionError(finalCam, finalViews[k], modelPntSet.get(k), imagePntSet.get(k));
+		return getReprojectionError(finalCam, finalViews.get(k), modelPntSet.get(k), imagePntSet.get(k));
 	}
 
     public double getReprojectionError(Camera cam, ViewTransform view, Pnt2d[] modelPts, Pnt2d[] imagePts) {
@@ -257,7 +261,7 @@ public class Calibration {
 	 */
     public ViewTransform getInitialViewTransform(int k) {
         checkState();
-    	return initViews[k];
+    	return initViews.get(k);
     }
 
 	/**
@@ -267,7 +271,7 @@ public class Calibration {
 	 */
 	public ViewTransform getFinalViewTransform(int k) {
         checkState();
-		return finalViews[k];
+		return finalViews.get(k);
 	}
 
 	// ----------------------------------------------------------------------

@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.distortion.LensDistortionModel;
+import imagingbook.calibration.distortion.DistortionModel;
 import imagingbook.calibration.distortion.Radial2TermDistortionModel;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
@@ -76,7 +76,7 @@ public class CameraTest {
 
     @Test
     public void getDistortion() {
-        LensDistortionModel dist = cam1.getDistortion();
+        DistortionModel dist = cam1.getDistortion();
         assertNotNull(dist);
         assertTrue(dist instanceof Radial2TermDistortionModel);
     }

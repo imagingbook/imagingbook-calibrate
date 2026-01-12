@@ -9,7 +9,7 @@ package imagingbook.calibration.distortion;
 /**
  * Lens model with radial-only distortion.
  */
-public interface RadialDistortionModel extends LensDistortionModel {
+public interface RadialDistortionModel extends DistortionModel {
 
     /**
      * Forward radial distortion function.  Returns the distorted

@@ -25,7 +25,7 @@ public class Radial2TermDistortionTest {
 
     @Test
     public void constructorTest1() {
-        LensDistortionModel ldm = new Radial2TermDistortionModel(new double[] {k0, k1});
+        DistortionModel ldm = new Radial2TermDistortionModel(new double[] {k0, k1});
         double[] params = ldm.getParameters();
         assertEquals(2, params.length);
         assertEquals(k0, params[0], tol);
@@ -37,7 +37,7 @@ public class Radial2TermDistortionTest {
 
     @Test
     public void constructorTest2() {
-        LensDistortionModel ldm = new Radial2TermDistortionModel();
+        DistortionModel ldm = new Radial2TermDistortionModel();
         double[] params = ldm.getParameters();
         assertEquals(2, params.length);
         assertEquals(0, params[0], tol);
@@ -49,26 +49,26 @@ public class Radial2TermDistortionTest {
 
     @Test (expected = IllegalArgumentException.class)
     public void constructorExceptionTest1() {
-        LensDistortionModel ldm = new Radial2TermDistortionModel(new double[] {0.1});
+        DistortionModel ldm = new Radial2TermDistortionModel(new double[] {0.1});
     }
 
     @Test (expected = IllegalArgumentException.class)
     public void constructorExceptionTest3() {
-        LensDistortionModel ldm = new Radial2TermDistortionModel(new double[] {0.1, 0.7, 0});
+        DistortionModel ldm = new Radial2TermDistortionModel(new double[] {0.1, 0.7, 0});
     }
 
     // -------------------------------------------------------------------------
 
     @Test
     public void copyOfTest() {
-        LensDistortionModel ldm = new Radial2TermDistortionModel(new double[] {k0, k1});
+        DistortionModel ldm = new Radial2TermDistortionModel(new double[] {k0, k1});
 
-        LensDistortionModel ldm2 = ldm.copyOf();
+        DistortionModel ldm2 = ldm.copyOf();
         assertNotNull(ldm2);
         assertEquals(k0, ldm2.getParameter(0), tol);
         assertEquals(k1, ldm2.getParameter(1), tol);
 
-        LensDistortionModel ldm3 = ldm.copyOf(new double[] {0.4, -0.1}, 0);
+        DistortionModel ldm3 = ldm.copyOf(new double[] {0.4, -0.1}, 0);
         assertEquals(0.4, ldm3.getParameter(0), tol);
         assertEquals(-0.1, ldm3.getParameter(1), tol);
     }
@@ -177,7 +177,7 @@ public class Radial2TermDistortionTest {
 
     @Test
     public void getDMatrixRowUTest() {
-        LensDistortionModel ldm = new Radial2TermDistortionModel(new double[] {k0, k1});
+        DistortionModel ldm = new Radial2TermDistortionModel(new double[] {k0, k1});
         double x = 0.3, y = -0.6, du = 210, dv = 19;
         double[][] rowsUV = ldm.getDMatrixRowsUV(x, y, du, dv);
         assertEquals(2, rowsUV.length);
