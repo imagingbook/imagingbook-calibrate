@@ -14,7 +14,7 @@ import java.io.InputStream;
  * {@code com.foo.MyJsonResource.java} must be backed by an associated JSON resource file
  * {@code itemX.json} in
  * {@code com.foo.MyJsonResource-data}.
- * It is assumed that all JSON objects such a collection are of the same Java class.
+ * It is assumed that all JSON objects in such a collection are of the same Java class.
  */
 public interface JsonResource extends NamedResource {
 
@@ -42,7 +42,7 @@ public interface JsonResource extends NamedResource {
      * for objects of type {@code double[][]}, this is done in the following form:
      * <pre>{@code
      *     @Override
-     *     public Class<double[][]> getResourceClass() {
+     *     public Class<?> getResourceClass() {
      *         return double[][].class;
      *     }
      * }</pre>
