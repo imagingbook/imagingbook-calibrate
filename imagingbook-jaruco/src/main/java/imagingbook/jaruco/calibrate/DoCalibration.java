@@ -10,7 +10,8 @@ import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.jaruco.boards.AbstractBoard;
 import imagingbook.jaruco.boards.AbstractBoardDetector.PntPair;
 import imagingbook.jaruco.boards.CharucoBoard;
-import imagingbook.jaruco.cornerdata.DICT_5x5_CharucoBoard_12x8_A4L.ImageCornerSet;
+import imagingbook.jaruco.cornerdata.DICT_5x5_CharucoBoard_12x8_ImgCorners;
+import imagingbook.jaruco.cornerdata.Pnt2dOrderedSet;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -46,12 +47,14 @@ public class DoCalibration {
     static int USE_ONLY_POINTS = 64;
 
     public static void main(String[] args) {
-        ImageCornerSet[] cornerSets = {
-                ImageCornerSet.DSC_2691,
-                ImageCornerSet.DSC_2692,
-                ImageCornerSet.DSC_2693,
-                ImageCornerSet.DSC_2694
+
+        Pnt2dOrderedSet[] imgCorners = {
+                DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2691,
+                DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2692,
+                DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2693,
+                DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2694
         };
+
 
         int[] SELECTED = {}; //{ 0, 21, 171, 190};
 
@@ -68,12 +71,10 @@ public class DoCalibration {
         params.debug = true;
         Calibration calibration = new Calibration(params, 6048, 4024);
 
-        for (ImageCornerSet cornerSet : cornerSets) {
+        for (Pnt2dOrderedSet cornerSet : imgCorners) {
             System.out.println("adding corner set " + cornerSet);
-            // Pnt2d[] obsPoints = getObservedPoints(matches);
-            Pnt2d[] obsPoints = cornerSet.getInstance().getCornerPoints();
+            Pnt2d[] obsPoints = cornerSet.getPoints();
             // showObserved(bp, obsPoints, path);
-
             calibration.addView(modelPoints, obsPoints);
         }
         // if (true) return;

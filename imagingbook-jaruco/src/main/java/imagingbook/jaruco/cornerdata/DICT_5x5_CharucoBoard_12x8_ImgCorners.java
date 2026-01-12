@@ -1,8 +1,13 @@
 package imagingbook.jaruco.cornerdata;
 
+import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.basic.PntUtils;
 import imagingbook.jaruco.util.JsonResource;
 
-public enum DICT_5x5_CharucoBoard_12x8_ImgCorners implements JsonResource {
+/**
+ * A collection of detected image corner sets for the DICT_5x5_CharucoBoard_12x8 model.
+ */
+public enum DICT_5x5_CharucoBoard_12x8_ImgCorners implements JsonResource, Pnt2dOrderedSet {
     DSC_2691,
     DSC_2692,
     DSC_2693,
@@ -28,5 +33,11 @@ public enum DICT_5x5_CharucoBoard_12x8_ImgCorners implements JsonResource {
     @Override
     public Class<?> getResourceClass() {
         return double[][].class;
+    }
+
+    @Override
+    public Pnt2d[] getPoints() {
+        double[][] pts = this.readObject();
+        return PntUtils.fromDoubleArray(pts);
     }
 }
