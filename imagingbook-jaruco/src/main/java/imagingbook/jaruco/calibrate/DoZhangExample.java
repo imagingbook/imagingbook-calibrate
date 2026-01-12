@@ -1,10 +1,10 @@
 package imagingbook.jaruco.calibrate;
 
 import ij.IJ;
-import imagingbook.calibration.Calibration;
-import imagingbook.calibration.Camera;
-import imagingbook.calibration.ViewTransform;
-import imagingbook.calibration.zhang.data.ZhangData;
+import imagingbook.calibrate.Calibration;
+import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.extrinsics.ViewTransform;
+import imagingbook.calibrate.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
 
 public class DoZhangExample {

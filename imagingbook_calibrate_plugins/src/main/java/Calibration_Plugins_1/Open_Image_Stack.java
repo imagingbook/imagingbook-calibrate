@@ -9,7 +9,7 @@ package Calibration_Plugins_1;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.PlugIn;
-import imagingbook.calibration.zhang.data.CalibrationImage;
+import imagingbook.calibrate.zhang.data.CalibrationImage;
 import imagingbook.core.jdoc.JavaDocHelp;
 import imagingbook.core.resource.ImageResource;
 

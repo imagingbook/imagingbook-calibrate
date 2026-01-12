@@ -13,12 +13,14 @@ module imagingbook.calibrate.lib {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.core;
 
-    exports imagingbook.calibration;
-    exports imagingbook.calibration.zhang.data;
-    exports imagingbook.calibration.util;
-    exports imagingbook.calibration.math3legacy;
-    exports imagingbook.calibration.distortion;
-    exports imagingbook.calibration.homography;
-    exports imagingbook.calibration.intrinsics;
-    exports imagingbook.calibration.intrinsics.obsolete;
+    exports imagingbook.calibrate;
+    exports imagingbook.calibrate.zhang.data;
+    exports imagingbook.calibrate.util;
+    exports imagingbook.calibrate.math3legacy;
+    exports imagingbook.calibrate.distortion;
+    exports imagingbook.calibrate.homography;
+    exports imagingbook.calibrate.intrinsics;
+    exports imagingbook.calibrate.intrinsics.obsolete;
+    exports imagingbook.calibrate.extrinsics;
+    exports imagingbook.calibrate.optimize;
 }

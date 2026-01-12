@@ -2,8 +2,8 @@ package imagingbook.jaruco.calibrate;
 
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
-import imagingbook.calibration.Calibration;
-import imagingbook.calibration.Camera;
+import imagingbook.calibrate.Calibration;
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
