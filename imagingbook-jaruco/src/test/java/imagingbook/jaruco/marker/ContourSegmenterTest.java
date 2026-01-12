@@ -1,44 +1,41 @@
 package imagingbook.jaruco.marker;
 
-import imagingbook.common.geometry.basic.PntUtils;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import org.junit.jupiter.api.Test;
 
-import static imagingbook.jaruco.util.JsonUtils.loadObject;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_0_contour;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_0_corners;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_1_contour;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_1_corners;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_2_contour;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_2_corners;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_3_contour;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_3_corners;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ContourSegmenterTest {
 
-    @Test
-    void extractQuadTest() {
-    }
+    static final double polygonalApproxAccuracyRate = 0.03;  // from ArUco parameters
 
     @Test
     void segmentTest() {
-        String RES_PATH = "test-contours/";     // these are long contours!
-        runSegmentTest(RES_PATH + "single-marker-5-0-contour.json", RES_PATH + "single-marker-5-0-corners.json");
-        runSegmentTest(RES_PATH + "single-marker-5-1-contour.json", RES_PATH + "single-marker-5-1-corners.json");
-        runSegmentTest(RES_PATH + "single-marker-5-2-contour.json", RES_PATH + "single-marker-5-2-corners.json");
-        runSegmentTest(RES_PATH + "single-marker-5-3-contour.json", RES_PATH + "single-marker-5-3-corners.json");
+        runSegmentTest(single_marker_5_0_contour.getPoints(), single_marker_5_0_corners.getPoints());
+        runSegmentTest(single_marker_5_1_contour.getPoints(), single_marker_5_1_corners.getPoints());
+        runSegmentTest(single_marker_5_2_contour.getPoints(), single_marker_5_2_corners.getPoints());
+        runSegmentTest(single_marker_5_3_contour.getPoints(), single_marker_5_3_corners.getPoints());
     }
 
-    static final double polygonalApproxAccuracyRate = 0.03;  // from ArUco parameters
-
     // Checks if corners of segmented contours are as expected
-    void runSegmentTest(String contourPath, String cornersPath) {
-        double[][] contour = (double[][]) loadObject(this.getClass(), contourPath, double[][].class);
-        double[][] corners = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
-        // System.out.println("corners = " + new Polygon2d(PntUtils.makePntList(corners)));
-
+    static void runSegmentTest(Pnt2d[] contour, Pnt2d[] corners) {
         SegmentedPolygon segCtr = new ContourSegmenter(polygonalApproxAccuracyRate) // tol = contour.length * polygonalApproxAccuracyRate
-                .segment(new Polygon2d(PntUtils.makePntList(contour)));
-        // System.out.println("cornersSeg = " + segCtr.getCornerPolygon());
+                .segment(new Polygon2d(contour));
 
         // check if 4 corners exactly
         assertEquals(4, segCtr.getSegmentCount());
 
         // check if all corner points are the same
-        Polygon2d cornerPoly1 = new Polygon2d(PntUtils.makePntList(corners));
+        Polygon2d cornerPoly1 = new Polygon2d(corners);
         Polygon2d cornerPoly2 = segCtr.getCornerPolygon();
         assertEquals(4, cornerPoly2.length());
         assertEquals(cornerPoly1, cornerPoly2);

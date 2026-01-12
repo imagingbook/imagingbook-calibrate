@@ -1,8 +1,18 @@
 package imagingbook.jaruco.marker;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.PntUtils;
+import imagingbook.common.geometry.basic.Polygon2d;
 import org.junit.jupiter.api.Test;
 
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_0_contour;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_0_corners;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_1_contour;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_1_corners;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_2_contour;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_2_corners;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_3_contour;
+import static imagingbook.jaruco.marker.MarkerTestContours.single_marker_5_3_corners;
 import static imagingbook.jaruco.util.JsonUtils.loadObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,37 +23,44 @@ class StraightMarkerLocatorTest {
 
     @Test
     void fitRealContourTest() {
-        String RES_PATH = "test-contours/";     // these are long contours!
-        runFitTest(RES_PATH + "single-marker-5-0-contour.json", RES_PATH + "single-marker-5-0-corners.json");
-        runFitTest(RES_PATH + "single-marker-5-1-contour.json", RES_PATH + "single-marker-5-1-corners.json");
-        runFitTest(RES_PATH + "single-marker-5-2-contour.json", RES_PATH + "single-marker-5-2-corners.json");
-        runFitTest(RES_PATH + "single-marker-5-3-contour.json", RES_PATH + "single-marker-5-3-corners.json");
+        runSegmentTest(single_marker_5_0_contour.getPoints(), single_marker_5_0_corners.getPoints());
+        runSegmentTest(single_marker_5_1_contour.getPoints(), single_marker_5_1_corners.getPoints());
+        runSegmentTest(single_marker_5_2_contour.getPoints(), single_marker_5_2_corners.getPoints());
+        runSegmentTest(single_marker_5_3_contour.getPoints(), single_marker_5_3_corners.getPoints());
     }
 
-    void runFitTest(String contourPath, String cornersPath) {
-        double[][] contour = (double[][]) loadObject(this.getClass(), contourPath, double[][].class);
-        double[][] corners = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
+    static void runSegmentTest(Pnt2d[] contour, Pnt2d[] corners) {
         assertNotNull(contour);
         assertNotNull(corners);
-
         SegmentedPolygon segCtr = new ContourSegmenter(polygonalApproxAccuracyRate)
-                .segment(PntUtils.makePntList(contour)); // tol = contour.length * polygonalApproxAccuracyRate
+                .segment(new Polygon2d(contour)); // tol = contour.length * polygonalApproxAccuracyRate
         assertEquals(4, segCtr.getSegmentCount());
-
-        // QuadHomographyFit fit = new QuadHomographyFit(segCtr);
-        // double[][] A = fit.getTransformationMatrix();
-        // assertNotNull(A);
-        // PrintPrecision.set(8);
-        // System.out.println("A quadFit = \n" + Matrix.toString(A));
-        // System.out.println("A quadFit error = " + fit.getError());
-
-        // -------------------------------------------
-
-        // ProjectiveFit2d fitP = new ProjectiveFit2d(segCtr.getCorners().toArray(new Pnt2d[0]), UnitSquare.toArray(new Pnt2d[0]));
-        // System.out.println("A projective = \n" + Matrix.toString(fitP.getTransformationMatrix()));
-        // System.out.println("A projective error = " + fitP.getError());
-
     }
+
+    // void runFitTest(String contourPath, String cornersPath) {
+    //     double[][] contour = (double[][]) loadObject(this.getClass(), contourPath, double[][].class);
+    //     double[][] corners = (double[][]) loadObject(this.getClass(), cornersPath, double[][].class);
+    //     assertNotNull(contour);
+    //     assertNotNull(corners);
+    //
+    //     SegmentedPolygon segCtr = new ContourSegmenter(polygonalApproxAccuracyRate)
+    //             .segment(PntUtils.makePntList(contour)); // tol = contour.length * polygonalApproxAccuracyRate
+    //     assertEquals(4, segCtr.getSegmentCount());
+    //
+    //     // QuadHomographyFit fit = new QuadHomographyFit(segCtr);
+    //     // double[][] A = fit.getTransformationMatrix();
+    //     // assertNotNull(A);
+    //     // PrintPrecision.set(8);
+    //     // System.out.println("A quadFit = \n" + Matrix.toString(A));
+    //     // System.out.println("A quadFit error = " + fit.getError());
+    //
+    //     // -------------------------------------------
+    //
+    //     // ProjectiveFit2d fitP = new ProjectiveFit2d(segCtr.getCorners().toArray(new Pnt2d[0]), UnitSquare.toArray(new Pnt2d[0]));
+    //     // System.out.println("A projective = \n" + Matrix.toString(fitP.getTransformationMatrix()));
+    //     // System.out.println("A projective error = " + fitP.getError());
+    //
+    // }
 
     @Test
     void getCorners() {
