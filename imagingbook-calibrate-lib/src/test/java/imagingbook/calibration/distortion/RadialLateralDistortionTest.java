@@ -10,7 +10,6 @@ import imagingbook.testutils.DeterministicRandom;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Random;
 import java.util.random.RandomGenerator;
 
 import static org.junit.Assert.*;
@@ -27,15 +26,15 @@ public class RadialLateralDistortionTest {
 
     @Test
     public void getParameters1() {
-        RadialLateralDistortion distortion = new RadialLateralDistortion();
-        assertEquals(RadialLateralDistortion.PARAM_COUNT, distortion.getParameterCount());
+        RadialLateralDistortionModel distortion = new RadialLateralDistortionModel();
+        assertEquals(RadialLateralDistortionModel.PARAM_COUNT, distortion.getParameterCount());
         assertArrayEquals(new double[] {0,0,0,0,0}, distortion.getParameters(), tol);
     }
     @Test
 
     public void getParameters2() {
-        RadialLateralDistortion distortion = new RadialLateralDistortion(demoParams);
-        assertEquals(RadialLateralDistortion.PARAM_COUNT, distortion.getParameterCount());
+        RadialLateralDistortionModel distortion = new RadialLateralDistortionModel(demoParams);
+        assertEquals(RadialLateralDistortionModel.PARAM_COUNT, distortion.getParameterCount());
         assertArrayEquals(demoParams, distortion.getParameters(), tol);
     }
 
@@ -46,7 +45,7 @@ public class RadialLateralDistortionTest {
 
     @Test
     public void warpTest1() {   // zero distortion
-        RadialLateralDistortion distortion = new RadialLateralDistortion();
+        RadialLateralDistortionModel distortion = new RadialLateralDistortionModel();
         double[] p1 = {0.4, 0.7};
         double[] p2 = distortion.warp(p1);
         // System.out.println("p2 = " + Arrays.toString(p2));
@@ -55,7 +54,7 @@ public class RadialLateralDistortionTest {
 
     @Test
     public void warpTest2() {
-        RadialLateralDistortion distortion = new RadialLateralDistortion(demoParams);
+        RadialLateralDistortionModel distortion = new RadialLateralDistortionModel(demoParams);
         double[] p1 = {0.4, 0.7};
         double[] p2 = distortion.warp(p1);
         //System.out.println("p2 = " + Arrays.toString(p2));
@@ -64,7 +63,7 @@ public class RadialLateralDistortionTest {
 
     @Test
     public void warpTest3() {
-        RadialLateralDistortion distortion = new RadialLateralDistortion(demoParams);
+        RadialLateralDistortionModel distortion = new RadialLateralDistortionModel(demoParams);
         double[] p1 = {-1, -1};
         // System.out.println("p1 = " + Arrays.toString(p1));
         double[] p2 = distortion.warp(p1);
@@ -74,7 +73,7 @@ public class RadialLateralDistortionTest {
 
     @Test
     public void unwarpTest1() {
-        RadialLateralDistortion distortion = new RadialLateralDistortion(demoParams);
+        RadialLateralDistortionModel distortion = new RadialLateralDistortionModel(demoParams);
         double[] p1 = {0.3, -0.4};
         // System.out.println("p1 = " + Arrays.toString(p1));
         double[] p2 = distortion.unwarp(p1);
@@ -84,7 +83,7 @@ public class RadialLateralDistortionTest {
 
     @Test
     public void unwarpTestUnitPoints() {
-        RadialLateralDistortion distortion = new RadialLateralDistortion(demoParams);
+        RadialLateralDistortionModel distortion = new RadialLateralDistortionModel(demoParams);
         double[][] points = {
                 {0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, -1}
         };
@@ -102,7 +101,7 @@ public class RadialLateralDistortionTest {
     public void unwarpTestRandom() {
         int N = 100;
         RandomGenerator rand = new DeterministicRandom(17);
-        RadialLateralDistortion distortion = new RadialLateralDistortion(demoParams);
+        RadialLateralDistortionModel distortion = new RadialLateralDistortionModel(demoParams);
         for (int i = 0; i < N; i++) {
             double[] p1 = {1 * rand.nextDouble() - 0.5, 1 * rand.nextDouble() - 0.5};
             double[] p2 = distortion.warp(p1);

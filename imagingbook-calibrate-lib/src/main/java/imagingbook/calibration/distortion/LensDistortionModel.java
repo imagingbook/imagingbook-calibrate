@@ -15,20 +15,20 @@ import java.util.List;
 /**
  * The mother of all radial  distortion models.
  */
-public interface LensDistortion {
+public interface LensDistortionModel {
 
     /**
      * Copies an existing distortion model instance with modifies parameters.
      * @param params a parameter vector of required length
      * @return
      */
-    LensDistortion copyOf(double[] params, double error);
+    LensDistortionModel copyOf(double[] params, double error);
 
     /**
      * Copies an existing distortion model instance with unmodified parameters.
      * @return
      */
-    default LensDistortion copyOf() {
+    default LensDistortionModel copyOf() {
         return copyOf(getParameters(), getError());
     }
 
@@ -88,23 +88,23 @@ public interface LensDistortion {
 
     // -------------------------------------------------------------------------
 
-    /**
-     * Stores the average mapping error that occurred when this distortion
-     * model was estimated (mainly for debugging).
-     * Note: this method may not be implemented.
-     * @param error the average error
-     */
-    default void setAvgError(double error) { }
-
-    /**
-     * Retrieves the average error that occurred when this distortion
-     * model was estimated (mainly for debugging).
-     * Note: this method may not be implemented.
-     * @return the average error
-     */
-    default double getAvgError() {
-        return 0;
-    }
+    // /**
+    //  * Stores the average mapping error that occurred when this distortion
+    //  * model was estimated (mainly for debugging).
+    //  * Note: this method may not be implemented.
+    //  * @param error the average error
+    //  */
+    // default void setAvgError(double error) { }
+    //
+    // /**
+    //  * Retrieves the average error that occurred when this distortion
+    //  * model was estimated (mainly for debugging).
+    //  * Note: this method may not be implemented.
+    //  * @return the average error
+    //  */
+    // default double getAvgError() {
+    //     return 0;
+    // }
 
     // -------------------------------------------------------------------------
 
@@ -123,7 +123,7 @@ public interface LensDistortion {
      *  @param modelPntSet the set of 2D model points (on the planar calibration target), one set for each view
      *  @param obsPntSet a sequence of 2D image point sets, one set for each view
      */
-    public static LensDistortion from(Camera cam, ViewTransform[] views, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
+    public static LensDistortionModel from(Camera cam, ViewTransform[] views, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
         LensDistortionEstimator estimator = new LensDistortionEstimator(views, modelPntSet, obsPntSet);
         return estimator.getEstimate(cam);
     }

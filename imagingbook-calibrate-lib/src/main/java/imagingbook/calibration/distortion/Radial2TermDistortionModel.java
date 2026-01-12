@@ -17,24 +17,23 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.Random;
-import java.util.function.Supplier;
 
 /**
  * Simplified radial distortion model used in Zhang's EasyCalib implementation.
  * Distortion is modeled by
  * function r' = warp(r) = r * (1 + k0 * r^2 + k1 * r^4) .
  */
-public class Radial2TermDistortion implements RadialDistortion {
+public class Radial2TermDistortionModel implements RadialDistortionModel {
 
     public static final int PARAM_COUNT = 2;
-    public static final Radial2TermDistortion INSTANCE = new Radial2TermDistortion();
+    public static final Radial2TermDistortionModel INSTANCE = new Radial2TermDistortionModel();
     private final double k0, k1;
     private final double error; // estimation error
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
-    public Radial2TermDistortion() {
+    public Radial2TermDistortionModel() {
         this(new double[] {0, 0});
     }
 
@@ -42,7 +41,7 @@ public class Radial2TermDistortion implements RadialDistortion {
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public Radial2TermDistortion(double[] parameters) {
+    public Radial2TermDistortionModel(double[] parameters) {
         this(parameters, 0.0);
     }
 
@@ -52,7 +51,7 @@ public class Radial2TermDistortion implements RadialDistortion {
      * @param parameters vector of distortion parameters
      * @param error average estimation error
      */
-    public Radial2TermDistortion(double[] parameters, double error) {
+    public Radial2TermDistortionModel(double[] parameters, double error) {
         if (parameters.length != PARAM_COUNT)
             throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
         this.k0 = parameters[0];
@@ -63,8 +62,8 @@ public class Radial2TermDistortion implements RadialDistortion {
 
 
     @Override
-    public Radial2TermDistortion copyOf(double[] params,double error) {
-        return new Radial2TermDistortion(params, error);
+    public Radial2TermDistortionModel copyOf(double[] params, double error) {
+        return new Radial2TermDistortionModel(params, error);
     }
 
     // -----------------------------------------

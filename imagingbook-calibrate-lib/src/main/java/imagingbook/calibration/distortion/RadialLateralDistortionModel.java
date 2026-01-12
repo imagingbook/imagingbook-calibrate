@@ -14,22 +14,21 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.GaussNewtonOptimizer
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 
-public class RadialLateralDistortion implements LensDistortion {
+public class RadialLateralDistortionModel implements LensDistortionModel {
 
     public static final int PARAM_COUNT = 5;
-    public static final RadialLateralDistortion INSTANCE = new RadialLateralDistortion();
+    public static final RadialLateralDistortionModel INSTANCE = new RadialLateralDistortionModel();
     private final double k0, k1, k2, p1, p2;
     private final double error; // estimation error
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
-    public RadialLateralDistortion() {
+    public RadialLateralDistortionModel() {
         this(new double[] {0, 0, 0, 0, 0});
     }
 
@@ -37,7 +36,7 @@ public class RadialLateralDistortion implements LensDistortion {
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public RadialLateralDistortion(double[] parameters) {
+    public RadialLateralDistortionModel(double[] parameters) {
         this(parameters, 0.0);
     }
 
@@ -46,7 +45,7 @@ public class RadialLateralDistortion implements LensDistortion {
      * @param parameters vector of distortion parameters
      * @param error average estimation error
      */
-    public RadialLateralDistortion(double[] parameters, double error) {
+    public RadialLateralDistortionModel(double[] parameters, double error) {
         if (parameters.length != PARAM_COUNT)
             throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
         this.k0 = parameters[0];
@@ -60,8 +59,8 @@ public class RadialLateralDistortion implements LensDistortion {
     // ------------------------------------------------------------------------
 
     @Override
-    public LensDistortion copyOf(double[] params, double error) {
-        return new RadialLateralDistortion(params, error);
+    public LensDistortionModel copyOf(double[] params, double error) {
+        return new RadialLateralDistortionModel(params, error);
     }
 
     @Override

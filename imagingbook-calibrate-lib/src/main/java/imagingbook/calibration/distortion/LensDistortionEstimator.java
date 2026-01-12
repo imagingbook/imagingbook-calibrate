@@ -45,10 +45,10 @@ class LensDistortionEstimator {
      *  (M views with N observed points).
      *  @param cam the initial (linear) camera model
      */
-    protected LensDistortion getEstimate(Camera cam) {
+    protected LensDistortionModel getEstimate(Camera cam) {
         final int M = views.length;		// the number of views
         final int N = modPts[0].length;	// the number of model points TODO: this varies!!!
-        final LensDistortion distortion = cam.getDistortion();
+        final LensDistortionModel distortion = cam.getDistortion();
         final int P = distortion.getParameterCount();    // number of distortion parameters
 
         // the estimated projection center on the sensor plane

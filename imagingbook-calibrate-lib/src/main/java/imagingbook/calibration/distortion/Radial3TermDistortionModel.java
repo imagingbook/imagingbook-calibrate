@@ -10,10 +10,10 @@ import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
 
-public class Radial3TermDistortion implements RadialDistortion {
+public class Radial3TermDistortionModel implements RadialDistortionModel {
 
     public static final int PARAM_COUNT = 3;
-    public static final Radial3TermDistortion INSTANCE = new Radial3TermDistortion();
+    public static final Radial3TermDistortionModel INSTANCE = new Radial3TermDistortionModel();
     //private final double[] parameters; // lens distortion parameters
     private final double k0, k1, k2;
     private final double error; // estimation error
@@ -21,7 +21,7 @@ public class Radial3TermDistortion implements RadialDistortion {
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
-    public Radial3TermDistortion() {
+    public Radial3TermDistortionModel() {
         this(new double[] {0, 0, 0});
     }
 
@@ -29,7 +29,7 @@ public class Radial3TermDistortion implements RadialDistortion {
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public Radial3TermDistortion(double[] parameters) {
+    public Radial3TermDistortionModel(double[] parameters) {
         this(parameters, 0.0);
     }
 
@@ -38,7 +38,7 @@ public class Radial3TermDistortion implements RadialDistortion {
      * @param parameters vector of distortion parameters
      * @param error average estimation error
      */
-    public Radial3TermDistortion(double[] parameters, double error) {
+    public Radial3TermDistortionModel(double[] parameters, double error) {
         if (parameters.length != PARAM_COUNT)
             throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
         this.k0 = parameters[0];
@@ -48,8 +48,8 @@ public class Radial3TermDistortion implements RadialDistortion {
     }
 
     @Override
-    public Radial3TermDistortion copyOf(double[] params, double error) {
-        return new Radial3TermDistortion(params, error);
+    public Radial3TermDistortionModel copyOf(double[] params, double error) {
+        return new Radial3TermDistortionModel(params, error);
     }
 
     @Override

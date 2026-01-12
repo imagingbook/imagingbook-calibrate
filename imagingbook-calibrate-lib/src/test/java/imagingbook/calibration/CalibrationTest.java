@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.distortion.Radial2TermDistortion;
+import imagingbook.calibration.distortion.Radial2TermDistortionModel;
 import imagingbook.calibration.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
@@ -25,7 +25,7 @@ public class CalibrationTest {
     public void calibrateZhangCam2Test() {  // using original 2-term distortion model
         // Set up the calibration ------------------------------------------
         Calibration.Parameters params = new Calibration.Parameters();
-        params.distortionModel = Radial2TermDistortion.INSTANCE;
+        params.distortionModel = Radial2TermDistortionModel.INSTANCE;
         params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.debug = false;
@@ -62,7 +62,7 @@ public class CalibrationTest {
     // public void calibrateZhangCam3Test() {  // using 3-term distortion model
     //     // Set up the calibration ------------------------------------------
     //     Calibration.Parameters params = new Calibration.Parameters();
-    //     params.distortionModel = Radial3TermDistortion.INSTANCE;
+    //     params.distortionModel = Radial3TermDistortionModel.INSTANCE;
     //     params.normalizePoints = true;
     //     params.useNumericJacobian = true;
     //     params.debug = false;
@@ -95,7 +95,7 @@ public class CalibrationTest {
     // public void calibrateRadialLateralTest() {  // using radial+lateral distortion model
     //     // Set up the calibration ------------------------------------------
     //     Calibration.Parameters params = new Calibration.Parameters();
-    //     params.distortionModel = RadialLateralDistortion.INSTANCE;
+    //     params.distortionModel = RadialLateralDistortionModel.INSTANCE;
     //     params.normalizePoints = true;
     //     params.useNumericJacobian = true;
     //     params.debug = false;

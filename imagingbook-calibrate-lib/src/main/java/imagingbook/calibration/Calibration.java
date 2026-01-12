@@ -6,8 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibration;
 
-import imagingbook.calibration.distortion.LensDistortion;
-import imagingbook.calibration.distortion.Radial2TermDistortion;
+import imagingbook.calibration.distortion.LensDistortionModel;
+import imagingbook.calibration.distortion.Radial2TermDistortionModel;
 import imagingbook.calibration.homography.HomographyEstimator;
 import imagingbook.calibration.homography.HomographyEstimatorSimple;
 import imagingbook.calibration.intrinsics.IntrinsicsEstimator;
@@ -52,7 +52,7 @@ public class Calibration {
 	 */
 	public static class Parameters implements ParameterBundle<Calibration> {
         /** Lens distortion model to be used. */
-        public LensDistortion distortionModel = Radial2TermDistortion.INSTANCE;
+        public LensDistortionModel distortionModel = Radial2TermDistortionModel.INSTANCE;
 		/** Normalize point coordinates for numerical stability in homography estimation. */
 		public boolean normalizePoints = true;
 		/** Perform non-linear refinement of homographies (usually not needed). */
@@ -157,7 +157,7 @@ public class Calibration {
 
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Determine the lens distortion from initial estimates:");
-        LensDistortion distortion = LensDistortion.from(initCam, initViews, modelPntSet, imagePntSet);
+        LensDistortionModel distortion = LensDistortionModel.from(initCam, initViews, modelPntSet, imagePntSet);
         debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		Camera improvedCam = new Camera(Ainit, distortion);
         debug("improved camera = " + improvedCam);
