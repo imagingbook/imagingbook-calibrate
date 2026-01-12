@@ -27,7 +27,7 @@ public class CalibrationTest {
     public void calibrateZhangCam2Test() {  // using original 2-term distortion model
         // Set up the calibration ------------------------------------------
         Calibration.Parameters params = new Calibration.Parameters();
-        params.distortionModel = Radial2TermDistortionModel.INSTANCE;
+        params.distortionModel = new Radial2TermDistortionModel();
         params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.debug = false;

@@ -7,7 +7,7 @@
 package imagingbook.calibrate.distortion;
 
 /**
- * The mother of all radial  distortion models.
+ * The mother of all radial distortion models.
  */
 public interface DistortionModel {
 
@@ -16,15 +16,17 @@ public interface DistortionModel {
      * @param params a parameter vector of required length
      * @return
      */
-    DistortionModel copyOf(double[] params, double error);
+    DistortionModel copyOf(double[] params);
 
     /**
      * Copies an existing distortion model instance with unmodified parameters.
      * @return
      */
-    default DistortionModel copyOf() {
-        return copyOf(getParameters(), getError());
+    public default DistortionModel copyOf() {
+        return copyOf(getParameters());
     }
+
+    // -------------------------------------------------------------------------------
 
     /**
      * Returns the number of parameters required for this distortion model.
@@ -47,13 +49,15 @@ public interface DistortionModel {
         return parameters[i];
     }
 
-    /**
-     * Returns the average estimation error. May not be implemented.
-     * @return the average estimation error
-     */
-    default double getError() {
-        throw new UnsupportedOperationException("getError() not implemented for this type");
-    }
+    // -------------------------------------------------------------------------------
+
+//    /**
+//     * Returns the average estimation error. May not be implemented.
+//     * @return the average estimation error
+//     */
+//    default double getError() {
+//        throw new UnsupportedOperationException("getError() not implemented for this type");
+//    }
 
     /**
      * Returns a pair of rows in matrix D required for each observed

@@ -13,8 +13,8 @@ import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiable
 public class Radial3TermDistortionModel implements RadialDistortionModel {
 
     public static final int PARAM_COUNT = 3;
-    public static final Radial3TermDistortionModel INSTANCE = new Radial3TermDistortionModel();
-    //private final double[] parameters; // lens distortion parameters
+    // public static final Radial3TermDistortionModel INSTANCE = new Radial3TermDistortionModel();
+    // private final double[] parameters; // lens distortion parameters
     private final double k0, k1, k2;
     private final double error; // estimation error
 
@@ -48,8 +48,8 @@ public class Radial3TermDistortionModel implements RadialDistortionModel {
     }
 
     @Override
-    public Radial3TermDistortionModel copyOf(double[] params, double error) {
-        return new Radial3TermDistortionModel(params, error);
+    public Radial3TermDistortionModel copyOf(double[] params) {
+        return new Radial3TermDistortionModel(params);
     }
 
     @Override
@@ -57,10 +57,10 @@ public class Radial3TermDistortionModel implements RadialDistortionModel {
         return new double[] {k0, k1, k2};
     }
 
-    @Override
-    public double getError() {
-        return this.error;
-    }
+//    @Override
+//    public double getError() {
+//        return this.error;
+//    }
 
     // -------------------------------------------------------------------------
 

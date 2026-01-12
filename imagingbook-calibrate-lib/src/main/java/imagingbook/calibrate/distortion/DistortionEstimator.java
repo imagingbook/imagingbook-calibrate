@@ -112,7 +112,7 @@ public class DistortionEstimator {
         double err2 = D.operate(kopt).subtract(d).getNorm();
         // System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
-        DistortionModel dist = distModel.copyOf(kopt.toArray(), err1 / (pointCount));
+        DistortionModel dist = distModel.copyOf(kopt.toArray()); //, err1 / (pointCount));
         return new Camera(initCam.getMatrixA(), dist);   // TODO: check error quantity is avg)
     }
 

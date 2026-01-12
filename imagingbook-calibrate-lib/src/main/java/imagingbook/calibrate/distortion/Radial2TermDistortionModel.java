@@ -26,9 +26,10 @@ import java.util.Random;
 public class Radial2TermDistortionModel implements RadialDistortionModel {
 
     public static final int PARAM_COUNT = 2;
-    public static final Radial2TermDistortionModel INSTANCE = new Radial2TermDistortionModel();
-    private final double k0, k1;
-    private final double error; // estimation error
+    // public static final Radial2TermDistortionModel INSTANCE = new Radial2TermDistortionModel();
+    //private final double k0, k1;
+    private final double[] parameters;
+    // private final double error; // estimation error
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
@@ -42,41 +43,33 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
      * @param parameters vector of distortion parameters
      */
     public Radial2TermDistortionModel(double[] parameters) {
-        this(parameters, 0.0);
-    }
-
-
-    /**
-     * Constructor. Creates a lens distortion instance with the specified parameters.
-     * @param parameters vector of distortion parameters
-     * @param error average estimation error
-     */
-    public Radial2TermDistortionModel(double[] parameters, double error) {
         if (parameters.length != PARAM_COUNT)
             throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
-        this.k0 = parameters[0];
-        this.k1 = parameters[1];
-        this.error = error;
+        this.parameters = parameters;
+        // this.k0 = parameters[0];
+        // this.k1 = parameters[1];
+        // this.error = error;
     }
 
 
 
     @Override
-    public Radial2TermDistortionModel copyOf(double[] params, double error) {
-        return new Radial2TermDistortionModel(params, error);
+    public Radial2TermDistortionModel copyOf(double[] params) {
+        return new Radial2TermDistortionModel(params);
     }
 
     // -----------------------------------------
 
     @Override
     public double[] getParameters() {
-        return new double[] {k0, k1};
+        //return new double[] {k0, k1};
+        return parameters;
     }
 
-    @Override
-    public double getError() {
-        return this.error;
-    }
+//    @Override
+//    public double getError() {
+//        return this.error;
+//    }
 
     @Override
     public double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {
@@ -98,6 +91,8 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
      */
     @Override
     public double fRad(final double r) {
+        double k0 = parameters[0];
+        double k1 = parameters[1];
         final double r2 = r * r;
         double D = r2 * (k0 + k1 * r2);		// D(r) = k0 * r^2 + k1 * r^4
         return r * (1 + D);
@@ -115,6 +110,8 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
      */
     @Override
     public double fRadInv(final double R) {
+        double k0 = parameters[0];
+        double k1 = parameters[1];
         double[] coefficients = {-R, 1, 0, k0, 0, k1};
         UnivariateDifferentiableSolver inverseSolver = new NewtonRaphsonSolver();
         PolynomialFunction p = new PolynomialFunction(coefficients);

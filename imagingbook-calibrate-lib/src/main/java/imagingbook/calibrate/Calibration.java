@@ -58,7 +58,7 @@ public class Calibration {
 	 */
 	public static class Parameters implements ParameterBundle<Calibration> {
         /** Lens distortion model to be used. */
-        public DistortionModel distortionModel = Radial2TermDistortionModel.INSTANCE;
+        public DistortionModel distortionModel = new Radial2TermDistortionModel();
 		/** Normalize point coordinates for numerical stability in homography estimation. */
 		public boolean normalizePoints = true;
 		/** Perform non-linear refinement of homographies (usually not needed). */

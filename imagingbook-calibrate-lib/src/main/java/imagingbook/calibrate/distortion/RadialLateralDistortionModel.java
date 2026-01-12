@@ -21,9 +21,9 @@ import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 public class RadialLateralDistortionModel implements DistortionModel {
 
     public static final int PARAM_COUNT = 5;
-    public static final RadialLateralDistortionModel INSTANCE = new RadialLateralDistortionModel();
+    // public static final RadialLateralDistortionModel INSTANCE = new RadialLateralDistortionModel();
     private final double k0, k1, k2, p1, p2;
-    private final double error; // estimation error
+    // private final double error; // estimation error
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
@@ -32,20 +32,19 @@ public class RadialLateralDistortionModel implements DistortionModel {
         this(new double[] {0, 0, 0, 0, 0});
     }
 
+//    /**
+//     * Constructor. Creates a lens distortion instance with the specified parameters.
+//     * @param parameters vector of distortion parameters
+//     */
+//    public RadialLateralDistortionModel(double[] parameters) {
+//        this(parameters);
+//    }
+
     /**
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
     public RadialLateralDistortionModel(double[] parameters) {
-        this(parameters, 0.0);
-    }
-
-    /**
-     * Constructor. Creates a lens distortion instance with the specified parameters.
-     * @param parameters vector of distortion parameters
-     * @param error average estimation error
-     */
-    public RadialLateralDistortionModel(double[] parameters, double error) {
         if (parameters.length != PARAM_COUNT)
             throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
         this.k0 = parameters[0];
@@ -53,14 +52,14 @@ public class RadialLateralDistortionModel implements DistortionModel {
         this.k2 = parameters[2];
         this.p1 = parameters[3];
         this.p2 = parameters[4];
-        this.error = error;
+        // this.error = error;
     }
 
     // ------------------------------------------------------------------------
 
     @Override
-    public DistortionModel copyOf(double[] params, double error) {
-        return new RadialLateralDistortionModel(params, error);
+    public DistortionModel copyOf(double[] params) {
+        return new RadialLateralDistortionModel(params);
     }
 
     @Override
@@ -68,10 +67,10 @@ public class RadialLateralDistortionModel implements DistortionModel {
         return new double[] {k0, k1, k2, p1, p2};
     }
 
-    @Override
-    public double getError() {
-        return this.error;
-    }
+//    @Override
+//    public double getError() {
+//        return this.error;
+//    }
 
     @Override
     public double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {

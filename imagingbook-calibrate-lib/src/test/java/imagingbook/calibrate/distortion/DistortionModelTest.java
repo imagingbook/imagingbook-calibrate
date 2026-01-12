@@ -17,7 +17,7 @@ public class DistortionModelTest {
     @Test
     public void copyOfTest1() {
         DistortionModel m1 = new Radial2TermDistortionModel();
-        DistortionModel m2 = m1.copyOf(new double[] {k0, k1}, 0);
+        DistortionModel m2 = m1.copyOf(new double[] {k0, k1});
         assertArrayEquals(new double[] {k0, k1}, m2.getParameters(), tol);
         assertEquals(Radial2TermDistortionModel.class, m1.getClass());
         assertEquals(Radial2TermDistortionModel.class, m2.getClass());
@@ -26,13 +26,13 @@ public class DistortionModelTest {
     @Test (expected = IllegalArgumentException.class)
     public void copyOfTest2() {
         DistortionModel m1 = new Radial2TermDistortionModel(new double[] {k0, k1});
-        DistortionModel m2 = m1.copyOf(new double[] {k0, k1, 0.1}, 0);    // too many arguments
+        DistortionModel m2 = m1.copyOf(new double[] {k0, k1, 0.1});    // too many arguments
     }
 
     @Test (expected = IllegalArgumentException.class)
     public void copyOfTest3() {
         DistortionModel m1 = new Radial2TermDistortionModel(new double[] {k0, k1});
-        DistortionModel m2 = m1.copyOf(new double[] {0.1}, 0);    // too few arguments
+        DistortionModel m2 = m1.copyOf(new double[] {0.1});    // too few arguments
     }
 
     @Test
