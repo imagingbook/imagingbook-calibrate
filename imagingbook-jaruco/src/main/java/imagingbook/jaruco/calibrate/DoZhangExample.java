@@ -2,10 +2,14 @@ package imagingbook.jaruco.calibrate;
 
 import ij.IJ;
 import imagingbook.calibrate.Calibration;
-import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
+
+import static imagingbook.calibrate.distortion.DistortionModelType.PtLens;
+import static imagingbook.calibrate.distortion.DistortionModelType.Radial3Term;
+import static imagingbook.calibrate.distortion.DistortionModelType.RadialLateral;
 
 public class DoZhangExample {
 
@@ -23,17 +27,19 @@ public class DoZhangExample {
         Calibration.Parameters params = new Calibration.Parameters();
         params.normalizePoints = true;
         params.useNumericJacobian = true;
+        params.distModelType = RadialLateral; //Radial3Term;
         params.debug = false;
 
-        Calibration zcalib = new Calibration(params, 640, 480);
+        Calibration calibration = new Calibration(params, 640, 480);
         for (int k = 0; k < M; k++) {
-            zcalib.addView(modelPoints, obsPoints[k]);
+            // modelPoints are the same for every view:
+            calibration.addView(modelPoints, obsPoints[k]);
         }
 
         // Perform calibration ------------------------------------------
 
-        zcalib.calibrate();
-        Camera camFinal = zcalib.getFinalCamera();
+        calibration.calibrate();
+        Camera camFinal = calibration.getFinalCamera();
         if (camFinal == null) {
             System.out.println("Calibration failed");
             return;
@@ -43,18 +49,19 @@ public class DoZhangExample {
 
         if (ListCameraIntrinsics) {
             IJ.log("\n**** Intrinsic camera parameters (common to all views): ****");
-            IJ.log("Final estimate:\n   " + camFinal.toString());
+            IJ.log("Initial camera estimate:\n   " + calibration.getInitialCamera().toString());
+            IJ.log("Final camera estimate:\n   " + camFinal.toString());
             IJ.log("Reference (from EasyCalib):\n   " + camReference.toString());
         }
 
         if (ListCameraViews) {
             IJ.log("\n**** Camera view parameters (3D rotation and translation): ****");
             for (int k = 0; k < M; k++) {
-                ViewTransform view = zcalib.getFinalViewTransform(k);
+                ViewTransform view = calibration.getFinalViewTransform(k);
                 IJ.log("View " + k + ":\n" + view.toString());
             }
 
-            IJ.log(String.format("\nSquared projection error: %.3f\n", zcalib.getTotalReprojectionError()));
+            IJ.log(String.format("\nSquared projection error: %.3f\n", calibration.getTotalReprojectionError()));
         }
     }
 }

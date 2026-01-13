@@ -6,6 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.zhang.data.ZhangData;
 import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
@@ -16,13 +18,17 @@ import org.apache.commons.math4.legacy.linear.QRDecomposition;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
+import java.util.Arrays;
 import java.util.Random;
 
 /**
  * Basic radial distortion model used in Zhang's EasyCalib implementation with two
  * {@code parameters = (k0, k1)}.
- * Distortion is modeled by
- * function {@code r' = warp(r) = r * (1 + k0 * r^2 + k1 * r^4)}.
+ * Distortion is modeled by function
+ * <pre>{@code
+ * r' = warp(r) = r * (1 + k0 * r^2 + k1 * r^4)}
+ *              = r + k0 * r^3 + k1 * r^5
+ * </pre>
  */
 public class Radial2TermDistortionModel extends RadialDistortionModel {
 
@@ -174,5 +180,49 @@ public class Radial2TermDistortionModel extends RadialDistortionModel {
         System.out.println("avg residual = " + avgres);
         System.out.println("rms residual = " + rmserr);
         return q.toArray();
+    }
+
+    public static void main(String[] args) {
+        double r = 0.9;
+        double s = 0.7;
+        System.out.println("r = " + r);
+        System.out.println("s = " + s);
+        System.out.println("s r = " + s * r);
+        Camera cam1 = ZhangData.getCamera();
+        Radial2TermDistortionModel distortion = (Radial2TermDistortionModel) cam1.getDistortion();
+        double[] params1 = cam1.getDistortion().getParameters();
+        System.out.println("params1 = " + Arrays.toString(params1));
+        double rr = distortion.fRad(r);
+        System.out.format("cam1: %.5f -> %.5f\n", r, s * distortion.fRad(r));
+
+        double a1 = 1;
+        double a2 = 0;
+        double a3 = params1[0];
+        double a4 = 0;
+        double a5 = params1[1];
+        double[] a = {a1, a2, a3, a4, a5};
+        //System.out.format("cam2: %.5f -> %.5f\n", r, fRadScaled(a, s, r));
+        // System.out.format("CHECK %.5f vs %.5f\n", s * distortion.fRad(r), fRadScaled(a, s, s * r));
+
+        double aa3 = a3 * Math.pow(s, 1-3);
+        double aa5 = a5 * Math.pow(s, 1-5);
+        Radial2TermDistortionModel distortion2 = distortion.from(aa3, aa5);
+        System.out.println("params2 = " + Arrays.toString(distortion2.getParameters()));
+        System.out.format("cam2: %.5f -> %.5f\n", s * r, distortion2.fRad(s * r));
+    }
+
+
+    static double fRadScaled(double[] a, double s, double r) {
+        double[] as = new double[a.length];
+        for (int i = 1; i <= a.length; i++) {
+            double ai = a[i-1];
+            as[i-1] = ai * Math.pow(s, 1-i);
+        }
+        System.out.println("as = " + Arrays.toString(as));
+        double sum = 0;
+        for (int i = 1; i <= a.length; i++) {
+            sum += as[i-1] * Math.pow(s * r, i);
+        }
+        return sum;
     }
 }

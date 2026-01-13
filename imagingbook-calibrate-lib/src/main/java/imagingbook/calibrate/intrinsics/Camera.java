@@ -332,10 +332,9 @@ public class Camera {
 
 	@Override
 	public String toString() {
-		return String.format(Locale.US, "%s[alpha=%.2f, beta=%.2f, gamma=%.2f, uc=%.2f, vc=%.2f, K=%s]",
+		return String.format(Locale.US, "%s[alpha=%.2f, beta=%.2f, gamma=%.2f, uc=%.2f, vc=%.2f, %s]",
 				this.getClass().getSimpleName(),
-				getAlpha(), getBeta(), getGamma(), getUc(), getVc(), Matrix.toString(getK())
-		);
+				getAlpha(), getBeta(), getGamma(), getUc(), getVc(), getDistortion());
 	}
 	
 	//---------------------------------------------------------------------

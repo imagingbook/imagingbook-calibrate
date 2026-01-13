@@ -6,6 +6,11 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import imagingbook.common.math.Matrix;
+
+import java.util.Arrays;
+import java.util.Locale;
+
 /**
  * The mother of all radial distortion models.
  */
@@ -77,6 +82,15 @@ public abstract class DistortionModel {
      * @return the undistorted point
      */
     public abstract double[] unwarp(double[] xyd);
+
+    // --------------------------------------------------------------------------
+
+    @Override
+    public String toString() {
+        return String.format(Locale.US, "%s%s",
+                this.getClass().getSimpleName(),
+                Matrix.toString(parameters));
+    }
 
 }
 
