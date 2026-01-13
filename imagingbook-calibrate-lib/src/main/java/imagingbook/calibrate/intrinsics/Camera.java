@@ -20,10 +20,10 @@ import java.util.Locale;
 
 /**
  * A camera model with parameters as specified in Zhang's paper.
- *
+ * @param <T> the type of distortion model used by this camera
  * @author WB
  */
-public class Camera {
+public class Camera<T extends DistortionModel> {
 	
 	/**  
 	 * The camera's inner transformation matrix:
@@ -33,7 +33,7 @@ public class Camera {
 	 * </pre>
 	 */
 	private final double[][] A;		// 2 x 3 2D affine transformation matrix
-    private final DistortionModel distortion;
+    private final T distortion;
 
     /**
      * Basic constructor.
@@ -44,7 +44,7 @@ public class Camera {
      * @param vc
      * @param distortion
      */
-    public Camera(double alpha, double beta, double gamma, double uc, double vc, DistortionModel distortion) {
+    public Camera(double alpha, double beta, double gamma, double uc, double vc, T distortion) {
         this.A = makeAffineCameraMatrix(alpha, beta, gamma, uc, vc);
         this.distortion = distortion;
     }
@@ -54,7 +54,7 @@ public class Camera {
      * @param a vector of linear camera parameters
      * @param distortion instance of lens distortion model
      */
-    public Camera(double[] a, DistortionModel distortion) {
+    public Camera(double[] a, T distortion) {
         this(a[0], a[1], a[2], a[3], a[4], distortion);
     }
 		
@@ -64,13 +64,15 @@ public class Camera {
      * @return a new Camera instance with the specified parameters and the same type of lens distortion
      * model as this instance
      */
-    public Camera copyOf(double[] params) {
+    public Camera<T> copyOf(double[] params) {
         final int P = distortion.getParameterCount();
         if (params.length < 5 + P)
             throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
-        double[] lin = Arrays.copyOfRange(params, 0, 5);    // = [alpha, beta, dgamma, uc, vc]
-        double[] dist = Arrays.copyOfRange(params, 5, 5 + P);
-        return new Camera(lin, distortion.from(dist));
+        // extract 5 camera intrinsic parameters:
+		double[] lin = Arrays.copyOfRange(params, 0, 5);    // = [alpha, beta, dgamma, uc, vc]
+        // extract P distortion parameters:
+		double[] dist = Arrays.copyOfRange(params, 5, 5 + P);
+        return new Camera<T>(lin, (T) distortion.from(dist));
     }
 
 	/**
@@ -79,14 +81,14 @@ public class Camera {
 	 * @param A the (min.) 2 x 3 matrix holding the intrinsic camera parameters
 	 * @param distortion a lens distortion model instance
 	 */
-	public Camera(RealMatrix A, DistortionModel distortion) {
+	public Camera(RealMatrix A, T distortion) {
         this.distortion = distortion; // ? new Radial2TermDistortionModel(0, 0) : new Radial2TermDistortionModel(K);
         this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 	}
 
 	// --------------------------------------------------------------------------
 
-    public DistortionModel getDistortion() {
+    public T getDistortion() {
         return this.distortion;
     }
 

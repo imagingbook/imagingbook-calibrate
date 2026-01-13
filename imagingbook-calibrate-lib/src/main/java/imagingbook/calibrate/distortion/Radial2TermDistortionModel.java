@@ -63,6 +63,13 @@ public class Radial2TermDistortionModel extends RadialDistortionModel {
                 new Radial2TermDistortionModel(params);
     }
 
+    @Override
+    public Radial2TermDistortionModel getScaled(double s) {
+        double k0_ = k0 * Math.pow(s, 1-3); // k0 = a3
+        double k1_ = k1 * Math.pow(s, 1-5); // k1 = a5
+        return this.from(k0_, k1_);
+    }
+
     // -----------------------------------------
 
     @Override

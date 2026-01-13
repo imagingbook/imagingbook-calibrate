@@ -33,6 +33,14 @@ public abstract class DistortionModel {
      */
     public abstract DistortionModel from(double... params);
 
+    /**
+     * Creates a copy of this distortion model that is adapted to a scaled
+     * geometry.
+     * @param scale the scale factor relative to the one used for this model
+     * @return a new distortion model instance for a scaled geometry
+     */
+    public abstract DistortionModel getScaled(double scale);
+
     // -------------------------------------------------------------------------------
 
     /**

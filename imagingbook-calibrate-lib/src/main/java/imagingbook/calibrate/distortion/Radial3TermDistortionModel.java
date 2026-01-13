@@ -44,6 +44,11 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
                 new Radial3TermDistortionModel(params);
     }
 
+    @Override
+    public Radial3TermDistortionModel getScaled(double scale) {
+        return null; // TODO
+    }
+
     // -------------------------------------------------------------------------
 
     @Override

@@ -47,6 +47,11 @@ public class PtLensDistortionModel extends RadialDistortionModel {
                 new PtLensDistortionModel(params);
     }
 
+    @Override
+    public PtLensDistortionModel getScaled(double scale) {
+        return null; // TODO
+    }
+
     // -------------------------------------------------------------------------
 
     @Override
