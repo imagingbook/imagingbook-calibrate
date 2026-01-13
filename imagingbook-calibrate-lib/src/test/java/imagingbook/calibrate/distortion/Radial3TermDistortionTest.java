@@ -67,13 +67,13 @@ public class Radial3TermDistortionTest {
     public void copyOfTest() {
         DistortionModel ldm = new Radial3TermDistortionModel(new double[] {k0, k1, k2});
 
-        DistortionModel ldm2 = ldm.copyOf();
+        DistortionModel ldm2 = ldm.from(ldm.getParameters());
         assertNotNull(ldm2);
         assertEquals(k0, ldm2.getParameter(0), tol);
         assertEquals(k1, ldm2.getParameter(1), tol);
         assertEquals(k2, ldm2.getParameter(2), tol);
 
-        DistortionModel ldm3 = ldm.copyOf(new double[] {0.4, -0.1, 0.5});
+        DistortionModel ldm3 = ldm.from(new double[] {0.4, -0.1, 0.5});
         assertEquals(0.4, ldm3.getParameter(0), tol);
         assertEquals(-0.1, ldm3.getParameter(1), tol);
         assertEquals(0.5, ldm3.getParameter(2), tol);

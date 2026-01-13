@@ -19,15 +19,14 @@ import org.apache.commons.math4.legacy.linear.RealVector;
 import java.util.Random;
 
 /**
- * Simplified radial distortion model used in Zhang's EasyCalib implementation.
+ * Basic radial distortion model used in Zhang's EasyCalib implementation with two
+ * {@code parameters = (k0, k1)}.
  * Distortion is modeled by
- * function r' = warp(r) = r * (1 + k0 * r^2 + k1 * r^4) .
+ * function {@code r' = warp(r) = r * (1 + k0 * r^2 + k1 * r^4)}.
  */
 public class Radial2TermDistortionModel implements RadialDistortionModel {
 
     public static final int PARAM_COUNT = 2;
-    // public static final Radial2TermDistortionModel INSTANCE = new Radial2TermDistortionModel();
-    //private final double k0, k1;
     private final double[] parameters;
     // private final double error; // estimation error
 
@@ -46,16 +45,13 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
         if (parameters.length != PARAM_COUNT)
             throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
         this.parameters = parameters;
-        // this.k0 = parameters[0];
-        // this.k1 = parameters[1];
-        // this.error = error;
     }
 
-
-
     @Override
-    public Radial2TermDistortionModel copyOf(double[] params) {
-        return new Radial2TermDistortionModel(params);
+    public Radial2TermDistortionModel from(double[] params) {
+        return (params == null) ?
+                new Radial2TermDistortionModel() :
+                new Radial2TermDistortionModel(params);
     }
 
     // -----------------------------------------
@@ -65,11 +61,6 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
         //return new double[] {k0, k1};
         return parameters;
     }
-
-//    @Override
-//    public double getError() {
-//        return this.error;
-//    }
 
     @Override
     public double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {

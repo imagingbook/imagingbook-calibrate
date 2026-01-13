@@ -12,9 +12,9 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
+import org.apache.commons.math4.legacy.linear.QRDecomposition;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
-import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
 
 import java.util.List;
 
@@ -69,12 +69,12 @@ public class DistortionEstimator {
         RealVector d = new ArrayRealVector(2 * pointCount);
 
         // matrix double-line counter l
-        for (int k = 0, l = 0; k < M; k++) {    // iterate over M views:
+        for (int k = 0, row = 0; k < M; k++) {    // iterate over M views:
             Pnt2d[] mod = modPts[k];
             Pnt2d[] obs = obsPts[k];
             ViewTransform vt = views[k];
 
-            for (int j = 0; j < modPts[k].length; j++, l+=2) {   // iterate over N observed points
+            for (int j = 0; j < modPts[k].length; j++, row+=2) {   // iterate over N observed points
                 final Pnt2d mpt = mod[j];    // model point
                 // get point positions in the ideal image plane (normalized projection, f=1)
                 double[] xy = initCam.projectNormalized(vt, mpt);
@@ -87,22 +87,21 @@ public class DistortionEstimator {
                 double du = u-  uc;	// distance to estim. sensor projection center
                 double dv = v - vc;
                 // insert one pair of rows into matrix D:
-                final int l0 = l;
-                final int l1 = l + 1;
                 // rowUV is a 2 x P matrix (submatrix of D):
                 double[][] rowsUV = distModel.getDMatrixRowsUV(x, y, du, dv);
                 for (int p = 0; p < P; p++) {
-                    D.setEntry(l0, p, rowsUV[0][p]);
-                    D.setEntry(l1, p, rowsUV[1][p]);
+                    D.setEntry(row + 0, p, rowsUV[0][p]);
+                    D.setEntry(row + 1, p, rowsUV[1][p]);
                 }
                 // mount vector d with difference between observed and predicted sensor points
                 Pnt2d UV = obs[j];  // observed point
-                d.setEntry(l0, UV.getX() - u);
-                d.setEntry(l1, UV.getY() - v);
+                d.setEntry(row + 0, UV.getX() - u);
+                d.setEntry(row + 1, UV.getY() - v);
             }
         }
 
-        DecompositionSolver solver = new SingularValueDecomposition(D).getSolver();
+        // DecompositionSolver solver = new SingularValueDecomposition(D).getSolver();
+        DecompositionSolver solver = new QRDecomposition(D).getSolver();
         // ----------------------------------------------------------------------------------
         RealVector kopt = solver.solve(d);  // optimal distortion parameter
         // ----------------------------------------------------------------------------------
@@ -112,7 +111,7 @@ public class DistortionEstimator {
         double err2 = D.operate(kopt).subtract(d).getNorm();
         // System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
-        DistortionModel dist = distModel.copyOf(kopt.toArray()); //, err1 / (pointCount));
+        DistortionModel dist = distModel.from(kopt.toArray()); //, err1 / (pointCount));
         return new Camera(initCam.getMatrixA(), dist);   // TODO: check error quantity is avg)
     }
 

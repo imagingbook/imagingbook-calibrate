@@ -69,7 +69,7 @@ public class Camera {
             throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
         double[] lin = Arrays.copyOfRange(params, 0, 5);    // = [alpha, beta, dgamma, uc, vc]
         double[] dist = Arrays.copyOfRange(params, 5, 5 + P);
-        return new Camera(lin, distortion.copyOf(dist));
+        return new Camera(lin, distortion.from(dist));
     }
 
 	/**

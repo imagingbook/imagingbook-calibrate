@@ -58,7 +58,7 @@ public class RadialLateralDistortionModel implements DistortionModel {
     // ------------------------------------------------------------------------
 
     @Override
-    public DistortionModel copyOf(double[] params) {
+    public DistortionModel from(double[] params) {
         return new RadialLateralDistortionModel(params);
     }
 

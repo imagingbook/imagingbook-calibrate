@@ -48,7 +48,7 @@ public class Radial3TermDistortionModel implements RadialDistortionModel {
     }
 
     @Override
-    public Radial3TermDistortionModel copyOf(double[] params) {
+    public Radial3TermDistortionModel from(double[] params) {
         return new Radial3TermDistortionModel(params);
     }
 
