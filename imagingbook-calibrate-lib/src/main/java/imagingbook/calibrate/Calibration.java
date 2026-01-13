@@ -8,6 +8,7 @@ package imagingbook.calibrate;
 
 import imagingbook.calibrate.distortion.DistortionEstimator;
 import imagingbook.calibrate.distortion.DistortionModel;
+import imagingbook.calibrate.distortion.DistortionModelType;
 import imagingbook.calibrate.distortion.Radial2TermDistortionModel;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.homography.HomographyEstimator;
@@ -58,7 +59,7 @@ public class Calibration {
 	 */
 	public static class Parameters implements ParameterBundle<Calibration> {
         /** Lens distortion model to be used. */
-        public DistortionModel distortionModel = new Radial2TermDistortionModel();
+        public DistortionModelType distModelType = DistortionModelType.Radial2Term;
 		/** Normalize point coordinates for numerical stability in homography estimation. */
 		public boolean normalizePoints = true;
 		/** Perform non-linear refinement of homographies (usually not needed). */
@@ -152,7 +153,7 @@ public class Calibration {
 		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
 		IntrinsicsEstimator intrEstm = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
 		RealMatrix Ainit = intrEstm.estimate(homographies);
-		initCam = new Camera(Ainit, params.distortionModel);
+		initCam = new Camera(Ainit, null); // params.distModelType.getInstance());	// TODO: replace by null
         debug("initial camera = " + initCam);
 		
 		// Step 3: Calculate the extrinsic view parameters (3D view transforms)
@@ -165,7 +166,7 @@ public class Calibration {
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Estimate lens distortion from initial camera and view data:");
 		DistortionEstimator distEstim =
-				new DistortionEstimator(params.distortionModel, imgWidth, imgHeight);
+				new DistortionEstimator(params.distModelType.getInstance(), imgWidth, imgHeight);
         // DistortionModel distortion = DistortionModel.from(initCam, initViews, modelPntSet, imagePntSet);
         // debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		// Camera improvedCam = new Camera(Ainit, distortion);

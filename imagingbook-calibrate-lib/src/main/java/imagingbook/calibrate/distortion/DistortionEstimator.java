@@ -57,16 +57,15 @@ public class DistortionEstimator {
         Pnt2d[][] modPts = modPntSet.toArray(new Pnt2d[0][]);
         Pnt2d[][] obsPts = obsPntSet.toArray(new Pnt2d[0][]);
 
-        int pointCount = getTotalPointCount(modPts);
-        int M = views.length;		// the number of views
-        // DistortionModel model = initCam.getDistortion();
-        int P = distModel.getParameterCount();    // number of distortion parameters
+        int M = views.length;		                    // the number of views
+        int N = getTotalPointCount(modPts);             // number of points over all views
+        int P = distModel.getParameterCount();          // number of distortion parameters
 
         // the estimated projection center on the sensor plane
         double uc = initCam.getUc();
         double vc = initCam.getVc();
-        RealMatrix D = MatrixUtils.createRealMatrix(2 * pointCount, P);
-        RealVector d = new ArrayRealVector(2 * pointCount);
+        RealMatrix D = MatrixUtils.createRealMatrix(2 * N, P);
+        RealVector d = new ArrayRealVector(2 * N);
 
         // matrix double-line counter l
         for (int k = 0, row = 0; k < M; k++) {    // iterate over M views:
@@ -84,15 +83,13 @@ public class DistortionEstimator {
                 double[] uv = initCam.project(vt, mpt);
                 double u = uv[0];
                 double v = uv[1];
-                double du = u-  uc;	// distance to estim. sensor projection center
+                double du = u - uc;	// distance to estim. sensor projection center
                 double dv = v - vc;
-                // insert one pair of rows into matrix D:
-                // rowUV is a 2 x P matrix (submatrix of D):
+                // for each point, insert one pair of rows into matrix D (rowUV is a 2xP matrix):
                 double[][] rowsUV = distModel.getDMatrixRowsUV(x, y, du, dv);
-                for (int p = 0; p < P; p++) {
-                    D.setEntry(row + 0, p, rowsUV[0][p]);
-                    D.setEntry(row + 1, p, rowsUV[1][p]);
-                }
+                D.setRow(row + 0, rowsUV[0]);
+                D.setRow(row + 1, rowsUV[1]);
+
                 // mount vector d with difference between observed and predicted sensor points
                 Pnt2d UV = obs[j];  // observed point
                 d.setEntry(row + 0, UV.getX() - u);
@@ -104,6 +101,7 @@ public class DistortionEstimator {
         DecompositionSolver solver = new QRDecomposition(D).getSolver();
         // ----------------------------------------------------------------------------------
         RealVector kopt = solver.solve(d);  // optimal distortion parameter
+
         // ----------------------------------------------------------------------------------
 
         // keep errors for later use (optional)
@@ -111,8 +109,8 @@ public class DistortionEstimator {
         double err2 = D.operate(kopt).subtract(d).getNorm();
         // System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
-        DistortionModel dist = distModel.from(kopt.toArray()); //, err1 / (pointCount));
-        return new Camera(initCam.getMatrixA(), dist);   // TODO: check error quantity is avg)
+        DistortionModel dist = distModel.from(kopt.toArray());
+        return new Camera(initCam.getMatrixA(), dist);
     }
 
     private static int getTotalPointCount(Pnt2d[][] modPts) {

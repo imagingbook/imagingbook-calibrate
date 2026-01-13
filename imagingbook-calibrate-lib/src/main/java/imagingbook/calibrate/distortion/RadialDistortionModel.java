@@ -9,7 +9,11 @@ package imagingbook.calibrate.distortion;
 /**
  * Lens model with radial-only distortion.
  */
-public interface RadialDistortionModel extends DistortionModel {
+public abstract class RadialDistortionModel extends DistortionModel {
+
+    RadialDistortionModel(double... parameters) {
+        super(parameters);
+    }
 
     /**
      * Forward radial distortion function.  Returns the distorted
@@ -18,7 +22,7 @@ public interface RadialDistortionModel extends DistortionModel {
      * @param r the original radius of a point in the ideal projection plane
      * @return the distorted radius
      */
-    double fRad(double r);
+    abstract double fRad(double r);
 
     /**
      * Inverse radial distortion function. Returns the original (undistorted)
@@ -27,10 +31,10 @@ public interface RadialDistortionModel extends DistortionModel {
      * @param R the distorted radius of a point in the ideal projection plane
      * @return the undistorted radius
      */
-    double fRadInv(double R);
+    abstract double fRadInv(double R);
 
     @Override
-    default double[] warp(double[] xy) {
+    public double[] warp(double[] xy) {
         final double x = xy[0];
         final double y = xy[1];
         final double r = Math.sqrt(x * x + y * y);  // undistorted radius
@@ -42,7 +46,7 @@ public interface RadialDistortionModel extends DistortionModel {
     }
 
     @Override
-    default double[] unwarp(double[] xyd) {
+    public double[] unwarp(double[] xyd) {
         final double xd = xyd[0];
         final double yd = xyd[1];
         final double R = Math.sqrt(xd * xd + yd * yd);	// distorted radius

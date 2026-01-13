@@ -18,59 +18,43 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobian
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 
-public class RadialLateralDistortionModel implements DistortionModel {
+public class RadialLateralDistortionModel extends DistortionModel {
 
-    public static final int PARAM_COUNT = 5;
-    // public static final RadialLateralDistortionModel INSTANCE = new RadialLateralDistortionModel();
     private final double k0, k1, k2, p1, p2;
-    // private final double error; // estimation error
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
     public RadialLateralDistortionModel() {
-        this(new double[] {0, 0, 0, 0, 0});
+        this(0, 0, 0, 0, 0);
     }
-
-//    /**
-//     * Constructor. Creates a lens distortion instance with the specified parameters.
-//     * @param parameters vector of distortion parameters
-//     */
-//    public RadialLateralDistortionModel(double[] parameters) {
-//        this(parameters);
-//    }
 
     /**
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public RadialLateralDistortionModel(double[] parameters) {
-        if (parameters.length != PARAM_COUNT)
-            throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
+    public RadialLateralDistortionModel(double... parameters) {
+        super(parameters);
         this.k0 = parameters[0];
         this.k1 = parameters[1];
         this.k2 = parameters[2];
         this.p1 = parameters[3];
         this.p2 = parameters[4];
-        // this.error = error;
+    }
+
+    @Override
+    public int getParameterCount() {
+        return 5;
+    }
+
+    @Override
+    public RadialLateralDistortionModel from(double... params) {
+        return (params == null) ?
+                new RadialLateralDistortionModel() :
+                new RadialLateralDistortionModel(params);
     }
 
     // ------------------------------------------------------------------------
-
-    @Override
-    public DistortionModel from(double[] params) {
-        return new RadialLateralDistortionModel(params);
-    }
-
-    @Override
-    public double[] getParameters() {
-        return new double[] {k0, k1, k2, p1, p2};
-    }
-
-//    @Override
-//    public double getError() {
-//        return this.error;
-//    }
 
     @Override
     public double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {

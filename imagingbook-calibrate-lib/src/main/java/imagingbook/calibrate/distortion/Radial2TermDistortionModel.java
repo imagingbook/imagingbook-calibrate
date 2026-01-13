@@ -24,31 +24,34 @@ import java.util.Random;
  * Distortion is modeled by
  * function {@code r' = warp(r) = r * (1 + k0 * r^2 + k1 * r^4)}.
  */
-public class Radial2TermDistortionModel implements RadialDistortionModel {
+public class Radial2TermDistortionModel extends RadialDistortionModel {
 
-    public static final int PARAM_COUNT = 2;
-    private final double[] parameters;
-    // private final double error; // estimation error
+    private final double k0;
+    private final double k1;
+
+    public int getParameterCount() {
+        return 2;
+    }
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
     public Radial2TermDistortionModel() {
-        this(new double[] {0, 0});
+        this(0, 0);
     }
 
     /**
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public Radial2TermDistortionModel(double[] parameters) {
-        if (parameters.length != PARAM_COUNT)
-            throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
-        this.parameters = parameters;
+    public Radial2TermDistortionModel(double... parameters) {
+        super(parameters);
+        this.k0 = parameters[0];
+        this.k1 = parameters[1];
     }
 
     @Override
-    public Radial2TermDistortionModel from(double[] params) {
+    public Radial2TermDistortionModel from(double... params) {
         return (params == null) ?
                 new Radial2TermDistortionModel() :
                 new Radial2TermDistortionModel(params);
@@ -57,17 +60,11 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
     // -----------------------------------------
 
     @Override
-    public double[] getParameters() {
-        //return new double[] {k0, k1};
-        return parameters;
-    }
-
-    @Override
     public double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {
-        final double xx = x * x;
-        final double yy = y * y;
-        final double r2 = xx + yy;
-        final double r4 = r2 * r2;
+        double xx = x * x;
+        double yy = y * y;
+        double r2 = xx + yy;
+        double r4 = r2 * r2;
         return new double[][] {
                 {du * r2, du * r4},
                 {dv * r2, dv * r4}};
@@ -82,13 +79,10 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
      */
     @Override
     public double fRad(final double r) {
-        double k0 = parameters[0];
-        double k1 = parameters[1];
-        final double r2 = r * r;
+        double r2 = r * r;
         double D = r2 * (k0 + k1 * r2);		// D(r) = k0 * r^2 + k1 * r^4
         return r * (1 + D);
     }
-
 
     /**
      * Inverse radial distortion function. Finds the original (undistorted) radius r from the distorted radius R, both
@@ -119,7 +113,6 @@ public class Radial2TermDistortionModel implements RadialDistortionModel {
      *  fRad(r) = r' =r * (1 + k0 * r^2 + k1 * r^4)
      *  using the same form of polynomial
      *  fRadInv(r') = r = r' * (1 + q0 * r'^2 + q1 * r'^4)
-     *
      * @return
      */
     public double[] estimateInverseFunction2() {

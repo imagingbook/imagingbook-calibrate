@@ -9,14 +9,24 @@ package imagingbook.calibrate.distortion;
 /**
  * The mother of all radial distortion models.
  */
-public interface DistortionModel {
+public abstract class DistortionModel {
+
+    final double[] parameters;
+
+    DistortionModel(double[] parameters) {
+        if (parameters.length != this.getParameterCount()) {
+            throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
+        }
+        this.parameters = parameters;
+    }
 
     /**
-     * Copies an existing distortion model instance with modifies parameters.
+     * Copies this distortion model instance with modified parameters.
+     * Passing {@code null} to {@code params} creates a zero-value parameter vector.
      * @param params a parameter vector of required length
-     * @return
+     * @return a new distortion model instance of the same type as the original
      */
-    DistortionModel from(double[] params);
+    public abstract DistortionModel from(double... params);
 
     // -------------------------------------------------------------------------------
 
@@ -24,17 +34,17 @@ public interface DistortionModel {
      * Returns the number of parameters required for this distortion model.
      * @return the number of parameters
      */
-    default int getParameterCount() {
-        return getParameters().length;
-    }
+    public abstract int getParameterCount();
 
     /**
      * Returns a vector with the parameters of this distortion model.
      * @return a vector of parameters
      */
-    double[] getParameters();
+    public final double[] getParameters() {
+        return parameters;
+    }
 
-    default double getParameter(int i) {
+    public double getParameter(int i) {
         double[] parameters = getParameters();
         if (i < 0 || i >= parameters.length)
             throw new IllegalArgumentException("invalid distortion parameter index: " + i);
@@ -52,21 +62,21 @@ public interface DistortionModel {
      * @param dv the point's vert. distance from the projection center in sensor space
      * @return a 2D matrix with 2 rows and the number of columns equal to the number of distortion parameters
      */
-    double[][] getDMatrixRowsUV(double x, double y, double du, double dv);
+    abstract double[][] getDMatrixRowsUV(double x, double y, double du, double dv);
 
     /**
      * Applies lens distortion to a point in the ideal 2D projection.
      * @param xy a 2D point in the ideal projection
      * @return the lens-distorted position in the ideal projection
      */
-    double[] warp(double[] xy);
+    public abstract double[] warp(double[] xy);
 
     /**
      * Applies inverse lens distortion to a given point in the ideal image plane.
      * @param xyd a distorted 2D point in the ideal image plane
      * @return the undistorted point
      */
-    double[] unwarp(double[] xyd);
+    public abstract double[] unwarp(double[] xyd);
 
 }
 

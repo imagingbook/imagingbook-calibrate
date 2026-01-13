@@ -16,6 +16,7 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * A camera model with parameters as specified in Zhang's paper.
@@ -149,7 +150,7 @@ public class Camera {
 		// map to the ideal projection plane (f = 1)
 		double[] xy = projectNormalized(view, XYZ);
 		// apply radial lens distortion to the ideal projection
-		double[] xyd = distortion.warp(xy);
+		double[] xyd = (distortion == null) ? xy : distortion.warp(xy);
 		// apply the intrinsic camera transformation:
 		double[] uv = mapToSensorPlane(xyd);
 		return uv;
@@ -274,7 +275,7 @@ public class Camera {
     @Deprecated
 	public double[] getK() {
         //return new double[] {distortion.getK0(), distortion.getK1()};
-        return distortion.getParameters();
+        return (distortion != null) ? distortion.getParameters() : null;
 	}
 
 	/**
@@ -331,9 +332,10 @@ public class Camera {
 
 	@Override
 	public String toString() {
-		return String.format("%s[alpha=%.2f, beta=%.2f, gamma=%.2f, uc=%.2f, vc=%.2f, K=%s]",
+		return String.format(Locale.US, "%s[alpha=%.2f, beta=%.2f, gamma=%.2f, uc=%.2f, vc=%.2f, K=%s]",
 				this.getClass().getSimpleName(),
-				getAlpha(), getBeta(), getGamma(), getUc(), getVc(), Matrix.toString(getK()));
+				getAlpha(), getBeta(), getGamma(), getUc(), getVc(), Matrix.toString(getK())
+		);
 	}
 	
 	//---------------------------------------------------------------------

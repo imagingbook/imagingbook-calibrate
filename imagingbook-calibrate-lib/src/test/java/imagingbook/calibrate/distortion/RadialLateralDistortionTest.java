@@ -20,24 +20,20 @@ public class RadialLateralDistortionTest {
     // static final double[] demoParams = {0.2, -0.1, 0.15, -0.2, 0.2 };   // p1, p2 should not be greater than 0.2 for unwarp() convergence!
     static final double[] demoParams = {0.2, -0.05, 0.02, -0.2, 0.2 };   // p1, p2 should not be greater than 0.2 for unwarp() convergence!
 
-    @Test
-    public void copyOf() {
-    }
 
     @Test
     public void getParameters1() {
         RadialLateralDistortionModel distortion = new RadialLateralDistortionModel();
-        assertEquals(RadialLateralDistortionModel.PARAM_COUNT, distortion.getParameterCount());
+        assertEquals(5, distortion.getParameterCount());
         assertArrayEquals(new double[] {0,0,0,0,0}, distortion.getParameters(), tol);
     }
-    @Test
 
+    @Test
     public void getParameters2() {
         RadialLateralDistortionModel distortion = new RadialLateralDistortionModel(demoParams);
-        assertEquals(RadialLateralDistortionModel.PARAM_COUNT, distortion.getParameterCount());
+        assertEquals(5, distortion.getParameterCount());
         assertArrayEquals(demoParams, distortion.getParameters(), tol);
     }
-
 
     @Test
     public void getDMatrixRowsUV() {
@@ -88,9 +84,9 @@ public class RadialLateralDistortionTest {
                 {0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, -1}
         };
         for (double[] p1 : points) {
-            System.out.println("p1 = " + Arrays.toString(p1));
+            // System.out.println("p1 = " + Arrays.toString(p1));
             double[] p2 = distortion.warp(p1);
-            System.out.println("p2 = " + Arrays.toString(p2));
+            // System.out.println("p2 = " + Arrays.toString(p2));
             double[] p3 = distortion.unwarp(p2);
             // System.out.println("p3 = " + Arrays.toString(p3));
             assertArrayEquals(p1, p3, tol);

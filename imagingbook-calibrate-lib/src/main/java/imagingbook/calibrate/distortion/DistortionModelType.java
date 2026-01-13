@@ -19,6 +19,7 @@ public enum DistortionModelType {
     Radial2Term(Radial2TermDistortionModel::new),
     Radial3Term(Radial3TermDistortionModel::new),
     RadialLateral(RadialLateralDistortionModel::new),
+    PtLens(PtLensDistortionModel::new),
     // RadialLateral(() -> new RadialLateralDistortionModel(10, 15))    // if more parameters required
     ;
 

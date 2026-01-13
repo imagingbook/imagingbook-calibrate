@@ -10,7 +10,10 @@ import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
 
-public class Radial3TermDistortionModel extends RadialDistortionModel {
+/**
+ * TODO: UNFINISHED CODE!
+ */
+public class PtLensDistortionModel extends RadialDistortionModel {
 
     private final double k0, k1, k2;
 
@@ -22,7 +25,7 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
-    public Radial3TermDistortionModel() {
+    public PtLensDistortionModel() {
         this(0, 0, 0);
     }
 
@@ -30,7 +33,7 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public Radial3TermDistortionModel(double... parameters) {
+    public PtLensDistortionModel(double... parameters) {
         super(parameters);
         this.k0 = parameters[0];
         this.k1 = parameters[1];
@@ -38,20 +41,19 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
     }
 
     @Override
-    public Radial3TermDistortionModel from(double... params) {
+    public PtLensDistortionModel from(double... params) {
         return (params == null) ?
-                new Radial3TermDistortionModel() :
-                new Radial3TermDistortionModel(params);
+                new PtLensDistortionModel() :
+                new PtLensDistortionModel(params);
     }
 
     // -------------------------------------------------------------------------
 
     @Override
     public double fRad(double r) {
-
-        final double r2 = r * r;
-        final double r4 = r2 * r2;
-        final double r6 = r4 * r2;
+        double r2 = r * r;
+        double r4 = r2 * r2;
+        double r6 = r4 * r2;
         double D = k0 * r2 + k1 * r4 + k2 * r6;		// D(r) = k1 * r^2 + k1 * r^4 + k2 * r^6
         return r * (1 + D);
     }
@@ -71,7 +73,6 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
         UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
         int maxEval = 20;
         double r = solver.solve(maxEval, p, R); // rInit = R
-//		System.out.format("** solver iterations = %d\n", solver.getEvaluations());
         return r;
     }
 
@@ -79,11 +80,11 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
 
     @Override
     public double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {
-        final double xx = x * x;
-        final double yy = y * y;
-        final double r2 = xx + yy;
-        final double r4 = r2 * r2;
-        final double r6 = r2 * r4;
+        double xx = x * x;
+        double yy = y * y;
+        double r2 = xx + yy;
+        double r4 = r2 * r2;
+        double r6 = r2 * r4;
         return new double[][] {
                 {du * r2, du * r4, du * r6},
                 {dv * r2, dv * r4, dv * r6}};
