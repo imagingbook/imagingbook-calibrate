@@ -16,35 +16,34 @@ import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiable
 public class PtLensDistortionModel extends RadialDistortionModel {
 
     private final double k0, k1, k2;
-
-    @Override
-    public int getParameterCount() {
-        return 3;
-    }
+    private final int imgWidth, imgHeight;
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
-    public PtLensDistortionModel() {
-        this(0, 0, 0);
+    public PtLensDistortionModel(int imgWidth, int imgHeight) {
+        this(new double[] {0, 0, 0}, imgWidth, imgHeight);
+
     }
 
     /**
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public PtLensDistortionModel(double... parameters) {
+    public PtLensDistortionModel(double[]  parameters, int imgWidth, int imgHeight) {
         super(parameters);
         this.k0 = parameters[0];
         this.k1 = parameters[1];
         this.k2 = parameters[2];
+        this.imgWidth = imgWidth;
+        this.imgHeight = imgHeight;
     }
 
     @Override
-    public PtLensDistortionModel fromParameters(double... params) {
+    public PtLensDistortionModel fromParameters(double[]  params) {
         return (params == null) ?
-                new PtLensDistortionModel() :
-                new PtLensDistortionModel(params);
+                new PtLensDistortionModel(imgWidth, imgHeight) :
+                new PtLensDistortionModel(params, imgWidth, imgHeight);
     }
 
     @Override

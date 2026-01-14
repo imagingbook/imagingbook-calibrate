@@ -30,49 +30,53 @@ import java.util.Random;
  *              = r + k0 * r^3 + k1 * r^5
  * </pre>
  */
-public class Radial2TermDistortionModel extends RadialDistortionModel {
+public class Radial2TermDistortionModelScaled extends RadialDistortionModel {
 
-    private final double k0;
-    private final double k1;
+    private final double k0, k1;
+    private final int imgWidth, imgHeight;
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
-    public Radial2TermDistortionModel() {
-        this(new double[] {0, 0});
+    public Radial2TermDistortionModelScaled(int imgWidth, int imgHeight) {
+        this(new double[] {0, 0}, imgWidth, imgHeight);
     }
 
     /**
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public Radial2TermDistortionModel(double[]  parameters) {
-        super(parameters);
+    public Radial2TermDistortionModelScaled(double[] parameters, int imgWidth, int imgHeight) {
+        super(parameters, 1.5);
         if (parameters.length != 2) {
             throw new IllegalArgumentException("expected 2 parameters but received " +
                     parameters.length);
         }
         this.k0 = parameters[0];
         this.k1 = parameters[1];
+        this.imgWidth = imgWidth;
+        this.imgHeight = imgHeight;
     }
 
-    // ----------------------------------------
-
-    @Override
-    public Radial2TermDistortionModel fromParameters(double[]  params) {
+    @Override       //  TODO: how is scale maintained in duplicates??
+    public Radial2TermDistortionModelScaled fromParameters(double[] params) {
         return (params == null) ?
-                new Radial2TermDistortionModel() :
-                new Radial2TermDistortionModel(params);
+                new Radial2TermDistortionModelScaled(imgWidth, imgHeight) :
+                new Radial2TermDistortionModelScaled(params, imgWidth, imgHeight);
     }
 
     @Override
-    public Radial2TermDistortionModel getScaled(double s) {
+    public Radial2TermDistortionModelScaled getScaled(double s) {
         double k0_ = k0 * Math.pow(s, 1-3); // k0 = a3
         double k1_ = k1 * Math.pow(s, 1-5); // k1 = a5
         return this.fromParameters(new double[] {k0_, k1_});
     }
 
     // -----------------------------------------
+
+    public int getParameterCount() {
+        return 2;
+    }
 
     @Override
     public double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {
@@ -198,7 +202,7 @@ public class Radial2TermDistortionModel extends RadialDistortionModel {
         System.out.println("s = " + s);
         System.out.println("s r = " + s * r);
         Camera cam1 = ZhangData.getCamera();
-        Radial2TermDistortionModel distortion = (Radial2TermDistortionModel) cam1.getDistortion();
+        Radial2TermDistortionModelScaled distortion = (Radial2TermDistortionModelScaled) cam1.getDistortion();
         double[] params1 = cam1.getDistortion().getParameters();
         System.out.println("params1 = " + Arrays.toString(params1));
         double rr = distortion.fRad(r);
@@ -215,7 +219,7 @@ public class Radial2TermDistortionModel extends RadialDistortionModel {
 
         double aa3 = a3 * Math.pow(s, 1-3);
         double aa5 = a5 * Math.pow(s, 1-5);
-        Radial2TermDistortionModel distortion2 =
+        Radial2TermDistortionModelScaled distortion2 =
                 distortion.fromParameters(new double[] {aa3, aa5});
         System.out.println("params2 = " + Arrays.toString(distortion2.getParameters()));
         System.out.format("cam2: %.5f -> %.5f\n", s * r, distortion2.fRad(s * r));

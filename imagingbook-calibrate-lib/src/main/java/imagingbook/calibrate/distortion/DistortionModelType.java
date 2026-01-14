@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -16,20 +17,30 @@ import java.util.function.Supplier;
  * }</pre>
  */
 public enum DistortionModelType {
-    Radial2Term(Radial2TermDistortionModel::new),
-    Radial3Term(Radial3TermDistortionModel::new),
-    RadialLateral(RadialLateralDistortionModel::new),
-    PtLens(PtLensDistortionModel::new),
-    // RadialLateral(() -> new RadialLateralDistortionModel(10, 15))    // if more parameters required
+    Radial2Term((w, h) -> new Radial2TermDistortionModel()),
+    Radial3Term((w, h) -> new Radial3TermDistortionModel()),
+    RadialLateral((w, h) -> new RadialLateralDistortionModel()),  // if more parameters required
+    PtLens((w, h) -> new PtLensDistortionModel(w, h)),
+    Radial2TermScaled((w, h) -> new Radial2TermDistortionModelScaled(w, h)),
+
     ;
 
-    private final Supplier<? extends DistortionModel> factory;
+    //private final Supplier<? extends DistortionModel> factory;
+    private final BiFunction<Integer, Integer, ? extends DistortionModel> factory;
 
-    DistortionModelType(Supplier<? extends DistortionModel> factory) {
+    // DistortionModelType(Supplier<? extends DistortionModel> factory) {
+    //     this.factory = factory;
+    // }
+
+    DistortionModelType(BiFunction<Integer, Integer, ? extends DistortionModel> factory) {
         this.factory = factory;
     }
 
     public DistortionModel getInstance() {
-        return factory.get();
+        return factory.apply(-1, -1);
+    }
+
+    public DistortionModel getInstance(int imgWidth, int ImgHeight) {
+        return factory.apply(imgWidth, ImgHeight);
     }
 }

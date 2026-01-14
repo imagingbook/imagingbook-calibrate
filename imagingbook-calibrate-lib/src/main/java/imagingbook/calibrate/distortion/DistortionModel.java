@@ -15,13 +15,16 @@ import java.util.Locale;
  */
 public abstract class DistortionModel {
 
-    final double[] parameters;
+    final double[] parameters;      // variable number of distortion parameters
+    final double scale;             // assumed geometric scale (relative to normalized projection)
+
+    DistortionModel(double[] parameters, double scale) {
+        this.parameters = parameters;
+        this.scale = scale;
+    }
 
     DistortionModel(double[] parameters) {
-        if (parameters.length != this.getParameterCount()) {
-            throw new IllegalArgumentException("wrong parameter count: " + parameters.length);
-        }
-        this.parameters = parameters;
+        this(parameters, 1.0);      // default scale is 1.0
     }
 
     /**
@@ -30,7 +33,7 @@ public abstract class DistortionModel {
      * @param params a parameter vector of required length
      * @return a new distortion model instance of the same type as the original
      */
-    public abstract DistortionModel fromParameters(double... params);
+    public abstract DistortionModel fromParameters(double[]  params);
 
     /**
      * Creates a copy of this distortion model that is adapted to a scaled
@@ -38,6 +41,7 @@ public abstract class DistortionModel {
      * @param scale the scale factor relative to the one used for this model
      * @return a new distortion model instance for a scaled geometry
      */
+    @Deprecated
     public abstract DistortionModel getScaled(double scale);
 
     // -------------------------------------------------------------------------------
@@ -46,7 +50,9 @@ public abstract class DistortionModel {
      * Returns the number of parameters required for this distortion model.
      * @return the number of parameters
      */
-    public abstract int getParameterCount();
+    public int getParameterCount() {
+        return parameters.length;
+    }
 
     /**
      * Returns a vector with the parameters of this distortion model.

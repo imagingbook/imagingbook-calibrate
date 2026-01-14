@@ -14,31 +14,30 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
 
     private final double k0, k1, k2;
 
-    @Override
-    public int getParameterCount() {
-        return 3;
-    }
-
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
     public Radial3TermDistortionModel() {
-        this(0, 0, 0);
+        this(new double[] {0, 0, 0});
     }
 
     /**
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public Radial3TermDistortionModel(double... parameters) {
+    public Radial3TermDistortionModel(double[] parameters) {
         super(parameters);
+        if (parameters.length != 3) {
+            throw new IllegalArgumentException("expected 3 parameters but received " +
+                    parameters.length);
+        }
         this.k0 = parameters[0];
         this.k1 = parameters[1];
         this.k2 = parameters[2];
     }
 
     @Override
-    public Radial3TermDistortionModel fromParameters(double... params) {
+    public Radial3TermDistortionModel fromParameters(double[] params) {
         return (params == null) ?
                 new Radial3TermDistortionModel() :
                 new Radial3TermDistortionModel(params);

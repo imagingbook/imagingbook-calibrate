@@ -7,8 +7,6 @@ import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
 
-import static imagingbook.calibrate.distortion.DistortionModelType.PtLens;
-import static imagingbook.calibrate.distortion.DistortionModelType.Radial3Term;
 import static imagingbook.calibrate.distortion.DistortionModelType.RadialLateral;
 
 public class DoZhangExample {

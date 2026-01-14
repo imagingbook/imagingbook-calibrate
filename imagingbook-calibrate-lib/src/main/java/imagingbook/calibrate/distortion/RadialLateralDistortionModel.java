@@ -26,15 +26,19 @@ public class RadialLateralDistortionModel extends DistortionModel {
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
     public RadialLateralDistortionModel() {
-        this(0, 0, 0, 0, 0);
+        this(new double[] {0, 0, 0, 0, 0});
     }
 
     /**
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public RadialLateralDistortionModel(double... parameters) {
+    public RadialLateralDistortionModel(double[] parameters) {
         super(parameters);
+        if (parameters.length != 5) {
+            throw new IllegalArgumentException("expected 5 parameters but received " +
+                    parameters.length);
+        }
         this.k0 = parameters[0];
         this.k1 = parameters[1];
         this.k2 = parameters[2];
@@ -43,12 +47,7 @@ public class RadialLateralDistortionModel extends DistortionModel {
     }
 
     @Override
-    public int getParameterCount() {
-        return 5;
-    }
-
-    @Override
-    public RadialLateralDistortionModel fromParameters(double... params) {
+    public RadialLateralDistortionModel fromParameters(double[] params) {
         return (params == null) ?
                 new RadialLateralDistortionModel() :
                 new RadialLateralDistortionModel(params);

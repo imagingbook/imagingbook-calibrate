@@ -11,8 +11,12 @@ package imagingbook.calibrate.distortion;
  */
 public abstract class RadialDistortionModel extends DistortionModel {
 
-    RadialDistortionModel(double... parameters) {
+    RadialDistortionModel(double[]  parameters) {
         super(parameters);
+    }
+
+    RadialDistortionModel(double[]  parameters, double scale) {
+        super(parameters, scale);
     }
 
     /**
