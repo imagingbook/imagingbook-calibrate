@@ -7,7 +7,6 @@
 package imagingbook.calibrate;
 
 import imagingbook.calibrate.distortion.DistortionModelType;
-import imagingbook.calibrate.distortion.Radial2TermDistortionModel;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.zhang.data.ZhangData;
@@ -43,15 +42,15 @@ public class CalibrationTest {
         calibration.calibrate();
         Camera finCam = calibration.getFinalCamera();
         assertNotNull(finCam);
-        System.out.println("finCam = " + Matrix.toString(finCam.getParameterVector()));
+        System.out.println("finCam = " + Matrix.toString(finCam.getParameters()));
         // Initial camera = [877.1610736944268, 876.8009085961099, 0.17515644031677685, 301.0436734292903, 220.4104056624287, 0.0, 0.0]
 
         Camera refCam = ZhangData.getCamera();  // reference camera
-        System.out.println("refCam = " + Matrix.toString(refCam.getParameterVector()));
+        System.out.println("refCam = " + Matrix.toString(refCam.getParameters()));
         assertNotNull(refCam);
 
-        double[] pf = finCam.getParameterVector();
-        double[] pr = refCam.getParameterVector();
+        double[] pf = finCam.getParameters();
+        double[] pr = refCam.getParameters();
         assertArrayEquals(pr, pf, 1e-3);
 
         assertEquals(M, refViews.length);

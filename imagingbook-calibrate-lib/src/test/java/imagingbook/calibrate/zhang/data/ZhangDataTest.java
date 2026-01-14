@@ -75,8 +75,8 @@ public class ZhangDataTest {
         assertNotNull(cam.getDistortion());
         assertTrue(cam.getDistortion() instanceof Radial2TermDistortionModel);
 
-        assertNotNull(cam.getParameterVector());
-        assertEquals(cam.getParameterCount(), cam.getParameterVector().length);
+        assertNotNull(cam.getParameters());
+        assertEquals(cam.getParameterCount(), cam.getParameters().length);
     }
 
 }

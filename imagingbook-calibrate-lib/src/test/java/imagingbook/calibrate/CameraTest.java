@@ -38,7 +38,7 @@ public class CameraTest {
         assertEquals(uc, cam.getUc(), tol);
         assertEquals(vc, cam.getVc(), tol);
         // ----------------------------------------------------
-        RealMatrix A = cam.getMatrixA();
+        RealMatrix A = cam.getAffineMatrix();
         assertEquals(alpha, A.getEntry(0, 0), tol);
         assertEquals(beta, A.getEntry(1, 1), tol);
         assertEquals(gamma, A.getEntry(0, 1), tol);
@@ -60,11 +60,11 @@ public class CameraTest {
     }
 
     @Test
-    public void copyOf() {
+    public void fromParameters() {
         double[] p = {830, 832, 0.5, 300, 200, -0.4, 0.25};
-        Camera cam2 = cam1.copyOf(p);
+        Camera cam2 = cam1.fromParameters(p);
         assertNotNull(cam2);
-        assertArrayEquals(p, cam2.getParameterVector(), tol);
+        assertArrayEquals(p, cam2.getParameters(), tol);
         assertEquals(p.length, cam2.getParameterCount());
         assertEquals(p[0], cam2.getAlpha(), tol);
         assertEquals(p[1], cam2.getBeta(), tol);
@@ -108,7 +108,7 @@ public class CameraTest {
     }
 
     @Test
-    public void getParameterVector() {
+    public void getParameters() {
     }
 
     @Test
@@ -136,7 +136,7 @@ public class CameraTest {
     }
 
     @Test
-    public void getMatrixA() {
+    public void getAffineMatrix() {
     }
 
     @Test

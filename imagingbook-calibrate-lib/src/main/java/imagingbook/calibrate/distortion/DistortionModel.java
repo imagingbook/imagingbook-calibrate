@@ -8,7 +8,6 @@ package imagingbook.calibrate.distortion;
 
 import imagingbook.common.math.Matrix;
 
-import java.util.Arrays;
 import java.util.Locale;
 
 /**
@@ -31,7 +30,7 @@ public abstract class DistortionModel {
      * @param params a parameter vector of required length
      * @return a new distortion model instance of the same type as the original
      */
-    public abstract DistortionModel from(double... params);
+    public abstract DistortionModel fromParameters(double... params);
 
     /**
      * Creates a copy of this distortion model that is adapted to a scaled

@@ -41,7 +41,7 @@ public class PtLensDistortionModel extends RadialDistortionModel {
     }
 
     @Override
-    public PtLensDistortionModel from(double... params) {
+    public PtLensDistortionModel fromParameters(double... params) {
         return (params == null) ?
                 new PtLensDistortionModel() :
                 new PtLensDistortionModel(params);

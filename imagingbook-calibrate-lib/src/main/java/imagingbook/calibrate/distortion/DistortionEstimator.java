@@ -109,8 +109,8 @@ public class DistortionEstimator {
         double err2 = D.operate(kopt).subtract(d).getNorm();
         // System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
-        DistortionModel dist = distModel.from(kopt.toArray());
-        return new Camera(initCam.getMatrixA(), dist);
+        DistortionModel dist = distModel.fromParameters(kopt.toArray());
+        return new Camera(initCam.getAffineMatrix(), dist);
     }
 
     private static int getTotalPointCount(Pnt2d[][] modPts) {

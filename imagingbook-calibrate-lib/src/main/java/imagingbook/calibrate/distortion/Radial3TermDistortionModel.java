@@ -38,7 +38,7 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
     }
 
     @Override
-    public Radial3TermDistortionModel from(double... params) {
+    public Radial3TermDistortionModel fromParameters(double... params) {
         return (params == null) ?
                 new Radial3TermDistortionModel() :
                 new Radial3TermDistortionModel(params);

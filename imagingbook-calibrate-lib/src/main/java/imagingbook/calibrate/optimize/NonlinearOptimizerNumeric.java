@@ -53,7 +53,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        double[] refValues = new double[2 * pointCount];	// values obtained with undisturbed parameters
 	        
 	        double[] a = Arrays.copyOfRange(params, 0, camParCount);	// camera parameters
-	        Camera camOrig = initCam.copyOf(a);
+	        Camera camOrig = initCam.fromParameters(a);
 	        
 	        // Step 0: calculate all 2MN reference output values (for undisturbed parameters)
 	       
@@ -74,7 +74,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        	double ak = a[p];					// keep original parameter value
 	        	double delta = estimateDelta(ak);
 	        	a[p] = a[p] + delta;		// modify parameter s_k
-	        	Camera camMod = camOrig.copyOf(a);	// modified camera
+	        	Camera camMod = camOrig.fromParameters(a);	// modified camera
 	        	
 		        for (int k = 0, r = 0; k < M; k++) {	// for all views k, r = row
 		        	int m = camParCount + k * viewParCount;
@@ -132,7 +132,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        double[] refValues = new double[2 * pointCount];	// function values obtained with undisturbed parameters
 	        
 	        double[] s = Arrays.copyOfRange(params, 0, camParCount);
-	        Camera cam = initCam.copyOf(s);
+	        Camera cam = initCam.fromParameters(s);
 	        
 	        // Step 0: calculate all 2MN reference output values (for undisturbed parameters)
 	        
@@ -157,7 +157,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        	params[p] = params[p] + delta;		// modify parameter c_k
 	        	
 	        	double[] smod = Arrays.copyOfRange(params, 0, camParCount);
-	        	Camera camMod = cam.copyOf(smod);	// modified camera
+	        	Camera camMod = cam.fromParameters(smod);	// modified camera
 	        	
 		        for (int k = 0, r = 0; k < M; k++) {	// for all views k
 		        	int start = camParCount + k * viewParCount;

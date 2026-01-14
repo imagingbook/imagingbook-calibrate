@@ -57,7 +57,7 @@ public class Radial2TermDistortionModel extends RadialDistortionModel {
     }
 
     @Override
-    public Radial2TermDistortionModel from(double... params) {
+    public Radial2TermDistortionModel fromParameters(double... params) {
         return (params == null) ?
                 new Radial2TermDistortionModel() :
                 new Radial2TermDistortionModel(params);
@@ -67,7 +67,7 @@ public class Radial2TermDistortionModel extends RadialDistortionModel {
     public Radial2TermDistortionModel getScaled(double s) {
         double k0_ = k0 * Math.pow(s, 1-3); // k0 = a3
         double k1_ = k1 * Math.pow(s, 1-5); // k1 = a5
-        return this.from(k0_, k1_);
+        return this.fromParameters(k0_, k1_);
     }
 
     // -----------------------------------------
@@ -213,7 +213,7 @@ public class Radial2TermDistortionModel extends RadialDistortionModel {
 
         double aa3 = a3 * Math.pow(s, 1-3);
         double aa5 = a5 * Math.pow(s, 1-5);
-        Radial2TermDistortionModel distortion2 = distortion.from(aa3, aa5);
+        Radial2TermDistortionModel distortion2 = distortion.fromParameters(aa3, aa5);
         System.out.println("params2 = " + Arrays.toString(distortion2.getParameters()));
         System.out.format("cam2: %.5f -> %.5f\n", s * r, distortion2.fRad(s * r));
     }
