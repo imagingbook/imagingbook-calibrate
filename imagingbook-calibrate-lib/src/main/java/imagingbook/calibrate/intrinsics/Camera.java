@@ -20,12 +20,12 @@ import java.util.Locale;
 
 /**
  * A camera model with parameters as specified in Zhang's paper.
- * @param <T> the type of distortion model used by this camera
+ *
  * @author WB
  */
-public class Camera<T extends DistortionModel> {
-	
-	/**  
+public class Camera {
+
+	/**
 	 * The camera's inner transformation matrix:
 	 * <pre>
 	 * | alpha  gamma  uc |
@@ -33,47 +33,45 @@ public class Camera<T extends DistortionModel> {
 	 * </pre>
 	 */
 	private final double[][] A;		// 2 x 3 2D affine transformation matrix
-    private final T distortion;
+	private final DistortionModel distortion;
 
-    /**
-     * Basic constructor.
-     * @param alpha
-     * @param beta
-     * @param gamma
-     * @param uc
-     * @param vc
-     * @param distortion
-     */
-    public Camera(double alpha, double beta, double gamma, double uc, double vc, T distortion) {
-        this.A = makeAffineCameraMatrix(alpha, beta, gamma, uc, vc);
-        this.distortion = distortion;
-    }
+	/**
+	 * Basic constructor.
+	 * @param alpha
+	 * @param beta
+	 * @param gamma
+	 * @param uc
+	 * @param vc
+	 * @param distortion
+	 */
+	public Camera(double alpha, double beta, double gamma, double uc, double vc, DistortionModel distortion) {
+		this.A = makeAffineCameraMatrix(alpha, beta, gamma, uc, vc);
+		this.distortion = distortion;
+	}
 
-    /**
-     * Auxiliary (non-public) constructor.
-     * @param a vector of linear camera parameters
-     * @param distortion instance of lens distortion model
-     */
-    public Camera(double[] a, T distortion) {
-        this(a[0], a[1], a[2], a[3], a[4], distortion);
-    }
-		
-    /**
-     * Create a new instance from an existing Camera instance.
-     * @param params all linear and non-linear camera parameters
-     * @return a new Camera instance with the specified parameters and the same type of lens distortion
-     * model as this instance
-     */
-    public Camera<T> copyOf(double[] params) {
-        final int P = distortion.getParameterCount();
-        if (params.length < 5 + P)
-            throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
-        // extract 5 camera intrinsic parameters:
+	/**
+	 * Auxiliary (non-public) constructor.
+	 * @param a vector of linear camera parameters
+	 * @param distortion instance of lens distortion model
+	 */
+	public Camera(double[] a, DistortionModel distortion) {
+		this(a[0], a[1], a[2], a[3], a[4], distortion);
+	}
+
+	/**
+	 * Create a new instance from an existing Camera instance.
+	 * @param params all linear and non-linear camera parameters
+	 * @return a new Camera instance with the specified parameters and the same type of lens distortion
+	 * model as this instance
+	 */
+	public Camera copyOf(double[] params) {
+		final int P = distortion.getParameterCount();
+		if (params.length < 5 + P)
+			throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
 		double[] lin = Arrays.copyOfRange(params, 0, 5);    // = [alpha, beta, dgamma, uc, vc]
-        // extract P distortion parameters:
 		double[] dist = Arrays.copyOfRange(params, 5, 5 + P);
-        return new Camera<T>(lin, (T) distortion.from(dist));
-    }
+		return new Camera(lin, distortion.from(dist));
+	}
 
 	/**
 	 * Creates a standard camera from a transformation matrix and a vector of lens distortion coefficients.
@@ -81,34 +79,34 @@ public class Camera<T extends DistortionModel> {
 	 * @param A the (min.) 2 x 3 matrix holding the intrinsic camera parameters
 	 * @param distortion a lens distortion model instance
 	 */
-	public Camera(RealMatrix A, T distortion) {
-        this.distortion = distortion; // ? new Radial2TermDistortionModel(0, 0) : new Radial2TermDistortionModel(K);
-        this.A = A.getSubMatrix(0, 1, 0, 2).getData();
+	public Camera(RealMatrix A, DistortionModel distortion) {
+		this.distortion = distortion; // ? new Radial2TermDistortionModel(0, 0) : new Radial2TermDistortionModel(K);
+		this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 	}
 
 	// --------------------------------------------------------------------------
 
-    public T getDistortion() {
-        return this.distortion;
-    }
+	public DistortionModel getDistortion() {
+		return this.distortion;
+	}
 
-    /**
-     * Creates a 2D affine transformation matrix of size 2x3 from intrinsic camera
-     * parameters.
-     *
-     * @param alpha
-     * @param beta
-     * @param gamma
-     * @param uc
-     * @param vc
-     * @return the 2D affine transformation matrix
-     */
+	/**
+	 * Creates a 2D affine transformation matrix of size 2x3 from intrinsic camera
+	 * parameters.
+	 *
+	 * @param alpha
+	 * @param beta
+	 * @param gamma
+	 * @param uc
+	 * @param vc
+	 * @return the 2D affine transformation matrix
+	 */
 	private static double[][] makeAffineCameraMatrix(double alpha, double beta, double gamma, double uc, double vc) {
 		return new double[][] {
 				{alpha, gamma, uc},
 				{    0,  beta, vc}};
 	}
-	
+
 	// P is assumed to be a X/Y point in the Z = 0 plane
 
 	/**
@@ -120,7 +118,7 @@ public class Camera<T extends DistortionModel> {
 	 * @return the projected 2D image coordinates
 	 */
 	public double[] project(ViewTransform view, Pnt2d P) {
-		double[] XY0 = new double[] {P.getX(), P.getY(), 0}; 
+		double[] XY0 = new double[] {P.getX(), P.getY(), 0};
 		return this.project(view, XY0);
 	}
 
@@ -198,31 +196,31 @@ public class Camera<T extends DistortionModel> {
 		final double y = xyd[1];
 		final double u = A[0][0] * x + A[0][1] * y + A[0][2];
 		final double v =               A[1][1] * y + A[1][2];
-		return new double[] {u, v};	
+		return new double[] {u, v};
 	}
-	
+
 	// -------------------------------------------------------------------
 
 	/**
 	 * Returns the camera's inner (linear and distortion parameters as one vector
-     * (alpha, beta, gamma, uc, vc, distortion-params ...).
+	 * (alpha, beta, gamma, uc, vc, distortion-params ...).
 	 *
 	 * @return the camera's inner parameters
 	 */
 	public double[] getParameterVector() {
-        double[] lin = new double[] {getAlpha(), getBeta(),	getGamma(), getUc(), getVc()};  // linear parameters
-        double[] dist = distortion.getParameters();
-        return Matrix.join(lin, dist);  // concatenate linear/nonlinear coefficients into one vector
-    }
+		double[] lin = new double[] {getAlpha(), getBeta(),	getGamma(), getUc(), getVc()};  // linear parameters
+		double[] dist = distortion.getParameters();
+		return Matrix.join(lin, dist);  // concatenate linear/nonlinear coefficients into one vector
+	}
 
-    /**
-     * Returns the total number of linear and non-linear (distortion) camera parameters,
-     * which is 5 + the number of distortion parameters.
-     * @return the total number of parameters for this camera
-     */
-    public int getParameterCount() {
-        return 5 + distortion.getParameterCount();
-    }
+	/**
+	 * Returns the total number of linear and non-linear (distortion) camera parameters,
+	 * which is 5 + the number of distortion parameters.
+	 * @return the total number of parameters for this camera
+	 */
+	public int getParameterCount() {
+		return 5 + distortion.getParameterCount();
+	}
 
 	/**
 	 * Returns the camera's alpha value.
@@ -274,10 +272,10 @@ public class Camera<T extends DistortionModel> {
 	 *
 	 * @return the vector of lens distortion coefficients
 	 */
-    @Deprecated
+	@Deprecated
 	public double[] getK() {
-        //return new double[] {distortion.getK0(), distortion.getK1()};
-        return (distortion != null) ? distortion.getParameters() : null;
+		//return new double[] {distortion.getK0(), distortion.getK1()};
+		return (distortion != null) ? distortion.getParameters() : null;
 	}
 
 	/**
@@ -307,8 +305,8 @@ public class Camera<T extends DistortionModel> {
 		double uc = A[0][2];
 		double vc = A[1][2];
 		double[][] Ai = {
-			{1.0/alpha, -gamma/(alpha*beta), (gamma*vc - beta*uc)/(alpha*beta)},
-			{0,         1.0/beta,            -vc/beta}};
+				{1.0/alpha, -gamma/(alpha*beta), (gamma*vc - beta*uc)/(alpha*beta)},
+				{0,         1.0/beta,            -vc/beta}};
 		return MatrixUtils.createRealMatrix(Ai);
 	}
 
@@ -321,15 +319,15 @@ public class Camera<T extends DistortionModel> {
 		RealMatrix RT = view.getRotationMatrix();
 		RealVector T = view.getTranslationVector();
 		RT.setColumnVector(2, T);
-		
-		RealMatrix AM = MatrixUtils.createRealMatrix(3, 3); 
+
+		RealMatrix AM = MatrixUtils.createRealMatrix(3, 3);
 		AM.setSubMatrix(A, 0, 0);
 		AM.setEntry(2, 2, 1);
-		
-		RealMatrix H = AM.multiply(RT);	
+
+		RealMatrix H = AM.multiply(RT);
 		return H.scalarMultiply(1.0 / H.getEntry(2, 2));
 	}
-	
+
 	// -------------------------------------------------------------------
 
 	@Override
@@ -338,7 +336,7 @@ public class Camera<T extends DistortionModel> {
 				this.getClass().getSimpleName(),
 				getAlpha(), getBeta(), getGamma(), getUc(), getVc(), getDistortion());
 	}
-	
+
 	//---------------------------------------------------------------------
 
 //	public static void main(String[] args) {
@@ -397,5 +395,5 @@ public class Camera<T extends DistortionModel> {
 //		double rc = camera2.unwarp(rb);
 //		System.out.format("ra=%.4f, rb=%.4f, rc=%.4f\n", ra, rb, rc);
 //	}
-	
+
 }
