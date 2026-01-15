@@ -21,11 +21,6 @@ public class NullDistortionModel extends DistortionModel {
     }
 
     @Override
-    public DistortionModel getScaled(double scale) {
-        return new NullDistortionModel();
-    }
-
-    @Override
     double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {
         return new double[2][0];
     }

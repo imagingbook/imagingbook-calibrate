@@ -53,11 +53,6 @@ public class RadialLateralDistortionModel extends DistortionModel {
                 new RadialLateralDistortionModel(params);
     }
 
-    @Override
-    public RadialLateralDistortionModel getScaled(double scale) {
-        return null; // TODO
-    }
-
     // ------------------------------------------------------------------------
 
     @Override

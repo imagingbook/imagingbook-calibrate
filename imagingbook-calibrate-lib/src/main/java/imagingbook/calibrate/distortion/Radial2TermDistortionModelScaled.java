@@ -19,6 +19,7 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -65,12 +66,12 @@ public class Radial2TermDistortionModelScaled extends RadialDistortionModel {
                 new Radial2TermDistortionModelScaled(params, imgWidth, imgHeight);
     }
 
-    @Override
-    public Radial2TermDistortionModelScaled getScaled(double s) {
-        double k0_ = k0 * Math.pow(s, 1-3); // k0 = a3
-        double k1_ = k1 * Math.pow(s, 1-5); // k1 = a5
-        return this.fromParameters(new double[] {k0_, k1_});
-    }
+//    @Override
+//    public Radial2TermDistortionModelScaled getScaled(double s) {
+//        double k0_ = k0 * Math.pow(s, 1-3); // k0 = a3
+//        double k1_ = k1 * Math.pow(s, 1-5); // k1 = a5
+//        return this.fromParameters(new double[] {k0_, k1_});
+//    }
 
     // -----------------------------------------
 
@@ -196,32 +197,32 @@ public class Radial2TermDistortionModelScaled extends RadialDistortionModel {
     }
 
     public static void main(String[] args) {
-        double r = 0.9;
-        double s = 0.7;
-        System.out.println("r = " + r);
-        System.out.println("s = " + s);
-        System.out.println("s r = " + s * r);
+        Locale.setDefault(Locale.US);
+        double r = 0.9;     // some fixed radius
+        double s = 0.7;     // relative scale of source domains
+        System.out.println("Radius: r = " + r);
+        System.out.println("Scale: s = " + s);
+        System.out.println("Scaled radius: s * r = " + s * r);
+
+        // Cam1 is the standard Zhang camera
         Camera cam1 = ZhangData.getCamera();
-        Radial2TermDistortionModelScaled distortion = (Radial2TermDistortionModelScaled) cam1.getDistortion();
+        RadialDistortionModel distortion1 = (RadialDistortionModel) cam1.getDistortion();
         double[] params1 = cam1.getDistortion().getParameters();
         System.out.println("params1 = " + Arrays.toString(params1));
-        double rr = distortion.fRad(r);
-        System.out.format("cam1: %.5f -> %.5f\n", r, s * distortion.fRad(r));
+        // Result1: r' = s * f1(r)
+        System.out.format("cam1: %.5f -> %.5f\n", r, s * distortion1.fRad(r));
 
-        double a1 = 1;
-        double a2 = 0;
-        double a3 = params1[0];
-        double a4 = 0;
-        double a5 = params1[1];
-        double[] a = {a1, a2, a3, a4, a5};
-        //System.out.format("cam2: %.5f -> %.5f\n", r, fRadScaled(a, s, r));
-        // System.out.format("CHECK %.5f vs %.5f\n", s * distortion.fRad(r), fRadScaled(a, s, s * r));
-
-        double aa3 = a3 * Math.pow(s, 1-3);
-        double aa5 = a5 * Math.pow(s, 1-5);
-        Radial2TermDistortionModelScaled distortion2 =
-                distortion.fromParameters(new double[] {aa3, aa5});
+        // Cam2 is set up for a domain scaled by s:
+        double a3 = params1[0]; // = k0
+        double a5 = params1[1]; // = k1
+        // calculate the coefficients for the scaled domain model:
+        double aa3 = a3 * Math.pow(s, 1 - 3);
+        double aa5 = a5 * Math.pow(s, 1 - 5);
+        // create a new model with scaled coefficients:
+        Radial2TermDistortionModel distortion2 =
+                new Radial2TermDistortionModel(new double[] {aa3, aa5});
         System.out.println("params2 = " + Arrays.toString(distortion2.getParameters()));
+        // Result2: r' = f2(s * r)  -- must be the same as Result1!!
         System.out.format("cam2: %.5f -> %.5f\n", s * r, distortion2.fRad(s * r));
     }
 

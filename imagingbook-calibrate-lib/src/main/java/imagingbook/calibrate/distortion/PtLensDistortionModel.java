@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO: UNFINISHED CODE!
+ * PtLens distortion model, as used by PanoTools, Hugin, lensfun etc.
  */
 public class PtLensDistortionModel extends RadialDistortionModel {
 
@@ -36,7 +36,7 @@ public class PtLensDistortionModel extends RadialDistortionModel {
      * @param parameters vector of distortion parameters
      */
     public PtLensDistortionModel(double[]  parameters, int imgWidth, int imgHeight) {
-        super(parameters);
+        super(parameters, determineScale(imgWidth, imgHeight));
         this.a = parameters[0];
         this.b = parameters[1];
         this.c = parameters[2];
@@ -44,16 +44,16 @@ public class PtLensDistortionModel extends RadialDistortionModel {
         this.imgHeight = imgHeight;
     }
 
+    // how to do this without the camera? let camera do it!?
+    static double determineScale(int imgWidth, int imgHeight) {
+        return 1.0;
+    }
+
     @Override
     public PtLensDistortionModel fromParameters(double[]  params) {
         return (params == null) ?
                 new PtLensDistortionModel(imgWidth, imgHeight) :
                 new PtLensDistortionModel(params, imgWidth, imgHeight);
-    }
-
-    @Override
-    public PtLensDistortionModel getScaled(double scale) {
-        return null; // TODO
     }
 
     // -------------------------------------------------------------------------
@@ -151,44 +151,45 @@ public class PtLensDistortionModel extends RadialDistortionModel {
     }
 
 
-    // static void doDistortionCalibration() {
-    //     // real distortion model
-    //     PtLensDistortionModel realDist = new PtLensDistortionModel(640, 480).fromParameters(new double[] {0.01144, -0.0102, 0.01051});
-    //
-    //     List<Pnt2d[]> modPntList = new ArrayList<>();
-    //     List<Pnt2d[]> imgPntList = new ArrayList<>();
-    //     Pnt2d[] modelPoints = makeModelPoints();
-    //     modPntList.add(modelPoints);
-    //
-    //     ViewTransform view = new ViewTransform(Rotation.IDENTITY, new double[]{0, 0, 1});
-    //     Camera realCam = new Camera(1, 1, 0, 0, 0, realDist);
-    //     System.out.println("realCam = " + realCam);
-    //
-    //     System.out.println("view = " + view);
-    //     System.out.println("realCam = " + realCam);
-    //     System.out.println("N = " + modelPoints.length);
-    //
-    //
-    //     Pnt2d[] imgPnts = new Pnt2d[modelPoints.length];
-    //     for (int i = 0; i < modelPoints.length; i++) {
-    //         Pnt2d XY = modelPoints[i];
-    //         Pnt2d xy = Pnt2d.from(realCam.projectNormalized(view, XY));
-    //         Pnt2d uv = Pnt2d.from(realCam.project(view, XY));
-    //         // System.out.printf("%s -> %s -> %s\n", XY, xy, uv);
-    //         imgPnts[i] = uv;
-    //     }
-    //     imgPntList.add(imgPnts);
-    //
-    //     Camera initCam = new Camera(1, 1, 0, 0, 0, new PtLensDistortionModel(640, 480));
-    //     DistortionEstimator estimtr = new DistortionEstimator(initCam.getDistortion());
-    //     Camera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);
-    //     PrintPrecision.set(8);
-    //     System.out.println("camImproved = " + camImproved.getDistortion());
-    // }
+     static void doDistortionCalibration() {
+         // real distortion model
+         PtLensDistortionModel realDist = new PtLensDistortionModel(640, 480).fromParameters(new double[] {0.01144, -0.0102, 0.01051});
+
+         List<Pnt2d[]> modPntList = new ArrayList<>();
+         List<Pnt2d[]> imgPntList = new ArrayList<>();
+         Pnt2d[] modelPoints = makeModelPoints();
+         modPntList.add(modelPoints);
+
+         ViewTransform view = new ViewTransform(Rotation.IDENTITY, new double[]{0, 0, 1});
+         Camera realCam = new Camera(1, 1, 0, 0, 0, realDist);
+         System.out.println("realCam = " + realCam);
+
+         System.out.println("view = " + view);
+         System.out.println("realCam = " + realCam);
+         System.out.println("N = " + modelPoints.length);
+
+
+         Pnt2d[] imgPnts = new Pnt2d[modelPoints.length];
+         for (int i = 0; i < modelPoints.length; i++) {
+             Pnt2d XY = modelPoints[i];
+             Pnt2d xy = Pnt2d.from(realCam.projectNormalized(view, XY));
+             Pnt2d uv = Pnt2d.from(realCam.project(view, XY));
+             // System.out.printf("%s -> %s -> %s\n", XY, xy, uv);
+             imgPnts[i] = uv;
+         }
+         imgPntList.add(imgPnts);
+
+         Camera initCam = new Camera(1, 1, 0, 0, 0, null);
+         DistortionModel dist = new PtLensDistortionModel(640, 480);
+         DistortionEstimator estimtr = new DistortionEstimator(initCam, dist);
+         Camera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);
+         PrintPrecision.set(8);
+         System.out.println("camImproved = " + camImproved.getDistortion());
+     }
 
     public static void main(String[] args) {
         // listfRad();
-        // doDistortionCalibration();
+        doDistortionCalibration();
 
     }
 
