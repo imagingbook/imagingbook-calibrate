@@ -6,7 +6,11 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import imagingbook.calibrate.intrinsics.Camera;
+
+import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Factory enum for {@link DistortionModel}. Usage:
@@ -16,19 +20,24 @@ import java.util.function.BiFunction;
  * }</pre>
  */
 public enum DistortionModelType {
-    NullDistortion((w, h)    -> new NullDistortionModel()),
-    Radial2Term((w, h)       -> new Radial2TermDistortionModel()),
-    Radial3Term((w, h)       -> new Radial3TermDistortionModel()),
-    RadialLateral((w, h)     -> new RadialLateralDistortionModel()),
-    PtLens((w, h)            -> new PtLensDistortionModel(w, h)),
-    Radial2TermScaled((w, h) -> new Radial2TermDistortionModelScaled(w, h)),
+    NullDistortion((camera, w, h)    -> new NullDistortionModel()),
+    Radial2Term((camera, w, h)       -> new Radial2TermDistortionModel()),
+    Radial3Term((camera, w, h)       -> new Radial3TermDistortionModel()),
+    RadialLateral((camera, w, h)     -> new RadialLateralDistortionModel()),
+    PtLens(PtLensDistortionModel::from),
+    Radial2TermScaled((camera, w, h) -> new Radial2TermDistortionModelScaled(w, h)),
     ;
 
     // holds each enum's factory instance
-    private final BiFunction<Integer, Integer, ? extends DistortionModel> factory;
+    // private final BiFunction<Integer, Integer, ? extends DistortionModel> factory;
+    private final TriFunction<Camera, Integer, Integer, ? extends DistortionModel> factory;
 
     // enum constructor
-    DistortionModelType(BiFunction<Integer, Integer, ? extends DistortionModel> factory) {
+//    DistortionModelType(BiFunction<Integer, Integer, ? extends DistortionModel> factory) {
+//        this.factory = factory;
+//    }
+
+    DistortionModelType(TriFunction<Camera, Integer, Integer, ? extends DistortionModel> factory) {
         this.factory = factory;
     }
 
@@ -41,7 +50,19 @@ public enum DistortionModelType {
      * @param ImgHeight the image height
      * @return a new {@link DistortionModel} instance
      */
-    public DistortionModel create(int imgWidth, int ImgHeight) {
-        return factory.apply(imgWidth, ImgHeight);
+    public DistortionModel create(Camera cam, int imgWidth, int ImgHeight) {
+        return factory.apply(cam, imgWidth, ImgHeight);
+    }
+
+
+    @FunctionalInterface
+    public interface TriFunction<T, U, V, R> {
+
+        R apply(T t, U u, V v);
+
+        default <K> TriFunction<T, U, V, K> andThen(Function<? super R, ? extends K> after) {
+            Objects.requireNonNull(after);
+            return (T t, U u, V v) -> after.apply(apply(t, u, v));
+        }
     }
 }

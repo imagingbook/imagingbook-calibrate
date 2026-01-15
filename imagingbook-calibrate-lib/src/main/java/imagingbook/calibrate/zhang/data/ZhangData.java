@@ -13,7 +13,6 @@ import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 
-
 /**
  * Supplies all numeric data for Zhang's demo calibration test suite.
  * @author WB
@@ -62,7 +61,7 @@ public abstract class ZhangData {
 		// 		303.959, 206.585,			// u_c, v_c
 		// 		-0.228601, 0.190353);		// k1, k2
         DistortionModel distortion = new Radial2TermDistortionModel(new double[] {-0.228601, 0.190353});
-        return new Camera(832.5, 832.53, 0.204494, 303.959, 206.585, distortion);
+        return new Camera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585}, distortion);
 	}
 		
 // 	public static int extractViewNumber(String imgShortTitle) {

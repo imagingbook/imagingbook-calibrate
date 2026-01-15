@@ -22,7 +22,7 @@ public class CameraTest {
 
     static final double tol = 1e-6;
     static final Camera cam1 =
-            new Camera(832.5, 832.53, 0.204494, 303.959, 206.585,
+            new Camera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585 },
             new Radial2TermDistortionModel(new double[] {-0.228601, 0.190353}));
     static final ViewTransform view = new ViewTransform();
 
@@ -30,7 +30,8 @@ public class CameraTest {
     public void CameraConstructorTest() {
         double alpha = 810, beta = 815, gamma = 0.2;
         double uc = 300, vc = 200;
-        Camera cam = new Camera(alpha, beta, gamma, uc, vc, new Radial2TermDistortionModel());
+        Camera cam = new Camera(new double[] {alpha, beta, gamma, uc, vc},
+                                new Radial2TermDistortionModel());
         // ----------------------------------------------------
         assertEquals(alpha, cam.getAlpha(), tol);
         assertEquals(beta, cam.getBeta(), tol);

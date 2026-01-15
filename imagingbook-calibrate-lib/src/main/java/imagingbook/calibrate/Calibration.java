@@ -7,6 +7,7 @@
 package imagingbook.calibrate;
 
 import imagingbook.calibrate.distortion.DistortionEstimator;
+import imagingbook.calibrate.distortion.DistortionModel;
 import imagingbook.calibrate.distortion.DistortionModelType;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.homography.HomographyEstimator;
@@ -150,7 +151,7 @@ public class Calibration {
 		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
 		IntrinsicsEstimator intrEstm = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
 		RealMatrix Ainit = intrEstm.estimate(homographies);
-		initCam = new Camera(Ainit, null);
+		initCam = Camera.from(Ainit); //new Camera(Ainit, null);
         debug("initial camera = " + initCam);
 		
 		// Step 3: Calculate the extrinsic view parameters (3D view transforms)
@@ -162,8 +163,8 @@ public class Calibration {
 
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Estimate lens distortion from initial camera and view data:");
-		DistortionEstimator distEstim =
-				new DistortionEstimator(initCam, params.distModelType.create(imgWidth, imgHeight));
+		DistortionModel distModel = params.distModelType.create(initCam, imgWidth, imgHeight);
+		DistortionEstimator distEstim = new DistortionEstimator(initCam, distModel);
         // DistortionModel distortion = DistortionModel.from(initCam, initViews, modelPntSet, imagePntSet);
         // debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		// Camera improvedCam = new Camera(Ainit, distortion);

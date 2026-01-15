@@ -21,27 +21,27 @@ import java.util.List;
 public class PtLensDistortionModel extends RadialDistortionModel {
 
     private final double a, b, c;
-    private final int imgWidth, imgHeight;
 
-    /**
-     * Blank constructor. Creates a lens distortion instance with zero parameters.
-     */
-    public PtLensDistortionModel(int imgWidth, int imgHeight) {
-        this(new double[] {0, 0, 0}, imgWidth, imgHeight);
-
+    public static PtLensDistortionModel from(Camera cam, int imgWidth, int imgHeight) {
+        return null;
     }
+
+//    /**
+//     * Blank constructor. Creates a lens distortion instance with zero parameters.
+//     */
+//    public PtLensDistortionModel(Camera cam, int imgWidth, int imgHeight) {
+//        this(new double[] {0, 0, 0}, imgWidth, imgHeight);
+//    }
 
     /**
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public PtLensDistortionModel(double[]  parameters, int imgWidth, int imgHeight) {
-        super(parameters, determineScale(imgWidth, imgHeight));
+    public PtLensDistortionModel(double[]  parameters) {
+        super(parameters, 1.0);
         this.a = parameters[0];
         this.b = parameters[1];
         this.c = parameters[2];
-        this.imgWidth = imgWidth;
-        this.imgHeight = imgHeight;
     }
 
     // how to do this without the camera? let camera do it!?
@@ -51,9 +51,7 @@ public class PtLensDistortionModel extends RadialDistortionModel {
 
     @Override
     public PtLensDistortionModel fromParameters(double[]  params) {
-        return (params == null) ?
-                new PtLensDistortionModel(imgWidth, imgHeight) :
-                new PtLensDistortionModel(params, imgWidth, imgHeight);
+        return new PtLensDistortionModel(params);
     }
 
     // -------------------------------------------------------------------------
@@ -119,18 +117,18 @@ public class PtLensDistortionModel extends RadialDistortionModel {
 
     // <distortion model="ptlens" focal="40" a="0.0114400833647736" b="-0.0388117252490693" c="0.0340496771870945"/> Viltrox AF 40mm f/2.5
     // <distortion model="ptlens" focal="55" a="0.000016" b="-0.0102041" c="0.0105145"/> // Yashica DSB 55mm f/2
-    static void listfRad() {
-        PtLensDistortionModel dist = new PtLensDistortionModel(640, 480);
-        dist = dist.fromParameters(new double[] {0.01144, -0.0102, 0.01051});
-
-        for (int i = 0; i <= 10; i++) {
-            double r = i * 1.0 / 10;
-            double rr = dist.fRad(r);
-            double rr2 = dist.fRad2(r);
-            double D = dist.Dpt(r);
-            System.out.printf("%.5f: fRad(r) = %.8f D(r) = %.8f\n", r, rr, D);
-        }
-    }
+//    static void listfRad() {
+//        PtLensDistortionModel dist = new PtLensDistortionModel(640, 480);
+//        dist = dist.fromParameters(new double[] {0.01144, -0.0102, 0.01051});
+//
+//        for (int i = 0; i <= 10; i++) {
+//            double r = i * 1.0 / 10;
+//            double rr = dist.fRad(r);
+//            double rr2 = dist.fRad2(r);
+//            double D = dist.Dpt(r);
+//            System.out.printf("%.5f: fRad(r) = %.8f D(r) = %.8f\n", r, rr, D);
+//        }
+//    }
 
     static Pnt2d[] makeModelPoints() {
         int n = 20;
@@ -153,7 +151,7 @@ public class PtLensDistortionModel extends RadialDistortionModel {
 
      static void doDistortionCalibration() {
          // real distortion model
-         PtLensDistortionModel realDist = new PtLensDistortionModel(640, 480).fromParameters(new double[] {0.01144, -0.0102, 0.01051});
+         PtLensDistortionModel realDist = new PtLensDistortionModel(new double[] {0.01144, -0.0102, 0.01051});
 
          List<Pnt2d[]> modPntList = new ArrayList<>();
          List<Pnt2d[]> imgPntList = new ArrayList<>();
@@ -161,7 +159,7 @@ public class PtLensDistortionModel extends RadialDistortionModel {
          modPntList.add(modelPoints);
 
          ViewTransform view = new ViewTransform(Rotation.IDENTITY, new double[]{0, 0, 1});
-         Camera realCam = new Camera(1, 1, 0, 0, 0, realDist);
+         Camera realCam = new Camera(new double[] { 1, 0, 0, 0 }, realDist);
          System.out.println("realCam = " + realCam);
 
          System.out.println("view = " + view);
@@ -179,8 +177,9 @@ public class PtLensDistortionModel extends RadialDistortionModel {
          }
          imgPntList.add(imgPnts);
 
-         Camera initCam = new Camera(1, 1, 0, 0, 0, null);
-         DistortionModel dist = new PtLensDistortionModel(640, 480);
+         Camera initCam = new Camera(new double[] { 1, 1, 0, 0, 0 }, null);
+         //DistortionModel dist = PtLensDistortionModel.from(initCam, 640, 480);
+         DistortionModel dist = DistortionModelType.PtLens.create(initCam, 640, 480);
          DistortionEstimator estimtr = new DistortionEstimator(initCam, dist);
          Camera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);
          PrintPrecision.set(8);

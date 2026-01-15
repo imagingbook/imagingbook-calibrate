@@ -41,9 +41,9 @@ public class PtLensDistortionModelTest {
     public void estimateParametersTest() {
         double[] abc = {0.01144, -0.0102, 0.01051};     // distortion parameters
 
-        PtLensDistortionModel realDist = new PtLensDistortionModel(640, 480).fromParameters(abc);
+        PtLensDistortionModel realDist = new PtLensDistortionModel(abc);
         ViewTransform view = new ViewTransform(Rotation.IDENTITY, new double[]{0, 0, 1});
-        Camera realCam = new Camera(1, 1, 0, 0, 0, realDist);
+        Camera realCam = new Camera(new double[] { 1, 1, 0, 0, 0 }, realDist);
 
         Pnt2d[] modelPoints = makeModelPoints();
         List<Pnt2d[]> modPntList = Collections.singletonList(modelPoints);
@@ -65,8 +65,8 @@ public class PtLensDistortionModelTest {
         imgPntList.add(imgPnts);
 
         // start parameter estimation:
-        Camera initCam = new Camera(1, 1, 0, 0, 0, null);
-        DistortionModel dm = new PtLensDistortionModel(640, 480);
+        Camera initCam = new Camera(new double[] { 1, 1, 0, 0, 0}, null);
+        DistortionModel dm = PtLensDistortionModel.from(initCam, 640, 480);
         DistortionEstimator estimtr = new DistortionEstimator(initCam, dm);
         Camera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);
 
