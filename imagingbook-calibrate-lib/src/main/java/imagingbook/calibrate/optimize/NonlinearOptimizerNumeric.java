@@ -25,8 +25,8 @@ import java.util.List;
  */
 public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	
-	public NonlinearOptimizerNumeric(Camera initCam, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
-		super(initCam, modelPntSet, obsPntSet);
+	public NonlinearOptimizerNumeric(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
+		super(initCam, viewList, modelPntSet, obsPntSet);
 	}
 	
 	@Override
@@ -49,8 +49,8 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 		@Override
 	    public double[][] value(double[] params) {
 			final int K = params.length;
-	        double[][] J = new double[2 * pointCount][K];	// the Jacobian matrix (initialized to zeroes!)
-	        double[] refValues = new double[2 * pointCount];	// values obtained with undisturbed parameters
+	        double[][] J = new double[2 * N][K];	// the Jacobian matrix (initialized to zeroes!)
+	        double[] refValues = new double[2 * N];	// values obtained with undisturbed parameters
 	        
 	        double[] a = Arrays.copyOfRange(params, 0, camParCount);	// camera parameters
 	        Camera camOrig = initCam.fromParameters(a);
@@ -128,8 +128,8 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	    	//long starttime = System.nanoTime();
 	    	//System.out.println("getJacobianMatrix - NUMERICAL");
 	    	// M = number of views, N = number of model points
-	        double[][] J = new double[2 * pointCount][params.length];	// the Jacobian matrix
-	        double[] refValues = new double[2 * pointCount];	// function values obtained with undisturbed parameters
+	        double[][] J = new double[2 * N][params.length];	// the Jacobian matrix
+	        double[] refValues = new double[2 * N];	// function values obtained with undisturbed parameters
 	        
 	        double[] s = Arrays.copyOfRange(params, 0, camParCount);
 	        Camera cam = initCam.fromParameters(s);

@@ -23,15 +23,15 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Abstract super-class for non-linear optimizers used for final, overall optimization of calibration parameters. The
- * actual optimization is performed by the sub-classes.
+ * Abstract super-class for non-linear optimizers used for final, overall optimization of calibration
+ * parameters. The actual optimization is performed by the subclasses.
  *
  * @author WB
  */
 public abstract class NonlinearOptimizer {
 
     protected static int maxEvaluations = 1000;
-    protected static int maxIterations  = 1000;
+    protected static int maxIterations  = 100;
 
 	// @Deprecated
     // protected final Pnt2d[]  modelPts;
@@ -40,47 +40,48 @@ public abstract class NonlinearOptimizer {
     protected final int M;                // number of views
 	// @Deprecated
     // protected final int N;                // number of model points
-	protected final int pointCount;
+	protected final int N;
     protected final int camParCount;      // number of camera parameters (7+)
     protected final int viewParCount;     // number of view parameters (6)
 
 	protected final Camera initCam;
     protected Camera finalCamera;
+	protected final ViewTransform[] initViews;
     protected ViewTransform[] finalViews;
 
     /**
-     * Super-constructor, invoked by constructors of inheriting classes.
-     * @param initCam the initial camera parameters
-     * @param modPntSet the 3D model points
-     * @param obsPntSet the observed sensor points
-     */
-	NonlinearOptimizer(Camera initCam, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
+	 * Super-constructor, invoked by constructors of inheriting classes.
+	 *
+	 * @param initCam the initial camera parameters
+	 * @param viewList
+	 * @param modPntSet the 3D model points
+	 * @param obsPntSet the observed sensor points
+	 */
+	NonlinearOptimizer(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
         this.initCam = initCam;
         this.camParCount = initCam.getParameterCount();
         this.viewParCount = ViewTransform.PARAMETER_COUNT;
-		// this.modelPts = modPntSet.get(0);	// TODO: fix!
+
+		this.initViews = viewList.toArray(new ViewTransform[0]);
 		this.modPts = modPntSet.toArray(new Pnt2d[0][]);
 		this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
 		this.M = obsPntSet.size();
-		// this.N = modPts[0].length;	// TODO: not constant!!
-		this.pointCount = getTotalPointCount();
+		this.N = Arrays.stream(modPts).mapToInt(row -> row.length).sum(); //getTotalPointCount();
 	}
 
-	private int getTotalPointCount() {
-		int total = 0;
-		for (Pnt2d[] p : modPts) {
-			total += p.length;
-		}
-		return total;
-	}
+	// private int getTotalPointCount() {
+	// 	int total = 0;
+	// 	for (Pnt2d[] p : modPts) {
+	// 		total += p.length;
+	// 	}
+	// 	return total;
+	// }
 
 	/**
-     * Performs Levenberg-Marquardt non-linear optimization to get better
-     * estimates of the parameters.
-     *
-     * @param initViews the initial view transforms
-     */
-    public void optimize(ViewTransform[] initViews) {
+	 * Performs Levenberg-Marquardt non-linear optimization to get better estimates of the
+	 * parameters.
+	 */
+    public void optimize() {
 		MultivariateVectorFunction V = makeValueFun();
 		MultivariateMatrixFunction J = makeJacobianFun();
 
@@ -119,12 +120,11 @@ public abstract class NonlinearOptimizer {
      * enclosing class.
 	 */
 	class ValueFun implements MultivariateVectorFunction {
-
 		@Override
 		public double[] value(double[] params) {
 			final double[] a = Arrays.copyOfRange(params, 0, camParCount);
 			final Camera cam = initCam.fromParameters(a);
-			final double[] Y = new double[2 * pointCount];
+			final double[] Y = new double[2 * N];
 			int r = 0;
 			for (int k = 0; k < M; k++) {
 				int q = camParCount + k * viewParCount;
@@ -160,14 +160,12 @@ public abstract class NonlinearOptimizer {
 		return new ArrayRealVector(c);
 	}
 
-
 	/**
 	 * Stack the observed image coordinates of the calibration pattern points into a vector.
-	 *
 	 * @return the observed vector
 	 */
 	RealVector makeObservedVector() {
-		double[] obs = new double[2 * pointCount];
+		double[] obs = new double[2 * N];
 		for (int k = 0, r = 0; k < M; k++) {
 			for (int i = 0; i < obsPts[k].length; i++, r++) {
 				obs[r * 2 + 0] = obsPts[k][i].getX();
@@ -204,8 +202,8 @@ public abstract class NonlinearOptimizer {
 	 * Returns the optimized view parameters.
 	 * @return the optimized view parameters
 	 */
-    public ViewTransform[] getFinalViews() {
-		return finalViews;
+    public List<ViewTransform> getFinalViews() {
+		return Arrays.asList(finalViews);
 	}
 
 }

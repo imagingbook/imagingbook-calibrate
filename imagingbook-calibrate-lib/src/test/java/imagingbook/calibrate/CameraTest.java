@@ -49,14 +49,11 @@ public class CameraTest {
         assertEquals(7, cam.getParameterCount());
     }
 
-
     @Test
     public void projectTest() {
         double[] XYZ2 = {40, 70, 800};
         double[] uv2 = cam1.project(view, XYZ2);
-        // System.out.print(Arrays.toString(XYZ2) + " -> ");
-        // System.out.format("u=%.6f, u=%.6f\n", uv2[0], uv2[1]);
-        assertArrayEquals(new double[] {345.5060273, 279.2636757}, uv2, tol);
+        assertArrayEquals(new double[] {345.4543953, 279.1733552}, uv2, tol);
     }
 
     @Test

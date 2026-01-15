@@ -7,9 +7,7 @@
 package imagingbook.calibrate;
 
 import imagingbook.calibrate.distortion.DistortionEstimator;
-import imagingbook.calibrate.distortion.DistortionModel;
 import imagingbook.calibrate.distortion.DistortionModelType;
-import imagingbook.calibrate.distortion.Radial2TermDistortionModel;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.homography.HomographyEstimator;
 import imagingbook.calibrate.homography.HomographyEstimatorSimple;
@@ -153,7 +151,7 @@ public class Calibration {
 		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
 		IntrinsicsEstimator intrEstm = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
 		RealMatrix Ainit = intrEstm.estimate(homographies);
-		initCam = new Camera(Ainit, null); // params.distModelType.getInstance());	// TODO: replace by null
+		initCam = new Camera(Ainit, null);
         debug("initial camera = " + initCam);
 		
 		// Step 3: Calculate the extrinsic view parameters (3D view transforms)
@@ -166,23 +164,23 @@ public class Calibration {
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Estimate lens distortion from initial camera and view data:");
 		DistortionEstimator distEstim =
-				new DistortionEstimator(params.distModelType.getInstance(), imgWidth, imgHeight);
+				new DistortionEstimator(initCam, params.distModelType.getInstance());
         // DistortionModel distortion = DistortionModel.from(initCam, initViews, modelPntSet, imagePntSet);
         // debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		// Camera improvedCam = new Camera(Ainit, distortion);
-		Camera improvedCam = distEstim.getEstimate(initCam, initViews, modelPntSet, imagePntSet);
+		Camera improvedCam = distEstim.getEstimate(initViews, modelPntSet, imagePntSet);
         debug("improved camera = " + improvedCam);
 
 		// Step 5: Refine all parameters by overall non-linear optimization
 		debug("Step 5: Refine all parameters by non-linear optimization");
         debug("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
 		NonlinearOptimizer optim = (params.useNumericJacobian) ?
-				new NonlinearOptimizerNumeric(improvedCam, modelPntSet, imagePntSet) :
-				new NonlinearOptimizerAnalytic(improvedCam, modelPntSet, imagePntSet);
-		optim.optimize(initViews.toArray(new ViewTransform[0]));	// TODO: fix to accept list!
+				new NonlinearOptimizerNumeric(improvedCam, initViews, modelPntSet, imagePntSet) :
+				new NonlinearOptimizerAnalytic(improvedCam, initViews, modelPntSet, imagePntSet);
+		optim.optimize();
 		finalCam = optim.getFinalCamera();
         debug("final camera = " + finalCam);
-		finalViews = Arrays.asList(optim.getFinalViews());	// TODO: fix to return list!
+		finalViews = optim.getFinalViews();
 	}
 
 	//---------------------------------------------------------------------------
