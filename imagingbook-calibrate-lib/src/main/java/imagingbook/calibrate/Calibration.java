@@ -23,7 +23,6 @@ import imagingbook.common.util.ParameterBundle;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -164,7 +163,7 @@ public class Calibration {
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Estimate lens distortion from initial camera and view data:");
 		DistortionEstimator distEstim =
-				new DistortionEstimator(initCam, params.distModelType.getInstance());
+				new DistortionEstimator(initCam, params.distModelType.create(imgWidth, imgHeight));
         // DistortionModel distortion = DistortionModel.from(initCam, initViews, modelPntSet, imagePntSet);
         // debug("initial distortion = " + Arrays.toString(distortion.getParameters()));
 		// Camera improvedCam = new Camera(Ainit, distortion);

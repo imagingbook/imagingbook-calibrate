@@ -7,13 +7,12 @@
 package imagingbook.calibrate.distortion;
 
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 /**
  * Factory enum for {@link DistortionModel}. Usage:
  * <pre>{@code
- * DistortionModelType type = DistortionModelType.Radial2Term;
- * DistortionModel model = type.getInstance();
+ *     DistortionModelType type = DistortionModelType.Radial2Term;
+ *     DistortionModel model = type.getInstance();
  * }</pre>
  */
 public enum DistortionModelType {
@@ -25,22 +24,24 @@ public enum DistortionModelType {
     Radial2TermScaled((w, h) -> new Radial2TermDistortionModelScaled(w, h)),
     ;
 
-    //private final Supplier<? extends DistortionModel> factory;
+    // holds each enum's factory instance
     private final BiFunction<Integer, Integer, ? extends DistortionModel> factory;
 
-    // DistortionModelType(Supplier<? extends DistortionModel> factory) {
-    //     this.factory = factory;
-    // }
-
+    // enum constructor
     DistortionModelType(BiFunction<Integer, Integer, ? extends DistortionModel> factory) {
         this.factory = factory;
     }
 
-    public DistortionModel getInstance() {
-        return factory.apply(-1, -1);
-    }
-
-    public DistortionModel getInstance(int imgWidth, int ImgHeight) {
+    /**
+     * Creates and returns a new {@link DistortionModel} instance for this
+     * {@link DistortionModelType} enum type.
+     * Parameters {@code imgWidth}, {@code imgHeight} are only used for some distortion models and
+     * ignored for all others.
+     * @param imgWidth the image width
+     * @param ImgHeight the image height
+     * @return a new {@link DistortionModel} instance
+     */
+    public DistortionModel create(int imgWidth, int ImgHeight) {
         return factory.apply(imgWidth, ImgHeight);
     }
 }

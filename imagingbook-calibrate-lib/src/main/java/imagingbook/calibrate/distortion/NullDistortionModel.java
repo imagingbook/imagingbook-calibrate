@@ -7,7 +7,7 @@
 package imagingbook.calibrate.distortion;
 
 /**
- * A distortion model with no distortion. Mainly for testing.
+ * Dummy distortion model that performs no distortion. Mainly for testing.
  */
 public class NullDistortionModel extends DistortionModel {
 
