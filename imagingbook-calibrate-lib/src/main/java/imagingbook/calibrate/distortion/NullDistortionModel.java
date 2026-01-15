@@ -1,0 +1,42 @@
+/*******************************************************************************
+ * Permission to use and distribute this software is granted under the BSD 2-Clause
+ * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
+ * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
+ * Visit https://imagingbook.com for additional details.
+ ******************************************************************************/
+package imagingbook.calibrate.distortion;
+
+/**
+ * A distortion model with no distortion. Mainly for testing.
+ */
+public class NullDistortionModel extends DistortionModel {
+
+    public NullDistortionModel() {
+        super(new double[0]);
+    }
+
+    @Override
+    public DistortionModel fromParameters(double[] params) {
+        return new NullDistortionModel();
+    }
+
+    @Override
+    public DistortionModel getScaled(double scale) {
+        return new NullDistortionModel();
+    }
+
+    @Override
+    double[][] getDMatrixRowsUV(double x, double y, double du, double dv) {
+        return new double[2][0];
+    }
+
+    @Override
+    public double[] warp(double[] xy) {
+        return xy;
+    }
+
+    @Override
+    public double[] unwarp(double[] xyd) {
+        return xyd;
+    }
+}

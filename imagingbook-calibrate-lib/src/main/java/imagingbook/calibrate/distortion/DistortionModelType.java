@@ -17,12 +17,12 @@ import java.util.function.Supplier;
  * }</pre>
  */
 public enum DistortionModelType {
-    Radial2Term((w, h) -> new Radial2TermDistortionModel()),
-    Radial3Term((w, h) -> new Radial3TermDistortionModel()),
-    RadialLateral((w, h) -> new RadialLateralDistortionModel()),  // if more parameters required
-    PtLens((w, h) -> new PtLensDistortionModel(w, h)),
+    NullDistortion((w, h)    -> new NullDistortionModel()),
+    Radial2Term((w, h)       -> new Radial2TermDistortionModel()),
+    Radial3Term((w, h)       -> new Radial3TermDistortionModel()),
+    RadialLateral((w, h)     -> new RadialLateralDistortionModel()),
+    PtLens((w, h)            -> new PtLensDistortionModel(w, h)),
     Radial2TermScaled((w, h) -> new Radial2TermDistortionModelScaled(w, h)),
-
     ;
 
     //private final Supplier<? extends DistortionModel> factory;

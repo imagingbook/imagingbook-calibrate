@@ -9,7 +9,6 @@ package imagingbook.calibrate.distortion;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
@@ -17,6 +16,7 @@ import org.apache.commons.math4.legacy.linear.QRDecomposition;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,14 +25,12 @@ import java.util.List;
  */
 public class DistortionEstimator {
 
+    private final Camera initCam;
     private final DistortionModel distModel;
-    private final int imgWidth;
-    private final int imgHeight;
 
-    public DistortionEstimator(DistortionModel distModel, int imgWidth, int imgHeight) {
+    public DistortionEstimator(Camera initCam, DistortionModel distModel) {
         this.distModel = distModel;
-        this.imgWidth = imgWidth;
-        this.imgHeight = imgHeight;
+        this.initCam = initCam;
     }
 
     /**
@@ -46,23 +44,24 @@ public class DistortionEstimator {
      * where matrix D is of size 2MN x 2, vector k of size 2, and vector d of size 2MN (M views with
      * N observed points).
      *
-     * @param initCam the initial (linear) camera model
      * @param viewList a sequence of M extrinsic view transformations
      * @param modPntSet a sequence of M 2D model points
      * @param obsPntSet a sequence of M 2D image points
      */
-    public Camera getEstimate(Camera initCam, List<ViewTransform> viewList,
+    public Camera getEstimate(List<ViewTransform> viewList,
                               List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
 
-        System.out.println("initCam = " + initCam);
+        int P = distModel.getParameterCount();          // number of distortion parameters
+        if (P == 0) {
+            return initCam; // nothing to optimize
+        }
 
         ViewTransform[] views = viewList.toArray(new ViewTransform[0]);
         Pnt2d[][] modPts = modPntSet.toArray(new Pnt2d[0][]);
         Pnt2d[][] obsPts = obsPntSet.toArray(new Pnt2d[0][]);
 
         int M = views.length;		                    // the number of views
-        int N = getTotalPointCount(modPts);             // number of points over all views
-        int P = distModel.getParameterCount();          // number of distortion parameters
+        int N = Arrays.stream(modPts).mapToInt(row -> row.length).sum(); // number of points in all views
 
         // the estimated projection center on the sensor plane
         double uc = initCam.getUc();
@@ -121,13 +120,13 @@ public class DistortionEstimator {
         return new Camera(initCam.getAffineMatrix(), dist);
     }
 
-    private static int getTotalPointCount(Pnt2d[][] modPts) {
-        int total = 0;
-        for (Pnt2d[] p : modPts) {
-            total += p.length;
-        }
-        return total;
-    }
+    // private static int getTotalPointCount(Pnt2d[][] modPts) {
+    //     int total = 0;
+    //     for (Pnt2d[] p : modPts) {
+    //         total += p.length;
+    //     }
+    //     return total;
+    // }
 
 
 }
