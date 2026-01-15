@@ -170,7 +170,7 @@ public class Camera {
 	 */
 	public double[] projectNormalized(ViewTransform view, double[] XYZ) {
 		double[] XYZc = view.applyTo(XYZ);
-		// Compute normalized projection coordinates (f = 1):
+		// Calculate normalized projection coordinates (f = 1):
 		final double x = XYZc[0] / XYZc[2];
 		final double y = XYZc[1] / XYZc[2];
 		return new double[] {x, y};

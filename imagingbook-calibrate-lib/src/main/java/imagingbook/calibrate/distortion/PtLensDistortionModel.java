@@ -6,16 +6,28 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import imagingbook.calibrate.Calibration;
+import imagingbook.calibrate.extrinsics.ViewTransform;
+import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.math3legacy.Rotation;
+import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.math.PrintPrecision;
+import imagingbook.common.util.PrintsToStream;
 import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
+import org.apache.commons.math4.legacy.linear.MatrixUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * TODO: UNFINISHED CODE!
  */
 public class PtLensDistortionModel extends RadialDistortionModel {
 
-    private final double k0, k1, k2;
+    private final double a, b, c;
     private final int imgWidth, imgHeight;
 
     /**
@@ -32,9 +44,9 @@ public class PtLensDistortionModel extends RadialDistortionModel {
      */
     public PtLensDistortionModel(double[]  parameters, int imgWidth, int imgHeight) {
         super(parameters);
-        this.k0 = parameters[0];
-        this.k1 = parameters[1];
-        this.k2 = parameters[2];
+        this.a = parameters[0];
+        this.b = parameters[1];
+        this.c = parameters[2];
         this.imgWidth = imgWidth;
         this.imgHeight = imgHeight;
     }
@@ -56,10 +68,25 @@ public class PtLensDistortionModel extends RadialDistortionModel {
     @Override
     public double fRad(double r) {
         double r2 = r * r;
-        double r4 = r2 * r2;
-        double r6 = r4 * r2;
-        double D = k0 * r2 + k1 * r4 + k2 * r6;		// D(r) = k1 * r^2 + k1 * r^4 + k2 * r^6
+        double r3 = r2 * r;
+        double D = c * (r - 1) + b * (r2 - 1) + a * (r3 - 1);
         return r * (1 + D);
+    }
+
+    @Deprecated // for testing only!
+    public double fRad2(double r) {
+        double r2 = r * r;
+        double r3 = r2 * r;
+        double r4 = r2 * r2;
+        return (1 - a - b - c) * r + c * r2 + b * r3 + a * r4;
+    }
+
+    @Deprecated // for testing only!
+    public double Dpt(double r) {
+        double r2 = r * r;
+        double r3 = r2 * r;
+        double D = c * (r - 1) + b * (r2 - 1) + a * (r3 - 1);		// D(r) = k1 * r^2 + k1 * r^4 + k2 * r^6
+        return D;
     }
 
     /**
@@ -72,12 +99,13 @@ public class PtLensDistortionModel extends RadialDistortionModel {
      */
     @Override
     public double fRadInv(double R) {
-        double[] coefficients = {-R, 1, 0, k0, 0, k1, 0, k2};
-        PolynomialFunction p = new PolynomialFunction(coefficients);
-        UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
-        int maxEval = 20;
-        double r = solver.solve(maxEval, p, R); // rInit = R
-        return r;
+        // double[] coefficients = {-R, 1, 0, a, 0, b, 0, c};
+        // PolynomialFunction p = new PolynomialFunction(coefficients);
+        // UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
+        // int maxEval = 20;
+        // double r = solver.solve(maxEval, p, R); // rInit = R
+        // return r;
+        throw new UnsupportedOperationException("fRadInv() not supported yet.");
     }
 
     // -------------------------------------------------------------------------
@@ -87,13 +115,88 @@ public class PtLensDistortionModel extends RadialDistortionModel {
         double xx = x * x;
         double yy = y * y;
         double r2 = xx + yy;
-        double r4 = r2 * r2;
-        double r6 = r2 * r4;
+        double r = Math.sqrt(r2);
+        double r3 = r2 * r;
         return new double[][] {
-                {du * r2, du * r4, du * r6},
-                {dv * r2, dv * r4, dv * r6}};
+                {du * (r3 - 1), du * (r2 - 1), du * (r - 1)},
+                {dv * (r3 - 1), dv * (r2 - 1), dv * (r - 1)}};
     }
 
     // -------------------------------------------------------------------------
+
+    // <distortion model="ptlens" focal="40" a="0.0114400833647736" b="-0.0388117252490693" c="0.0340496771870945"/> Viltrox AF 40mm f/2.5
+    // <distortion model="ptlens" focal="55" a="0.000016" b="-0.0102041" c="0.0105145"/> // Yashica DSB 55mm f/2
+    static void listfRad() {
+        PtLensDistortionModel dist = new PtLensDistortionModel(640, 480);
+        dist = dist.fromParameters(new double[] {0.01144, -0.0102, 0.01051});
+
+        for (int i = 0; i <= 10; i++) {
+            double r = i * 1.0 / 10;
+            double rr = dist.fRad(r);
+            double rr2 = dist.fRad2(r);
+            double D = dist.Dpt(r);
+            System.out.printf("%.5f: fRad(r) = %.8f D(r) = %.8f\n", r, rr, D);
+        }
+    }
+
+    static Pnt2d[] makeModelPoints() {
+        int n = 20;
+        List<Pnt2d> points = new ArrayList<Pnt2d>();
+        for (int i = 0; i <= n; i++) {
+            double r = i * 1.0 / n;
+            double xy = Math.sqrt(0.5 * r);
+            points.add(Pnt2d.from(r, 0));
+            points.add(Pnt2d.from(-r, 0));
+            points.add(Pnt2d.from(0, r));
+            points.add(Pnt2d.from(0, -r));
+            points.add(Pnt2d.from(xy, xy));
+            points.add(Pnt2d.from(-xy, xy));
+            points.add(Pnt2d.from(xy, -xy));
+            points.add(Pnt2d.from(-xy, -xy));
+        }
+        return points.toArray(new Pnt2d[0]);
+    }
+
+
+    static void doDistortionCalibration() {
+        // real distortion model
+        PtLensDistortionModel realDist = new PtLensDistortionModel(640, 480).fromParameters(new double[] {0.01144, -0.0102, 0.01051});
+
+        List<Pnt2d[]> modPntList = new ArrayList<>();
+        List<Pnt2d[]> imgPntList = new ArrayList<>();
+        Pnt2d[] modelPoints = makeModelPoints();
+        modPntList.add(modelPoints);
+
+        ViewTransform view = new ViewTransform(Rotation.IDENTITY, new double[]{0, 0, 1});
+        Camera realCam = new Camera(1, 1, 0, 0, 0, realDist);
+        System.out.println("realCam = " + realCam);
+
+        System.out.println("view = " + view);
+        System.out.println("realCam = " + realCam);
+        System.out.println("N = " + modelPoints.length);
+
+
+        Pnt2d[] imgPnts = new Pnt2d[modelPoints.length];
+        for (int i = 0; i < modelPoints.length; i++) {
+            Pnt2d XY = modelPoints[i];
+            Pnt2d xy = Pnt2d.from(realCam.projectNormalized(view, XY));
+            Pnt2d uv = Pnt2d.from(realCam.project(view, XY));
+            System.out.printf("%s -> %s -> %s\n", XY, xy, uv);
+            imgPnts[i] = uv;
+        }
+        imgPntList.add(imgPnts);
+
+        Camera initCam = new Camera(1, 1, 0, 0, 0, new PtLensDistortionModel(640, 480));
+        DistortionEstimator estimtr = new DistortionEstimator(initCam.getDistortion(), 640, 480);   // stupid!
+        Camera camImproved = estimtr.getEstimate(initCam, List.of(view), modPntList, imgPntList);
+        PrintPrecision.set(8);
+        System.out.println("camImproved = " + camImproved.getDistortion());
+    }
+
+    public static void main(String[] args) {
+        // listfRad();
+        doDistortionCalibration();
+
+    }
 
 }

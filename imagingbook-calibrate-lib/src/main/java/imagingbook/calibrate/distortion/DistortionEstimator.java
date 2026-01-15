@@ -9,6 +9,7 @@ package imagingbook.calibrate.distortion;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
@@ -53,6 +54,8 @@ public class DistortionEstimator {
     public Camera getEstimate(Camera initCam, List<ViewTransform> viewList,
                               List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
 
+        System.out.println("initCam = " + initCam);
+
         ViewTransform[] views = viewList.toArray(new ViewTransform[0]);
         Pnt2d[][] modPts = modPntSet.toArray(new Pnt2d[0][]);
         Pnt2d[][] obsPts = obsPntSet.toArray(new Pnt2d[0][]);
@@ -74,13 +77,16 @@ public class DistortionEstimator {
             ViewTransform vt = views[k];
 
             for (int j = 0; j < modPts[k].length; j++, row+=2) {   // iterate over N observed points
-                final Pnt2d mpt = mod[j];    // model point
+                final Pnt2d XY = mod[j];    // model point
                 // get point positions in the ideal image plane (normalized projection, f=1)
-                double[] xy = initCam.projectNormalized(vt, mpt);
-                double x = xy[0], y = xy[1];
+                double[] xy = initCam.projectNormalized(vt, XY);
+                double x = xy[0];
+                double y = xy[1];
 
                 // project 3D model point j to the sensor image, using view transform i
-                double[] uv = initCam.project(vt, mpt);
+                // double[] uv = initCam.project(vt, XY);
+                // map from normalized projection to sensor coordinates (no distortion!)
+                double[] uv = initCam.mapToSensorPlane(xy);
                 double u = uv[0];
                 double v = uv[1];
                 double du = u - uc;	// distance to estim. sensor projection center
@@ -96,6 +102,8 @@ public class DistortionEstimator {
                 d.setEntry(row + 1, UV.getY() - v);
             }
         }
+        // System.out.println("D = \n" + Matrix.toString(D));
+        // System.out.println("d = \n" + Matrix.toString(d));
 
         // DecompositionSolver solver = new SingularValueDecomposition(D).getSolver();
         DecompositionSolver solver = new QRDecomposition(D).getSolver();

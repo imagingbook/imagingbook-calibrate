@@ -30,10 +30,10 @@ public class ViewTransform {
     public static final int PARAMETER_COUNT = 6;    // 3 rotation + 3 translation parameters
 
     // ----------------------------------------------------------------------------------
-
+    // TODO: cleanup constructors, check/avoid translation tz=0 (model is inside the camera)
     public ViewTransform() {
         this.rotation = Rotation.IDENTITY;
-        this.translation = new double[] {0, 0, 0};
+        this.translation = new double[] {0, 0, 1};
     }
 
     public ViewTransform(double rX, double rY, double rZ, double tX, double tY, double tZ) {
