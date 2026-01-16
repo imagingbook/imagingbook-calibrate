@@ -14,6 +14,7 @@ import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,18 +33,25 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Doma
     }
 
     /**
-     * Calculates and returns the scale factor to be applied to normalized
-     * coordinates to map a unit-radius circle in the normalized image
-     * into the specified sensor image dimensions.
-     * @param cam
-     * @param imgWidth
-     * @param imgHeight
-     * @return
+     * Calculates and returns the scale factor required for the {@code PtLensDistortionModel} type distortion
+     * model. The scale factor {@code s} is calculated such that a circle with radius {@code 1/s} maps to
+     * the largest circle that fits the entire sensor image. It therefore depends on the image dimensions
+     * {@code W} and {@code H} (whichever is smaller) and the intrinsic camera parameters
+     * {@code alpha} and {@code beta} (which define the system's focal length).
+     *
+     * @param cam a {@code Camera} instance with initialized linear part (affine transform)
+     * @param imgWidth image width {@code W}
+     * @param imgHeight image geight {@code H}
+     * @return the scale factor to apply to normalied projection coordinates
      */
     public static double findScale(Camera cam, int imgWidth, int imgHeight) {
-        return 1 / Math.min(
-                imgWidth  / (2 * cam.getAlpha()),
-                imgHeight / (2 * cam.getBeta()));
+//        return 1 / Math.min(
+//                imgWidth  / (2 * cam.getAlpha()),
+//                imgHeight / (2 * cam.getBeta()));
+
+        return Math.max(
+                 cam.getAlpha() / (0.5 * imgWidth),
+                 cam.getBeta() / (0.5 * imgHeight));
     }
 
     /**
@@ -76,18 +84,17 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Doma
         double r2 = r * r;
         double r3 = r2 * r;
         double D = c * (r - 1) + b * (r2 - 1) + a * (r3 - 1);
-        double rr = r * (1 + D) / scale;
-        System.out.printf("frad(r0): r=%.4f r*=%.4f r'=%.4f\n", r0, r, rr);
-        return rr; //r * (1 + D);
+        return r * (1 + D) / scale;
     }
 
     @Deprecated // for testing only!
-    public double fRad2(double r) {
-        r = scale * r;
+    public double fRad2(double r0) {
+        double r = scale * r0;
         double r2 = r * r;
         double r3 = r2 * r;
         double r4 = r2 * r2;
-        return (1 - a - b - c) * r + c * r2 + b * r3 + a * r4;
+        double rr = (1 - a - b - c) * r + c * r2 + b * r3 + a * r4;
+        return rr/ scale;
     }
 
     @Deprecated // for testing only!
@@ -102,10 +109,10 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Doma
     /**
      * Inverse radial distortion function. Finds the original (undistorted) radius r from the distorted radius R, both
      * measured from the center = (0,0) of the ideal projection. Finds r as the root of the polynomial
-     * <pre>p(r) = - R + r + k0 * r^3 + k1 * r^5 + k2 * r^7,</pre>
-     * where R is constant, by using a Newton-Raphson solver.
+     * <pre> r + k0 * r^3 + k1 * r^5 + k2 * r^7 - R = 0,</pre>
+     * where R is known and r is unknown The solution is found by a Newton-Raphson solver.
      * @param R the distorted radius
-     * @return the undistorted radius
+     * @return r, the undistorted radius
      */
     @Override
     public double fRadInv(double R) {
@@ -144,8 +151,9 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Doma
        int W = 640;
        int H = 480;
        // double s = 0.7;
-       double alpha = 800;
+       double alpha = 700; //Math.hypot(0.5 * W, 0.5 * H);
        double beta = alpha;
+       System.out.println("alpha = " + alpha);
        ViewTransform view = new ViewTransform(Rotation.IDENTITY, new double[]{0, 0, 1});
 
        Camera cam0 = new Camera(new double[] { alpha, beta, 0, 0.5 * W, 0.5 * H }, null);
@@ -157,16 +165,18 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Doma
 
        Camera cam1 = new Camera(cam0.getLinearParameters(), dist);
 
-       // r = 1/s is a point on the model's fixed circle
-       Pnt2d XY = Pnt2d.from(0, 1/scale);
-       System.out.println("XY (3D) = " + XY);
+       for (Pnt2d XY : Arrays.asList(Pnt2d.from(0, 1/scale), Pnt2d.from(0, -1/scale))) {
+           // r = 1/s is a point on the model's fixed circle
+           //Pnt2d XY = Pnt2d.from(0, 1/scale);
+           System.out.println("\nXY (3D) = " + XY);
 
-       double[] xy = cam1.projectNormalized(view, XY);
-       System.out.println("xy (normalized) = " + Matrix.toString(xy));
+           double[] xy = cam1.projectNormalized(view, XY);
+           System.out.println("  xy (normalized) = " + Matrix.toString(xy));
 
-       // should project to (W/2, H)
-       double[] uv = cam1.project(view, XY);
-       System.out.println("uv (sensor) = " + Matrix.toString(uv));
+           // should project to (W/2, H)
+           double[] uv = cam1.project(view, XY);
+           System.out.println("  uv (sensor) = " + Matrix.toString(uv));
+       }
 
    }
 
@@ -193,8 +203,9 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Doma
          int W = 640;
          int H = 480;
          double s = 0.7;
-         double alpha = (1/s) * H / 2;
+         double alpha = Math.hypot(0.5 * W, 0.5 * H);
          double beta = alpha;
+         System.out.println("alpha = " + alpha);
 
          // real distortion model
          PtLensDistortionModel realDist = new PtLensDistortionModel(new double[] {0.01144, -0.0102, 0.01051}, s);
