@@ -10,7 +10,6 @@ import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.math3legacy.Rotation;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.math.PrintPrecision;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -40,10 +39,15 @@ public class PtLensDistortionModelTest {
     @Test
     public void estimateParametersTest() {
         double[] abc = {0.01144, -0.0102, 0.01051};     // distortion parameters
+        int W = 640;
+        int H = 480;
+        double s = 0.7;
+        double alpha = (1/s) * H / 2;
+        double beta = alpha;
 
-        PtLensDistortionModel realDist = new PtLensDistortionModel(abc);
+        PtLensDistortionModel realDist = new PtLensDistortionModel(abc, s);
         ViewTransform view = new ViewTransform(Rotation.IDENTITY, new double[]{0, 0, 1});
-        Camera realCam = new Camera(new double[] { 1, 1, 0, 0, 0 }, realDist);
+        Camera realCam = new Camera(new double[] { alpha, beta, 0, 0, 0 }, realDist);
 
         Pnt2d[] modelPoints = makeModelPoints();
         List<Pnt2d[]> modPntList = Collections.singletonList(modelPoints);
@@ -65,8 +69,9 @@ public class PtLensDistortionModelTest {
         imgPntList.add(imgPnts);
 
         // start parameter estimation:
-        Camera initCam = new Camera(new double[] { 1, 1, 0, 0, 0}, null);
-        DistortionModel dm = PtLensDistortionModel.from(initCam, 640, 480);
+        Camera initCam = new Camera(new double[] { alpha, beta, 0, 0, 0}, null);
+        DistortionModel dm = PtLensDistortionModel.from(initCam, W, H);
+        System.out.println("dm.scale = " + dm.getDomainScale());
         DistortionEstimator estimtr = new DistortionEstimator(initCam, dm);
         Camera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);
 

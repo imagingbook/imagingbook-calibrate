@@ -23,35 +23,25 @@ public class PtLensDistortionModel extends RadialDistortionModel {
     private final double a, b, c;
 
     public static PtLensDistortionModel from(Camera cam, int imgWidth, int imgHeight) {
-        return null;
+        double scale = Math.min(imgWidth / (2 * cam.getAlpha()), imgHeight / (2 * cam.getBeta()));
+        System.out.println("scale = " + scale);
+        return new PtLensDistortionModel(new double[] {0, 0, 0}, scale);
     }
-
-//    /**
-//     * Blank constructor. Creates a lens distortion instance with zero parameters.
-//     */
-//    public PtLensDistortionModel(Camera cam, int imgWidth, int imgHeight) {
-//        this(new double[] {0, 0, 0}, imgWidth, imgHeight);
-//    }
 
     /**
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public PtLensDistortionModel(double[]  parameters) {
-        super(parameters, 1.0);
+    public PtLensDistortionModel(double[]  parameters, double scale) {
+        super(parameters, scale);
         this.a = parameters[0];
         this.b = parameters[1];
         this.c = parameters[2];
     }
 
-    // how to do this without the camera? let camera do it!?
-    static double determineScale(int imgWidth, int imgHeight) {
-        return 1.0;
-    }
-
     @Override
     public PtLensDistortionModel fromParameters(double[]  params) {
-        return new PtLensDistortionModel(params);
+        return new PtLensDistortionModel(params, this.domainScale);
     }
 
     // -------------------------------------------------------------------------
@@ -151,7 +141,7 @@ public class PtLensDistortionModel extends RadialDistortionModel {
 
      static void doDistortionCalibration() {
          // real distortion model
-         PtLensDistortionModel realDist = new PtLensDistortionModel(new double[] {0.01144, -0.0102, 0.01051});
+         PtLensDistortionModel realDist = new PtLensDistortionModel(new double[] {0.01144, -0.0102, 0.01051}, 0.7);
 
          List<Pnt2d[]> modPntList = new ArrayList<>();
          List<Pnt2d[]> imgPntList = new ArrayList<>();

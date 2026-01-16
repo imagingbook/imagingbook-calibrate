@@ -16,11 +16,11 @@ import java.util.Locale;
 public abstract class DistortionModel {
 
     final double[] parameters;      // variable number of distortion parameters
-    final double scale;             // assumed geometric scale (relative to normalized projection)
+    final double domainScale;       // assumed geometric scale (relative to normalized projection)
 
-    DistortionModel(double[] parameters, double scale) {
+    DistortionModel(double[] parameters, double domainScale) {
         this.parameters = parameters;
-        this.scale = scale;
+        this.domainScale = domainScale;
     }
 
     DistortionModel(double[] parameters) {
@@ -34,15 +34,6 @@ public abstract class DistortionModel {
      * @return a new distortion model instance of the same type as the original
      */
     public abstract DistortionModel fromParameters(double[]  params);
-
-//    /**
-//     * Creates a copy of this distortion model that is adapted to a scaled
-//     * geometry.
-//     * @param scale the scale factor relative to the one used for this model
-//     * @return a new distortion model instance for a scaled geometry
-//     */
-//    @Deprecated
-//    public abstract DistortionModel getScaled(double scale);
 
     // -------------------------------------------------------------------------------
 
@@ -68,6 +59,15 @@ public abstract class DistortionModel {
             throw new IllegalArgumentException("invalid distortion parameter index: " + i);
         return parameters[i];
     }
+
+    /**
+     * Returns the radial scale applied by this model.
+     * @return
+     */
+    public double getDomainScale() {
+        return this.domainScale;
+    }
+
 
     // -------------------------------------------------------------------------------
 
@@ -104,6 +104,7 @@ public abstract class DistortionModel {
                 this.getClass().getSimpleName(),
                 Matrix.toString(parameters));
     }
+
 
 }
 
