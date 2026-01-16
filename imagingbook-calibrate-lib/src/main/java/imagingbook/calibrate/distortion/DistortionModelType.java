@@ -25,7 +25,6 @@ public enum DistortionModelType {
     Radial3Term((camera, w, h)       -> new Radial3TermDistortionModel()),
     RadialLateral((camera, w, h)     -> new RadialLateralDistortionModel()),
     PtLens(PtLensDistortionModel::from),
-    Radial2TermScaled((camera, w, h) -> new Radial2TermDistortionModelScaled(w, h)),
     ;
 
     // holds each enum's factory instance

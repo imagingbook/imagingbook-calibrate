@@ -56,7 +56,9 @@ public class Camera {
 	 * @param distortion instance of lens distortion model
 	 */
 	public Camera(double[] a, DistortionModel distortion) {
-		// this(makeAffineMatrix(a[0], a[1], a[2], a[3], a[4]), distortion);
+		if (a.length != 5) {
+			throw new IllegalArgumentException("exactly 5 camera parameters required: " + a.length);
+		}
 		this.A = new double[][] {
 				{ a[0], a[2], a[3] },
 				{   0,  a[1], a[4] }};
@@ -230,7 +232,7 @@ public class Camera {
 	 */
 	public double[] getParameters() {
 		double[] lin = getLinearParameters();  // linear parameters
-		double[] dist = distortion.getParameters();
+		double[] dist = distortion.getParameters();		// TODO: fix distortion == null !
 		return Matrix.join(lin, dist);  // concatenate linear/nonlinear coefficients into one vector
 	}
 

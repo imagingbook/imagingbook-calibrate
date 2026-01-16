@@ -15,9 +15,9 @@ public abstract class RadialDistortionModel extends DistortionModel {
         super(parameters);
     }
 
-    RadialDistortionModel(double[]  parameters, double scale) {
-        super(parameters, scale);
-    }
+    // RadialDistortionModel(double[]  parameters, double scale) {
+    //     super(parameters, scale);
+    // }
 
     /**
      * Forward radial distortion function.  Returns the distorted
