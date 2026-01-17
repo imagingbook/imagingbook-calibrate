@@ -252,7 +252,8 @@ public class PtLensDistortionModel extends RadialDistortionModel {
          Camera initCam = new Camera(new double[] { alpha, beta, 0, 0, 0 }, null);
          //DistortionModel dist = PtLensDistortionModel.from(initCam, 640, 480);
          DistortionModel dist = DistortionModelType.PtLens.create(initCam, 640, 480);
-         DistortionEstimator estimtr = new DistortionEstimator(initCam, dist);
+         initCam.setDistortion(dist);
+         DistortionEstimator estimtr = new DistortionEstimator(initCam);
          Camera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);
          PrintPrecision.set(8);
          System.out.println("camImproved = " + camImproved.getDistortion());

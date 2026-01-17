@@ -28,9 +28,27 @@ public class DistortionEstimator {
     private final Camera initCam;
     private final DistortionModel distModel;
 
-    public DistortionEstimator(Camera initCam, DistortionModel distModel) {
-        this.distModel = distModel;
+
+    // public DistortionEstimator(Camera initCam, DistortionModel distModel) {
+    //     if (initCam == null) {
+    //         throw new IllegalArgumentException("initCam is null");
+    //     }
+    //     if (distModel == null) {
+    //         throw new IllegalArgumentException("distModel is null");
+    //     }
+    //     this.distModel = distModel;
+    //     this.initCam = initCam;
+    // }
+
+    public DistortionEstimator(Camera initCam) {
+        if (initCam == null) {
+            throw new IllegalArgumentException("initCam is null");
+        }
+        if (initCam.getDistortion() == null) {
+            throw new IllegalArgumentException("distModel is null");
+        }
         this.initCam = initCam;
+        this.distModel = initCam.getDistortion();
     }
 
     /**
@@ -120,14 +138,5 @@ public class DistortionEstimator {
         // return new Camera(initCam.getAffineMatrix(), distFinal);
         return new Camera(initCam.getLinearParameters(), distFinal);
     }
-
-    // private static int getTotalPointCount(Pnt2d[][] modPts) {
-    //     int total = 0;
-    //     for (Pnt2d[] p : modPts) {
-    //         total += p.length;
-    //     }
-    //     return total;
-    // }
-
 
 }
