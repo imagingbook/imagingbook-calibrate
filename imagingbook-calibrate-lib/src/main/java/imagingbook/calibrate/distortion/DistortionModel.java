@@ -60,13 +60,15 @@ public abstract class DistortionModel {
         return parameters[i];
     }
 
-    // /**
-    //  * Returns the radial scale applied by this model.
-    //  * @return
-    //  */
-    // public double getDomainScale() {
-    //     return this.domainScale;
-    // }
+    /**
+     * Returns the scale factor applied to normalized projection coordinates for performing
+     * the distortion transformation. This method usually returns 1, except for specific
+     * distortion models, such as {@link PtLensDistortionModel}, which must override this method.
+     * @return the scale factor for the distortion mapping
+     */
+    public double getScale() {
+        return 1.0;
+    }
 
 
     // -------------------------------------------------------------------------------

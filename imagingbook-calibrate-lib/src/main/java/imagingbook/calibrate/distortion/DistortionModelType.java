@@ -20,11 +20,12 @@ import java.util.function.Function;
  * }</pre>
  */
 public enum DistortionModelType {
-    NullDistortion((camera, w, h)    -> new NullDistortionModel()),
-    Radial2Term((camera, w, h)       -> new Radial2TermDistortionModel()),
-    Radial3Term((camera, w, h)       -> new Radial3TermDistortionModel()),
-    RadialLateral((camera, w, h)     -> new RadialLateralDistortionModel()),
-    PtLens(PtLensDistortionModel::from),
+    NullDistortion((camera, w, h) -> new NullDistortionModel()),
+    Radial2Term((camera, w, h)    -> new Radial2TermDistortionModel()),
+    Radial3Term((camera, w, h)    -> new Radial3TermDistortionModel()),
+    RadialLateral((camera, w, h)  -> new RadialLateralDistortionModel()),
+    PtLens((camera, w, h)         -> new PtLensDistortionModel(null,
+                                                PtLensDistortionModel.findScale(camera, w, h))),
     ;
 
     // holds each enum's factory instance

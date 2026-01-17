@@ -10,17 +10,33 @@ import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.math3legacy.Rotation;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class PtLensDistortionModelTest {
 
     @Test
-    public void fromParametersTest() {
+    public void constructorTest1() {
+        double[] abc = {0.01144, -0.0102, 0.01051};
+        double scale = 2.7;
+        PtLensDistortionModel dist1 = new PtLensDistortionModel(abc, scale);
+        assertArrayEquals(abc, dist1.getParameters(), 1e-6);
+        assertEquals(abc.length, dist1.getParameterCount());
+        assertEquals(scale, dist1.getScale(), 1e-6);
+
+        PtLensDistortionModel dist2 = dist1.fromParameters(dist1.getParameters());
+        assertArrayEquals(abc, dist2.getParameters(), 1e-6);
+        assertEquals(abc.length, dist2.getParameterCount());
+        assertEquals(scale, dist2.getScale(), 1e-6);
     }
 
     @Test
@@ -35,7 +51,40 @@ public class PtLensDistortionModelTest {
     public void getDMatrixRowsUVTest() {
     }
 
-    @Test
+
+    @Test   // checks if circle with r=1/s in normalized space fits exactly into image
+    public void scaleCalculationTest() {
+        double[] abc = {0.01144, -0.0102, 0.01051};     // distortion parameters (not relevant)
+        int W = 640;
+        int H = 480;
+        double alpha = 700;
+        double beta = alpha;
+
+        Camera cam = new Camera(new double[] { alpha, beta, 0, 0.5 * W, 0.5 * H }, null);
+        cam.setDistortion(DistortionModelType.PtLens.create(cam, W, H));
+
+        double scale = cam.getDistortion().getScale();       // = 2.916666
+        assertEquals(beta / (0.5 * H), scale, 1e-6);
+
+        {   // point exactly at bottom of image
+            Pnt2d xy = Pnt2d.from(0, 1/scale);        // normalized point with r = 1/scale
+            double[] xyd = cam.getDistortion().warp(xy.toDoubleArray());   // warped point (same)
+            assertArrayEquals(xy.toDoubleArray(), xyd, 1e-6);
+            // should project to (W/2, H)
+            double[] uv = cam.mapToSensorPlane(xyd);
+            assertArrayEquals(new double[] {0.5 * W, H}, uv, 1e-6); // {W/2, H}
+        }
+        {   // point exactly at top of image
+            Pnt2d xy = Pnt2d.from(0, -1/scale);         // normalized point with r = 1/scale
+            double[] xyd = cam.getDistortion().warp(xy.toDoubleArray());   // warped point (same)
+            assertArrayEquals(xy.toDoubleArray(), xyd, 1e-6);
+            // should project to (W/2, 0)
+            double[] uv = cam.mapToSensorPlane(xyd);
+            assertArrayEquals(new double[] {0.5 * W, 0}, uv, 1e-6); // {W/2, 0}
+        }
+    }
+
+    @Test       // OBSOLETE!
     public void estimateParametersTest() {
         double[] abc = {0.01144, -0.0102, 0.01051};     // distortion parameters
         int W = 640;
@@ -69,7 +118,9 @@ public class PtLensDistortionModelTest {
 
         // start parameter estimation:
         Camera initCam = new Camera(new double[] { alpha, beta, 0, 0, 0}, null);
-        PtLensDistortionModel dm = PtLensDistortionModel.from(initCam, W, H);
+        // initCam.setDistortion(DistortionModelType.PtLens.create(initCam, W, H));
+        DistortionModel dm = DistortionModelType.PtLens.create(initCam, W, H);
+
         System.out.println("dm.scale = " + dm.getScale());
         DistortionEstimator estimtr = new DistortionEstimator(initCam, dm);
         Camera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);

@@ -20,12 +20,12 @@ import java.util.List;
 /**
  * PtLens distortion model, as used by PanoTools, Hugin, lensfun etc.
  */
-public class PtLensDistortionModel extends RadialDistortionModel implements DomainScaling {
+public class PtLensDistortionModel extends RadialDistortionModel {
 
     private final double a, b, c;
     private final double scale;
 
-
+    @Deprecated
     public static PtLensDistortionModel from(Camera cam, int imgWidth, int imgHeight) {
         double scale = findScale(cam, imgWidth, imgHeight);
         // System.out.println("scale = " + scale);
@@ -59,10 +59,11 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Doma
      * @param parameters vector of distortion parameters
      */
     public PtLensDistortionModel(double[] parameters, double scale) {
-        super(parameters);
-        this.a = parameters[0];
-        this.b = parameters[1];
-        this.c = parameters[2];
+        super((parameters == null) ? new double[3] : parameters);
+        double[] params = this.getParameters();
+        this.a = params[0];
+        this.b = params[1];
+        this.c = params[2];
         this.scale = scale;
     }
 
@@ -146,8 +147,8 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Doma
     // <distortion model="ptlens" focal="40" a="0.0114400833647736" b="-0.0388117252490693" c="0.0340496771870945"/> Viltrox AF 40mm f/2.5
     // <distortion model="ptlens" focal="55" a="0.000016" b="-0.0102041" c="0.0105145"/> // Yashica DSB 55mm f/2
    static void listfRad() {
-       //double[] abc = {0.01144, -0.0102, 0.01051};     // distortion parameters
-       double[] abc = {0,0,0};
+       double[] abc = {0.01144, -0.0102, 0.01051};     // distortion parameters
+       // double[] abc = {0,0,0};
        int W = 640;
        int H = 480;
        // double s = 0.7;
@@ -165,18 +166,32 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Doma
 
        Camera cam1 = new Camera(cam0.getLinearParameters(), dist);
 
-       for (Pnt2d XY : Arrays.asList(Pnt2d.from(0, 1/scale), Pnt2d.from(0, -1/scale))) {
+       // points xy in normalized projection space
+       for (Pnt2d xy : Arrays.asList(Pnt2d.from(0, 1/scale), Pnt2d.from(0, -1/scale))) {
            // r = 1/s is a point on the model's fixed circle
            //Pnt2d XY = Pnt2d.from(0, 1/scale);
-           System.out.println("\nXY (3D) = " + XY);
+           System.out.println("\nxy (normalized) = " + xy);
 
-           double[] xy = cam1.projectNormalized(view, XY);
-           System.out.println("  xy (normalized) = " + Matrix.toString(xy));
+           double[] xyd = cam1.getDistortion().warp(xy.toDoubleArray());
+           System.out.println("  xy (warped) = " + Matrix.toString(xyd));
 
            // should project to (W/2, H)
-           double[] uv = cam1.project(view, XY);
+           double[] uv = cam1.mapToSensorPlane(xyd);
            System.out.println("  uv (sensor) = " + Matrix.toString(uv));
        }
+
+       // for (Pnt2d XY : Arrays.asList(Pnt2d.from(0, 1/scale), Pnt2d.from(0, -1/scale))) {
+       //     // r = 1/s is a point on the model's fixed circle
+       //     //Pnt2d XY = Pnt2d.from(0, 1/scale);
+       //     System.out.println("\nXY (3D) = " + XY);
+       //
+       //     double[] xy = cam1.projectNormalized(view, XY);
+       //     System.out.println("  xy (normalized) = " + Matrix.toString(xy));
+       //
+       //     // should project to (W/2, H)
+       //     double[] uv = cam1.project(view, XY);
+       //     System.out.println("  uv (sensor) = " + Matrix.toString(uv));
+       // }
 
    }
 
