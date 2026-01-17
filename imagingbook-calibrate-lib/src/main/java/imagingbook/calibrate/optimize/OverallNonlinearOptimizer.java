@@ -57,7 +57,6 @@ public class OverallNonlinearOptimizer {
     private final double[] parameterScales;
 
     private final double[][] J;
-    private final double[] weights;     // weights for observations (rows)
     private final MultivariateVectorFunction valueFun;
     private final MultivariateMatrixFunction jacobianFun;
     private LeastSquaresOptimizer.Optimum result;
@@ -73,10 +72,9 @@ public class OverallNonlinearOptimizer {
         this.M = obsPntSet.size();
         this.N = Arrays.stream(modPts).mapToInt(row -> row.length).sum(); //getTotalPointCount();
         this.initialParameters = makeInitialParameters();
-        this.parameterScales = null;                 // TODO: set up scales for parameters
+        this.parameterScales = makeParameterScales();
         this.K = initialParameters.length;
         this.J = new double[2 * N + 1][K];  // extra row for penalty
-        this.weights = makeWeightMatrix();
         this.valueFun = getValueFunction();
         this.jacobianFun = getJacobianFunction();
     }
@@ -85,6 +83,7 @@ public class OverallNonlinearOptimizer {
 
     private MultivariateVectorFunction getValueFunction() {
         return params -> {
+            //double[] params = unscaleParameters(paramsS, parameterScales);
             System.out.println("OverallNonlinearOptimizer: p = " + Matrix.toString(params));
             double[] a = Arrays.copyOfRange(params, 0, camParCount);
             Camera cam = initCam.fromParameters(a);
@@ -110,7 +109,7 @@ public class OverallNonlinearOptimizer {
 
     private MultivariateMatrixFunction getJacobianFunction() {
         return params -> {
-            //int K = params.length;
+            // double[] params = unscaleParameters(paramsS, parameterScales);
             double[] uvRef = valueFun.value(params);      // values from undisturbed parameters
             double[] a = Arrays.copyOfRange(params, 0, camParCount);    // camera parameters
             Camera camOrig = initCam.fromParameters(a);
@@ -163,6 +162,7 @@ public class OverallNonlinearOptimizer {
             }
             J[2 * N][2] = 1.0;  // Jacobian for parameter gamma
 
+            System.out.println("J condition No = " + Matrix.getConditionNumber(J));
             return J;
         };
     }
@@ -183,6 +183,22 @@ public class OverallNonlinearOptimizer {
         return tmp - x;
     }
 
+    private double[] scaleParameters(double[] unscaledParams, double[] scales) {
+         double[] sp = new double[unscaledParams.length];
+         for (int i = 0; i < unscaledParams.length; i++) {
+             sp[i] = unscaledParams[i] * scales[i];
+         }
+         return sp;
+    }
+
+    private double[] unscaleParameters(double[] scaledParams, double[] scales) {
+        double[] usp = new double[scaledParams.length];
+        for (int i = 0; i < scaledParams.length; i++) {
+            usp[i] = scaledParams[i] / scales[i];
+        }
+        return usp;
+    }
+
     // ---------------------------------------------------------------------------------------
 
     /**
@@ -190,24 +206,20 @@ public class OverallNonlinearOptimizer {
      * parameters.
      */
     public void optimize() {
-        RealVector start = new ArrayRealVector(initialParameters, false);
-        System.out.println("OverallNonlinearOptimizer: start = " + Matrix.toString(start));
-        RealVector observed = makeObservedVector();
-        System.out.println("OverallNonlinearOptimizer: observed size = " + observed.getDimension() + " last item = " + observed.getEntry(2 * N));
+        // RealVector start = new ArrayRealVector(initialParameters, false);
+        // System.out.println("OverallNonlinearOptimizer: start = " + Matrix.toString(start));
+        double[] observed = makeObservedVector();
+        // System.out.println("OverallNonlinearOptimizer: observed size = " + observed.getDimension() + " last item = " + observed.getEntry(2 * N));
 
         MultivariateJacobianFunction model = LeastSquaresFactory.model(valueFun, jacobianFun);
         System.out.println("OverallNonlinearOptimizer: value size = " + valueFun.value(initialParameters).length);
         System.out.println("OverallNonlinearOptimizer: jacob size = " + jacobianFun.value(initialParameters).length);
 
-        weights[0] = 1;
-        weights[1] = 1;
-
-
         LeastSquaresProblem problem = new LeastSquaresBuilder()
                 // .weight(new DiagonalMatrix(weights, false))
                 .target(observed)
                 .model(model)
-                .start(start)
+                .start(initialParameters)
                 .maxEvaluations(maxEvaluations)
                 .maxIterations(maxIterations)
                 .build();
@@ -241,19 +253,39 @@ public class OverallNonlinearOptimizer {
 
         // insert M view parameters
         int start = cp.length;
-        for (int i = 0; i < M; i++) {
-            double[] w = initViews[i].getParameters();
+        for (int k = 0; k < M; k++) {
+            double[] w = initViews[k].getParameters();
             System.arraycopy(w, 0, p, start, w.length);
             start = start + w.length;
         }
         return p;
     }
 
+    private double[] makeParameterScales() {
+        double[] cp = initCam.getParameters();
+        double[] scales = new double[cp.length + M * viewParCount];
+        Arrays.fill(scales, 1.0);
+        scales[0] = 0.01; // alpha
+        scales[1] = 0.01; // beta
+        scales[2] = 50; // gamma
+        scales[3] = 0.01;   // uc
+        scales[4] = 0.01;   // vc
+
+        // insert M view parameters
+        int start = cp.length;
+        for (int k = 0; k < M; k++) {
+            double[] vp = initViews[k].getParameters();
+           // TODO!!
+            start += vp.length;
+        }
+        return scales;
+    }
+
     /**
      * Stack the observed image coordinates of the calibration pattern points into a vector.
      * @return the observed vector
      */
-    RealVector makeObservedVector() {
+    double[] makeObservedVector() {
         double[] obs = new double[2 * N + 1];  // one extra cell = 0!
         for (int k = 0, r = 0; k < M; k++) {
             for (int i = 0; i < obsPts[k].length; i++, r++) {
@@ -262,7 +294,7 @@ public class OverallNonlinearOptimizer {
             }
         }
         // obs = [u_{0,0}, v_{0,0}, u_{0,1}, v_{0,1}, ..., u_{M-1,N-1}, v_{M-1,N-1}]
-        return new ArrayRealVector(obs);
+        return obs;
     }
 
     private double[] makeWeightMatrix() {
