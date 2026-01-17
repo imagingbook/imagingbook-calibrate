@@ -34,7 +34,7 @@ public class Camera {
 	 * |     0   beta  vc |</pre>
 	 */
 	private final double[][] A;		// 2 x 3 2D affine transformation matrix
-	private final DistortionModel distortion;
+	private DistortionModel distortion;
 
 //	/**
 //	 * Basic constructor.
@@ -127,7 +127,17 @@ public class Camera {
 		return new Camera(linParams, this.distortion.fromParameters(distParams));
 	}
 
+	// ---------------------------------------------------------------------------------------------
 
+	/**
+	 * Sets or replaces the distortion model used by this camera.
+	 * @param distortion the new distortion model
+	 */
+    public void setDistortion(DistortionModel distortion) {
+		this.distortion = distortion;
+	}
+
+	// ---------------------------------------------------------------------------------------------
 
 	/**
 	 * Projects the X/Y world point (in the Z = 0 plane) to image coordinates under the given camera view (extrinsic
