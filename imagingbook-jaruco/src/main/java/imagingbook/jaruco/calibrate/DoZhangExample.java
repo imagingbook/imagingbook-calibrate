@@ -60,7 +60,7 @@ public class DoZhangExample {
                 IJ.log("View " + k + ":\n" + view.toString());
             }
 
-            IJ.log(String.format("\nSquared projection error: %.3f\n", calibration.getTotalReprojectionError()));
+            IJ.log(String.format("\nProjection error: %.3f\n", Math.sqrt(calibration.getTotalReprojectionError())));
         }
     }
 }

@@ -15,9 +15,7 @@ import imagingbook.calibrate.homography.HomographyEstimatorSimple;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimatorConstrained;
-import imagingbook.calibrate.optimize.NonlinearOptimizer;
-import imagingbook.calibrate.optimize.NonlinearOptimizerAnalytic;
-import imagingbook.calibrate.optimize.NonlinearOptimizerNumeric;
+import imagingbook.calibrate.optimize.OverallNonlinearOptimizer;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
@@ -172,10 +170,16 @@ public class Calibration {
 		// Step 5: Refine all parameters by overall non-linear optimization
 		debug("Step 5: Refine all parameters by non-linear optimization");
         debug("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
-		NonlinearOptimizer optim = (params.useNumericJacobian) ?
-				new NonlinearOptimizerNumeric(improvedCam, initViews, modelPntSet, imagePntSet) :
-				new NonlinearOptimizerAnalytic(improvedCam, initViews, modelPntSet, imagePntSet);
+		// NonlinearOptimizer optim = (params.useNumericJacobian) ?
+		// 		new NonlinearOptimizerNumeric(improvedCam, initViews, modelPntSet, imagePntSet) :
+		// 		new NonlinearOptimizerAnalytic(improvedCam, initViews, modelPntSet, imagePntSet);
+		OverallNonlinearOptimizer optim =
+				new OverallNonlinearOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
 		optim.optimize();
+		System.out.println("optimize: iterations = " + optim.getIterations());
+		System.out.println("optimize: evaluations = " + optim.getEvaluations());
+		System.out.println("optimize: |residuals| = " + optim.getResiduals().getNorm());
+
 		finalCam = optim.getFinalCamera();
         debug("final camera = " + finalCam);
 		finalViews = optim.getFinalViews();
