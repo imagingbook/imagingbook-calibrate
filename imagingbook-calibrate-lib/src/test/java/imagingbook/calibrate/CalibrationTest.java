@@ -64,7 +64,7 @@ public class CalibrationTest {
     // public void calibrateZhangCam3Test() {  // using 3-term distortion model
     //     // Set up the calibration ------------------------------------------
     //     Calibration.Parameters params = new Calibration.Parameters();
-    //     params.distortionModel = Radial3TermDistortionModel.INSTANCE;
+    //     params.distortionModel = Radial3TermDistortion.INSTANCE;
     //     params.normalizePoints = true;
     //     params.useNumericJacobian = true;
     //     params.debug = false;
@@ -97,7 +97,7 @@ public class CalibrationTest {
     // public void calibrateRadialLateralTest() {  // using radial+lateral distortion model
     //     // Set up the calibration ------------------------------------------
     //     Calibration.Parameters params = new Calibration.Parameters();
-    //     params.distortionModel = RadialLateralDistortionModel.INSTANCE;
+    //     params.distortionModel = RadialLateralDistortion.INSTANCE;
     //     params.normalizePoints = true;
     //     params.useNumericJacobian = true;
     //     params.debug = false;

@@ -10,14 +10,14 @@ import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
 
-public class Radial3TermDistortionModel extends RadialDistortionModel {
+public class Radial3TermDistortion extends RadialDistortion {
 
     private final double k0, k1, k2;
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
-    public Radial3TermDistortionModel() {
+    public Radial3TermDistortion() {
         this(new double[] {0, 0, 0});
     }
 
@@ -25,7 +25,7 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public Radial3TermDistortionModel(double[] parameters) {
+    public Radial3TermDistortion(double[] parameters) {
         super(parameters);
         if (parameters.length != 3) {
             throw new IllegalArgumentException("expected 3 parameters but received " +
@@ -37,10 +37,10 @@ public class Radial3TermDistortionModel extends RadialDistortionModel {
     }
 
     @Override
-    public Radial3TermDistortionModel fromParameters(double[] params) {
+    public Radial3TermDistortion fromParameters(double[] params) {
         return (params == null) ?
-                new Radial3TermDistortionModel() :
-                new Radial3TermDistortionModel(params);
+                new Radial3TermDistortion() :
+                new Radial3TermDistortion(params);
     }
 
     // -------------------------------------------------------------------------

@@ -9,7 +9,6 @@ package imagingbook.calibrate.distortion;
 import imagingbook.calibrate.intrinsics.Camera;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -20,12 +19,12 @@ import java.util.function.Function;
  * }</pre>
  */
 public enum DistortionModelType {
-    NullDistortion((camera, w, h) -> new NullDistortionModel()),
-    Radial2Term((camera, w, h)    -> new Radial2TermDistortionModel()),
-    Radial3Term((camera, w, h)    -> new Radial3TermDistortionModel()),
-    RadialLateral((camera, w, h)  -> new RadialLateralDistortionModel()),
-    PtLens((camera, w, h)         -> new PtLensDistortionModel(null,
-                                                PtLensDistortionModel.findScale(camera, w, h))),
+    NullDistortion((camera, w, h) -> new NullDistortion()),
+    Radial2Term((camera, w, h)    -> new Radial2TermDistortion()),
+    Radial3Term((camera, w, h)    -> new Radial3TermDistortion()),
+    RadialLateral((camera, w, h)  -> new RadialLateralDistortion()),
+    PtLens((camera, w, h)         -> new PtLensDistortion(null,
+                                                PtLensDistortion.findScale(camera, w, h))),
     ;
 
     // holds each enum's factory instance

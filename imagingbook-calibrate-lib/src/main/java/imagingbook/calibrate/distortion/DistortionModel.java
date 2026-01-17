@@ -63,7 +63,7 @@ public abstract class DistortionModel {
     /**
      * Returns the scale factor applied to normalized projection coordinates for performing
      * the distortion transformation. This method usually returns 1, except for specific
-     * distortion models, such as {@link PtLensDistortionModel}, which must override this method.
+     * distortion models, such as {@link PtLensDistortion}, which must override this method.
      * @return the scale factor for the distortion mapping
      */
     public double getScale() {

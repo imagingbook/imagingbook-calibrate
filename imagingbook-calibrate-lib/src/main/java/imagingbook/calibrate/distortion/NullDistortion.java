@@ -9,15 +9,15 @@ package imagingbook.calibrate.distortion;
 /**
  * Dummy distortion model that performs no distortion. Mainly for testing.
  */
-public class NullDistortionModel extends DistortionModel {
+public class NullDistortion extends DistortionModel {
 
-    public NullDistortionModel() {
+    public NullDistortion() {
         super(new double[0]);
     }
 
     @Override
     public DistortionModel fromParameters(double[] params) {
-        return new NullDistortionModel();
+        return new NullDistortion();
     }
 
     @Override

@@ -7,7 +7,7 @@
 package imagingbook.calibrate.zhang.data;
 
 import imagingbook.calibrate.distortion.DistortionModel;
-import imagingbook.calibrate.distortion.Radial2TermDistortionModel;
+import imagingbook.calibrate.distortion.Radial2TermDistortion;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -60,7 +60,7 @@ public abstract class ZhangData {
 		// 		832.5,   832.53, 0.204494, 	// alpha, beta, gamma, (!)
 		// 		303.959, 206.585,			// u_c, v_c
 		// 		-0.228601, 0.190353);		// k1, k2
-        DistortionModel distortion = new Radial2TermDistortionModel(new double[] {-0.228601, 0.190353});
+        DistortionModel distortion = new Radial2TermDistortion(new double[] {-0.228601, 0.190353});
         return new Camera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585}, distortion);
 	}
 		

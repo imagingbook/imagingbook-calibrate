@@ -6,9 +6,9 @@
  ******************************************************************************/
 package imagingbook.calibrate.zhang.data;
 
+import imagingbook.calibrate.distortion.Radial2TermDistortion;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
-import imagingbook.calibrate.distortion.Radial2TermDistortionModel;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.junit.Test;
 
@@ -73,7 +73,7 @@ public class ZhangDataTest {
         assertNotNull(cam);
 
         assertNotNull(cam.getDistortion());
-        assertTrue(cam.getDistortion() instanceof Radial2TermDistortionModel);
+        assertTrue(cam.getDistortion() instanceof Radial2TermDistortion);
 
         assertNotNull(cam.getParameters());
         assertEquals(cam.getParameterCount(), cam.getParameters().length);

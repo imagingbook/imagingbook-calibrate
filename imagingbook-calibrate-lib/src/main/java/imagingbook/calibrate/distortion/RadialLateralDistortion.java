@@ -18,14 +18,14 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobian
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 
-public class RadialLateralDistortionModel extends DistortionModel {
+public class RadialLateralDistortion extends DistortionModel {
 
     private final double k0, k1, k2, p1, p2;
 
     /**
      * Blank constructor. Creates a lens distortion instance with zero parameters.
      */
-    public RadialLateralDistortionModel() {
+    public RadialLateralDistortion() {
         this(new double[] {0, 0, 0, 0, 0});
     }
 
@@ -33,7 +33,7 @@ public class RadialLateralDistortionModel extends DistortionModel {
      * Constructor. Creates a lens distortion instance with the specified parameters.
      * @param parameters vector of distortion parameters
      */
-    public RadialLateralDistortionModel(double[] parameters) {
+    public RadialLateralDistortion(double[] parameters) {
         super(parameters);
         if (parameters.length != 5) {
             throw new IllegalArgumentException("expected 5 parameters but received " +
@@ -47,10 +47,10 @@ public class RadialLateralDistortionModel extends DistortionModel {
     }
 
     @Override
-    public RadialLateralDistortionModel fromParameters(double[] params) {
+    public RadialLateralDistortion fromParameters(double[] params) {
         return (params == null) ?
-                new RadialLateralDistortionModel() :
-                new RadialLateralDistortionModel(params);
+                new RadialLateralDistortion() :
+                new RadialLateralDistortion(params);
     }
 
     // ------------------------------------------------------------------------

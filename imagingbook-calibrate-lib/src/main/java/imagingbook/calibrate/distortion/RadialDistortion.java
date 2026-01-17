@@ -9,13 +9,13 @@ package imagingbook.calibrate.distortion;
 /**
  * Lens model with radial-only distortion.
  */
-public abstract class RadialDistortionModel extends DistortionModel {
+public abstract class RadialDistortion extends DistortionModel {
 
-    RadialDistortionModel(double[]  parameters) {
+    RadialDistortion(double[]  parameters) {
         super(parameters);
     }
 
-    // RadialDistortionModel(double[]  parameters, double scale) {
+    // RadialDistortion(double[]  parameters, double scale) {
     //     super(parameters, scale);
     // }
 

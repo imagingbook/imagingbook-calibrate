@@ -32,7 +32,7 @@ public class LensDistortionModelEstimatorTest {
 
     // @Test
     // public void getEstimateRadial2TermTest() {
-    //     Camera cam1 = new Camera(camIntrinsics, Radial2TermDistortionModel.INSTANCE);
+    //     Camera cam1 = new Camera(camIntrinsics, Radial2TermDistortion.INSTANCE);
     //     DistortionModel dist = DistortionModel.from(cam1, views, modelPtsList, obsPtsList);
     //     assertNotNull(dist);
     //     // System.out.println(Arrays.toString(dist.getParameters()));
@@ -41,7 +41,7 @@ public class LensDistortionModelEstimatorTest {
 
     // @Test
     // public void getEstimateRadial3TermTest() {
-    //     Camera cam1 = new Camera(camIntrinsics, Radial3TermDistortionModel.INSTANCE);
+    //     Camera cam1 = new Camera(camIntrinsics, Radial3TermDistortion.INSTANCE);
     //     DistortionModel dist = DistortionModel.from(cam1, views, modelPtsList, obsPtsList);
     //     assertNotNull(dist);
     //     // System.out.println(Arrays.toString(dist.getParameters()));

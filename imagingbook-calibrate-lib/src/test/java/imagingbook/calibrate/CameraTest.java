@@ -7,7 +7,7 @@
 package imagingbook.calibrate;
 
 import imagingbook.calibrate.distortion.DistortionModel;
-import imagingbook.calibrate.distortion.Radial2TermDistortionModel;
+import imagingbook.calibrate.distortion.Radial2TermDistortion;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
@@ -23,7 +23,7 @@ public class CameraTest {
     static final double tol = 1e-6;
     static final Camera cam1 =
             new Camera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585 },
-            new Radial2TermDistortionModel(new double[] {-0.228601, 0.190353}));
+            new Radial2TermDistortion(new double[] {-0.228601, 0.190353}));
     static final ViewTransform view = new ViewTransform();
 
     @Test
@@ -31,7 +31,7 @@ public class CameraTest {
         double alpha = 810, beta = 815, gamma = 0.2;
         double uc = 300, vc = 200;
         Camera cam = new Camera(new double[] {alpha, beta, gamma, uc, vc},
-                                new Radial2TermDistortionModel());
+                                new Radial2TermDistortion());
         // ----------------------------------------------------
         assertEquals(alpha, cam.getAlpha(), tol);
         assertEquals(beta, cam.getBeta(), tol);
@@ -78,7 +78,7 @@ public class CameraTest {
     public void getDistortion() {
         DistortionModel dist = cam1.getDistortion();
         assertNotNull(dist);
-        assertTrue(dist instanceof Radial2TermDistortionModel);
+        assertTrue(dist instanceof Radial2TermDistortion);
     }
 
     @Test

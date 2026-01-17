@@ -8,9 +8,7 @@ package imagingbook.calibrate.distortion;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
-import imagingbook.calibrate.math3legacy.Rotation;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.math.PrintPrecision;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -20,7 +18,7 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-public class PtLensDistortionModelTest {
+public class PtLensDistortionTest {
 
     static final double tol = 1e-6;
 
@@ -31,14 +29,14 @@ public class PtLensDistortionModelTest {
         double scale = 2.7;
 
         // see if coefficients and scale gets set up right
-        PtLensDistortionModel dist1 = new PtLensDistortionModel(abc1, scale);
+        PtLensDistortion dist1 = new PtLensDistortion(abc1, scale);
         assertArrayEquals(abc1, dist1.getParameters(), tol);
         assertEquals(abc1.length, dist1.getParameterCount());
         assertEquals(scale, dist1.getScale(), tol);
 
         // see if new coefficients are accepted and existing scale is copied
         double[] abc2= {-0.2, 0.01, 0.0};
-        PtLensDistortionModel dist2 = dist1.fromParameters(abc2);
+        PtLensDistortion dist2 = dist1.fromParameters(abc2);
         assertArrayEquals(abc2, dist2.getParameters(), tol);
         assertEquals(abc2.length, dist2.getParameterCount());
         assertEquals(scale, dist2.getScale(), tol);
@@ -48,7 +46,7 @@ public class PtLensDistortionModelTest {
     public void fRadTestZero() {
         double[] abc = {0.01144, -0.0102, 0.01051};
         double scale = 3.1;
-        PtLensDistortionModel dm = new PtLensDistortionModel(abc, scale);
+        PtLensDistortion dm = new PtLensDistortion(abc, scale);
         double r0 = dm.fRad(0.0);
         assertEquals(0.0, r0, tol);
     }
@@ -57,7 +55,7 @@ public class PtLensDistortionModelTest {
     public void fRadTest() {
         double[] abc = {0.01144, -0.0102, 0.01051};
         double scale = 3.1;
-        PtLensDistortionModel dm = new PtLensDistortionModel(abc, scale);
+        PtLensDistortion dm = new PtLensDistortion(abc, scale);
         double r1 = 0.35;
         double r2 = dm.fRad(r1);
         assertEquals(0.35079024490, r2, tol);
@@ -69,7 +67,7 @@ public class PtLensDistortionModelTest {
     public void fRadInvTest() {
         double[] abc = {0.01144, -0.0102, 0.01051};
         double scale = 3.1;
-        PtLensDistortionModel dm = new PtLensDistortionModel(abc, scale);
+        PtLensDistortion dm = new PtLensDistortion(abc, scale);
         int n = 20;
         double range = 2.0;
         for (int i = 0; i < n; i++) {
@@ -85,7 +83,7 @@ public class PtLensDistortionModelTest {
     public void fRadFixedPointRadiusTest() {
         double[] abc = {0.01144, -0.0102, 0.01051}; // not relevant
         double scale = 2.7;
-        PtLensDistortionModel dist = new PtLensDistortionModel(abc, scale);
+        PtLensDistortion dist = new PtLensDistortion(abc, scale);
         int n = 100;
         double r = 1 / scale;
         for (int i = 0; i < n; i++) {
@@ -145,13 +143,13 @@ public class PtLensDistortionModelTest {
         double uc = 0.5 * W;
         double vc = 0.5 * H;
 
-        PtLensDistortionModel nullDist = new PtLensDistortionModel(null, scale);
+        PtLensDistortion nullDist = new PtLensDistortion(null, scale);
         // non-distorting camera (just for comparison):
         Camera nullCam = new Camera(new double[] { alpha, beta, 0, uc, vc }, nullDist);
 
         // set up the actual camera:
         ViewTransform view = new ViewTransform();           // identity view
-        PtLensDistortionModel realDist = new PtLensDistortionModel(abc, scale);
+        PtLensDistortion realDist = new PtLensDistortion(abc, scale);
         Camera realCam = new Camera(new double[] { alpha, beta, 0, uc, vc }, realDist);
 
         Pnt2d[] modelPoints = makeModelPoints(20);

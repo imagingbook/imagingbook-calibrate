@@ -62,7 +62,7 @@ public class Camera {
 		this.A = new double[][] {
 				{ a[0], a[2], a[3] },
 				{   0,  a[1], a[4] }};
-		this.distortion = distortion; // ? new Radial2TermDistortionModel(0, 0) : new Radial2TermDistortionModel(K);
+		this.distortion = distortion; // ? new Radial2TermDistortion(0, 0) : new Radial2TermDistortion(K);
 	}
 
 //	/**
@@ -86,7 +86,7 @@ public class Camera {
 //	 * @param distortion a lens distortion model instance
 //	 */
 //	public Camera(RealMatrix A, DistortionModel distortion) {
-//		this.distortion = distortion; // ? new Radial2TermDistortionModel(0, 0) : new Radial2TermDistortionModel(K);
+//		this.distortion = distortion; // ? new Radial2TermDistortion(0, 0) : new Radial2TermDistortion(K);
 //		this.A = A.getSubMatrix(0, 1, 0, 2).getData();
 //	}
 
