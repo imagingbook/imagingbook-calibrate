@@ -10,12 +10,10 @@ import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.math3legacy.Rotation;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,21 +24,38 @@ public class PtLensDistortionModelTest {
 
     @Test
     public void constructorTest1() {
-        double[] abc = {0.01144, -0.0102, 0.01051};
+        double[] abc1= {0.01144, -0.0102, 0.01051};
         double scale = 2.7;
-        PtLensDistortionModel dist1 = new PtLensDistortionModel(abc, scale);
-        assertArrayEquals(abc, dist1.getParameters(), 1e-6);
-        assertEquals(abc.length, dist1.getParameterCount());
+
+        // see if coefficients and scale gets set up right
+        PtLensDistortionModel dist1 = new PtLensDistortionModel(abc1, scale);
+        assertArrayEquals(abc1, dist1.getParameters(), 1e-6);
+        assertEquals(abc1.length, dist1.getParameterCount());
         assertEquals(scale, dist1.getScale(), 1e-6);
 
-        PtLensDistortionModel dist2 = dist1.fromParameters(dist1.getParameters());
-        assertArrayEquals(abc, dist2.getParameters(), 1e-6);
-        assertEquals(abc.length, dist2.getParameterCount());
+        // see if new coefficients are accepted and existing scale is copied
+        double[] abc2= {-0.2, 0.01, 0.0};
+        PtLensDistortionModel dist2 = dist1.fromParameters(abc2);
+        assertArrayEquals(abc2, dist2.getParameters(), 1e-6);
+        assertEquals(abc2.length, dist2.getParameterCount());
         assertEquals(scale, dist2.getScale(), 1e-6);
     }
 
-    @Test
+    @Test   // checks if points on r = 1/scale circle are fixed points.
     public void fRadTest() {
+        double[] abc = {0.01144, -0.0102, 0.01051}; // not relevant
+        double scale = 2.7;
+        PtLensDistortionModel dist = new PtLensDistortionModel(abc, scale);
+        int n = 100;
+        double r = 1 / scale;
+        for (int i = 0; i < n; i++) {
+            double phi = i * 2 * Math.PI / n;
+            double[] xy = { r * Math.cos(phi), r * Math.sin(phi) };
+            // System.out.println("\nxy = " + Pnt2d.from(xy));
+            double[] xyd = dist.warp(xy);
+            assertArrayEquals(xy, xyd, 1e-6);
+            // System.out.println("xyd = " + Pnt2d.from(xyd));
+        }
     }
 
     @Test
@@ -84,66 +99,65 @@ public class PtLensDistortionModelTest {
         }
     }
 
-    @Test       // OBSOLETE!
+    @Test   // check distortion parameter estimation (without noise)
     public void estimateParametersTest() {
-        double[] abc = {0.01144, -0.0102, 0.01051};     // distortion parameters
-        int W = 640;
-        int H = 480;
-        double s = 0.7;
-        double alpha = (1/s) * H / 2;
-        double beta = alpha;
+        double[] abc = {0.011, -0.014, 0.017};     // assumed PtLens distortion parameters
+        int W = 640, H = 480;
+        double scale = 3.0;     // arbitrary scale
+        double alpha = 700;     // focal length in pixels
+        double beta = 710;
+        double uc = 0.5 * W;
+        double vc = 0.5 * H;
 
-        PtLensDistortionModel realDist = new PtLensDistortionModel(abc, s);
-        ViewTransform view = new ViewTransform(Rotation.IDENTITY, new double[]{0, 0, 1});
-        Camera realCam = new Camera(new double[] { alpha, beta, 0, 0, 0 }, realDist);
+        PtLensDistortionModel nullDist = new PtLensDistortionModel(null, scale);
+        // non-distorting camera (just for comparison):
+        Camera nullCam = new Camera(new double[] { alpha, beta, 0, uc, vc }, nullDist);
 
-        Pnt2d[] modelPoints = makeModelPoints();
+        // set up the actual camera:
+        ViewTransform view = new ViewTransform();           // identity view
+        PtLensDistortionModel realDist = new PtLensDistortionModel(abc, scale);
+        Camera realCam = new Camera(new double[] { alpha, beta, 0, uc, vc }, realDist);
+
+        Pnt2d[] modelPoints = makeModelPoints(20);
         List<Pnt2d[]> modPntList = Collections.singletonList(modelPoints);
         List<Pnt2d[]> imgPntList = new ArrayList<>();
 
-        // System.out.println("realCam = " + realCam);
-        // System.out.println("view = " + view);
-        // System.out.println("realCam = " + realCam);
-        // System.out.println("N = " + modelPoints.length);
-
+        // create image point by projecting model points through realCam:
         Pnt2d[] imgPnts = new Pnt2d[modelPoints.length];
         for (int i = 0; i < modelPoints.length; i++) {
             Pnt2d XY = modelPoints[i];
-            Pnt2d xy = Pnt2d.from(realCam.projectNormalized(view, XY));
-            Pnt2d uv = Pnt2d.from(realCam.project(view, XY));
-            // System.out.printf("%s -> %s -> %s\n", XY, xy, uv);
+            // Pnt2d xy = Pnt2d.from(realCam.projectNormalized(view, XY));
+            // Pnt2d uvN = Pnt2d.from(nullCam.project(view, XY));  // no distortion
+            Pnt2d uv = Pnt2d.from(realCam.project(view, XY));   // with distortion
+            // System.out.printf("XY=%s    uvN=%s   uv=%s\n", XY, uvN, uv);
             imgPnts[i] = uv;
         }
-        imgPntList.add(imgPnts);
+        imgPntList.add(imgPnts);    // projected image points
 
         // start parameter estimation:
-        Camera initCam = new Camera(new double[] { alpha, beta, 0, 0, 0}, null);
-        // initCam.setDistortion(DistortionModelType.PtLens.create(initCam, W, H));
-        DistortionModel dm = DistortionModelType.PtLens.create(initCam, W, H);
-
-        System.out.println("dm.scale = " + dm.getScale());
-        DistortionEstimator estimtr = new DistortionEstimator(initCam, dm);
+        DistortionEstimator estimtr = new DistortionEstimator(nullCam);
         Camera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);
 
-        PrintPrecision.set(8);
+        // PrintPrecision.set(8);
         System.out.println("distortion = " + camImproved.getDistortion());
-        // assertArrayEquals(abc, camImproved.getDistortion().getParameters(), 1e-6);
+        assertArrayEquals(abc, camImproved.getDistortion().getParameters(), 1e-6);
     }
 
-    static Pnt2d[] makeModelPoints() {
-        int n = 20;
+    static Pnt2d[] makeModelPoints(int n) {
+        // int n = 20;
         List<Pnt2d> points = new ArrayList<Pnt2d>();
-        for (int i = 0; i <= n; i++) {
-            double r = i * 1.0 / n;
-            double xy = Math.sqrt(0.5 * r);
+        for (int i = -n; i <= n; i++) {
+            double r = i * 0.5 / n;
+            // double xy = Math.sqrt(0.5 * r);
             points.add(Pnt2d.from(r, 0));
-            points.add(Pnt2d.from(-r, 0));
             points.add(Pnt2d.from(0, r));
-            points.add(Pnt2d.from(0, -r));
-            points.add(Pnt2d.from(xy, xy));
-            points.add(Pnt2d.from(-xy, xy));
-            points.add(Pnt2d.from(xy, -xy));
-            points.add(Pnt2d.from(-xy, -xy));
+            // points.add(Pnt2d.from(-r, 0));
+            // points.add(Pnt2d.from(0, r));
+            // points.add(Pnt2d.from(0, -r));
+            // points.add(Pnt2d.from(xy, xy));
+            // points.add(Pnt2d.from(-xy, xy));
+            // points.add(Pnt2d.from(xy, -xy));
+            // points.add(Pnt2d.from(-xy, -xy));
         }
         return points.toArray(new Pnt2d[0]);
     }

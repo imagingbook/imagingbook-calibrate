@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * PtLens distortion model, as used by PanoTools, Hugin, lensfun etc.
  */
-public class PtLensDistortionModel extends RadialDistortionModel {
+public class PtLensDistortionModel extends RadialDistortionModel implements ScaledDistortionSpace {
 
     private final double a, b, c;
     private final double scale;

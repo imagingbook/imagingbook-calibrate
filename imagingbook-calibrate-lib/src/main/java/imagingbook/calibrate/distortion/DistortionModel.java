@@ -102,9 +102,10 @@ public abstract class DistortionModel {
 
     @Override
     public String toString() {
-        return String.format(Locale.US, "%s%s",
+        return String.format(Locale.US, "%s%s, %s",
                 this.getClass().getSimpleName(),
-                Matrix.toString(parameters));
+                Matrix.toString(parameters),
+                (this instanceof ScaledDistortionSpace) ? "scale=" + getScale() : "");
     }
 
 
