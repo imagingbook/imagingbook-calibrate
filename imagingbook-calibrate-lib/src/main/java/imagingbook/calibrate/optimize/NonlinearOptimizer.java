@@ -9,6 +9,7 @@ package imagingbook.calibrate.optimize;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
 
@@ -31,7 +32,7 @@ import java.util.List;
 public abstract class NonlinearOptimizer {
 
     protected static int maxEvaluations = 1000;
-    protected static int maxIterations  = 100;
+    protected static int maxIterations  = 10;
 
 	// @Deprecated
     // protected final Pnt2d[]  modelPts;
@@ -69,14 +70,6 @@ public abstract class NonlinearOptimizer {
 		this.N = Arrays.stream(modPts).mapToInt(row -> row.length).sum(); //getTotalPointCount();
 	}
 
-	// private int getTotalPointCount() {
-	// 	int total = 0;
-	// 	for (Pnt2d[] p : modPts) {
-	// 		total += p.length;
-	// 	}
-	// 	return total;
-	// }
-
 	/**
 	 * Performs Levenberg-Marquardt non-linear optimization to get better estimates of the
 	 * parameters.
@@ -86,6 +79,7 @@ public abstract class NonlinearOptimizer {
 		MultivariateMatrixFunction J = makeJacobianFun();
 
 		RealVector start = makeInitialParameters(initViews);
+		System.out.println("NonlinearOptimizer: start = " + Matrix.toString(start));
 		RealVector observed = makeObservedVector();
 
 		MultivariateJacobianFunction model = LeastSquaresFactory.model(V, J);
@@ -106,7 +100,9 @@ public abstract class NonlinearOptimizer {
 	 * To be implemented by subclasses.
 	 * @return a vector value function
 	 */
-	abstract MultivariateVectorFunction makeValueFun();
+	MultivariateVectorFunction makeValueFun() {
+		return new ValueFun();
+	};
 
 	/**
 	 * To be implemented by subclasses.
@@ -122,9 +118,10 @@ public abstract class NonlinearOptimizer {
 	class ValueFun implements MultivariateVectorFunction {
 		@Override
 		public double[] value(double[] params) {
-			final double[] a = Arrays.copyOfRange(params, 0, camParCount);
-			final Camera cam = initCam.fromParameters(a);
-			final double[] Y = new double[2 * N];
+			// System.out.println("NonlinearOptimizer: p = " + Matrix.toString(params));
+			double[] a = Arrays.copyOfRange(params, 0, camParCount);
+			Camera cam = initCam.fromParameters(a);
+			double[] Y = new double[2 * N];
 			int r = 0;
 			for (int k = 0; k < M; k++) {
 				int q = camParCount + k * viewParCount;
@@ -144,20 +141,23 @@ public abstract class NonlinearOptimizer {
 	// ---------------------------------------------------------------------
 
 	private RealVector makeInitialParameters(ViewTransform[] initViews) {
-		double[] s = initCam.getParameters();
-		double[] c = new double[s.length + M * viewParCount];
+		double[] cp = initCam.getParameters();
+		System.out.println("NonlinearOptimizer: cp.length = " + cp.length);
+		double[] p = new double[cp.length + M * viewParCount];
+		System.out.println("NonlinearOptimizer: p.length = " + p.length);
+		System.out.println("NonlinearOptimizer: M = " + M);
 
 		// insert camera parameters at beginning of c
-		System.arraycopy(s, 0, c, 0, s.length);
+		System.arraycopy(cp, 0, p, 0, cp.length);
 
 		// insert M view parameters
-		int start = s.length;
+		int start = cp.length;
 		for (int i = 0; i < M; i++) {
 			double[] w = initViews[i].getParameters();
-			System.arraycopy(w, 0, c, start, w.length);
+			System.arraycopy(w, 0, p, start, w.length);
 			start = start + w.length;
 		}
-		return new ArrayRealVector(c);
+		return new ArrayRealVector(p);
 	}
 
 	/**

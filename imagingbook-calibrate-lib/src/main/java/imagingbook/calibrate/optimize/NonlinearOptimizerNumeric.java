@@ -9,6 +9,7 @@ package imagingbook.calibrate.optimize;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
 
@@ -24,15 +25,17 @@ import java.util.List;
  * @author WB
  */
 public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
+
+
 	
 	public NonlinearOptimizerNumeric(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
 		super(initCam, viewList, modelPntSet, obsPntSet);
 	}
 	
-	@Override
-	MultivariateVectorFunction makeValueFun() {
-		return new ValueFun();
-	}
+	// @Override
+	// MultivariateVectorFunction makeValueFun() {
+	// 	return new ValueFun();
+	// }
 
 	@Override
 	MultivariateMatrixFunction makeJacobianFun() {
@@ -40,40 +43,41 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	}
 
 	private class JacobianFun implements MultivariateMatrixFunction {
+		int evalCountJacobian = 0;
 
 		/**
 		 * Calculates a "stacked" Jacobian matrix with 2MN rows and K = 7 + 6M columns (for M views with N points each,
 		 * K parameters). For example, with M = 5 views and N = 256 points each, J is of size 2560 × 37. Each pair of
 		 * rows in the Jacobian corresponds to one point. THIS VERSION only calculates single blocks of the Jacobian!
 		 */
-		@Override
-	    public double[][] value(double[] params) {
+		//@Override
+	    public double[][] value(double[] params) { //}, boolean dummy) {
+			evalCountJacobian++;
+			System.out.println("NonlinearOptimizerNumeric (JAC): p = " + Matrix.toString(params));
 			final int K = params.length;
 	        double[][] J = new double[2 * N][K];	// the Jacobian matrix (initialized to zeroes!)
-	        double[] refValues = new double[2 * N];	// values obtained with undisturbed parameters
+	        double[] uvRef = new double[2 * N];		// values obtained with undisturbed parameters
 	        
 	        double[] a = Arrays.copyOfRange(params, 0, camParCount);	// camera parameters
 	        Camera camOrig = initCam.fromParameters(a);
 	        
 	        // Step 0: calculate all 2MN reference output values (for undisturbed parameters)
-	       
 	        for (int k = 0, r = 0; k < M; k++) {	// for all views, r = row
 	        	int m = camParCount + viewParCount * k;
 				double[] w = Arrays.copyOfRange(params, m, m + viewParCount);
 				ViewTransform view = new ViewTransform(w);
 	        	for (int j = 0; j < modPts[k].length; j++, r+=2) {	// for all model points: calculate reference values
 	        		double[] uv = camOrig.project(view, modPts[k][j]);
-	        		refValues[r + 0] = uv[0];
-	        		refValues[r + 1] = uv[1];
+	        		uvRef[r + 0] = uv[0];
+	        		uvRef[r + 1] = uv[1];
 	        	}        	 
 	        }
 	        
 	        // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
-	        
 	        for (int p = 0; p < a.length; p++) {	// for all camera parameters
-	        	double ak = a[p];					// keep original parameter value
-	        	double delta = estimateDelta(ak);
-	        	a[p] = a[p] + delta;		// modify parameter s_k
+	        	double ap = a[p];					// keep original parameter value
+	        	double delta = estimateDelta(ap);
+	        	a[p] = a[p] + delta;		// modify parameter p
 	        	Camera camMod = camOrig.fromParameters(a);	// modified camera
 	        	
 		        for (int k = 0, r = 0; k < M; k++) {	// for all views k, r = row
@@ -83,15 +87,14 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 		        	for (int j = 0; j < modPts[k].length; j++, r+=2) {	// for all model points: calculate disturbed value
 		        		Pnt2d Pj = modPts[k][j];
 		        		double[] uvMod = camMod.project(view, Pj);
-		        		J[r + 0][p] = (uvMod[0] - refValues[r + 0]) / delta;   // dX
-		        		J[r + 1][p] = (uvMod[1] - refValues[r + 1]) / delta;   // dY
+		        		J[r + 0][p] = (uvMod[0] - uvRef[r + 0]) / delta;   // dX
+		        		J[r + 1][p] = (uvMod[1] - uvRef[r + 1]) / delta;   // dY
 		        	}    
 		        }
-		        a[p] = ak; 	// return parameter s_k to original
+		        a[p] = ap; 	// return parameter p to original
 	        }
 	        
 	        // Step 2: calculate the diagonal blocks, one for each view
-	        
 	        for (int k = 0; k < M; k++) {	// for all views/blocks
 	        	final int start = camParCount + k * viewParCount;
 	        	double[] w = Arrays.copyOfRange(params, start, start + viewParCount);
@@ -105,8 +108,8 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	        		for (int j = 0; j < modPts[k].length; j++) {		// for all model points: calculate disturbed value
 	        			Pnt2d Pj = modPts[k][j];
 	        			double[] uvMod = camOrig.project(view, Pj);
-	        			J[r + 0][c + p] = (uvMod[0] - refValues[r + 0]) / delta;   // dX
-	        			J[r + 1][c + p] = (uvMod[1] - refValues[r + 1]) / delta;   // dY
+	        			J[r + 0][c + p] = (uvMod[0] - uvRef[r + 0]) / delta;   // dX
+	        			J[r + 1][c + p] = (uvMod[1] - uvRef[r + 1]) / delta;   // dY
 	        			r = r + 2;
 	        		} 
 	        		w[p] = wp; // w[k] - DELTA;		// return parameter w_k to original
@@ -117,6 +120,9 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 //			System.out.println("time diff = " + (endtime - starttime) + " ns");
 //	        System.out.println(NonlinearOptimizerNumeric.class.getSimpleName() + 
 //	        		": Jacobian inverse condition number = " + MathUtil.inverseConditionNumber(J));
+// 			if (evalCountJacobian < 2) {
+// 				System.out.println("\nNonlinearOptimizerNumeric (JAC): J = \n" + Matrix.toString(J) + "\n");
+// 			}
 	        return J;
 	    }
 		
@@ -125,6 +131,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	    @Deprecated
 	    @SuppressWarnings("unused")
 		public double[][] value(double[] params, boolean dummy) {
+			evalCountJacobian++;
 	    	//long starttime = System.nanoTime();
 	    	//System.out.println("getJacobianMatrix - NUMERICAL");
 	    	// M = number of views, N = number of model points
@@ -178,6 +185,9 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 //			System.out.println("time diff = " + (endtime - starttime) + " ns");
 //			System.out.println(this.getClass().getSimpleName() + 
 //	        		": Jacobian inverse condition number = " + MathUtil.inverseConditionNumber(J));
+			if (evalCountJacobian < 2) {
+				System.out.println("\nNonlinearOptimizerNumeric (JAC): J = \n" + Matrix.toString(J) + "\n");
+			}
 	        return J;
 	    }
 
@@ -189,7 +199,7 @@ public class NonlinearOptimizerNumeric extends NonlinearOptimizer {
 	 * @param x
 	 * @return
 	 */
-    private double estimateDelta(double x) {
+    private static double estimateDelta(double x) {
     	final double eps = 1.5e-8;	// = sqrt(2.2 * 10^{-16})
     	double dx = eps * Math.max(Math.abs(x), 1); // dx >= eps
     	// avoid numerical truncation problems (add and subtract again) - 

@@ -36,10 +36,10 @@ public class NonlinearOptimizerAnalytic extends NonlinearOptimizer {
             throw new IllegalArgumentException("analytic optimizer cannot handle more than 7 parameters");
 	}
 
-	@Override
-	MultivariateVectorFunction makeValueFun() {
-		return new ValueFun();
-	}
+	// @Override
+	// MultivariateVectorFunction makeValueFun() {
+	// 	return new ValueFun();
+	// }
 
 	@Override
 	MultivariateMatrixFunction makeJacobianFun() {
