@@ -12,6 +12,9 @@ import imagingbook.calibrate.math3legacy.Rotation;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
+import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
+import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,10 +48,6 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Scal
      * @return the scale factor to apply to normalied projection coordinates
      */
     public static double findScale(Camera cam, int imgWidth, int imgHeight) {
-//        return 1 / Math.min(
-//                imgWidth  / (2 * cam.getAlpha()),
-//                imgHeight / (2 * cam.getBeta()));
-
         return Math.max(
                  cam.getAlpha() / (0.5 * imgWidth),
                  cam.getBeta() / (0.5 * imgHeight));
@@ -81,49 +80,49 @@ public class PtLensDistortionModel extends RadialDistortionModel implements Scal
 
     @Override
     public double fRad(double r0) {
-        double r = scale * r0;
-        double r2 = r * r;
-        double r3 = r2 * r;
-        double D = c * (r - 1) + b * (r2 - 1) + a * (r3 - 1);
-        return r * (1 + D) / scale;
+        double rho = scale * r0;
+        double rho2 = rho * rho;
+        double rho3 = rho2 * rho;
+        double D = c * (rho - 1) + b * (rho2 - 1) + a * (rho3 - 1);
+        double Rho = rho * (1 + D);
+        return Rho / scale;
+    }
+
+    @Deprecated // original formulation, for testing only!
+    double fRad2(double r) {
+        double rho = scale * r;     // convert to scaled space
+        double rho2 = rho * rho;
+        double rho3 = rho2 * rho;
+        double rho4 = rho2 * rho2;
+        double Rho = (1 - a - b - c) * rho + c * rho2 + b * rho3 + a * rho4;
+        return Rho/ scale;          // convert back to normalized space
     }
 
     @Deprecated // for testing only!
-    public double fRad2(double r0) {
-        double r = scale * r0;
-        double r2 = r * r;
-        double r3 = r2 * r;
-        double r4 = r2 * r2;
-        double rr = (1 - a - b - c) * r + c * r2 + b * r3 + a * r4;
-        return rr/ scale;
-    }
-
-    @Deprecated // for testing only!
-    public double Dpt(double r) {
-        r = scale * r;
-        double r2 = r * r;
-        double r3 = r2 * r;
-        double D = c * (r - 1) + b * (r2 - 1) + a * (r3 - 1);		// D(r) = k1 * r^2 + k1 * r^4 + k2 * r^6
-        return D;
+    double Dpt(double r) {
+        double rho = scale * r;
+        double r2 = rho * rho;
+        double r3 = r2 * rho;
+        return c * (rho - 1) + b * (r2 - 1) + a * (r3 - 1);
     }
 
     /**
      * Inverse radial distortion function. Finds the original (undistorted) radius r from the distorted radius R, both
      * measured from the center = (0,0) of the ideal projection. Finds r as the root of the polynomial
-     * <pre> r + k0 * r^3 + k1 * r^5 + k2 * r^7 - R = 0,</pre>
+     * <pre> (1-a-b-c) r + c r^2 + b r^3 + a r^4 - R = 0,</pre>
      * where R is known and r is unknown The solution is found by a Newton-Raphson solver.
      * @param R the distorted radius
      * @return r, the undistorted radius
      */
     @Override
     public double fRadInv(double R) {
-        // double[] coefficients = {-R, 1, 0, a, 0, b, 0, c};
-        // PolynomialFunction p = new PolynomialFunction(coefficients);
-        // UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
-        // int maxEval = 20;
-        // double r = solver.solve(maxEval, p, R); // rInit = R
-        // return r;
-        throw new UnsupportedOperationException("fRadInv() not supported yet.");
+        double Rho = scale * R;      // convert to scaled space
+        double[] coefficients = {-Rho, (1 - a - b - c), c, b, a};
+        PolynomialFunction p = new PolynomialFunction(coefficients);
+        UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
+        int maxEval = 20;
+        double rho = solver.solve(maxEval, p, Rho); // initial Rho
+        return rho / scale;       // convert back to normalized space
     }
 
     // -------------------------------------------------------------------------

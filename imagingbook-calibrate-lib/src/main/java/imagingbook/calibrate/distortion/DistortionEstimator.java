@@ -25,30 +25,18 @@ import java.util.List;
  */
 public class DistortionEstimator {
 
-    private final Camera initCam;
-    private final DistortionModel distModel;
+    private final Camera camera;
+    private final DistortionModel distortion;
 
-
-    // public DistortionEstimator(Camera initCam, DistortionModel distModel) {
-    //     if (initCam == null) {
-    //         throw new IllegalArgumentException("initCam is null");
-    //     }
-    //     if (distModel == null) {
-    //         throw new IllegalArgumentException("distModel is null");
-    //     }
-    //     this.distModel = distModel;
-    //     this.initCam = initCam;
-    // }
-
-    public DistortionEstimator(Camera initCam) {
-        if (initCam == null) {
+    public DistortionEstimator(Camera camera) {
+        if (camera == null) {
             throw new IllegalArgumentException("initCam is null");
         }
-        if (initCam.getDistortion() == null) {
+        if (camera.getDistortion() == null) {
             throw new IllegalArgumentException("distModel is null");
         }
-        this.initCam = initCam;
-        this.distModel = initCam.getDistortion();
+        this.camera = camera;
+        this.distortion = camera.getDistortion();
     }
 
     /**
@@ -69,9 +57,9 @@ public class DistortionEstimator {
     public Camera getEstimate(List<ViewTransform> viewList,
                               List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
 
-        int P = distModel.getParameterCount();          // number of distortion parameters
+        int P = distortion.getParameterCount();          // number of distortion parameters
         if (P == 0) {
-            return initCam; // nothing to optimize
+            return camera; // nothing to optimize
         }
 
         ViewTransform[] views = viewList.toArray(new ViewTransform[0]);
@@ -82,8 +70,8 @@ public class DistortionEstimator {
         int N = Arrays.stream(modPts).mapToInt(row -> row.length).sum(); // number of points in all views
 
         // the estimated projection center on the sensor plane
-        double uc = initCam.getUc();
-        double vc = initCam.getVc();
+        double uc = camera.getUc();
+        double vc = camera.getVc();
         RealMatrix D = MatrixUtils.createRealMatrix(2 * N, P);
         RealVector d = new ArrayRealVector(2 * N);
 
@@ -96,20 +84,20 @@ public class DistortionEstimator {
             for (int j = 0; j < modPts[k].length; j++, row+=2) {   // iterate over N observed points
                 final Pnt2d XY = mod[j];    // model point
                 // get point positions in the ideal image plane (normalized projection, f=1)
-                double[] xy = initCam.projectNormalized(vt, XY);
+                double[] xy = camera.projectNormalized(vt, XY);
                 double x = xy[0];
                 double y = xy[1];
 
                 // project 3D model point j to the sensor image, using view transform i
                 // double[] uv = initCam.project(vt, XY);
                 // map from normalized projection to sensor coordinates (no distortion!)
-                double[] uv = initCam.mapToSensorPlane(xy);
+                double[] uv = camera.mapToSensorPlane(xy);
                 double u = uv[0];
                 double v = uv[1];
                 double du = u - uc;	// distance to estim. sensor projection center
                 double dv = v - vc;
                 // for each point, insert one pair of rows into matrix D (rowUV is a 2xP matrix):
-                double[][] rowsUV = distModel.getDMatrixRowsUV(x, y, du, dv);
+                double[][] rowsUV = distortion.getDMatrixRowsUV(x, y, du, dv);
                 D.setRow(row + 0, rowsUV[0]);
                 D.setRow(row + 1, rowsUV[1]);
 
@@ -126,17 +114,16 @@ public class DistortionEstimator {
         DecompositionSolver solver = new QRDecomposition(D).getSolver();
         // ----------------------------------------------------------------------------------
         RealVector kopt = solver.solve(d);  // optimal distortion parameter
-
         // ----------------------------------------------------------------------------------
 
         // keep errors for later use (optional)
-        double err1 = D.operate(new ArrayRealVector(new double[P])).subtract(d).getNorm();
-        double err2 = D.operate(kopt).subtract(d).getNorm();
+        // double err1 = D.operate(new ArrayRealVector(new double[P])).subtract(d).getNorm();
+        // double err2 = D.operate(kopt).subtract(d).getNorm();
         // System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
-        DistortionModel distFinal = distModel.fromParameters(kopt.toArray());
+        DistortionModel distFinal = distortion.fromParameters(kopt.toArray());
         // return new Camera(initCam.getAffineMatrix(), distFinal);
-        return new Camera(initCam.getLinearParameters(), distFinal);
+        return new Camera(camera.getLinearParameters(), distFinal);
     }
 
 }

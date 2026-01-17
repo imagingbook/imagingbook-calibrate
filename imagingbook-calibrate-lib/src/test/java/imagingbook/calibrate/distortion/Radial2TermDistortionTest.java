@@ -61,27 +61,27 @@ public class Radial2TermDistortionTest {
 
     @Test
     public void copyOfTest() {
-        DistortionModel ldm = new Radial2TermDistortionModel(new double[] {k0, k1});
+        DistortionModel dm = new Radial2TermDistortionModel(new double[] {k0, k1});
 
         // DistortionModel ldm2 = ldm.from();
         // assertNotNull(ldm2);
         // assertEquals(k0, ldm2.getParameter(0), tol);
         // assertEquals(k1, ldm2.getParameter(1), tol);
 
-        DistortionModel ldm3 = ldm.fromParameters(new double[] {0.4, -0.1});
-        assertEquals(0.4, ldm3.getParameter(0), tol);
-        assertEquals(-0.1, ldm3.getParameter(1), tol);
+        DistortionModel dm3 = dm.fromParameters(new double[] {0.4, -0.1});
+        assertEquals(0.4, dm3.getParameter(0), tol);
+        assertEquals(-0.1, dm3.getParameter(1), tol);
     }
 
     // -------------------------------------------------------------------------
 
     @Test
     public void fRadTest() {
-        RadialDistortionModel ldm = new Radial2TermDistortionModel(new double[] {k0, k1});
+        RadialDistortionModel dm = new Radial2TermDistortionModel(new double[] {k0, k1});
         double r1 = 0.35;
-        double r2 = ldm.fRad(r1);
+        double r2 = dm.fRad(r1);
         assertEquals(0.358312, r2, tol);
-        double r3 = ldm.fRadInv(r2);
+        double r3 = dm.fRadInv(r2);
         assertEquals(r1, r3, tol);
     }
 

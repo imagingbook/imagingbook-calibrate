@@ -22,6 +22,9 @@ import static org.junit.Assert.assertEquals;
 
 public class PtLensDistortionModelTest {
 
+    static final double tol = 1e-6;
+
+
     @Test
     public void constructorTest1() {
         double[] abc1= {0.01144, -0.0102, 0.01051};
@@ -29,20 +32,57 @@ public class PtLensDistortionModelTest {
 
         // see if coefficients and scale gets set up right
         PtLensDistortionModel dist1 = new PtLensDistortionModel(abc1, scale);
-        assertArrayEquals(abc1, dist1.getParameters(), 1e-6);
+        assertArrayEquals(abc1, dist1.getParameters(), tol);
         assertEquals(abc1.length, dist1.getParameterCount());
-        assertEquals(scale, dist1.getScale(), 1e-6);
+        assertEquals(scale, dist1.getScale(), tol);
 
         // see if new coefficients are accepted and existing scale is copied
         double[] abc2= {-0.2, 0.01, 0.0};
         PtLensDistortionModel dist2 = dist1.fromParameters(abc2);
-        assertArrayEquals(abc2, dist2.getParameters(), 1e-6);
+        assertArrayEquals(abc2, dist2.getParameters(), tol);
         assertEquals(abc2.length, dist2.getParameterCount());
-        assertEquals(scale, dist2.getScale(), 1e-6);
+        assertEquals(scale, dist2.getScale(), tol);
     }
 
-    @Test   // checks if points on r = 1/scale circle are fixed points.
+    @Test
+    public void fRadTestZero() {
+        double[] abc = {0.01144, -0.0102, 0.01051};
+        double scale = 3.1;
+        PtLensDistortionModel dm = new PtLensDistortionModel(abc, scale);
+        double r0 = dm.fRad(0.0);
+        assertEquals(0.0, r0, tol);
+    }
+
+    @Test
     public void fRadTest() {
+        double[] abc = {0.01144, -0.0102, 0.01051};
+        double scale = 3.1;
+        PtLensDistortionModel dm = new PtLensDistortionModel(abc, scale);
+        double r1 = 0.35;
+        double r2 = dm.fRad(r1);
+        assertEquals(0.35079024490, r2, tol);
+        double r3 = dm.fRadInv(r2);
+        assertEquals(r1, r3, tol);
+    }
+
+    @Test
+    public void fRadInvTest() {
+        double[] abc = {0.01144, -0.0102, 0.01051};
+        double scale = 3.1;
+        PtLensDistortionModel dm = new PtLensDistortionModel(abc, scale);
+        int n = 20;
+        double range = 2.0;
+        for (int i = 0; i < n; i++) {
+            double r1 = i * range / n;
+            double r2 = dm.fRad(r1);
+            double r3 = dm.fRadInv(r2);
+            assertEquals(r1, r3, tol);
+        }
+    }
+
+
+    @Test   // checks if points on r = 1/scale circle are fixed points.
+    public void fRadFixedPointRadiusTest() {
         double[] abc = {0.01144, -0.0102, 0.01051}; // not relevant
         double scale = 2.7;
         PtLensDistortionModel dist = new PtLensDistortionModel(abc, scale);
@@ -53,13 +93,9 @@ public class PtLensDistortionModelTest {
             double[] xy = { r * Math.cos(phi), r * Math.sin(phi) };
             // System.out.println("\nxy = " + Pnt2d.from(xy));
             double[] xyd = dist.warp(xy);
-            assertArrayEquals(xy, xyd, 1e-6);
+            assertArrayEquals(xy, xyd, tol);
             // System.out.println("xyd = " + Pnt2d.from(xyd));
         }
-    }
-
-    @Test
-    public void fRadInvTest() {
     }
 
     @Test
