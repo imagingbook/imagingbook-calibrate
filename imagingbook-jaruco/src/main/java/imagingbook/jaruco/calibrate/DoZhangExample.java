@@ -7,6 +7,7 @@ import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
 
+import static imagingbook.calibrate.distortion.DistortionModelType.Radial2Term;
 import static imagingbook.calibrate.distortion.DistortionModelType.RadialLateral;
 
 public class DoZhangExample {
@@ -25,7 +26,7 @@ public class DoZhangExample {
         Calibration.Parameters params = new Calibration.Parameters();
         params.normalizePoints = true;
         params.useNumericJacobian = true;
-        params.distModelType = RadialLateral; //Radial3Term;
+        params.distortionModelType = Radial2Term; //Radial3Term;
         params.debug = false;
 
         Calibration calibration = new Calibration(params, 640, 480);

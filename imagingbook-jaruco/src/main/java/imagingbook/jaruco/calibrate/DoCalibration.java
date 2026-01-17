@@ -3,6 +3,7 @@ package imagingbook.jaruco.calibrate;
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import imagingbook.calibrate.Calibration;
+import imagingbook.calibrate.distortion.DistortionModelType;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
@@ -65,6 +66,7 @@ public class DoCalibration {
 
         // set up calibration
         Calibration.Parameters params = new Calibration.Parameters();
+        params.distortionModelType = DistortionModelType.Radial2Term;
         params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.debug = true;

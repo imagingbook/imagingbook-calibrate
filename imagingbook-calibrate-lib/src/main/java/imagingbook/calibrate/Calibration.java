@@ -57,7 +57,7 @@ public class Calibration {
 	 */
 	public static class Parameters implements ParameterBundle<Calibration> {
         /** Lens distortion model to be used. */
-        public DistortionModelType distModelType = DistortionModelType.Radial2Term;
+        public DistortionModelType distortionModelType = DistortionModelType.Radial2Term;
 		/** Normalize point coordinates for numerical stability in homography estimation. */
 		public boolean normalizePoints = true;
 		/** Perform non-linear refinement of homographies (usually not needed). */
@@ -163,7 +163,7 @@ public class Calibration {
 
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Estimate lens distortion from initial camera and view data:");
-		DistortionModel distModel = params.distModelType.create(initCam, imgWidth, imgHeight);
+		DistortionModel distModel = params.distortionModelType.create(initCam, imgWidth, imgHeight);
 		initCam.setDistortion(distModel);
 		DistortionEstimator distEstim = new DistortionEstimator(initCam);
 		Camera improvedCam = distEstim.getEstimate(initViews, modelPntSet, imagePntSet);

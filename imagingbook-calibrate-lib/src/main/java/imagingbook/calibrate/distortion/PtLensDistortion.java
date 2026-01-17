@@ -40,8 +40,8 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
      *
      * @param cam a {@code Camera} instance with initialized linear part (affine transform)
      * @param imgWidth image width {@code W}
-     * @param imgHeight image geight {@code H}
-     * @return the scale factor to apply to normalied projection coordinates
+     * @param imgHeight image height {@code H}
+     * @return the scale factor to apply to normalised projection coordinates
      */
     public static double findScale(Camera cam, int imgWidth, int imgHeight) {
         return Math.max(
