@@ -122,7 +122,7 @@ public class Camera {
 		if (params.length < this.getParameterCount())
 			throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
 		int P = this.distortion.getParameterCount();
-		double[] linParams = Arrays.copyOfRange(params, 0, 5);    // = [alpha, beta, dgamma, uc, vc]
+		double[] linParams = Arrays.copyOfRange(params, 0, 5);    // = [alpha, beta, gamma, uc, vc]
 		double[] distParams = Arrays.copyOfRange(params, 5, 5 + P);
 		return new Camera(linParams, this.distortion.fromParameters(distParams));
 	}
