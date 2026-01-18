@@ -236,13 +236,23 @@ public class Camera {
 	}
 
 	/**
+	 * Returns the camera's distortion parameters.
+	 * @return the camera's distortion parameters
+	 */
+	public double[] getDistortionParameters() {
+		return (distortion != null) ?
+				distortion.getParameters() :
+				new double[0];
+	}
+
+	/**
 	 * Returns the camera's inner, i.e., linear and distortion parameters as one vector
 	 * (alpha, beta, gamma, uc, vc, k0, k1, ...).
 	 * @return the camera's inner parameters (linear and distortion parameters)
 	 */
 	public double[] getParameters() {
 		double[] lin = getLinearParameters();  // linear parameters
-		double[] dist = distortion.getParameters();		// TODO: fix distortion == null !
+		double[] dist = getDistortionParameters();
 		return Matrix.join(lin, dist);  // concatenate linear/nonlinear coefficients into one vector
 	}
 
