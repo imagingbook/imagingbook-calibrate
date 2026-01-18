@@ -16,6 +16,7 @@ import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimatorConstrained;
 import imagingbook.calibrate.optimize.OverallNonlinearOptimizer;
+import imagingbook.calibrate.optimize.OverallNonlinearOptimizer_Unscaled;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
@@ -173,6 +174,8 @@ public class Calibration {
 		// NonlinearOptimizer optim = (params.useNumericJacobian) ?
 		// 		new NonlinearOptimizerNumeric(improvedCam, initViews, modelPntSet, imagePntSet) :
 		// 		new NonlinearOptimizerAnalytic(improvedCam, initViews, modelPntSet, imagePntSet);
+		// OverallNonlinearOptimizer_Unscaled optim =
+		// 		new OverallNonlinearOptimizer_Unscaled(improvedCam, initViews, modelPntSet, imagePntSet);
 		OverallNonlinearOptimizer optim =
 				new OverallNonlinearOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
 		optim.optimize();
