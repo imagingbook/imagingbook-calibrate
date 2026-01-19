@@ -41,13 +41,13 @@ public class OverallNonlinearOptimizer {
     private static int maxEvaluations = 1000;
     private static int maxIterations  = 100;
 
-    private final Pnt2d[][] modPts;
+    final Pnt2d[][] modPts;
     private final Pnt2d[][] obsPts;
-    private final int M;                // number of views
-    private final int N;
+    final int M;                // number of views
+    final int N;
     private final int K;
-    private final int camParCount;      // number of camera parameters (7+)
-    private final int viewParCount;     // number of view parameters (6)
+    final int camParCount;      // number of camera parameters (7+)
+    final int viewParCount;     // number of view parameters (6)
 
     private final Camera initCam;
     private Camera finalCamera;
@@ -335,12 +335,6 @@ public class OverallNonlinearOptimizer {
         }
         // obs = [u_{0,0}, v_{0,0}, u_{0,1}, v_{0,1}, ..., u_{M-1,N-1}, v_{M-1,N-1}]
         return obs;
-    }
-
-    private double[] makeWeightMatrix() {
-        double[] weights = new double[2 * N + 1];
-        Arrays.fill(weights, 1.0);
-        return weights;
     }
 
     private void updateEstimates(double[] params) {
