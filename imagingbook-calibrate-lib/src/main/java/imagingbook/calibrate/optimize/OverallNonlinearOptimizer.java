@@ -37,9 +37,10 @@ import java.util.List;
 public class OverallNonlinearOptimizer {
 
     static double GLOBAL_PARAMETER_SCALE = 1.0;
+    static double GAMMA_PENALTY = 100000;
 
     private static int maxEvaluations = 1000;
-    private static int maxIterations  = 100;
+    private static int maxIterations  = 1000;
 
     final Pnt2d[][] modPts;
     private final Pnt2d[][] obsPts;
@@ -54,7 +55,7 @@ public class OverallNonlinearOptimizer {
     private final ViewTransform[] initViews;
     private ViewTransform[] finalViews;
     private final double[] initialParameters;
-    private final double[] parameterScales;
+    private final double[][] parameterScales;
 
     private final double[] observed;
 
@@ -75,12 +76,14 @@ public class OverallNonlinearOptimizer {
         this.N = Arrays.stream(modPts).mapToInt(row -> row.length).sum(); //getTotalPointCount();
 
 
-        double[] camScales = {10000, 10000, 1, 3000, 2000};   // alpha, beta, gamma, uc, vc
+        // double[] camScales = {10000, 10000, 1, 3000, 2000};   // alpha, beta, gamma, uc, vc
+        double[] camScales = {10000, 10000, 1, 500, 500};   // alpha, beta, gamma, uc, vc
         double[] distScales = new double[initCam.getDistortionParameters().length];
                     Arrays.fill(distScales, 0.1);
         double[] viewScales = {0.5, 0.5, 0.5, 100, 100, 100};
         this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
-        System.out.println("parameterScales = " + Matrix.toString(parameterScales));
+        System.out.println("parameterScales  = " + Matrix.toString(parameterScales[0]));
+        System.out.println("parameterOffsets = " + Matrix.toString(parameterScales[1]));
 
         this.initialParameters = makeInitialParameters();
         this.K = initialParameters.length;
@@ -112,7 +115,7 @@ public class OverallNonlinearOptimizer {
                     r = r + 1;
                 }
             }
-            V[2 * N] = 100000 * a[2]; // set penalty for gamma
+            V[2 * N] = GAMMA_PENALTY * a[2]; // set penalty for gamma
             double[] resid = Matrix.subtract(observed, V);
             // System.out.println("OverallNonlinearOptimizer: Y = " + Matrix.toString(Arrays.copyOf(Y, 20)));
             // System.out.println("OverallNonlinearOptimizer: R = " + Matrix.toString(Arrays.copyOf(resid, 20)));
@@ -178,7 +181,7 @@ public class OverallNonlinearOptimizer {
                     w[p] = wp; // w[k] - DELTA;		// revert parameter w[p] to original value
                 }
             }
-            J[2 * N][2] = 0.5;  // Jacobian for parameter gamma
+            J[2 * N][2] = 1;  // Jacobian for parameter gamma
 
             for (int j = 0; j < 2; j++) {
                 System.out.printf("    Ju[%d] = %s\n", j, Matrix.toString(J[j]));
@@ -187,7 +190,7 @@ public class OverallNonlinearOptimizer {
             // scale J back to optimizer scale
             for (int p = 0; p < params.length; p++) {
                 // multiply column J[*][p] by scale[p]:
-                double s = parameterScales[p];
+                double s = parameterScales[0][p];
                 for (int j = 0; j < J.length; j++) {
                     J[j][p] = J[j][p] * s;
                 }
@@ -298,27 +301,33 @@ public class OverallNonlinearOptimizer {
      * @param viewCnt number of views
      * @return a vector scale values for all parameters
      */   // TODO: revise to use initial Camera to obtain default scale values
-    static double[] makeParameterScales(double[] camScales, double[] distScales, double[] viewScales, int viewCnt) {
+    static double[][] makeParameterScales(double[] camScales, double[] distScales, double[] viewScales, int viewCnt) {
         int camParCount = camScales.length;
         int distParCount = distScales.length;
         int viewParCount = viewScales.length;
-        double[] scales = new double[camParCount + distParCount + viewCnt * viewParCount];
+        int P = camParCount + distParCount + viewCnt * viewParCount;
+        double[] scale = new double[P];
+        double[] offset = new double[P];
 
-        Arrays.fill(scales, 1); //GLOBAL_PARAMETER_SCALE);
-        // scales[0] = 5000;
-        // scales[1] = 5000;
-        // return scales;
+        Arrays.fill(scale, 1); //GLOBAL_PARAMETER_SCALE);
+        Arrays.fill(scale, 0);
 
         int start = 0;
-        System.arraycopy(camScales, 0, scales, start, camScales.length);
+        System.arraycopy(camScales, 0, scale, start, camScales.length);
         start += camScales.length;
-        System.arraycopy(distScales, 0, scales, start, distScales.length);
+        System.arraycopy(distScales, 0, scale, start, distScales.length);
         start += distScales.length;
         for (int k = 0; k < viewCnt; k++) {
-            System.arraycopy(viewScales, 0, scales, start, viewScales.length);
+            System.arraycopy(viewScales, 0, scale, start, viewScales.length);
             start += viewScales.length;
         }
-        return scales;
+
+        offset[0] = 10500;
+        offset[1] = 10500;
+
+        offset[3] = 3000;
+        offset[4] = 2000;
+        return new double[][] {scale, offset};
     }
 
     /**
@@ -362,20 +371,40 @@ public class OverallNonlinearOptimizer {
 
     }
 
-    private double[] scaleParameters(double[] unscaledParams, double[] scales) {
-        double[] sp = new double[unscaledParams.length];
-        for (int i = 0; i < unscaledParams.length; i++) {
-            sp[i] = unscaledParams[i] / scales[i];
+    /**
+     * Scales original (physical) parameters p[i] to optimizer parameters ps[i] by
+     * <pre>
+     *     ps[i] = (p[i] - offset[i]) / scales[i] </pre>
+     * @param p
+     * @param scales = {scale, offset}
+     * @return
+     */
+    private double[] scaleParameters(double[] p, double[][] scales) {
+        double[] scale = scales[0];
+        double[] offset = scales[1];
+        double[] ps = new double[p.length];
+        for (int i = 0; i < p.length; i++) {
+            ps[i] = (p[i] - scales[1][i]) / scales[0][i];
         }
-        return sp;
+        return ps;
     }
 
-    private double[] unscaleParameters(double[] scaledParams, double[] scales) {
-        double[] usp = new double[scaledParams.length];
-        for (int i = 0; i < scaledParams.length; i++) {
-            usp[i] = scaledParams[i] * scales[i];
+    /**
+     * Scales optimizer parameters ps[i] back to original parameters p[i] by
+     * <pre>
+     *     p[i] = ps[i] * scales[i] + offset[i] </pre>
+     * @param ps
+     * @param scales = {scale, offset}
+     * @return
+     */
+    private double[] unscaleParameters(double[] ps, double[][] scales) {
+        double[] scale = scales[0];
+        double[] offset = scales[1];
+        double[] p = new double[ps.length];
+        for (int i = 0; i < ps.length; i++) {
+            p[i] = ps[i] * scales[0][i] + scales[1][i];
         }
-        return usp;
+        return p;
     }
 
 

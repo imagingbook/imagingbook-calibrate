@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.intrinsics;
 
+import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
@@ -83,8 +84,8 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
     }
 
     private static void checkIfNormalized(RealMatrix homography) {
-        if (Double.compare(homography.getEntry(2, 2), 1.0) != 0) {
-            throw new RuntimeException("homography matrix must be normalized");
+        if (Math.abs(homography.getEntry(2, 2) - 1) > 1e-6) {
+            throw new RuntimeException("homography matrix must be normalized: H[2][2] = " + homography.getEntry(2, 2));
         }
     }
 }

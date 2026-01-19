@@ -53,7 +53,11 @@ public class DoCalibration {
                 DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2691,
                 DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2692,
                 DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2693,
-                DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2694
+                DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2694,
+                // DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2696,
+                // DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2698,
+                // DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2699,
+                // DICT_5x5_CharucoBoard_12x8_ImgCorners.DSC_2700,
         };
 
         int[] SELECTED = {}; //{ 0, 21, 171, 190};
