@@ -16,6 +16,7 @@ import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimatorConstrained;
 import imagingbook.calibrate.optimize.OverallNonlinearOptimizer;
+import imagingbook.calibrate.optimize.OverallNonlinearOptimizerNoGamma;
 import imagingbook.calibrate.optimize.OverallNonlinearOptimizer_Unscaled;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
@@ -176,8 +177,8 @@ public class Calibration {
 		// 		new NonlinearOptimizerAnalytic(improvedCam, initViews, modelPntSet, imagePntSet);
 		// OverallNonlinearOptimizer_Unscaled optim =
 		// 		new OverallNonlinearOptimizer_Unscaled(improvedCam, initViews, modelPntSet, imagePntSet);
-		OverallNonlinearOptimizer optim =
-				new OverallNonlinearOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
+		OverallNonlinearOptimizerNoGamma optim =
+				new OverallNonlinearOptimizerNoGamma(improvedCam, initViews, modelPntSet, imagePntSet);
 		optim.optimize();
 		System.out.println("optimize: iterations = " + optim.getIterations());
 		System.out.println("optimize: evaluations = " + optim.getEvaluations());
