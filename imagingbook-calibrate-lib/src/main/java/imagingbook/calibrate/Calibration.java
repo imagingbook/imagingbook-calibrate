@@ -15,9 +15,8 @@ import imagingbook.calibrate.homography.HomographyEstimatorSimple;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimatorConstrained;
-import imagingbook.calibrate.optimize.OverallNonlinearOptimizer;
-import imagingbook.calibrate.optimize.OverallNonlinearOptimizerNoGamma;
-import imagingbook.calibrate.optimize.OverallNonlinearOptimizer_Unscaled;
+import imagingbook.calibrate.optimize.NonlinearOptimizer;
+import imagingbook.calibrate.optimize.OptimizerFresh2;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
@@ -175,10 +174,15 @@ public class Calibration {
 		// NonlinearOptimizer optim = (params.useNumericJacobian) ?
 		// 		new NonlinearOptimizerNumeric(improvedCam, initViews, modelPntSet, imagePntSet) :
 		// 		new NonlinearOptimizerAnalytic(improvedCam, initViews, modelPntSet, imagePntSet);
-		// OverallNonlinearOptimizer_Unscaled optim =
+
+		// no parameter scaling but penalizing gamma with factor 1000000, results are good!
+		// (J condition No = 9.051008281593193E7), 1 iteration, 12 evaluations
+		// NonlinearOptimizer optim =
 		// 		new OverallNonlinearOptimizer_Unscaled(improvedCam, initViews, modelPntSet, imagePntSet);
-		OverallNonlinearOptimizerNoGamma optim =
-				new OverallNonlinearOptimizerNoGamma(improvedCam, initViews, modelPntSet, imagePntSet);
+
+		NonlinearOptimizer optim =
+				new OptimizerFresh2(improvedCam, initViews, modelPntSet, imagePntSet);
+
 		optim.optimize();
 		System.out.println("optimize: iterations = " + optim.getIterations());
 		System.out.println("optimize: evaluations = " + optim.getEvaluations());

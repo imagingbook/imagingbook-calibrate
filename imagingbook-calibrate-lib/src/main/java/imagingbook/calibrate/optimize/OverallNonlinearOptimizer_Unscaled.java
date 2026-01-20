@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author WB
  */
-public class OverallNonlinearOptimizer_Unscaled {
+public class OverallNonlinearOptimizer_Unscaled implements NonlinearOptimizer {
 
     private static int maxEvaluations = 1000;
     private static int maxIterations  = 100;

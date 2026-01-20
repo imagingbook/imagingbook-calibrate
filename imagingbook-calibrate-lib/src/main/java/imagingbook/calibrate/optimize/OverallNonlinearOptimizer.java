@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author WB
  */
-public class OverallNonlinearOptimizer {
+public class OverallNonlinearOptimizer implements NonlinearOptimizer {
 
     static double GLOBAL_PARAMETER_SCALE = 1.0;
     static double GAMMA_PENALTY = 100000;

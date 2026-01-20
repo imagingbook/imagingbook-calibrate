@@ -73,7 +73,7 @@ public class DoCalibration {
         params.distortionModelType = DistortionModelType.Radial2Term;
         params.normalizePoints = true;
         params.useNumericJacobian = true;
-        params.debug = true;
+        params.debug = false;
 
         // ---------------------------------------------------------------------------------
         Calibration calibration = new Calibration(params, 6048, 4024);
