@@ -83,6 +83,8 @@ public class OptimizerFresh1 implements NonlinearOptimizer {
         this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
         this.M = obsPntSet.size();
         this.N = Arrays.stream(modPts).mapToInt(row -> row.length).sum(); //getTotalPointCount();
+        System.out.println("OptimizerFresh1: N = " + N);
+        System.out.println("OptimizerFresh1: 2N = " + 2*N);
 
         // double[] camScales = {10000, 10000, 1, 3000, 2000};   // alpha, beta, gamma, uc, vc
         double alpha = initCam.getAlpha();
@@ -176,9 +178,9 @@ public class OptimizerFresh1 implements NonlinearOptimizer {
     // ------------------------------------
 
     double[][] getJacobian(double[] paramsS) {
-        double[] uvRef = getValue(paramsS);      // values from undisturbed parameters
         // double[] uvRef = valueFun.value(paramsS);      // values from undisturbed parameters
         double[] params = unscaleParameters(paramsS, parameterScales);
+        double[] uvRef = getValue(paramsS);      // values from undisturbed parameters
 
         double[] a = Arrays.copyOfRange(params, 0, camParCount);    // camera parameters
         Camera camOrig = initCam.fromParameters(a);
@@ -198,7 +200,7 @@ public class OptimizerFresh1 implements NonlinearOptimizer {
                 int q = camParCount + k * viewParCount;
                 double[] wk = Arrays.copyOfRange(params, q, q + viewParCount);
                 ViewTransform viewk = new ViewTransform(wk);
-                for (int j = 0; j < modPts[k].length; j++, r += 2) {    // for all model points: calculate disturbed value
+                for (int j = 0; j < modPts[k].length; j++, r+=2) {    // for all model points: calculate disturbed value
                     Pnt2d Pj = modPts[k][j];
                     double[] uvMod = camMod.project(viewk, Pj);
                     J[r + 0][p] = (uvMod[0] - uvRef[r + 0]) / delta;   // dX
@@ -209,6 +211,7 @@ public class OptimizerFresh1 implements NonlinearOptimizer {
         }
 
         // Step 2: calculate the diagonal blocks, one for each view
+        int startRow = 0;
         for (int k = 0; k < M; k++) {    // for all views/blocks
             final int start = camParCount + k * viewParCount;
             double[] w = Arrays.copyOfRange(params, start, start + viewParCount);
@@ -218,16 +221,17 @@ public class OptimizerFresh1 implements NonlinearOptimizer {
                 double delta = estimateDelta(wp);
                 w[p] = w[p] + delta;                // modify parameter w_k
                 ViewTransform view = new ViewTransform(w);
-                int r = 2 * k * modPts[k].length;    // row
-                for (int j = 0; j < modPts[k].length; j++) {        // for all model points: calculate disturbed value
+                // fill column of J in diagonal block k:
+                for (int j = 0, r = startRow; j < modPts[k].length; j++, r+=2) {        // for all model points: calculate disturbed value
+                    System.out.println("     OptimizerFresh1: k=" + k + " p=" + p + " j=" + j + " r=" + r);
                     Pnt2d Pj = modPts[k][j];
                     double[] uvMod = camOrig.project(view, Pj);
                     J[r + 0][c + p] = (uvMod[0] - uvRef[r + 0]) / delta;   // dX
                     J[r + 1][c + p] = (uvMod[1] - uvRef[r + 1]) / delta;   // dY
-                    r = r + 2;
                 }
                 w[p] = wp; // revert parameter w[p] to its original value
             }
+            startRow = startRow + modPts[k].length;
         }
 
         for (int j = 0; j < 2; j++) {
