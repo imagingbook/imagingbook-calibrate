@@ -49,7 +49,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private static int maxIterations  = 1000;
 
     private boolean SKIP_CAMERA_PARAMS = false;
-    private boolean SKIP_DISTORTION_PARAMS = false;
+    private boolean SKIP_DISTORTION_PARAMS = true;
     private boolean SKIP_VIEW_PARAMS = true;
     final int effParameterCnt;                   // remaining parameters (non-skipped)
 
@@ -114,12 +114,12 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         };
 
         double[][] distScales = {
-                { 0.002, 0.05}, //{ 0.005, 0.05},       // scale
+                { 0.002, 0.005}, //{ 0.005, 0.05},       // scale
                 { 0, 0}        // offset
         }; //new double[initCam.getDistortionParameters().length];
 
         double[][] viewScales = {
-                {1, 1, 1, 1, 1, 1}, //{.0005, .0005, .0005, .01, .01, .01},     // scale
+                {.0005, .0005, .0005, .01, .01, .01}, //{.0005, .0005, .0005, .01, .01, .01},     // scale
                 {0, 0, 0, 0, 0, 0}                  // offset
         };
         // double[] viewScales = {1, 1, 1, 1, 1, 1};
@@ -143,6 +143,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
         System.out.println("skipArray  = " + Arrays.toString(paramSkipArray));
         System.out.println("effective parameters  = " + effParameterCnt);
+        System.out.println(" estimateDelta(1) = " +estimateDelta(1));
     }
 
     // -------------------------------------------------------------------------------------------
@@ -209,13 +210,14 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      * @return
      */
     double[] getValue(double[] paramsRS) {
-        System.out.println("getValue(): paramsRS = " + Arrays.toString(paramsRS));
+
         // get full/scaled parameters
         double[] paramsS = expandParams(paramsRS, initialParametersScaled);   // CHECK: insert correct parameters into initialParameters!!
         double[] params = unscaleParameters(paramsS, parameterScales);
-        System.out.println("getValue(): pRS = " + Matrix.toString(paramsRS));
-        System.out.println("getValue(): pS  = " + Matrix.toString(paramsS));
-        System.out.println("getValue(): pU  = " + Matrix.toString(params));
+        // System.out.println("getValue(): paramsRS = " + Matrix.toString(paramsRS));
+        // System.out.println("getValue(): pRS = " + Matrix.toString(paramsRS));
+        // System.out.println("getValue(): pS  = " + Matrix.toString(paramsS));
+        // System.out.println("getValue(): pU  = " + Matrix.toString(params));
         double[] a = Arrays.copyOfRange(params, 0, camParCount);
         Camera cam = initCam.fromParameters(a);
         // double[] V = new double[2 * N + 1];     // extra row for gamma penalty
@@ -236,7 +238,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         double[] resid = Matrix.subtract(observed, V);
         // System.out.println("OverallNonlinearOptimizer: Y = " + Matrix.toString(Arrays.copyOf(Y, 20)));
         // System.out.println("OverallNonlinearOptimizer: R = " + Matrix.toString(Arrays.copyOf(resid, 20)));
-        System.out.println("OverallNonlinearOptimizer: |R1| = " + Matrix.normL2(resid));
+        // System.out.println("OverallNonlinearOptimizer: |R1| = " + Matrix.normL2(resid));
         // System.out.println("OverallNonlinearOptimizer: |Rgamma| = " + resid[resid.length-1]);
         return V;
     }
@@ -271,23 +273,23 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             int col = parameterIndexMapper.getReducedPos(p);
             if (col >= 0) {
                 // update J for non-skipped parameter p
-                double ap = pc[p];                               // keep current parameter value
-                double delta = estimateDelta(ap);
+                double pcp = pc[p];                               // keep current parameter value
+                double delta = estimateDelta(pcp);
                 pc[p] = pc[p] + delta;        // modify parameter p
                 Camera camMod = camCur.fromParameters(pc);    // modified camera
                 // project all model points through the modified camera:
                 for (int k = 0, r = 0; k < M; k++) {            // for all views k, r = row
                     int q = camParCount + k * viewParCount;     // q = start in parameter vector
                     double[] wk = Arrays.copyOfRange(params, q, q + viewParCount);
-                    ViewTransform viewk = new ViewTransform(wk);
+                    ViewTransform Vk = new ViewTransform(wk);
                     for (int j = 0; j < modPts[k].length; j++, r += 2) {
                         // project all points of view k to sensor:
-                        double[] Ymod = camMod.project(viewk, modPts[k][j]);
+                        double[] Ymod = camMod.project(Vk, modPts[k][j]);
                         J[r + 0][col] = (Ymod[0] - Yref[r + 0]) / delta;   // dX
                         J[r + 1][col] = (Ymod[1] - Yref[r + 1]) / delta;   // dY
                     }
                 }
-                pc[p] = ap;    // revert parameter a[p] to original value
+                pc[p] = pcp;    // revert parameter a[p] to original value
             }
         }
 
@@ -314,12 +316,14 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                     w[i] = wi; // revert parameter w[i] to its original value
                 }
             }
-            startRow = startRow + modPts[k].length;
+            startRow = startRow + 2 * modPts[k].length;
         }
 
-        for (int j = 0; j < 2; j++) {
-            System.out.printf("    Ju[%d] = %s\n", j, Matrix.toString(J[j]));
-        }
+        printJacobian(J);
+
+        // for (int j = 0; j < 2; j++) {
+        //     System.out.printf("    Ju[%d] = %s\n", j, Matrix.toString(J[j]));
+        // }
 
         // scale J back to optimizer scale
         for (int p = 0; p < params.length; p++) {
@@ -327,16 +331,35 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             if (col >= 0) { // non-skipped parameter
                 // multiply column J[*][p] by scale[p]:
                 double s = parameterScales[0][p];
+                // System.out.printf("  --- scaling J[%d] by %.4f\n", col, s);
                 for (int j = 0; j < J.length; j++) {
-                    J[j][col] = J[j][col] * s;
+                    J[j][col] *= s;
                 }
             }
         }
 
-        // print first two rows of Jacobian
-        for (int j = 0; j < 2; j++) {
-            System.out.printf("    Js[%d] = %s\n", j, Matrix.toString(J[j]));
-        }
+        // printJacobian(J);
+
+
+
+        // // print first rows of each Jacobian block --------------------------
+        // int startR = 0;
+        // PrintPrecision.set(3);
+        // for (int k = 0; k < M; k++) {
+        //     System.out.println("J block " + k);
+        //     for (int j = 0; j < 2; j++) {
+        //         int r = startR + j;
+        //         System.out.printf("    Js[%d] = %s\n", r, Matrix.toString(J[r]));
+        //     }
+        //     System.out.println("    ...");
+        //     for (int j = 0; j < 2; j++) {
+        //         int r = startR + 2 * modPts[k].length - 2;
+        //         System.out.printf("    Js[%d] = %s\n", r, Matrix.toString(J[r]));
+        //     }
+        //     startR = startR + 2 * modPts[k].length;
+        // }
+        // -------------------------------------------------------------------
+
         // System.out.println("OverallNonlinearOptimizer: R = " + Matrix.toString(Arrays.copyOf(resid, 20)));
 
         double[] colNorms = getMatrixColumnNorms(J);
@@ -347,6 +370,29 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         return J;
     }
 
+
+    void printJacobian(double[][] JAC) {
+        // print first rows of each Jacobian block --------------------------
+        int rowsToPrint = 4;
+        int startR = 0;
+        int m = modPts.length;
+        System.out.println("JACOBIAN with " + JAC.length + " + rows, " + JAC[0].length + " columns");
+        PrintPrecision.set(3);
+        for (int k = 0; k < m; k++) {
+            System.out.println("J block " + k + " with rows " + 2*modPts[k].length + " ----------------------------");
+            for (int j = 0; j < rowsToPrint; j++) {
+                int r = startR + j;
+                System.out.printf("    Js[%d] = %s\n", r, Matrix.toString(JAC[r]));
+            }
+            System.out.println("    ...");
+            for (int j = 0; j < rowsToPrint; j++) {
+                int r = startR + 2 * modPts[k].length - rowsToPrint + j;
+                System.out.printf("    Js[%d] = %s\n", r, Matrix.toString(JAC[r]));
+            }
+            startR = startR + 2 * modPts[k].length;
+        }
+        // -------------------------------------------------------------------
+    }
 
     private static final double EPS = 1.5e-8; 	// = sqrt(2.2 * 10^{-16})
 
