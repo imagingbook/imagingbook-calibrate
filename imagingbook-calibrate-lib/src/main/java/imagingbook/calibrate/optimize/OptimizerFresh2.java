@@ -50,12 +50,12 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
     private boolean SKIP_CAMERA_PARAMS = false;
     private boolean SKIP_DISTORTION_PARAMS = false;
-    private boolean SKIP_VIEW_PARAMS = false;
+    private boolean SKIP_VIEW_PARAMS = true;
     final int effParameterCnt;                   // remaining parameters (non-skipped)
 
     static double ALMOST_ZERO = 1e-9;
 
-    private List<Integer> skipList = Arrays.asList(2);
+    private List<Integer> skipList = Arrays.asList();
     private final int[] paramSkipArray;             // parameter is skipped if skipArray[p] = -1
     // private int[] paramIndex;                   // [origParamIndex[q] = p (index in original parameters
     private final ArrayIndexMapper parameterIndexMapper;
@@ -74,6 +74,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private final ViewTransform[] initViews;
     private ViewTransform[] finalViews;
     private final double[] initialParameters;
+    private final double[] initialParametersScaled;
     private final double[][] parameterScales;
 
     private final double[] observed;
@@ -108,17 +109,17 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         double uc = initCam.getUc();
         double vc = initCam.getVc();
         double[][] camScales = {    // alpha, beta, gamma, uc, vc
-                {2, 2, 2, 0.2, 0.2},     // scale
-                {alpha, beta,  0, uc, vc }     // offset
+                {1, 1, 1, 0.1, 0.1}, // {2, 2, 2, 0.2, 0.2},     // scale
+                {0, 0, 0, 0, 0}  // {alpha, beta,  0, uc, vc }     // offset
         };
 
         double[][] distScales = {
-                { 0.005, 0.05},       // scale
-                {   0,   0 }        // offset
+                { 0.002, 0.05}, //{ 0.005, 0.05},       // scale
+                { 0, 0}        // offset
         }; //new double[initCam.getDistortionParameters().length];
 
         double[][] viewScales = {
-                {.0005, .0005, .0005, .01, .01, .01},     // scale
+                {1, 1, 1, 1, 1, 1}, //{.0005, .0005, .0005, .01, .01, .01},     // scale
                 {0, 0, 0, 0, 0, 0}                  // offset
         };
         // double[] viewScales = {1, 1, 1, 1, 1, 1};
@@ -127,6 +128,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         System.out.println("parameterOffsets = " + Matrix.toString(parameterScales[1]));
 
         this.initialParameters = makeInitialParameters();
+        this.initialParametersScaled = scaleParameters(initialParameters, parameterScales);
         this.K = initialParameters.length;
 
         this.paramSkipArray = makeParamSkipArray();
@@ -209,7 +211,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     double[] getValue(double[] paramsRS) {
         System.out.println("getValue(): paramsRS = " + Arrays.toString(paramsRS));
         // get full/scaled parameters
-        double[] paramsS = expandParams(paramsRS, initialParameters);
+        double[] paramsS = expandParams(paramsRS, initialParametersScaled);   // CHECK: insert correct parameters into initialParameters!!
         double[] params = unscaleParameters(paramsS, parameterScales);
         System.out.println("getValue(): pRS = " + Matrix.toString(paramsRS));
         System.out.println("getValue(): pS  = " + Matrix.toString(paramsS));
@@ -370,7 +372,14 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      */
     public void optimize() {
         // RealVector start = new ArrayRealVector(initialParameters, false);
-        System.out.println("initialParameters = " + Matrix.toString(initialParameters));
+        System.out.println("initialParameters (unscaled) = " + Matrix.toString(initialParameters));
+        double[] ips = scaleParameters(initialParameters, parameterScales);
+        System.out.println("initialParameters (scaled)   = " + Matrix.toString(ips));
+        double[] ipu = unscaleParameters(ips, parameterScales);
+        System.out.println("initialParameters (unscaled) = " + Matrix.toString(ipu));
+
+
+
         MultivariateJacobianFunction model = new FullOptimizationModel();
 
         double[] pStart = reduceParams(scaleParameters(initialParameters, parameterScales));
