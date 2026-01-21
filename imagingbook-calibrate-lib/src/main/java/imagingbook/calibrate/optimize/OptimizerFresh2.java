@@ -48,14 +48,15 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private static int maxEvaluations = 1000;
     private static int maxIterations  = 1000;
 
+    private List<Integer> skipList = Arrays.asList(2);
     private boolean SKIP_CAMERA_PARAMS = false;
-    private boolean SKIP_DISTORTION_PARAMS = true;
+    private boolean SKIP_DISTORTION_PARAMS = false;
     private boolean SKIP_VIEW_PARAMS = true;
     final int effParameterCnt;                   // remaining parameters (non-skipped)
 
     static double ALMOST_ZERO = 1e-9;
 
-    private List<Integer> skipList = Arrays.asList();
+
     private final int[] paramSkipArray;             // parameter is skipped if skipArray[p] = -1
     // private int[] paramIndex;                   // [origParamIndex[q] = p (index in original parameters
     private final ArrayIndexMapper parameterIndexMapper;
@@ -210,28 +211,31 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      * @return
      */
     double[] getValue(double[] paramsRS) {
-
-        // get full/scaled parameters
-        double[] paramsS = expandParams(paramsRS, initialParametersScaled);   // CHECK: insert correct parameters into initialParameters!!
+        // expand to scaled parameters:
+        double[] paramsS = expandParams(paramsRS, initialParametersScaled);
+        // convert to unscaled parameters:
         double[] params = unscaleParameters(paramsS, parameterScales);
         // System.out.println("getValue(): paramsRS = " + Matrix.toString(paramsRS));
         // System.out.println("getValue(): pRS = " + Matrix.toString(paramsRS));
         // System.out.println("getValue(): pS  = " + Matrix.toString(paramsS));
         // System.out.println("getValue(): pU  = " + Matrix.toString(params));
+        // extract camera parameters (including distortion)
         double[] a = Arrays.copyOfRange(params, 0, camParCount);
+        // create a new Camera instance:
         Camera cam = initCam.fromParameters(a);
-        // double[] V = new double[2 * N + 1];     // extra row for gamma penalty
-        double[] V = new double[2 * N];     // no gamma penalty
+        double[] V = new double[2 * N];             // new value vector
         int r = 0;
+        // process each view
         for (int k = 0; k < M; k++) {
+            // extract parameters for view k
             int qk = camParCount + k * viewParCount;
             double[] wk = Arrays.copyOfRange(params, qk, qk + viewParCount);
             ViewTransform Vk = new ViewTransform(wk);
-            for (int i = 0; i < modPts[k].length; i++) {
+            // project each point of view k to sensor:
+            for (int i = 0; i < modPts[k].length; i++, r+=2) {
                 double[] uv = cam.project(Vk, modPts[k][i]);
-                V[r * 2 + 0] = uv[0];
-                V[r * 2 + 1] = uv[1];
-                r = r + 1;
+                V[r + 0] = uv[0];
+                V[r + 1] = uv[1];
             }
         }
 
@@ -256,7 +260,9 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     double[][] getJacobian(double[] paramsRS) {
         // get full/scaled parameters
         double[] Yref = getValue(paramsRS);                 // values Y from undisturbed parameters
-        double[] paramsS = expandParams(paramsRS, initialParameters);
+        // expand to scaled parameters:
+        double[] paramsS = expandParams(paramsRS, initialParametersScaled);
+        // convert to unscaled parameters:
         double[] params = unscaleParameters(paramsS, parameterScales);
 
         // create a camera for the current parameter point
