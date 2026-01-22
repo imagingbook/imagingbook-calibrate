@@ -16,7 +16,7 @@ import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimatorConstrained;
 import imagingbook.calibrate.optimize.obsolete.NonlinearOptimizer;
-import imagingbook.calibrate.optimize.OptimizerFresh2;
+import imagingbook.calibrate.optimize.OverallOptimizer;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
@@ -180,17 +180,39 @@ public class Calibration {
 		// NonlinearOptimizer optim =
 		// 		new OverallNonlinearOptimizer_Unscaled(improvedCam, initViews, modelPntSet, imagePntSet);
 
-		NonlinearOptimizer optim =
-				new OptimizerFresh2(improvedCam, initViews, modelPntSet, imagePntSet);
+		OverallOptimizer optim =
+				new OverallOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
+		optim.fixGamma();
+		optim.fixViewParameters();
 
 		optim.optimize();
-		System.out.println("optimize: iterations = " + optim.getIterations());
-		System.out.println("optimize: evaluations = " + optim.getEvaluations());
-		System.out.println("optimize: |residuals| = " + optim.getResiduals().getNorm());
+		System.out.println("optimize1: iterations = " + optim.getIterations());
+		System.out.println("optimize1: evaluations = " + optim.getEvaluations());
+		System.out.println("optimize1: |residuals| = " + optim.getResiduals().getNorm());
 
 		finalCam = optim.getFinalCamera();
         debug("final camera = " + finalCam);
-		finalViews = optim.getFinalViews();
+
+		OverallOptimizer optim2 =
+				new OverallOptimizer(finalCam, initViews, modelPntSet, imagePntSet);
+		optim2.fixLinearCameraParameters();
+		optim2.fixDistortionParameters();
+		optim2.optimize();
+
+		System.out.println("optimize2: iterations = " + optim2.getIterations());
+		System.out.println("optimize2: evaluations = " + optim2.getEvaluations());
+		System.out.println("optimize2: |residuals| = " + optim2.getResiduals().getNorm());
+		finalViews = optim2.getFinalViews();
+
+		OverallOptimizer optim3 =
+				new OverallOptimizer(finalCam, finalViews, modelPntSet, imagePntSet);
+		optim3.fixGamma();
+		optim3.fixViewParameters();
+		optim3.optimize();
+		System.out.println("optimize3: iterations = " + optim3.getIterations());
+		System.out.println("optimize3: evaluations = " + optim3.getEvaluations());
+		System.out.println("optimize3: |residuals| = " + optim3.getResiduals().getNorm());
+
 	}
 
 	//---------------------------------------------------------------------------

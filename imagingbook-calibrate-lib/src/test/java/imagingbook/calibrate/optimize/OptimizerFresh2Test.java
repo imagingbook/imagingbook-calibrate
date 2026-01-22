@@ -9,8 +9,8 @@ package imagingbook.calibrate.optimize;
 import imagingbook.common.util.bits.BitVector;
 import org.junit.Test;
 
-// import static imagingbook.calibrate.optimize.OptimizerFresh2.countEffParameters;
-// import static imagingbook.calibrate.optimize.OptimizerFresh2.makeParamIndex;
+// import static imagingbook.calibrate.optimize.OverallOptimizer.countEffParameters;
+// import static imagingbook.calibrate.optimize.OverallOptimizer.makeParamIndex;
 import static org.junit.Assert.*;
 
 public class OptimizerFresh2Test {
@@ -22,7 +22,7 @@ public class OptimizerFresh2Test {
     public void ParameterAdapterTest() {
         BitVector subset = BitVector.from("1110011110");
         double[] scales = {11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-        OptimizerFresh2.ParameterAdapter adapter = new OptimizerFresh2.ParameterAdapter(subset, scales);
+        OverallOptimizer.ParameterAdapter adapter = new OverallOptimizer.ParameterAdapter(subset, scales);
 
         assertArrayEquals(new int[] {0, 1, 2, -1, -1, 3, 4, 5, 6, -1}, adapter.origSeqIndex);
         assertArrayEquals(new int[] {0, 1, 2, 5, 6, 7, 8}, adapter.subSeqIndex);

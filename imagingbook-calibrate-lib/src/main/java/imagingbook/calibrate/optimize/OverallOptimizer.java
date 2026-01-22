@@ -51,17 +51,17 @@ import java.util.List;
  *
  * @author WB
  */
-public class OptimizerFresh2 implements NonlinearOptimizer {
+public class OverallOptimizer implements NonlinearOptimizer {
     private static int maxEvaluations = 1000;
     private static int maxIterations  = 1000;
 
-    private static boolean FIX_LINCAMERA_PARAMS = true;
-    private static boolean FIX_DISTORTION_PARAMS = true;
+    private static boolean FIX_LINCAMERA_PARAMS = false;
+    private static boolean FIX_DISTORTION_PARAMS = false;
     private static boolean FIX_VIEW_PARAMS = false;
-    private static List<Integer> FIX_SINGLE_PARAMS = Arrays.asList(2);
+    private static List<Integer> FIX_SINGLE_PARAMS = Arrays.asList();
 
     private final BitVector activeParamFlags;
-    private final int activeParameterCnt;
+    private int activeParameterCnt;
 
     private final Camera initCam;
     private final Pnt2d[][] modPts;
@@ -77,7 +77,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     //private final double[] parameterScales;
 
     private final ParameterAssembler assembler;
-    private final ParameterAdapter adapter;
+    private ParameterAdapter adapter;
 
     // optimization results:
     private LeastSquaresOptimizer.Optimum result;
@@ -92,13 +92,14 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      * @param modPntSet a list of M model point sets
      * @param obsPntSet a list of M sensor point sets
      */
-    public OptimizerFresh2(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
+    public OverallOptimizer(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
         this.initCam = initCam;
         this.M = obsPntSet.size();
-        this.N = checkInputData(viewList, modPntSet, obsPntSet);
+        this.N = checkAndCount(viewList, modPntSet, obsPntSet);
         this.initViews = viewList.toArray(new ViewTransform[0]);
         this.modPts = modPntSet.toArray(new Pnt2d[0][]);
         this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
+        this.observed = makeObservedVector();
 
         this.assembler = new ParameterAssembler(initCam, M);
         this.initialParameters =  assembler.assembleParameters(initCam, viewList);     // makeInitialParameters();
@@ -106,20 +107,34 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
         // ---------------------------
         this.activeParamFlags = new BitVector(K);   // initially all parameters are active (non-fixed)
-        this.activeParamFlags.setAll();
-        if (FIX_LINCAMERA_PARAMS)  {this.fixLinearCameraParameters();}
-        if (FIX_DISTORTION_PARAMS) {this.fixDistortionParameters();}
-        if (FIX_VIEW_PARAMS)       {this.fixViewParameters();}
-        for (int p : FIX_SINGLE_PARAMS) {
-            this.fixParameter(p);
-        }
-        System.out.println("activeParamFlags = " + activeParamFlags);
+        this.activeParamFlags.setAll();             // to be modified by subsequent fixParameters() calls
+
+//        if (FIX_LINCAMERA_PARAMS)  {this.fixLinearCameraParameters();}
+//        if (FIX_DISTORTION_PARAMS) {this.fixDistortionParameters();}
+//        if (FIX_VIEW_PARAMS)       {this.fixViewParameters();}
+//        if (FIX_SINGLE_PARAMS != null) {this.fixParameters(FIX_SINGLE_PARAMS);}
+//        System.out.println("activeParamFlags = " + activeParamFlags);
 
 //        double[] camScales = {1, 1, 1, 0.1, 0.1};    // alpha, beta, gamma, uc, vc
 //        double[] distScales = { 0.002, 0.05};
 //        double[] viewScales = { .0005, .0005, .0005, .01, .01, .01};
 //        this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
 //        System.out.println("parameterScales  = " + Matrix.toString(parameterScales));
+
+        // ---------------------------
+
+    }
+
+    // -------------------------------------------------------------------------------------
+
+    /**
+     * Called by optimize. Performs all remaining setup tasks after optimizer has been
+     * fully configures, e.g. fixing certain parameters.
+     * Finishes all setups not completed by constructor.
+     * It is an error if setup() is called more than once.
+     */
+    private void setup() {
+        System.out.println("activeParamFlags = " + activeParamFlags);
         this.adapter = new ParameterAdapter(activeParamFlags, null);    // all scales = 1
         this.activeParameterCnt = activeParamFlags.cardinality();     // adapter.getSubsequenceLength();
 
@@ -128,16 +143,12 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         System.out.println("autoScales = " + Matrix.toString(autoScales));
         this.adapter.setScales(autoScales);
 
-
-        // ---------------------------
-        this.observed = makeObservedVector();
-
-
+        System.out.printf("problem size = %d x %d\n", 2*N, activeParameterCnt);
     }
 
     // -------------------------------------------------------------------------------------------
 
-    private static int checkInputData(List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
+    private static int checkAndCount(List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
         int M = viewList.size();
         if (modPntSet.size() != M) {
             throw new IllegalArgumentException("modPntSet.size() != " + M);
@@ -162,6 +173,12 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         this.activeParamFlags.unsetBit(p);
     }
 
+    public void fixParameters(List<Integer> params) {
+        for (int p : params) {
+            fixParameter(p);
+        }
+    }
+
     public void fixLinearCameraParameters() {
         for (int p = 0; p < 5; p++) {       // TODO
             fixParameter(p);
@@ -181,11 +198,16 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         }
     }
 
+    public void fixGamma() {
+        fixParameter(2);
+    }
+
     public void fixViewParameters() {
         for (int k = 0; k < modPts.length; k++) {
             fixViewParameters(k);
         }
     }
+
 
     // -------------------------------------------------------------------------------------
 
@@ -194,6 +216,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      * parameters.
      */
     public void optimize() {
+        setup();
         MultivariateJacobianFunction model = new CombinedModel(2 * N, activeParameterCnt);
         double[] pStart = adapter.getOptimizerParameters(initialParameters);
         System.out.println("start Parameters = " + Matrix.toString(pStart));
