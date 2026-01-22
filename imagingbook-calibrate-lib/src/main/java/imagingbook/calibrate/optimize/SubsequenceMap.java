@@ -81,7 +81,7 @@ public class SubsequenceMap {
      * @param origPos position in original sequence
      * @return position in the subsequence if contained, -1 otherwise
      */
-    int getSubsequencePos(int origPos) {
+    public int getSubsequencePos(int origPos) {
         return origSeqIndex[origPos];
     }
 
@@ -90,7 +90,7 @@ public class SubsequenceMap {
      * @param subPos position in the subsequence
      * @return position in original sequence
      */
-    int getOriginalPos(int subPos) {
+    public int getOriginalPos(int subPos) {
         return subSeqIndex[subPos];
     }
 

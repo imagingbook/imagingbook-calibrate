@@ -55,9 +55,9 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private static int maxEvaluations = 1000;
     private static int maxIterations  = 1000;
 
-    private static boolean FIX_LINCAMERA_PARAMS = false;
-    private static boolean FIX_DISTORTION_PARAMS = false;
-    private static boolean FIX_VIEW_PARAMS = true;
+    private static boolean FIX_LINCAMERA_PARAMS = true;
+    private static boolean FIX_DISTORTION_PARAMS = true;
+    private static boolean FIX_VIEW_PARAMS = false;
     private static List<Integer> FIX_SINGLE_PARAMS = Arrays.asList(2);
 
     private final BitVector activeParameters;
@@ -100,12 +100,6 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         this.modPts = modPntSet.toArray(new Pnt2d[0][]);
         this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
 
-        double[] camScales = {1, 1, 1, 0.1, 0.1};    // alpha, beta, gamma, uc, vc
-        double[] distScales = { 0.002, 0.05};
-        double[] viewScales = { .0005, .0005, .0005, .01, .01, .01};
-        this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
-        System.out.println("parameterScales  = " + Matrix.toString(parameterScales));
-
         this.assembler = new ParameterAssembler(initCam, M);
         this.initialParameters =  assembler.assembleParameters(initCam, viewList);     // makeInitialParameters();
         this.K = initialParameters.length;
@@ -120,10 +114,25 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             this.fixParameter(p);
         }
         System.out.println("activeParameters = " + activeParameters);
-        this.adapter = new ParameterAdapter(activeParameters, parameterScales);
+
+        double[] camScales = {1, 1, 1, 0.1, 0.1};    // alpha, beta, gamma, uc, vc
+        double[] distScales = { 0.002, 0.05};
+        double[] viewScales = { .0005, .0005, .0005, .01, .01, .01};
+        this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
+        System.out.println("parameterScales 1  = " + Matrix.toString(parameterScales));
+        this.adapter = new ParameterAdapter(activeParameters, null);    // all scales = 1
+        System.out.println("parameterScales 2  = " + Matrix.toString(adapter.scales));
         this.activeParameterCnt = adapter.getSubsequenceLength();
+
+        double[] autoScales = getAutoScales(initialParameters);                            // TODO : problem here
+        System.out.println("autoScales = " + Matrix.toString(autoScales));
+        this.adapter.setScales(autoScales);
+
+
         // ---------------------------
         this.observed = makeObservedVector();
+
+
     }
 
     // -------------------------------------------------------------------------------------------
@@ -283,6 +292,23 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
     // Parameter scaling --------------------------------------------------------------------
 
+    double[] getAutoScales(double[] allParams) {
+        MultivariateJacobianFunction model = new CombinedModel(2 * N, activeParameterCnt);
+        double[] pStart = adapter.getOptimizerParameters(allParams);
+        RealMatrix Jac = model.value(new ArrayRealVector(pStart, false)).getSecond();
+        double[] scales = new double[allParams.length];
+
+        for (int q = 0; q < activeParameterCnt; q++) {
+            double norm = Jac.getColumnVector(q).getNorm();
+            double s = (norm < 1e-12) ? 1.0 : (1.0 / norm);
+            int p = adapter.getOriginalPos(q);
+            scales[p] = s;
+        }
+
+        return scales;
+    }
+
+
     /**
      * Sets the scales for the parameters of one view transform
      * @param scales
@@ -369,7 +395,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      */
     static class ParameterAdapter extends SubsequenceMap {
 
-        private final double[] scales;                      // for scaling parameters
+        private double[] scales;                      // for scaling parameters
 
         /**
          * Constructor. Throws an exception if {@code subset} and {@code scales} are not of the
@@ -379,7 +405,17 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
          */
         ParameterAdapter(BitVector subset, double[] scales) {
             super(subset);
-            if (scales.length != subset.length()) {
+            if (scales == null) {
+                this.scales = new double[subset.length()];
+                Arrays.fill(this.scales, 1.0);
+            }
+            else {
+                setScales(scales);
+            }
+        }
+
+        void setScales(double[] scales) {
+            if (scales.length != this.getOriginalLength()) {
                 throw new IllegalArgumentException("scales.length != skipArray.length");
             }
             for (int i = 0; i < scales.length; i++) {
@@ -528,7 +564,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                             J[row + 1][col] = (Ymod[1] - Y[row + 1]) / delta;   // dY
                         }
                     }
-                    pc[p] = pcp;                        // revert parameter a[p] to original value
+                    pc[p] = pcp;                        // revert parameter pc[p] to original value
                 }
             }
 
