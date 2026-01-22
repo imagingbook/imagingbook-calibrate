@@ -60,7 +60,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private static boolean FIX_VIEW_PARAMS = false;
     private static List<Integer> FIX_SINGLE_PARAMS = Arrays.asList(2);
 
-    private final BitVector activeParameters;
+    private final BitVector activeParamFlags;
     private final int activeParameterCnt;
 
     private final Camera initCam;
@@ -74,7 +74,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private final int K;                // total number of parameters
 
     private final double[] initialParameters;
-    private final double[] parameterScales;
+    //private final double[] parameterScales;
 
     private final ParameterAssembler assembler;
     private final ParameterAdapter adapter;
@@ -105,26 +105,26 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         this.K = initialParameters.length;
         System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
         // ---------------------------
-        this.activeParameters = new BitVector(K);   // initially all parameters are active (non-fixed)
-        this.activeParameters.setAll();
+        this.activeParamFlags = new BitVector(K);   // initially all parameters are active (non-fixed)
+        this.activeParamFlags.setAll();
         if (FIX_LINCAMERA_PARAMS)  {this.fixLinearCameraParameters();}
         if (FIX_DISTORTION_PARAMS) {this.fixDistortionParameters();}
         if (FIX_VIEW_PARAMS)       {this.fixViewParameters();}
         for (int p : FIX_SINGLE_PARAMS) {
             this.fixParameter(p);
         }
-        System.out.println("activeParameters = " + activeParameters);
+        System.out.println("activeParamFlags = " + activeParamFlags);
 
-        double[] camScales = {1, 1, 1, 0.1, 0.1};    // alpha, beta, gamma, uc, vc
-        double[] distScales = { 0.002, 0.05};
-        double[] viewScales = { .0005, .0005, .0005, .01, .01, .01};
-        this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
-        System.out.println("parameterScales 1  = " + Matrix.toString(parameterScales));
-        this.adapter = new ParameterAdapter(activeParameters, null);    // all scales = 1
-        System.out.println("parameterScales 2  = " + Matrix.toString(adapter.scales));
-        this.activeParameterCnt = adapter.getSubsequenceLength();
+//        double[] camScales = {1, 1, 1, 0.1, 0.1};    // alpha, beta, gamma, uc, vc
+//        double[] distScales = { 0.002, 0.05};
+//        double[] viewScales = { .0005, .0005, .0005, .01, .01, .01};
+//        this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
+//        System.out.println("parameterScales  = " + Matrix.toString(parameterScales));
+        this.adapter = new ParameterAdapter(activeParamFlags, null);    // all scales = 1
+        this.activeParameterCnt = activeParamFlags.cardinality();     // adapter.getSubsequenceLength();
 
-        double[] autoScales = getAutoScales(initialParameters);                            // TODO : problem here
+        double[] autoScales = getAutoScales(initialParameters);
+        PrintPrecision.set(6);
         System.out.println("autoScales = " + Matrix.toString(autoScales));
         this.adapter.setScales(autoScales);
 
@@ -159,7 +159,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     // -------------------------------------------------------------------------------------
 
     public void fixParameter(int p) {
-        this.activeParameters.unsetBit(p);
+        this.activeParamFlags.unsetBit(p);
     }
 
     public void fixLinearCameraParameters() {
@@ -297,6 +297,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         double[] pStart = adapter.getOptimizerParameters(allParams);
         RealMatrix Jac = model.value(new ArrayRealVector(pStart, false)).getSecond();
         double[] scales = new double[allParams.length];
+        Arrays.fill(scales, 1.0);
 
         for (int q = 0; q < activeParameterCnt; q++) {
             double norm = Jac.getColumnVector(q).getNorm();
@@ -304,7 +305,6 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             int p = adapter.getOriginalPos(q);
             scales[p] = s;
         }
-
         return scales;
     }
 
