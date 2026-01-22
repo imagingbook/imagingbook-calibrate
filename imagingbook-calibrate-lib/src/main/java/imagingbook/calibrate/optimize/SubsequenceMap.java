@@ -40,38 +40,38 @@ public class SubsequenceMap {
         }
     }
 
-    @Deprecated
-    public SubsequenceMap(int size, List<Integer> skipped) {
-        this(makeBitVector(size, skipped));
-    }
+    // @Deprecated
+    // public SubsequenceMap(int size, List<Integer> skipped) {
+    //     this(makeBitVector(size, skipped));
+    // }
 
-    @Deprecated
-    static BitVector makeBitVector(int size, List<Integer> skipped) {
-        System.out.println("skipped = " + skipped);
-        BitVector subset = new BitVector(size);
-        subset.setAll();
-        for (int i : skipped) {
-            subset.unsetBit(i);
-        }
-        System.out.println("subset = " + subset);
-        return subset;
-    }
+    // @Deprecated
+    // static BitVector makeBitVector(int size, List<Integer> skipped) {
+    //     System.out.println("skipped = " + skipped);
+    //     BitVector subset = new BitVector(size);
+    //     subset.setAll();
+    //     for (int i : skipped) {
+    //         subset.unsetBit(i);
+    //     }
+    //     System.out.println("subset = " + subset);
+    //     return subset;
+    // }
 
-    @Deprecated
-    public SubsequenceMap(int[] skipArray) {
-        this(collectSkipped(skipArray));
-    }
+    // @Deprecated
+    // public SubsequenceMap(int[] skipArray) {
+    //     this(collectSkipped(skipArray));
+    // }
 
-    @Deprecated
-    static BitVector collectSkipped(int[] skippedArray) {
-        BitVector subset = new BitVector(skippedArray.length);
-        for (int i = 0; i < skippedArray.length; i++) {
-            if (skippedArray[i] != -1) {
-                subset.setBit(i);
-            }
-        }
-        return subset;
-    }
+    // @Deprecated
+    // static BitVector collectSkipped(int[] skippedArray) {
+    //     BitVector subset = new BitVector(skippedArray.length);
+    //     for (int i = 0; i < skippedArray.length; i++) {
+    //         if (skippedArray[i] != -1) {
+    //             subset.setBit(i);
+    //         }
+    //     }
+    //     return subset;
+    // }
 
     // ------------------------------------------------------------------------------------------
 

@@ -77,7 +77,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private final ViewTransform[] initViews;
     private ViewTransform[] finalViews;
     private final double[] initialParameters;
-    private final double[][] parameterScales;
+    private final double[] parameterScales;
     private final ParameterAdapter adapter;
     private final double[] observed;
 
@@ -109,24 +109,13 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         double beta = initCam.getBeta();
         double uc = initCam.getUc();
         double vc = initCam.getVc();
-        double[][] camScales = {    // alpha, beta, gamma, uc, vc
-                {1, 1, 1, 0.1, 0.1}, // {2, 2, 2, 0.2, 0.2},     // scale
-                {0, 0, 0, 0, 0}  // {alpha, beta,  0, uc, vc }     // offset
-        };
 
-        double[][] distScales = {
-                { 0.002, 0.05}, //{ 0.005, 0.05},       // scale
-                { 0, 0}        // offset
-        }; //new double[initCam.getDistortionParameters().length];
-
-        double[][] viewScales = {
-                {.0005, .0005, .0005, .01, .01, .01}, //{.0005, .0005, .0005, .01, .01, .01},     // scale
-                {0, 0, 0, 0, 0, 0}                  // offset
-        };
+        double[] camScales = {1, 1, 1, 0.1, 0.1};    // alpha, beta, gamma, uc, vc
+        double[] distScales = { 0.002, 0.05};
+        double[] viewScales = { .0005, .0005, .0005, .01, .01, .01};
 
         this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
-        System.out.println("parameterScales  = " + Matrix.toString(parameterScales[0]));
-        System.out.println("parameterOffsets = " + Matrix.toString(parameterScales[1]));
+        System.out.println("parameterScales  = " + Matrix.toString(parameterScales));
 
         this.initialParameters = makeInitialParameters();
         this.K = initialParameters.length;
@@ -143,9 +132,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         System.out.println("activeParameters = " + activeParameters);
         // ---------------------------
 
-        // this.paramSkipArray = makeParamSkipArray();
-        // this.adapter = new ParameterAdapter(paramSkipArray, parameterScales[0]);
-        this.adapter = new ParameterAdapter(activeParameters, parameterScales[0]);
+        this.adapter = new ParameterAdapter(activeParameters, parameterScales);
         this.effParameterCnt = adapter.getSubsequenceLength();
         this.observed = makeObservedVector();
 
@@ -379,20 +366,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      * @param viewCnt number of views
      * @return a vector scale values for all parameters
      */   // TODO: revise to use initial Camera to obtain default scale values
-    double[][] makeParameterScales(double[][] camScales, double[][] distScales, double[][] viewScales, int viewCnt) {
-        if (camScales[0].length != camScales[1].length) {
-            throw new IllegalArgumentException("camScales not rectangular");
-        }
-        if (distScales[0].length != distScales[1].length) {
-            throw new IllegalArgumentException("distScales not rectangular");
-        }
-        if (viewScales[0].length != viewScales[1].length) {
-            throw new IllegalArgumentException("viewScales not rectangular");
-        }
-
-        int camParCount =  camScales[0].length;
-        int distParCount = distScales[0].length;
-        int viewParCount = viewScales[0].length;
+    double[] makeParameterScales(double[] camScales, double[] distScales, double[] viewScales, int viewCnt) {
+        int camParCount =  camScales.length;
+        int distParCount = distScales.length;
+        int viewParCount = viewScales.length;
         int P = camParCount + distParCount + viewCnt * viewParCount;
 
         double[] scales = new double[P];
@@ -402,14 +379,12 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         Arrays.fill(scales, 0);
 
         int start = 0;
-        System.arraycopy(camScales[0], 0, scales, start, camParCount);
-        System.arraycopy(camScales[1], 0, offsets, start, camParCount);
+        System.arraycopy(camScales, 0, scales, start, camParCount);
         start += camParCount;
-        System.arraycopy(distScales[0], 0, scales, start, distParCount);
-        System.arraycopy(distScales[1], 0, offsets, start, distParCount);
+        System.arraycopy(distScales, 0, scales, start, distParCount);
         start += distParCount;
         for (int k = 0; k < viewCnt; k++) {
-            System.arraycopy(viewScales[0], 0, scales, start, viewParCount);
+            System.arraycopy(viewScales, 0, scales, start, viewParCount);
             // double[] w = initViews[k].getParameters();  // use intial values as offsets
             // System.arraycopy(w, 0, offsets, start, viewParCount);
             // System.arraycopy(viewScales[1], 0, offsets, start, viewParCount);
@@ -418,7 +393,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
         // Arrays.fill(scale, 1.0);
         // Arrays.fill(offsets, 0);
-        return new double[][] {scales, offsets};
+        return scales;
     }
 
     /**
@@ -474,27 +449,15 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      * }</pre>
      */
     static class ParameterAdapter extends SubsequenceMap {
-        private final double[] scales;
+
+        private final double[] scales;                      // for scaling parameters
 
         /**
-         * Constructor. Throws an exception if {@code skipArray} and {@code scales} are not of the
+         * Constructor. Throws an exception if {@code subset} and {@code scales} are not of the
          * same length or if {@code scales} contains zero values.
-         * @param skipArray array with -1 values marking skipped elements in optimizer parameters (to be changed)
-         * @param scales a vector of scale values, one for each parameter
+         * @param subset a {@link BitVector} flagging the parameters to be kept truncated parameters
+         * @param scales a vector of non-zero scale values, one for each parameter
          */
-        ParameterAdapter(int[] skipArray, double[] scales) {
-            super(skipArray);
-            if (scales.length != skipArray.length) {
-                throw new IllegalArgumentException("scales.length != skipArray.length");
-            }
-            for (int i = 0; i < scales.length; i++) {
-                if (Math.abs(scales[i]) < 1e-9) {
-                    throw new IllegalArgumentException("zero scale value at pos " + i);
-                }
-            }
-            this.scales = scales;
-        }
-
         ParameterAdapter(BitVector subset, double[] scales) {
             super(subset);
             if (scales.length != subset.length()) {
@@ -542,6 +505,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                 PPu[i] = PO[j] * scales[i];
             }
             return PPu;
+        }
+
+        double getScale(int p) {
+            return scales[p];
         }
 
     }
@@ -683,7 +650,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                 // int col = parameterIndexMapper.getReducedPos(p);
                 if (col >= 0) { // non-skipped parameter
                     // multiply column J[*][p] by scale[p]:
-                    double s = parameterScales[0][p];
+                    double s = adapter.getScale(p);     //parameterScales[p];
                     // System.out.printf("  --- scaling J[%d] by %.4f\n", col, s);
                     for (int j = 0; j < J.length; j++) {
                         J[j][col] *= s;

@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.optimize;
 
+import imagingbook.common.util.bits.BitVector;
 import org.junit.Test;
 
 // import static imagingbook.calibrate.optimize.OptimizerFresh2.countEffParameters;
@@ -19,9 +20,9 @@ public class OptimizerFresh2Test {
 
     @Test
     public void ParameterAdapterTest() {
-        int[] skipArray = { 0 , 0 , 0 , -1 , -1 , 0 , 0 , 0 , 0 , -1 };
+        BitVector subset = BitVector.from("1110011110");
         double[] scales = {11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-        OptimizerFresh2.ParameterAdapter adapter = new OptimizerFresh2.ParameterAdapter(skipArray, scales);
+        OptimizerFresh2.ParameterAdapter adapter = new OptimizerFresh2.ParameterAdapter(subset, scales);
 
         assertArrayEquals(new int[] {0, 1, 2, -1, -1, 3, 4, 5, 6, -1}, adapter.origSeqIndex);
         assertArrayEquals(new int[] {0, 1, 2, 5, 6, 7, 8}, adapter.subSeqIndex);
