@@ -8,6 +8,7 @@ package imagingbook.calibrate.optimize;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.optimize.obsolete.NonlinearOptimizer;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
@@ -234,155 +235,6 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     }
 
     // -------------------------------------------------------------------------------------
-
-    /**
-     * Calculates values Y predicted by the model.
-     * Called by the optimizer with reduced and scaled(!) parameters.
-     * @param paramsRS reduced and scaled parameters
-     * @return
-     */
-    @Deprecated
-    double[] getValue(double[] paramsRS) {
-        // expand to scaled parameters:
-        double[] paramsS = expandParams(paramsRS, initialParametersScaled);
-        // convert to unscaled parameters:
-        double[] params = unscaleParameters(paramsS, parameterScales);
-        // System.out.println("getValue(): paramsRS = " + Matrix.toString(paramsRS));
-        // System.out.println("getValue(): pRS = " + Matrix.toString(paramsRS));
-        // System.out.println("getValue(): pS  = " + Matrix.toString(paramsS));
-        // System.out.println("getValue(): pU  = " + Matrix.toString(params));
-
-        // create a new Camera instance:
-        Camera cam = initCam.fromParameters(getCameraParameters(params));
-        double[] V = new double[2 * N];             // new value vector
-        int r = 0;
-        // process each view
-        for (int k = 0; k < M; k++) {
-            // create transform for view k
-            ViewTransform Vk = new ViewTransform(getViewParameters(params, k));
-            // project each point of view k to sensor:
-            for (int i = 0; i < modPts[k].length; i++, r+=2) {
-                double[] uv = cam.project(Vk, modPts[k][i]);
-                V[r + 0] = uv[0];
-                V[r + 1] = uv[1];
-            }
-        }
-
-        double[] resid = Matrix.subtract(observed, V);
-        // System.out.println("OverallNonlinearOptimizer: Y = " + Matrix.toString(Arrays.copyOf(Y, 20)));
-        // System.out.println("OverallNonlinearOptimizer: R = " + Matrix.toString(Arrays.copyOf(resid, 20)));
-        // System.out.println("OverallNonlinearOptimizer: |R1| = " + Matrix.normL2(resid));
-        // System.out.println("OverallNonlinearOptimizer: |Rgamma| = " + resid[resid.length-1]);
-        return V;
-    }
-
-    // ------------------------------------
-
-//     /**
-//      * Calculates the Jacobian for the model at the current point.
-//      * Called by the optimizer with reduced and scaled(!) parameters.
-//      * The column dimension of J equals the number of non-skipped parameters.
-//      * Skipped parameters are ignored.
-//      * @param paramsRS reduced and scaled parameters
-//      * @return
-//      */
-//     @Deprecated
-//     double[][] getJacobian(double[] paramsRS) {
-//         // get full/scaled parameters
-//         double[] Yref = getValue(paramsRS);                 // values Y from undisturbed parameters
-//         // expand to scaled parameters:
-//         double[] paramsS = expandParams(paramsRS, initialParametersScaled);
-//         // convert to unscaled parameters:
-//         double[] params = unscaleParameters(paramsS, parameterScales);
-//
-//         // create a camera for the current parameter point
-//         double[] pc = getCameraParameters(params);
-//         Camera camCur = initCam.fromParameters(pc);
-//
-//         // clear recycled Jacobian matrix
-//         for (int i = 0; i < J.length; i++) {
-//             Arrays.fill(J[i], 0.0);
-//         }
-//
-//         // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
-//         for (int p = 0; p < pc.length; p++) {    // for all camera parameters
-//             int col = parameterIndexMapper.getReducedPos(p);
-//             if (col >= 0) {
-//                 // update J for non-skipped parameter p
-//                 double pcp = pc[p];                               // keep current parameter value
-//                 double delta = estimateDelta(pcp);
-//                 pc[p] = pc[p] + delta;        // modify parameter p
-//                 Camera camMod = camCur.fromParameters(pc);    // modified camera
-//                 // project all model points through the modified camera:
-//                 for (int k = 0, r = 0; k < M; k++) {            // for all views k, r = row
-// //                    int q = camParCount + k * viewParCount;     // q = start in parameter vector
-// //                    double[] wk = Arrays.copyOfRange(params, q, q + viewParCount);
-// //                    ViewTransform Vk = new ViewTransform(wk);
-//                     ViewTransform Vk = new ViewTransform(getViewParameters(params, k));
-//                     for (int j = 0; j < modPts[k].length; j++, r += 2) {
-//                         // project all points of view k to sensor:
-//                         double[] Ymod = camMod.project(Vk, modPts[k][j]);
-//                         J[r + 0][col] = (Ymod[0] - Yref[r + 0]) / delta;   // dX
-//                         J[r + 1][col] = (Ymod[1] - Yref[r + 1]) / delta;   // dY
-//                     }
-//                 }
-//                 pc[p] = pcp;    // revert parameter a[p] to original value
-//             }
-//         }
-//
-//         // Step 2: calculate the diagonal blocks, one for each view
-//         int startRow = 0;
-//         for (int k = 0; k < M; k++) {    // for all views/blocks
-//             // int ps = camParCount + k * viewParCount;    // start of view parameters = start column in J
-//             // double[] w = Arrays.copyOfRange(params, ps, ps + viewParCount);
-//             double[] w = getViewParameters(params, k);
-//             // int c = a.length + k * w.length;        // leftmost matrix column of block i
-//             for (int i = 0; i < w.length; i++) {    // for all parameters in w
-//                 //int p = ps + i;
-//                 int p = getViewParameterPos(k, i);
-//                 int col = parameterIndexMapper.getReducedPos(p);
-//                 if (col >= 0) {                             // don't skip this parameter
-//                     double wi = w[i];                       // keep current parameter value w[i]
-//                     double delta = estimateDelta(wi);
-//                     w[i] = w[i] + delta;                    // modify parameter w[i]
-//                     ViewTransform Vk = new ViewTransform(w);
-//                     // fill column of J in diagonal block k:
-//                     for (int j = 0, r = startRow; j < modPts[k].length; j++, r+=2) {        // for all model points: calculate disturbed value
-//                         double[] Ymod = camCur.project(Vk, modPts[k][j]);
-//                         J[r + 0][col] = (Ymod[0] - Yref[r + 0]) / delta;   // dX
-//                         J[r + 1][col] = (Ymod[1] - Yref[r + 1]) / delta;   // dY
-//                     }
-//                     w[i] = wi; // revert parameter w[i] to its original value
-//                 }
-//             }
-//             startRow = startRow + 2 * modPts[k].length;
-//         }
-//
-//         // printJacobian(J);
-//
-//         // scale J back to optimizer scale
-//         for (int p = 0; p < params.length; p++) {
-//             int col = parameterIndexMapper.getReducedPos(p);
-//             if (col >= 0) { // non-skipped parameter
-//                 // multiply column J[*][p] by scale[p]:
-//                 double s = parameterScales[0][p];
-//                 // System.out.printf("  --- scaling J[%d] by %.4f\n", col, s);
-//                 for (int j = 0; j < J.length; j++) {
-//                     J[j][col] *= s;
-//                 }
-//             }
-//         }
-//
-//         // printJacobian(J);
-//
-//         double[] colNorms = getMatrixColumnNorms(J);
-//         System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
-//         System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
-//         System.out.println("    J rank = " + getMatrixRank(J));
-//         System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
-//         return J;
-//     }
-
 
     void printJacobian(double[][] JAC) {
         // print first rows of each Jacobian block --------------------------
@@ -656,20 +508,6 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     // -------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------
 
-    // @Deprecated
-    // private class FullOptimizationModel implements MultivariateJacobianFunction {
-    //
-    //     @Override
-    //     public Pair<RealVector, RealMatrix> value(RealVector realVector) {
-    //         double[] paramsS = realVector.toArray();
-    //         RealVector Y = new ArrayRealVector(getValue(paramsS), false);
-    //         RealMatrix J = new Array2DRowRealMatrix(getJacobian(paramsS), false);
-    //         return Pair.create(Y, J);
-    //     }
-    // }
-
-    // ----------------------------
-
     class CombinedModel implements MultivariateJacobianFunction {
 
         private final double[] Y;       // value vector (allocated once and recycled)
@@ -694,9 +532,8 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
             // calculate value vector (V) ----------------------------------------------
 
-            // double[] Y = new double[2 * N];             // new value vector
+            // clear recycled value vector (probably not needed)
             Arrays.fill(Y, 0.0);
-
             // process each view
             for (int k = 0, r = 0; k < M; k++) {
                 // create transform for view k
@@ -814,10 +651,8 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
     int getMatrixRank(double[][] data) {
         RealMatrix matrix = new Array2DRowRealMatrix(data);
-
         // 2. Perform SVD
         SingularValueDecomposition svd = new SingularValueDecomposition(matrix);
-
         // 3. Get the rank
         return svd.getRank();
     }

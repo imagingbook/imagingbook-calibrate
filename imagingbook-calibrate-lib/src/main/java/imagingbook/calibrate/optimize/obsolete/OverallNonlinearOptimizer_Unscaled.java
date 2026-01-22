@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate.optimize;
+package imagingbook.calibrate.optimize.obsolete;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
@@ -34,30 +34,25 @@ import java.util.List;
  *
  * @author WB
  */
-public class OverallNonlinearOptimizer implements NonlinearOptimizer {
-
-    static double GLOBAL_PARAMETER_SCALE = 1.0;
-    static double GAMMA_PENALTY = 100000;
+public class OverallNonlinearOptimizer_Unscaled implements NonlinearOptimizer {
 
     private static int maxEvaluations = 1000;
-    private static int maxIterations  = 1000;
+    private static int maxIterations  = 100;
 
-    final Pnt2d[][] modPts;
+    private final Pnt2d[][] modPts;
     private final Pnt2d[][] obsPts;
-    final int M;                // number of views
-    final int N;
+    private final int M;                // number of views
+    private final int N;
     private final int K;
-    final int camParCount;      // number of camera parameters (7+)
-    final int viewParCount;     // number of view parameters (6)
+    private final int camParCount;      // number of camera parameters (7+)
+    private final int viewParCount;     // number of view parameters (6)
 
     private final Camera initCam;
     private Camera finalCamera;
     private final ViewTransform[] initViews;
     private ViewTransform[] finalViews;
     private final double[] initialParameters;
-    private final double[][] parameterScales;
-
-    private final double[] observed;
+    private final double[] parameterScales;
 
     private final double[][] J;
     private final MultivariateVectorFunction valueFun;
@@ -65,7 +60,7 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
     private LeastSquaresOptimizer.Optimum result;
 
 
-    public OverallNonlinearOptimizer(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
+    public OverallNonlinearOptimizer_Unscaled(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
         this.initCam = initCam;
         this.camParCount = initCam.getParameterCount();
         this.viewParCount = ViewTransform.PARAMETER_COUNT;
@@ -74,35 +69,23 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
         this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
         this.M = obsPntSet.size();
         this.N = Arrays.stream(modPts).mapToInt(row -> row.length).sum(); //getTotalPointCount();
-
-
-        // double[] camScales = {10000, 10000, 1, 3000, 2000};   // alpha, beta, gamma, uc, vc
-        double[] camScales = {10000, 10000, 1, 500, 500};   // alpha, beta, gamma, uc, vc
-        double[] distScales = new double[initCam.getDistortionParameters().length];
-                    Arrays.fill(distScales, 0.1);
-        double[] viewScales = {0.5, 0.5, 0.5, 100, 100, 100};
-        this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
-        System.out.println("parameterScales  = " + Matrix.toString(parameterScales[0]));
-        System.out.println("parameterOffsets = " + Matrix.toString(parameterScales[1]));
-
         this.initialParameters = makeInitialParameters();
+        this.parameterScales = makeParameterScales();
         this.K = initialParameters.length;
-        this.J = new double[2 * N + 1][K];  // extra row for gamma penalty
+        this.J = new double[2 * N + 1][K];  // extra row for penalty
         this.valueFun = getValueFunction();
         this.jacobianFun = getJacobianFunction();
-        this.observed = makeObservedVector();
     }
 
     // -------------------------------------------------------------------------------------
 
     private MultivariateVectorFunction getValueFunction() {
-        return paramsS -> {
-            double[] params = unscaleParameters(paramsS, parameterScales);
-            System.out.println("OverallNonlinearOptimizer: pS = " + Matrix.toString(paramsS));
-            System.out.println("OverallNonlinearOptimizer: pU = " + Matrix.toString(params));
+        return params -> {
+            //double[] params = unscaleParameters(paramsS, parameterScales);
+            System.out.println("OverallNonlinearOptimizer: p = " + Matrix.toString(params));
             double[] a = Arrays.copyOfRange(params, 0, camParCount);
             Camera cam = initCam.fromParameters(a);
-            double[] V = new double[2 * N + 1];     // extra row for gamma penalty
+            double[] Y = new double[2 * N + 1];     // extra entry for penalty
             int r = 0;
             for (int k = 0; k < M; k++) {
                 int qk = camParCount + k * viewParCount;
@@ -110,28 +93,23 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
                 ViewTransform Vk = new ViewTransform(wk);
                 for (int i = 0; i < modPts[k].length; i++) {
                     double[] uv = cam.project(Vk, modPts[k][i]);
-                    V[r * 2 + 0] = uv[0];
-                    V[r * 2 + 1] = uv[1];
+                    Y[r * 2 + 0] = uv[0];
+                    Y[r * 2 + 1] = uv[1];
                     r = r + 1;
                 }
             }
-            V[2 * N] = GAMMA_PENALTY * a[2]; // set penalty for gamma
-            double[] resid = Matrix.subtract(observed, V);
-            // System.out.println("OverallNonlinearOptimizer: Y = " + Matrix.toString(Arrays.copyOf(Y, 20)));
-            // System.out.println("OverallNonlinearOptimizer: R = " + Matrix.toString(Arrays.copyOf(resid, 20)));
-            System.out.println("OverallNonlinearOptimizer: |R1| = " + Matrix.normL2(resid));
-            System.out.println("OverallNonlinearOptimizer: |Rgamma| = " + resid[resid.length-1]);
-            return V;
+            Y[2 * N] = 1000000 * a[2];
+            System.out.println("OverallNonlinearOptimizer: Y = " + Matrix.toString(Arrays.copyOf(Y, 20)));
+            return Y;
         };
     }
 
     // ------------------------------------
 
     private MultivariateMatrixFunction getJacobianFunction() {
-        return paramsS -> {
-            double[] uvRef = valueFun.value(paramsS);      // values from undisturbed parameters
-            double[] params = unscaleParameters(paramsS, parameterScales);
-
+        return params -> {
+            // double[] params = unscaleParameters(paramsS, parameterScales);
+            double[] uvRef = valueFun.value(params);      // values from undisturbed parameters
             double[] a = Arrays.copyOfRange(params, 0, camParCount);    // camera parameters
             Camera camOrig = initCam.fromParameters(a);
 
@@ -147,12 +125,12 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
                 Camera camMod = camOrig.fromParameters(a);    // modified camera
 
                 for (int k = 0, r = 0; k < M; k++) {    // for all views k, r = row
-                    int q = camParCount + k * viewParCount;
-                    double[] wk = Arrays.copyOfRange(params, q, q + viewParCount);
-                    ViewTransform viewk = new ViewTransform(wk);
+                    int m = camParCount + k * viewParCount;
+                    double[] w = Arrays.copyOfRange(params, m, m + viewParCount);
+                    ViewTransform view = new ViewTransform(w);
                     for (int j = 0; j < modPts[k].length; j++, r += 2) {    // for all model points: calculate disturbed value
                         Pnt2d Pj = modPts[k][j];
-                        double[] uvMod = camMod.project(viewk, Pj);
+                        double[] uvMod = camMod.project(view, Pj);
                         J[r + 0][p] = (uvMod[0] - uvRef[r + 0]) / delta;   // dX
                         J[r + 1][p] = (uvMod[1] - uvRef[r + 1]) / delta;   // dY
                     }
@@ -181,28 +159,9 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
                     w[p] = wp; // w[k] - DELTA;		// revert parameter w[p] to original value
                 }
             }
-            J[2 * N][2] = 1;  // Jacobian for parameter gamma
+            J[2 * N][2] = 1.0;  // Jacobian for parameter gamma
 
-            for (int j = 0; j < 2; j++) {
-                System.out.printf("    Ju[%d] = %s\n", j, Matrix.toString(J[j]));
-            }
-
-            // scale J back to optimizer scale
-            for (int p = 0; p < params.length; p++) {
-                // multiply column J[*][p] by scale[p]:
-                double s = parameterScales[0][p];
-                for (int j = 0; j < J.length; j++) {
-                    J[j][p] = J[j][p] * s;
-                }
-            }
-
-            for (int j = 0; j < 2; j++) {
-                System.out.printf("    Js[%d] = %s\n", j, Matrix.toString(J[j]));
-            }
-            // System.out.println("OverallNonlinearOptimizer: R = " + Matrix.toString(Arrays.copyOf(resid, 20)));
-
-
-            System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
+            System.out.println("J condition No = " + Matrix.getConditionNumber(J));
             return J;
         };
     }
@@ -214,7 +173,7 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
      * @param x
      * @return
      */
-     private static double estimateDelta(double x) {
+    private static double estimateDelta(double x) {
         //final double eps = 1.5e-8;	// = sqrt(2.2 * 10^{-16})
         double dx = EPS * Math.max(Math.abs(x), 1); // dx >= eps
         // avoid numerical truncation problems (add and subtract again) -
@@ -223,6 +182,21 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
         return tmp - x;
     }
 
+    private double[] scaleParameters(double[] unscaledParams, double[] scales) {
+        double[] sp = new double[unscaledParams.length];
+        for (int i = 0; i < unscaledParams.length; i++) {
+            sp[i] = unscaledParams[i] * scales[i];
+        }
+        return sp;
+    }
+
+    private double[] unscaleParameters(double[] scaledParams, double[] scales) {
+        double[] usp = new double[scaledParams.length];
+        for (int i = 0; i < scaledParams.length; i++) {
+            usp[i] = scaledParams[i] / scales[i];
+        }
+        return usp;
+    }
 
     // ---------------------------------------------------------------------------------------
 
@@ -232,8 +206,8 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
      */
     public void optimize() {
         // RealVector start = new ArrayRealVector(initialParameters, false);
-        System.out.println("initialParameters = " + Matrix.toString(initialParameters));
-        // double[] observed = makeObservedVector();
+        // System.out.println("OverallNonlinearOptimizer: start = " + Matrix.toString(start));
+        double[] observed = makeObservedVector();
         // System.out.println("OverallNonlinearOptimizer: observed size = " + observed.getDimension() + " last item = " + observed.getEntry(2 * N));
 
         MultivariateJacobianFunction model = LeastSquaresFactory.model(valueFun, jacobianFun);
@@ -244,12 +218,11 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
                 // .weight(new DiagonalMatrix(weights, false))
                 .target(observed)
                 .model(model)
-                .start(scaleParameters(initialParameters, parameterScales))
+                .start(initialParameters)
                 .maxEvaluations(maxEvaluations)
                 .maxIterations(maxIterations)
                 .build();
-        LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer().withInitialStepBoundFactor(1);
-        System.out.println("LevenbergMarquardtOptimizer: InitialStepBoundFactor = " + lm.getInitialStepBoundFactor());
+        LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer();
         LeastSquaresOptimizer.Optimum result = lm.optimize(problem);
 
         // LeastSquaresOptimizer.Optimum result = lm.optimize(LeastSquaresFactory.create(
@@ -262,16 +235,11 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
 
 //		System.out.println(NonlinearOptimizer.class.getSimpleName() + "; iterations = " + result.getIterations());
         this.result = result;
-        double[] optParams = result.getPoint().toArray();
-        updateEstimates(unscaleParameters(optParams, parameterScales));
+        updateEstimates(result.getPoint());
     }
 
     // -----------------------------------------------------------------------------------------
 
-    /**
-     * Returns non-scaled (original) parameters.
-     * @return
-     */
     private double[] makeInitialParameters() {
         double[] cp = initCam.getParameters();
         System.out.println("NonlinearOptimizer: cp.length = " + cp.length);
@@ -289,45 +257,27 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
             System.arraycopy(w, 0, p, start, w.length);
             start = start + w.length;
         }
-
         return p;
     }
 
-    /**
-     * Creates and returns a vector of scales for all optimization parameters.
-     * @param camScales the scale factors for
-     * @param distScales scales for distortion parameters
-     * @param viewScales scales for view transform parameters
-     * @param viewCnt number of views
-     * @return a vector scale values for all parameters
-     */   // TODO: revise to use initial Camera to obtain default scale values
-    static double[][] makeParameterScales(double[] camScales, double[] distScales, double[] viewScales, int viewCnt) {
-        int camParCount = camScales.length;
-        int distParCount = distScales.length;
-        int viewParCount = viewScales.length;
-        int P = camParCount + distParCount + viewCnt * viewParCount;
-        double[] scale = new double[P];
-        double[] offset = new double[P];
+    private double[] makeParameterScales() {
+        double[] cp = initCam.getParameters();
+        double[] scales = new double[cp.length + M * viewParCount];
+        Arrays.fill(scales, 1.0);
+        scales[0] = 0.01; // alpha
+        scales[1] = 0.01; // beta
+        scales[2] = 50; // gamma
+        scales[3] = 0.01;   // uc
+        scales[4] = 0.01;   // vc
 
-        Arrays.fill(scale, 1); //GLOBAL_PARAMETER_SCALE);
-        Arrays.fill(scale, 0);
-
-        int start = 0;
-        System.arraycopy(camScales, 0, scale, start, camScales.length);
-        start += camScales.length;
-        System.arraycopy(distScales, 0, scale, start, distScales.length);
-        start += distScales.length;
-        for (int k = 0; k < viewCnt; k++) {
-            System.arraycopy(viewScales, 0, scale, start, viewScales.length);
-            start += viewScales.length;
+        // insert M view parameters
+        int start = cp.length;
+        for (int k = 0; k < M; k++) {
+            double[] vp = initViews[k].getParameters();
+            // TODO!!
+            start += vp.length;
         }
-
-        offset[0] = 10500;
-        offset[1] = 10500;
-
-        offset[3] = 3000;
-        offset[4] = 2000;
-        return new double[][] {scale, offset};
+        return scales;
     }
 
     /**
@@ -335,7 +285,7 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
      * @return the observed vector
      */
     double[] makeObservedVector() {
-        double[] obs = new double[2 * N + 1];  // extra row with value 0 for gamma penalty
+        double[] obs = new double[2 * N + 1];  // one extra cell = 0!
         for (int k = 0, r = 0; k < M; k++) {
             for (int i = 0; i < obsPts[k].length; i++, r++) {
                 obs[r * 2 + 0] = obsPts[k][i].getX();
@@ -346,67 +296,24 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
         return obs;
     }
 
-    private void updateEstimates(double[] params) {
-        // double[] c = parameters;
-        double[] s = Arrays.copyOfRange(params, 0, camParCount);
+    private double[] makeWeightMatrix() {
+        double[] weights = new double[2 * N + 1];
+        Arrays.fill(weights, 1.0);
+        return weights;
+    }
+
+    private void updateEstimates(RealVector parameters) {
+        double[] c = parameters.toArray();
+        double[] s = Arrays.copyOfRange(c, 0, camParCount);
         finalCamera = initCam.fromParameters(s);
         finalViews = new ViewTransform[M];
         int start = s.length;
         for (int k = 0; k < M; k++) {
-            double[] wk = Arrays.copyOfRange(params, start, start + viewParCount);
+            double[] wk = Arrays.copyOfRange(c, start, start + viewParCount);
             finalViews[k] = new ViewTransform(wk);
             start = start + wk.length;
         }
     }
-
-    // Parameter scaling --------------------------------------------------------------------
-
-
-    /**
-     * Sets the scales for the parameters of one view transform
-     * @param scales
-     * @param k view number
-     */
-    private void setViewParameterScales(double[] scales, int k) {
-
-    }
-
-    /**
-     * Scales original (physical) parameters p[i] to optimizer parameters ps[i] by
-     * <pre>
-     *     ps[i] = (p[i] - offset[i]) / scales[i] </pre>
-     * @param p
-     * @param scales = {scale, offset}
-     * @return
-     */
-    private double[] scaleParameters(double[] p, double[][] scales) {
-        double[] scale = scales[0];
-        double[] offset = scales[1];
-        double[] ps = new double[p.length];
-        for (int i = 0; i < p.length; i++) {
-            ps[i] = (p[i] - scales[1][i]) / scales[0][i];
-        }
-        return ps;
-    }
-
-    /**
-     * Scales optimizer parameters ps[i] back to original parameters p[i] by
-     * <pre>
-     *     p[i] = ps[i] * scales[i] + offset[i] </pre>
-     * @param ps
-     * @param scales = {scale, offset}
-     * @return
-     */
-    private double[] unscaleParameters(double[] ps, double[][] scales) {
-        double[] scale = scales[0];
-        double[] offset = scales[1];
-        double[] p = new double[ps.length];
-        for (int i = 0; i < ps.length; i++) {
-            p[i] = ps[i] * scales[0][i] + scales[1][i];
-        }
-        return p;
-    }
-
 
     // -------------------------------------------------------------------------------------
 
@@ -437,7 +344,5 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
     public RealVector getResiduals() {
         return result.getResiduals();
     }
-
-
 
 }

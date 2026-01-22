@@ -4,13 +4,12 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate.optimize;
+package imagingbook.calibrate.optimize.obsolete;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
-import org.apache.commons.math4.legacy.analysis.MultivariateVectorFunction;
 
 import java.util.List;
 

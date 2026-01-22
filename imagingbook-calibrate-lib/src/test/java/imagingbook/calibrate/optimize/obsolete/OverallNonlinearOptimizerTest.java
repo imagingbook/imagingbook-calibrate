@@ -4,14 +4,7 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate.optimize;
-
-import imagingbook.common.math.Matrix;
-import org.junit.Test;
-
-import java.util.Arrays;
-
-import static org.junit.Assert.*;
+package imagingbook.calibrate.optimize.obsolete;
 
 public class OverallNonlinearOptimizerTest {
 

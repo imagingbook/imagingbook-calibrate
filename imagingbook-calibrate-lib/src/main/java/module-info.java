@@ -20,7 +20,6 @@ module imagingbook.calibrate.lib {
     exports imagingbook.calibrate.distortion;
     exports imagingbook.calibrate.homography;
     exports imagingbook.calibrate.intrinsics;
-    exports imagingbook.calibrate.intrinsics.obsolete;
     exports imagingbook.calibrate.extrinsics;
     exports imagingbook.calibrate.optimize;
 }
