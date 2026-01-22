@@ -81,8 +81,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private final ViewTransform[] initViews;
     private ViewTransform[] finalViews;
     private final double[] initialParameters;
-    private final double[] initialParametersScaled;
+    // private final double[] initialParametersScaled;
     private final double[][] parameterScales;
+
+    private final ParameterAdapter adapter;
 
     private final double[] observed;
 
@@ -135,7 +137,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         System.out.println("parameterOffsets = " + Matrix.toString(parameterScales[1]));
 
         this.initialParameters = makeInitialParameters();
-        this.initialParametersScaled = scaleParameters(initialParameters, parameterScales);
+        // this.initialParametersScaled = scaleParameters(initialParameters, parameterScales);
         this.K = initialParameters.length;
 
         this.paramSkipArray = makeParamSkipArray();
@@ -143,6 +145,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         this.effParameterCnt = parameterIndexMapper.getReducedLength();// countEffParameters(paramSkipArray);
         // this.paramIndex = makeParamIndex(paramSkipArray);
 
+        this.adapter = new ParameterAdapter(paramSkipArray, parameterScales[0]);
 
         this.observed = makeObservedVector();
 
@@ -283,17 +286,19 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      */
     public void optimize() {
         // RealVector start = new ArrayRealVector(initialParameters, false);
-        System.out.println("initialParameters (unscaled) = " + Matrix.toString(initialParameters));
-        double[] ips = scaleParameters(initialParameters, parameterScales);
-        System.out.println("initialParameters (scaled)   = " + Matrix.toString(ips));
-        double[] ipu = unscaleParameters(ips, parameterScales);
-        System.out.println("initialParameters (unscaled) = " + Matrix.toString(ipu));
+        // System.out.println("initialParameters (unscaled) = " + Matrix.toString(initialParameters));
+        // double[] ips = scaleParameters(initialParameters, parameterScales);
+        // System.out.println("initialParameters (scaled)   = " + Matrix.toString(ips));
+        // double[] ipu = unscaleParameters(ips, parameterScales);
+        // System.out.println("initialParameters (unscaled) = " + Matrix.toString(ipu));
 
         // MultivariateJacobianFunction model = new FullOptimizationModel();
         MultivariateJacobianFunction model = new CombinedModel(2 * N, effParameterCnt);
 
-        double[] pStart = reduceParams(scaleParameters(initialParameters, parameterScales));
-        System.out.println("start Parameters = " + Matrix.toString(pStart));
+        // double[] pStart = reduceParams(scaleParameters(initialParameters, parameterScales));
+        double[] pStart = adapter.toOptimizerParameters(initialParameters);
+
+                System.out.println("start Parameters = " + Matrix.toString(pStart));
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
                 .target(observed)
@@ -309,10 +314,12 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         this.result = result;
         double[] optParams = result.getPoint().toArray();
         PrintPrecision.set(8);
-        // System.out.println("optimal parameters (reduced) = " + Matrix.toString(optParams));
-        double[] fullParams = expandParams(optParams, initialParameters);
-        // System.out.println("scaled optimal parameters (full)   = " + Matrix.toString(fullParams));
-        double[] unscaledParams = unscaleParameters(fullParams, parameterScales);
+
+        double[] unscaledParams = adapter.toPhysicalParameters(optParams, initialParameters);
+        // // System.out.println("optimal parameters (reduced) = " + Matrix.toString(optParams));
+        // double[] fullParams = expandParams(optParams, initialParameters);
+        // // System.out.println("scaled optimal parameters (full)   = " + Matrix.toString(fullParams));
+        // double[] unscaledParams = unscaleParameters(fullParams, parameterScales);
         System.out.println("unscaled optimal parameters (full) = " + Matrix.toString(unscaledParams));
         updateEstimates(unscaledParams);
 
@@ -438,41 +445,112 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
     }
 
-    /**
-     * Scales original (physical) parameters p[i] to optimizer parameters ps[i] by
-     * <pre>
-     *     ps[i] = (p[i] - offset[i]) / scales[i] </pre>
-     * @param p
-     * @param scales = {scale, offset}
-     * @return
-     */
-    private double[] scaleParameters(double[] p, double[][] scales) {
-        double[] scale = scales[0];
-        double[] offset = scales[1];
-        double[] ps = new double[p.length];
-        for (int i = 0; i < p.length; i++) {
-            ps[i] = (p[i] - scales[1][i]) / scales[0][i];
-        }
-        return ps;
-    }
+    // /**
+    //  * Scales original (physical) parameters p[i] to optimizer parameters ps[i] by
+    //  * <pre>
+    //  *     ps[i] = (p[i] - offset[i]) / scales[i] </pre>
+    //  * @param p
+    //  * @param scales = {scale, offset}
+    //  * @return
+    //  */
+    // private double[] scaleParameters(double[] p, double[][] scales) {
+    //     double[] scale = scales[0];
+    //     double[] offset = scales[1];
+    //     double[] ps = new double[p.length];
+    //     for (int i = 0; i < p.length; i++) {
+    //         ps[i] = (p[i] - scales[1][i]) / scales[0][i];
+    //     }
+    //     return ps;
+    // }
+
+    // /**
+    //  * Scales optimizer parameters ps[i] back to original parameters p[i] by
+    //  * <pre>
+    //  *     p[i] = ps[i] * scales[i] + offset[i] </pre>
+    //  * @param ps
+    //  * @param scales = {scale, offset}
+    //  * @return
+    //  */
+    // private double[] unscaleParameters(double[] ps, double[][] scales) {
+    //     // System.out.printf("unscaleParameters(): ps.length = %d, scales.length = %d\n", ps.length, scales[0].length);
+    //     // double[] scale = scales[0];
+    //     // double[] offset = scales[1];
+    //     double[] p = new double[ps.length];
+    //     for (int i = 0; i < ps.length; i++) {
+    //         p[i] = ps[i] * scales[0][i] + scales[1][i];
+    //     }
+    //     return p;
+    // }
+
+    // ----------------------------------------------------------------------------------------
 
     /**
-     * Scales optimizer parameters ps[i] back to original parameters p[i] by
-     * <pre>
-     *     p[i] = ps[i] * scales[i] + offset[i] </pre>
-     * @param ps
-     * @param scales = {scale, offset}
-     * @return
+     * This helper class maps physical parameters (PPs) to optimizer parameters (POs).
+     * Optimizer are a scaled subset of the physical parameters. Scaling is performed as
+     * <pre>{@code
+     *     PO[i] = PP[i] / s[i]     // PO = scale(PP)
+     *     PP[i] = PO[i] * s[i]     // PP = unscale(PO)
+     * }</pre>
+     *
      */
-    private double[] unscaleParameters(double[] ps, double[][] scales) {
-        // System.out.printf("unscaleParameters(): ps.length = %d, scales.length = %d\n", ps.length, scales[0].length);
-        // double[] scale = scales[0];
-        // double[] offset = scales[1];
-        double[] p = new double[ps.length];
-        for (int i = 0; i < ps.length; i++) {
-            p[i] = ps[i] * scales[0][i] + scales[1][i];
+    static class ParameterAdapter extends ArrayIndexMapper {
+        private final double[] scales;
+
+        /**
+         * Constructor. Throws an exception if {@code skipArray} and {@code scales} are not of the
+         * same length or if {@code scales} contains zero values.
+         * @param skipArray array with -1 values marking skipped elements in optimizer parameters (to be changed)
+         * @param scales a vector of scale values, one for each parameter
+         */
+        ParameterAdapter(int[] skipArray, double[] scales) {
+            super(skipArray);
+            if (scales.length != skipArray.length) {
+                throw new IllegalArgumentException("scales.length != skipArray.length");
+            }
+            for (int i = 0; i < scales.length; i++) {
+                if (Math.abs(scales[i]) < 1e-9) {
+                    throw new IllegalArgumentException("zero scale value at pos " + i);
+                }
+            }
+            this.scales = scales;
         }
-        return p;
+
+        /**
+         * Maps unscaled physical parameters {@code PP} to scaled optimizer parameters.
+         * @param PP unscaled physical parameters
+         * @return reduced and scaled optimizer parameters
+         */
+        double[] toOptimizerParameters(double[] PP) {
+            if (PP.length != scales.length) {
+                throw new IllegalArgumentException("pp.length != scales.length");
+            }
+            // reduce and scale by omitting skipped
+            double[] PO = new double[this.getReducedLength()];
+            for (int j = 0; j < PO.length; j++) {
+                int i = this.getFullPos(j);
+                PO[j] = PP[i] / scales[i];
+            }
+            return PO;
+        }
+
+        /**
+         * Maps scaled optimizer parameters {@code PO} to expanded and unscaled physical parameters.
+         * Parameters from {@code PO} are inserted into a copy of the physical parameter vector
+         * {@code PP}. Parameters not contained in {@code PO} are thus taken from {@code PP}.
+         * @param PO reduced and scaled optimizer parameters
+         * @param PP unscaled physical parameters (template)
+         * @return expanded and unscaled physical parameters
+         */
+        double[] toPhysicalParameters(double[] PO, double[] PP) {
+            double[] PPu = PP.clone();
+            // insert from reduced parameters:
+            for (int j = 0; j < PO.length; j++) {
+                int i = this.getFullPos(j);
+                PPu[i] = PO[j] * scales[i];
+            }
+            return PPu;
+        }
+
     }
 
     // -------------------------------------------------------------------------------------
@@ -520,11 +598,13 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
         @Override
         public Pair<RealVector, RealMatrix> value(RealVector point) {
-            double[] paramsRS = point.toArray();
-            // expand to scaled parameters:
-            double[] paramsS = expandParams(paramsRS, initialParametersScaled);
-            // convert to unscaled parameters:
-            double[] params = unscaleParameters(paramsS, parameterScales);
+            // double[] paramsRS = point.toArray();
+            // // expand to scaled parameters:
+            // double[] paramsS = expandParams(paramsRS, initialParametersScaled);
+            // // convert to unscaled parameters:
+            // double[] params = unscaleParameters(paramsS, parameterScales);
+
+            double[] params = adapter.toPhysicalParameters(point.toArray(), initialParameters);
 
             // create a new Camera instance:
             double[] pc = getCameraParameters(params);
@@ -555,7 +635,8 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
             // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
             for (int p = 0; p < camParCount; p++) {                     // for all camera parameters
-                int col = parameterIndexMapper.getReducedPos(p);
+                int col = adapter.getReducedPos(p);
+                // int col = parameterIndexMapper.getReducedPos(p);
                 if (col >= 0) {
                     // update J for non-skipped parameter p
                     double pcp = pc[p];                               // keep current parameter value
@@ -582,7 +663,8 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                 // nudge each parameter in w
                 for (int i = 0; i < w.length; i++) {
                     int p = getViewParameterPos(k, i);
-                    int col = parameterIndexMapper.getReducedPos(p);
+                    int col = adapter.getReducedPos(p);
+                    // int col = parameterIndexMapper.getReducedPos(p);
                     if (col >= 0) {                             // don't skip this parameter
                         double wi = w[i];                       // keep current parameter value w[i]
                         double delta = estimateDelta(wi);
@@ -605,7 +687,8 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
             // scale J back to optimizer scale
             for (int p = 0; p < params.length; p++) {
-                int col = parameterIndexMapper.getReducedPos(p);
+                int col = adapter.getReducedPos(p);
+                // int col = parameterIndexMapper.getReducedPos(p);
                 if (col >= 0) { // non-skipped parameter
                     // multiply column J[*][p] by scale[p]:
                     double s = parameterScales[0][p];
@@ -629,6 +712,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         }
     }
 
+    // -------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------
 
     RealMatrix getCovarianceMatrix(LeastSquaresOptimizer.Optimum optimum) {
@@ -683,33 +767,33 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
     // ----------------------------------------------------------------------
 
-    double[] reduceParams(double[] fullParams) {
-        if (fullParams.length != parameterIndexMapper.getFullLength()) {
-            throw new IllegalArgumentException("Full parameters: wrong length " + fullParams.length);
-        }
-        double[] rp = new double[parameterIndexMapper.getReducedLength()];
-        for (int q = 0; q < rp.length; q++) {
-            int p = parameterIndexMapper.getFullPos(q);
-            rp[q] = fullParams[p];
-        }
-        return rp;
-    }
+    // double[] reduceParams(double[] fullParams) {
+    //     if (fullParams.length != parameterIndexMapper.getFullLength()) {
+    //         throw new IllegalArgumentException("Full parameters: wrong length " + fullParams.length);
+    //     }
+    //     double[] rp = new double[parameterIndexMapper.getReducedLength()];
+    //     for (int q = 0; q < rp.length; q++) {
+    //         int p = parameterIndexMapper.getFullPos(q);
+    //         rp[q] = fullParams[p];
+    //     }
+    //     return rp;
+    // }
 
-    double[] expandParams(double[] redParams, double[] fullParams) {
-        if (redParams.length != parameterIndexMapper.getReducedLength()) {
-            throw new IllegalArgumentException("Reduced parameters: wrong length " + redParams.length);
-        }
-        if (fullParams.length != parameterIndexMapper.getFullLength()) {
-            throw new IllegalArgumentException("Full parameters: wrong length " + fullParams.length);
-        }
-        double[] fp = fullParams.clone();
-        // insert from reduced parameters:
-        for (int i = 0; i < redParams.length; i++) {
-            int j = parameterIndexMapper.getFullPos(i);
-            fp[j] = redParams[i];
-        }
-        return fp;
-    }
+    // double[] expandParams(double[] redParams, double[] fullParams) {
+    //     if (redParams.length != parameterIndexMapper.getReducedLength()) {
+    //         throw new IllegalArgumentException("Reduced parameters: wrong length " + redParams.length);
+    //     }
+    //     if (fullParams.length != parameterIndexMapper.getFullLength()) {
+    //         throw new IllegalArgumentException("Full parameters: wrong length " + fullParams.length);
+    //     }
+    //     double[] fp = fullParams.clone();
+    //     // insert from reduced parameters:
+    //     for (int i = 0; i < redParams.length; i++) {
+    //         int j = parameterIndexMapper.getFullPos(i);
+    //         fp[j] = redParams[i];
+    //     }
+    //     return fp;
+    // }
 
     // ----------------------------------------------------------------------
 

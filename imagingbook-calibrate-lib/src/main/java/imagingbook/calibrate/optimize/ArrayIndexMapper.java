@@ -33,7 +33,6 @@ class ArrayIndexMapper {
     /**
      * Returns the reduced position of parameter located at  {@code p} in the original (full)
      * vector.
-     *
      * @param p position in original vector
      * @return position in reduced vector or -1 if {@code p} is skipped
      */
@@ -44,7 +43,6 @@ class ArrayIndexMapper {
     /**
      * Returns the original (full) position of parameter located at  {@code q} in the reduced
      * vector.
-     *
      * @param q position in reduced vector
      * @return position in full vector
      */
