@@ -61,30 +61,29 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private static List<Integer> FIX_SINGLE_PARAMS = Arrays.asList(2);
 
     private final BitVector activeParameters;
-    private final int effParameterCnt;                   // remaining parameters (non-skipped)
+    private final int activeParameterCnt;
 
+    private final Camera initCam;
     private final Pnt2d[][] modPts;
     private final Pnt2d[][] obsPts;
+    private final ViewTransform[] initViews;
+    private final double[] observed;
 
     private final int M;                // number of views
     private final int N;                // total number of observed points
     private final int K;                // total number of parameters
-    private final int camParCount;      // number of camera parameters (7+)
-    private final int viewParCount;     // number of view parameters (6)
 
-    private final Camera initCam;
-    private Camera finalCamera;
-    private final ViewTransform[] initViews;
-    private ViewTransform[] finalViews;
     private final double[] initialParameters;
     private final double[] parameterScales;
 
     private final ParameterAssembler assembler;
     private final ParameterAdapter adapter;
 
-    private final double[] observed;
-
+    // optimization results:
     private LeastSquaresOptimizer.Optimum result;
+    private Camera finalCamera;
+    private ViewTransform[] finalViews;
+
 
     /**
      * The only constructor.
@@ -97,35 +96,20 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         this.initCam = initCam;
         this.M = obsPntSet.size();
         this.N = checkInputData(viewList, modPntSet, obsPntSet);
-
         this.initViews = viewList.toArray(new ViewTransform[0]);
         this.modPts = modPntSet.toArray(new Pnt2d[0][]);
         this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
 
-        this.camParCount = initCam.getParameterCount();
-        this.viewParCount = ViewTransform.PARAMETER_COUNT;
-
-        // this.N = Arrays.stream(modPts).mapToInt(row -> row.length).sum(); //getTotalPointCount();
-
-        // double[] camScales = {10000, 10000, 1, 3000, 2000};   // alpha, beta, gamma, uc, vc
-        double alpha = initCam.getAlpha();
-        double beta = initCam.getBeta();
-        double uc = initCam.getUc();
-        double vc = initCam.getVc();
-
         double[] camScales = {1, 1, 1, 0.1, 0.1};    // alpha, beta, gamma, uc, vc
         double[] distScales = { 0.002, 0.05};
         double[] viewScales = { .0005, .0005, .0005, .01, .01, .01};
-
         this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
         System.out.println("parameterScales  = " + Matrix.toString(parameterScales));
 
         this.assembler = new ParameterAssembler(initCam, M);
         this.initialParameters =  assembler.assembleParameters(initCam, viewList);     // makeInitialParameters();
-        System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
-
         this.K = initialParameters.length;
-
+        System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
         // ---------------------------
         this.activeParameters = new BitVector(K);   // initially all parameters are active (non-fixed)
         this.activeParameters.setAll();
@@ -136,18 +120,15 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             this.fixParameter(p);
         }
         System.out.println("activeParameters = " + activeParameters);
-        // ---------------------------
-
         this.adapter = new ParameterAdapter(activeParameters, parameterScales);
-        this.effParameterCnt = adapter.getSubsequenceLength();
+        this.activeParameterCnt = adapter.getSubsequenceLength();
+        // ---------------------------
         this.observed = makeObservedVector();
-
-        System.out.println("effective parameters  = " + effParameterCnt);
     }
 
     // -------------------------------------------------------------------------------------------
 
-    private int checkInputData(List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
+    private static int checkInputData(List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
         int M = viewList.size();
         if (modPntSet.size() != M) {
             throw new IllegalArgumentException("modPntSet.size() != " + M);
@@ -200,69 +181,13 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     // -------------------------------------------------------------------------------------
 
     /**
-     * Extracts and returns the parameters for the camera (including distortion parameters)
-     * from the full parameter vector.
-     * @param parameters the full parameter vector
-     * @return the camera parameters
-     */
-    double[] getCameraParameters(double[] parameters) {
-        return Arrays.copyOfRange(parameters, 0, camParCount);
-    }
-
-    // -------------------------------------------------------------------------------------
-
-    void printJacobian(double[][] JAC) {
-        // print first rows of each Jacobian block --------------------------
-        int rowsToPrint = 4;
-        int startR = 0;
-        int m = modPts.length;
-        System.out.println("JACOBIAN with " + JAC.length + " + rows, " + JAC[0].length + " columns");
-        PrintPrecision.set(3);
-        for (int k = 0; k < m; k++) {
-            System.out.println("J block " + k + " with rows " + 2*modPts[k].length + " ----------------------------");
-            for (int j = 0; j < rowsToPrint; j++) {
-                int r = startR + j;
-                System.out.printf("    Js[%d] = %s\n", r, Matrix.toString(JAC[r]));
-            }
-            System.out.println("    ...");
-            for (int j = 0; j < rowsToPrint; j++) {
-                int r = startR + 2 * modPts[k].length - rowsToPrint + j;
-                System.out.printf("    Js[%d] = %s\n", r, Matrix.toString(JAC[r]));
-            }
-            startR = startR + 2 * modPts[k].length;
-        }
-        // -------------------------------------------------------------------
-    }
-
-    private static final double EPS = 1.5e-8; 	// = sqrt(2.2 * 10^{-16})
-
-    /**
-     * Returns a positive delta value adapted to the magnitude of the parameter x
-     * @param x
-     * @return
-     */
-     private static double estimateDelta(double x) {
-        //final double eps = 1.5e-8;	// = sqrt(2.2 * 10^{-16})
-        double dx = EPS * Math.max(Math.abs(x), 1); // dx >= eps
-        // avoid numerical truncation problems (add and subtract again) -
-        // not sure this survives the compiler !?
-        double tmp = x + dx;
-        return tmp - x;
-    }
-
-    // ---------------------------------------------------------------------------------------
-
-    /**
      * Performs Levenberg-Marquardt non-linear optimization to get better estimates of the
      * parameters.
      */
     public void optimize() {
-        MultivariateJacobianFunction model = new CombinedModel(2 * N, effParameterCnt);
-
-        // double[] pStart = reduceParams(scaleParameters(initialParameters, parameterScales));
-        double[] pStart = adapter.toOptimizerParameters(initialParameters);
-
-                System.out.println("start Parameters = " + Matrix.toString(pStart));
+        MultivariateJacobianFunction model = new CombinedModel(2 * N, activeParameterCnt);
+        double[] pStart = adapter.getOptimizerParameters(initialParameters);
+        System.out.println("start Parameters = " + Matrix.toString(pStart));
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
                 .target(observed)
@@ -279,7 +204,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         double[] optParams = result.getPoint().toArray();
         PrintPrecision.set(8);
 
-        double[] finalParams = adapter.toPhysicalParameters(optParams, initialParameters);
+        double[] finalParams = adapter.getPhysicalParameters(optParams, initialParameters);
         System.out.println("unscaled optimal parameters (full) = " + Matrix.toString(finalParams));
         updateEstimates(finalParams);
 
@@ -298,10 +223,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      * @return a vector scale values for all parameters
      */   // TODO: revise to use initial Camera to obtain default scale values
     double[] makeParameterScales(double[] camScales, double[] distScales, double[] viewScales, int viewCnt) {
-        int camParCount =  camScales.length;
-        int distParCount = distScales.length;
+        int camLinParCount =  camScales.length;
+        int camDistParCount = distScales.length;
         int viewParCount = viewScales.length;
-        int P = camParCount + distParCount + viewCnt * viewParCount;
+        int P = camLinParCount + camDistParCount + viewCnt * viewParCount;
 
         double[] scales = new double[P];
         double[] offsets = new double[P];
@@ -310,10 +235,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         Arrays.fill(scales, 0);
 
         int start = 0;
-        System.arraycopy(camScales, 0, scales, start, camParCount);
-        start += camParCount;
-        System.arraycopy(distScales, 0, scales, start, distParCount);
-        start += distParCount;
+        System.arraycopy(camScales, 0, scales, start, camLinParCount);
+        start += camLinParCount;
+        System.arraycopy(distScales, 0, scales, start, camDistParCount);
+        start += camDistParCount;
         for (int k = 0; k < viewCnt; k++) {
             System.arraycopy(viewScales, 0, scales, start, viewParCount);
             // double[] w = initViews[k].getParameters();  // use intial values as offsets
@@ -405,6 +330,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             return params;
         }
 
+        int getCameraParamCount() {
+            return camLinParamCount + camDistParamCount;
+        }
+
         double[] getLinearCameraParameters(double[] params) {
             return Arrays.copyOfRange(params, 0, 5);
         }
@@ -412,6 +341,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         double[] getDistortionParameters(double[] params) {
             int n = cam.getDistortion().getParameterCount();
             return Arrays.copyOfRange(params, 5, 5 + n);
+        }
+
+        double[] getCameraParameters(double[] parameters) {
+            return Matrix.join(getLinearCameraParameters(parameters), getDistortionParameters(parameters));
         }
 
         double[] getViewParameters(double[] parameters, int k) {
@@ -462,7 +395,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
          * @param PP unscaled physical parameters
          * @return reduced and scaled optimizer parameters
          */
-        double[] toOptimizerParameters(double[] PP) {
+        double[] getOptimizerParameters(double[] PP) {
             if (PP.length != scales.length) {
                 throw new IllegalArgumentException("pp.length != scales.length");
             }
@@ -477,13 +410,13 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
         /**
          * Maps scaled optimizer parameters {@code PO} to expanded and unscaled physical parameters.
-         * Parameters from {@code PO} are inserted into a copy of the physical parameter vector
+         * Parameters from {@code PO} are merged into a copy of the physical parameter vector
          * {@code PP}. Parameters not contained in {@code PO} are thus taken from {@code PP}.
          * @param PO reduced and scaled optimizer parameters
          * @param PP unscaled physical parameters (template)
          * @return expanded and unscaled physical parameters
          */
-        double[] toPhysicalParameters(double[] PO, double[] PP) {
+        double[] getPhysicalParameters(double[] PO, double[] PP) {
             double[] PPu = PP.clone();
             // insert from reduced parameters:
             for (int j = 0; j < PO.length; j++) {
@@ -549,17 +482,14 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
         @Override
         public Pair<RealVector, RealMatrix> value(RealVector point) {
-
-            double[] params = adapter.toPhysicalParameters(point.toArray(), initialParameters);
-
+            double[] params = adapter.getPhysicalParameters(point.toArray(), initialParameters);
             // create a new Camera instance:
-            double[] pc = getCameraParameters(params);
+            double[] pc = assembler.getCameraParameters(params);
             Camera cam = initCam.withParameters(pc);
 
             // populate value vector (Y) ----------------------------------------------
 
-            // clear recycled value vector (probably not needed)
-            Arrays.fill(Y, 0.0);
+            Arrays.fill(Y, 0.0);    // clear recycled value vector (probably not needed)
             // process each view
             for (int k = 0, row = 0; k < M; k++) {
                 // create transform for view k
@@ -575,13 +505,12 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
             // populate Jacobian matrix (J) ----------------------------------------------
 
-            // clear recycled Jacobian matrix (probably not needed)
-            for (int i = 0; i < J.length; i++) {
+            for (int i = 0; i < J.length; i++) {    // clear recycled Jacobian matrix (probably not needed)
                 Arrays.fill(J[i], 0.0);
             }
 
             // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
-            for (int p = 0; p < camParCount; p++) {                     // for all camera parameters
+            for (int p = 0; p < assembler.getCameraParamCount(); p++) {                     // for all camera parameters
                 int col = adapter.getSubsequencePos(p);                     // column index for matrix J
                 if (col >= 0) {
                     // update J for non-skipped parameter p
@@ -645,7 +574,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                 }
             }
 
-            printJacobian(J);
+            // printJacobian(J);
 
             double[] colNorms = getMatrixColumnNorms(J);
             System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
@@ -658,10 +587,42 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             RealMatrix JJ = new  Array2DRowRealMatrix(J, false);
             return Pair.create(YY, JJ);
         }
+
+        private static final double EPS = 1.5e-8; 	// = sqrt(2.2 * 10^{-16})
+
+        private static double estimateDelta(double x) {
+            double dx = EPS * Math.max(Math.abs(x), 1); // dx >= eps
+            // avoid numerical truncation problems (add and subtract again) -
+            // not sure this survives the compiler !?
+            double tmp = x + dx;
+            return tmp - x;
+        }
     }
 
     // -------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------
+
+    void printJacobian(double[][] JAC) {
+        // print first rows of each Jacobian block --------------------------
+        int rowsToPrint = 4;
+        int startR = 0;
+        int m = modPts.length;
+        System.out.println("JACOBIAN with " + JAC.length + " + rows, " + JAC[0].length + " columns");
+        PrintPrecision.set(3);
+        for (int k = 0; k < m; k++) {
+            System.out.println("J block " + k + " with rows " + 2*modPts[k].length + " ----------------------------");
+            for (int j = 0; j < rowsToPrint; j++) {
+                int r = startR + j;
+                System.out.printf("    Js[%d] = %s\n", r, Matrix.toString(JAC[r]));
+            }
+            System.out.println("    ...");
+            for (int j = 0; j < rowsToPrint; j++) {
+                int r = startR + 2 * modPts[k].length - rowsToPrint + j;
+                System.out.printf("    Js[%d] = %s\n", r, Matrix.toString(JAC[r]));
+            }
+            startR = startR + 2 * modPts[k].length;
+        }
+    }
 
     RealMatrix getCovarianceMatrix(LeastSquaresOptimizer.Optimum optimum) {
         // Get the covariance matrix (in scaled space)
@@ -705,10 +666,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         RealMatrix D = new DiagonalMatrix(colNorms);
         RealMatrix J = new Array2DRowRealMatrix(data);
         RealMatrix JTJ = J.transpose().multiply(J);
-        if (showOnce) {
-            // System.out.println("JTJ:\n" + Matrix.toString(JTJ));
-            // showOnce = false;
-        }
+        // if (showOnce) {
+        //     System.out.println("JTJ:\n" + Matrix.toString(JTJ));
+        //     showOnce = false;
+        // }
         RealMatrix JTJD = JTJ.add(D);
         return Matrix.getConditionNumber(JTJD);
     }

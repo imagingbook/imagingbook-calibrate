@@ -28,13 +28,13 @@ public class OptimizerFresh2Test {
         assertArrayEquals(new int[] {0, 1, 2, 5, 6, 7, 8}, adapter.subSeqIndex);
 
         double[] pp = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
-        double[] po = adapter.toOptimizerParameters(pp);
+        double[] po = adapter.getOptimizerParameters(pp);
         // System.out.println(Arrays.toString(po));
         assertEquals(adapter.getSubsequenceLength(), po.length);
         assertArrayEquals(new double[] {0.00909090, 0.0166666666, 0.023076923, 0.0375, 0.04117647, 0.04444444444, 0.047368421},
                 po, 1e-6);
 
-        double[] pp2 = adapter.toPhysicalParameters(po, pp);
+        double[] pp2 = adapter.getPhysicalParameters(po, pp);
         // System.out.println(Arrays.toString(pp));
         assertArrayEquals(pp, pp2, 1e-6);
     }
