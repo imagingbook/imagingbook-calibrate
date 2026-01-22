@@ -12,6 +12,7 @@ import imagingbook.calibrate.optimize.obsolete.NonlinearOptimizer;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
+import imagingbook.common.util.bits.BitVector;
 import org.apache.commons.math4.legacy.core.Pair;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
@@ -59,9 +60,6 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private boolean SKIP_DISTORTION_PARAMS = false;
     private boolean SKIP_VIEW_PARAMS = true;
     final int effParameterCnt;                   // remaining parameters (non-skipped)
-
-    static double ALMOST_ZERO = 1e-9;
-
 
     private final int[] paramSkipArray;             // parameter is skipped if skipArray[p] = -1
     // private int[] paramIndex;                   // [origParamIndex[q] = p (index in original parameters
@@ -434,6 +432,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     }
 
     // ----------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------
 
     /**
      * This helper class maps physical parameters (PPs) to optimizer parameters (POs).
@@ -442,7 +441,6 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      *     PO[i] = PP[i] / s[i]     // PO = scale(PP)
      *     PP[i] = PO[i] * s[i]     // PP = unscale(PO)
      * }</pre>
-     *
      */
     static class ParameterAdapter extends ArrayIndexMapper {
         private final double[] scales;
@@ -456,6 +454,19 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         ParameterAdapter(int[] skipArray, double[] scales) {
             super(skipArray);
             if (scales.length != skipArray.length) {
+                throw new IllegalArgumentException("scales.length != skipArray.length");
+            }
+            for (int i = 0; i < scales.length; i++) {
+                if (Math.abs(scales[i]) < 1e-9) {
+                    throw new IllegalArgumentException("zero scale value at pos " + i);
+                }
+            }
+            this.scales = scales;
+        }
+
+        ParameterAdapter(BitVector subset, double[] scales) {
+            super(subset);
+            if (scales.length != subset.length()) {
                 throw new IllegalArgumentException("scales.length != skipArray.length");
             }
             for (int i = 0; i < scales.length; i++) {
@@ -537,6 +548,11 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     // -------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------
 
+    /**
+     * Represents the 'model' for the Levenberg-Marquart optimizer.
+     * The required value vector Y and the Jacobian matrix J are calculated and returned by a common
+     * method ({@link #value(RealVector)}).
+     */
     class CombinedModel implements MultivariateJacobianFunction {
 
         private final double[] Y;       // value vector (allocated once and recycled)
@@ -556,7 +572,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             double[] pc = getCameraParameters(params);
             Camera cam = initCam.withParameters(pc);
 
-            // calculate value vector (V) ----------------------------------------------
+            // populate value vector (Y) ----------------------------------------------
 
             // clear recycled value vector (probably not needed)
             Arrays.fill(Y, 0.0);
@@ -572,7 +588,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                 }
             }
 
-            // calculate Jacobian matrix (J) ----------------------------------------------
+            // populate Jacobian matrix (J) ----------------------------------------------
 
             // clear recycled Jacobian matrix (probably not needed)
             for (int i = 0; i < J.length; i++) {
@@ -618,7 +634,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                         // in diagonal block k of J, fill column col:
                         // for all model points: calculate disturbed output  value
                         for (int j = 0, row = startRow; j < modPts[k].length; j++, row+=2) {
-                            double[] Ymod= cam.project(Vi, modPts[k][j]);          // [ux, uy]
+                            double[] Ymod= cam.project(Vi, modPts[k][j]);       // [ux, uy]
                             J[row + 0][col] = (Ymod[0] - Y[row + 0]) / delta;   // dX
                             J[row + 1][col] = (Ymod[1] - Y[row + 1]) / delta;   // dY
                         }

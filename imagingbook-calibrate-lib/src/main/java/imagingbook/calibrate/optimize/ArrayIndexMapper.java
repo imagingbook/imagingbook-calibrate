@@ -6,6 +6,8 @@
  ******************************************************************************/
 package imagingbook.calibrate.optimize;
 
+import imagingbook.common.util.bits.BitVector;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,22 +15,59 @@ class ArrayIndexMapper {
     final int[] fullIndex;
     final int[] reducedIndex;
 
-    public ArrayIndexMapper(int size, List<Integer> skipped) {
-        this.fullIndex = makeFullIndex(size, skipped);
-        this.reducedIndex = makeReducedIndex(fullIndex);
-
+    /**
+     * Constructor.
+     * @param subset a {@link BitVector} indicating which vector elements to keep
+     */
+    public ArrayIndexMapper(BitVector subset) {
+        this.fullIndex = new int[subset.length()];
+        this.reducedIndex = new int[subset.cardinality()];
         for (int i = 0, j = 0; i < fullIndex.length; i++) {
-            if (fullIndex[i] != -1) {
+            if (subset.getBit(i)) {     // keep this element in reduced vector
                 fullIndex[i] = j;       // i -> j (position reducedIndex)
                 reducedIndex[j] = i;    // j -> i (position in fullIndex)
                 j++;
             }
+            else {
+                fullIndex[i] = -1;      // mark skipped items in fullIndex -1
+            }
         }
     }
 
-    public ArrayIndexMapper(int[] skipArray) {
-        this(skipArray.length, collectSkipped(skipArray));
+    @Deprecated
+    public ArrayIndexMapper(int size, List<Integer> skipped) {
+        this(makeBitVector(size, skipped));
     }
+
+    @Deprecated
+    static BitVector makeBitVector(int size, List<Integer> skipped) {
+        System.out.println("skipped = " + skipped);
+        BitVector subset = new BitVector(size);
+        subset.setAll();
+        for (int i : skipped) {
+            subset.unsetBit(i);
+        }
+        System.out.println("subset = " + subset);
+        return subset;
+    }
+
+    @Deprecated
+    public ArrayIndexMapper(int[] skipArray) {
+        this(collectSkipped(skipArray));
+    }
+
+    @Deprecated
+    static BitVector collectSkipped(int[] skippedArray) {
+        BitVector subset = new BitVector(skippedArray.length);
+        for (int i = 0; i < skippedArray.length; i++) {
+            if (skippedArray[i] != -1) {
+                subset.setBit(i);
+            }
+        }
+        return subset;
+    }
+
+    // ------------------------------------------------------------------------------------------
 
     /**
      * Returns the reduced position of parameter located at  {@code p} in the original (full)
@@ -48,41 +87,6 @@ class ArrayIndexMapper {
      */
     int getFullPos(int q) {
         return reducedIndex[q];
-    }
-
-
-    // double[] getReducedParams(double[] fullParams) {
-    //     double[] rp = new double[this.getReducedLength()];
-    //     // fill rp:
-    //     for (int q = 0; q < rp.length; q++) {
-    //         int p = this.getFullPos(q);
-    //         rp[q] = fullParams[p];
-    //     }
-    //     return rp;
-    // }
-    //
-    // double[] getfullParams(double[] fullParams, double[] rp) {
-    //     double[] fp = fullParams.clone();
-    //     // insert from reduced parameters:
-    //     for (int q = 0; q < rp.length; q++) {
-    //         int j = this.getFullPos(q);
-    //         fp[j] = rp[q];
-    //     }
-    //     return fp;
-    // }
-
-    // -----------------------------------------------------------------------------------
-
-
-
-    static List<Integer> collectSkipped(int[] skippedArray) {
-        List<Integer> skipped = new ArrayList<>();
-        for (int i = 0; i < skippedArray.length; i++) {
-            if (skippedArray[i] == -1) {
-                skipped.add(i);
-            }
-        }
-        return skipped;
     }
 
     private static int[] makeFullIndex(int size, List<Integer> skipped) {

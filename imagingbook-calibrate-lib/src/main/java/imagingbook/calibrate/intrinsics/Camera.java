@@ -107,7 +107,7 @@ public class Camera {
 // --------------------------------------------------------------------------
 
 	/**
-	 * Creates a new {@link Camera} instance from a parameter vector.
+	 * Creates a new {@link Camera} instance from an existing instance using the supplied parameters.
 	 * Matches method {@link #getParameters()}, that is
 	 * <pre>{@code
 	 *     Camera cam2 = cam1.withParameters(cam1.getParameters());
@@ -127,7 +127,7 @@ public class Camera {
 	}
 
 	/**
-	 * Creates a new {@link Camera} instance from a parameter vector.
+	 * Creates a new {@link Camera} instance from an existing instance using the supplied parameters.
 	 * @param linParams linear camera parameters
 	 * @param distParams non-linear (distortion) parameters
 	 * @return a new Camera instance with the specified parameters and the same type of lens distortion
