@@ -68,7 +68,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
     private final int M;                // number of views
     private final int N;                // total number of observed points
-    private final int K;        // total number of parameters
+    private final int K;                // total number of parameters
     private final int camParCount;      // number of camera parameters (7+)
     private final int viewParCount;     // number of view parameters (6)
 
@@ -78,7 +78,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private ViewTransform[] finalViews;
     private final double[] initialParameters;
     private final double[] parameterScales;
+
+    private final ParameterAssembler assembler;
     private final ParameterAdapter adapter;
+
     private final double[] observed;
 
     private LeastSquaresOptimizer.Optimum result;
@@ -117,7 +120,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
         System.out.println("parameterScales  = " + Matrix.toString(parameterScales));
 
-        this.initialParameters = makeInitialParameters();
+        this.assembler = new ParameterAssembler(initCam, M);
+        this.initialParameters =  assembler.assembleParameters(initCam, viewList);     // makeInitialParameters();
+        System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
+
         this.K = initialParameters.length;
 
         // ---------------------------
@@ -160,40 +166,6 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         return pntCnt;
     }
 
-    private int[] makeParamSkipArray() {
-        int[] sa = new int[K];
-        for (int i = 0; i < K; i++) {
-            sa[i] = i;
-        }
-
-        int Pa = initCam.getLinearParameters().length;
-        int Pd = initCam.getDistortionParameters().length;
-        if (FIX_LINCAMERA_PARAMS) {
-            Arrays.fill(sa, 0, Pa, -1);
-        }
-        if (FIX_DISTORTION_PARAMS) {
-            int start = Pa;
-            Arrays.fill(sa, start, start+Pd, -1);
-        }
-        if (FIX_VIEW_PARAMS) {
-            int start = Pa + Pd;
-            Arrays.fill(sa, start, sa.length, -1);
-        }
-
-        for (int i : FIX_SINGLE_PARAMS) {
-            sa[i] = -1;
-        }
-
-        for (int i = 0, j = 0; i < K; i++) {
-            if (sa[i] != -1) {
-                sa[i] = j;
-                j++;
-            }
-        }
-
-        return sa;
-    }
-
     // -------------------------------------------------------------------------------------
 
     public void fixParameter(int p) {
@@ -201,7 +173,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     }
 
     public void fixLinearCameraParameters() {
-        for (int p = 0; p < 5; p++) {
+        for (int p = 0; p < 5; p++) {       // TODO
             fixParameter(p);
         }
     }
@@ -215,7 +187,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
     public void fixViewParameters(int k) {
         for (int p = 0; p < 6; p++) {
-            fixParameter(getViewParameterPos(k, p));
+            fixParameter(assembler.getViewParameterPos(k, p));
         }
     }
 
@@ -235,22 +207,6 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      */
     double[] getCameraParameters(double[] parameters) {
         return Arrays.copyOfRange(parameters, 0, camParCount);
-    }
-
-    /**
-     * Extracts and returns the (6) parameters for view transformation {@code k}
-     * from the full parameter vector.
-     * @param parameters the full paraneter vector
-     * @param k the view number
-     * @return the view parameters
-     */
-    double[] getViewParameters(double[] parameters, int k) {
-        int startPos = getViewParameterPos(k, 0);
-        return Arrays.copyOfRange(parameters, startPos, startPos + viewParCount);
-    }
-
-    int getViewParameterPos(int k, int i) {
-        return camParCount + k * viewParCount + i;
     }
 
     // -------------------------------------------------------------------------------------
@@ -323,40 +279,15 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         double[] optParams = result.getPoint().toArray();
         PrintPrecision.set(8);
 
-        double[] unscaledParams = adapter.toPhysicalParameters(optParams, initialParameters);
-        System.out.println("unscaled optimal parameters (full) = " + Matrix.toString(unscaledParams));
-        updateEstimates(unscaledParams);
+        double[] finalParams = adapter.toPhysicalParameters(optParams, initialParameters);
+        System.out.println("unscaled optimal parameters (full) = " + Matrix.toString(finalParams));
+        updateEstimates(finalParams);
 
         // PrintPrecision.set(3);
         // System.out.println("Covariance Matrix: \n" + Matrix.toString(getCovarianceMatrix(result)));
     }
 
     // -----------------------------------------------------------------------------------------
-
-    /**
-     * Returns non-scaled (original) parameters.
-     * @return
-     */
-    private double[] makeInitialParameters() {
-        double[] cp = initCam.getParameters();
-        System.out.println("NonlinearOptimizer: cp.length = " + cp.length);
-        double[] p = new double[cp.length + M * viewParCount];
-        System.out.println("NonlinearOptimizer: p.length = " + p.length);
-        System.out.println("NonlinearOptimizer: M = " + M);
-
-        // insert camera parameters at beginning of c
-        System.arraycopy(cp, 0, p, 0, cp.length);
-
-        // insert M view parameters
-        int start = cp.length;
-        for (int k = 0; k < M; k++) {
-            double[] w = initViews[k].getParameters();
-            System.arraycopy(w, 0, p, start, w.length);
-            start = start + w.length;
-        }
-
-        return p;
-    }
 
     /**
      * Creates and returns a vector of scales for all optimization parameters.
@@ -414,15 +345,14 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     }
 
     private void updateEstimates(double[] params) {
-        // double[] c = parameters;
-        double[] s = Arrays.copyOfRange(params, 0, camParCount);
-        finalCamera = initCam.withParameters(s);
+        finalCamera = initCam.withParameters(
+                assembler.getLinearCameraParameters(params),
+                assembler.getDistortionParameters(params));
         finalViews = new ViewTransform[M];
-        int start = s.length;
+
         for (int k = 0; k < M; k++) {
-            double[] wk = Arrays.copyOfRange(params, start, start + viewParCount);
+            double[] wk = assembler.getViewParameters(params, k);
             finalViews[k] = new ViewTransform(wk);
-            start = start + wk.length;
         }
     }
 
@@ -438,6 +368,62 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     }
 
     // ----------------------------------------------------------------------------------------
+
+    /**
+     * Helps to assemble and disassemble parameter vectors.
+     */
+    static class ParameterAssembler {
+
+        private final Camera cam;
+        private final int viewCount;
+        private final int camLinParamCount = 5;
+        private final int viewParamCount = ViewTransform.PARAMETER_COUNT;
+        private final int camDistParamCount;
+        private final int paramCnt;
+
+        ParameterAssembler(Camera cam, int viewCount) {
+            this.cam = cam;
+            this.viewCount = viewCount;
+            this.camDistParamCount = cam.getDistortion().getParameterCount();
+            this.paramCnt = camLinParamCount + camDistParamCount + viewCount * viewParamCount;
+        }
+
+        double[] assembleParameters(Camera cam, List<ViewTransform> views) {
+            if (viewCount != views.size()) {
+                throw new IllegalArgumentException("view count does not match list size: " + views.size());
+            }
+            double[] params = new double[paramCnt];
+            double[] cp = cam.getParameters();
+            System.arraycopy(cp, 0, params, 0, cp.length);
+            // insert M view parameters:
+            int start = cp.length;
+            for (ViewTransform V : views) {
+                double[] w = V.getParameters();
+                System.arraycopy(w, 0, params, start, w.length);
+                start = start + w.length;
+            }
+            return params;
+        }
+
+        double[] getLinearCameraParameters(double[] params) {
+            return Arrays.copyOfRange(params, 0, 5);
+        }
+
+        double[] getDistortionParameters(double[] params) {
+            int n = cam.getDistortion().getParameterCount();
+            return Arrays.copyOfRange(params, 5, 5 + n);
+        }
+
+        double[] getViewParameters(double[] parameters, int k) {
+            int startPos = getViewParameterPos(k, 0);
+            return Arrays.copyOfRange(parameters, startPos, startPos + viewParamCount);
+        }
+
+        int getViewParameterPos(int k, int i) {
+            return camLinParamCount + camDistParamCount + k * viewParamCount + i;
+        }
+    }
+
     // ----------------------------------------------------------------------------------------
 
     /**
@@ -577,7 +563,8 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             // process each view
             for (int k = 0, row = 0; k < M; k++) {
                 // create transform for view k
-                ViewTransform Vk = new ViewTransform(getViewParameters(params, k));
+                ViewTransform Vk = new ViewTransform(assembler.getViewParameters(params, k));
+                // ViewTransform Vk = new ViewTransform(getViewParameters(params, k));
                 // project each point of view k to sensor:
                 for (int i = 0; i < modPts[k].length; i++, row+=2) {
                     double[] uv = cam.project(Vk, modPts[k][i]);
@@ -604,7 +591,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                     Camera camMod = cam.withParameters(pc);             // modified camera
                     // project all model points through the modified camera:
                     for (int k = 0, row = 0; k < M; k++) {              // for all views k
-                        ViewTransform Vk = new ViewTransform(getViewParameters(params, k));
+                        ViewTransform Vk = new ViewTransform(assembler.getViewParameters(params, k));
                         for (int j = 0; j < modPts[k].length; j++, row+=2) {
                             // project all points of view k to sensor:
                             double[] Ymod = camMod.project(Vk, modPts[k][j]);   // [ux, uy]
@@ -618,10 +605,10 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
             // Step 2: calculate the diagonal blocks, one for each view k
             for (int k = 0, startRow = 0; k < M; k++) {    // for all views/blocks
-                double[] w = getViewParameters(params, k);
+                double[] w = assembler.getViewParameters(params, k);
                 // nudge each view parameter in w
                 for (int i = 0; i < w.length; i++) {
-                    int p = getViewParameterPos(k, i);
+                    int p = assembler.getViewParameterPos(k, i);
                     int col = adapter.getSubsequencePos(p);
                     // int col = parameterIndexMapper.getReducedPos(p);
                     if (col >= 0) {                             // don't skip this parameter
@@ -657,6 +644,8 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                     }
                 }
             }
+
+            printJacobian(J);
 
             double[] colNorms = getMatrixColumnNorms(J);
             System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
