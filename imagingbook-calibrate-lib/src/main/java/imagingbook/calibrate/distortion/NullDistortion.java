@@ -16,7 +16,7 @@ public class NullDistortion extends DistortionModel {
     }
 
     @Override
-    public DistortionModel fromParameters(double[] params) {
+    public DistortionModel withParameters(double[] params) {
         return new NullDistortion();
     }
 

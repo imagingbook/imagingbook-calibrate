@@ -84,7 +84,7 @@ public class OverallNonlinearOptimizer_Unscaled implements NonlinearOptimizer {
             //double[] params = unscaleParameters(paramsS, parameterScales);
             System.out.println("OverallNonlinearOptimizer: p = " + Matrix.toString(params));
             double[] a = Arrays.copyOfRange(params, 0, camParCount);
-            Camera cam = initCam.fromParameters(a);
+            Camera cam = initCam.withParameters(a);
             double[] Y = new double[2 * N + 1];     // extra entry for penalty
             int r = 0;
             for (int k = 0; k < M; k++) {
@@ -111,7 +111,7 @@ public class OverallNonlinearOptimizer_Unscaled implements NonlinearOptimizer {
             // double[] params = unscaleParameters(paramsS, parameterScales);
             double[] uvRef = valueFun.value(params);      // values from undisturbed parameters
             double[] a = Arrays.copyOfRange(params, 0, camParCount);    // camera parameters
-            Camera camOrig = initCam.fromParameters(a);
+            Camera camOrig = initCam.withParameters(a);
 
             for (int i = 0; i < J.length; i++) {        // clear recycled Jacobian matrix
                 Arrays.fill(J[i], 0.0);
@@ -122,7 +122,7 @@ public class OverallNonlinearOptimizer_Unscaled implements NonlinearOptimizer {
                 double ap = a[p];                    // keep original parameter value
                 double delta = estimateDelta(ap);
                 a[p] = a[p] + delta;        // modify parameter p
-                Camera camMod = camOrig.fromParameters(a);    // modified camera
+                Camera camMod = camOrig.withParameters(a);    // modified camera
 
                 for (int k = 0, r = 0; k < M; k++) {    // for all views k, r = row
                     int m = camParCount + k * viewParCount;
@@ -305,7 +305,7 @@ public class OverallNonlinearOptimizer_Unscaled implements NonlinearOptimizer {
     private void updateEstimates(RealVector parameters) {
         double[] c = parameters.toArray();
         double[] s = Arrays.copyOfRange(c, 0, camParCount);
-        finalCamera = initCam.fromParameters(s);
+        finalCamera = initCam.withParameters(s);
         finalViews = new ViewTransform[M];
         int start = s.length;
         for (int k = 0; k < M; k++) {

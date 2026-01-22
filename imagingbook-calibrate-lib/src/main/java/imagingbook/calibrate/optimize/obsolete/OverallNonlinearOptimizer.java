@@ -101,7 +101,7 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
             System.out.println("OverallNonlinearOptimizer: pS = " + Matrix.toString(paramsS));
             System.out.println("OverallNonlinearOptimizer: pU = " + Matrix.toString(params));
             double[] a = Arrays.copyOfRange(params, 0, camParCount);
-            Camera cam = initCam.fromParameters(a);
+            Camera cam = initCam.withParameters(a);
             double[] V = new double[2 * N + 1];     // extra row for gamma penalty
             int r = 0;
             for (int k = 0; k < M; k++) {
@@ -133,7 +133,7 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
             double[] params = unscaleParameters(paramsS, parameterScales);
 
             double[] a = Arrays.copyOfRange(params, 0, camParCount);    // camera parameters
-            Camera camOrig = initCam.fromParameters(a);
+            Camera camOrig = initCam.withParameters(a);
 
             for (int i = 0; i < J.length; i++) {        // clear recycled Jacobian matrix
                 Arrays.fill(J[i], 0.0);
@@ -144,7 +144,7 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
                 double ap = a[p];                    // keep original parameter value
                 double delta = estimateDelta(ap);
                 a[p] = a[p] + delta;        // modify parameter p
-                Camera camMod = camOrig.fromParameters(a);    // modified camera
+                Camera camMod = camOrig.withParameters(a);    // modified camera
 
                 for (int k = 0, r = 0; k < M; k++) {    // for all views k, r = row
                     int q = camParCount + k * viewParCount;
@@ -349,7 +349,7 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
     private void updateEstimates(double[] params) {
         // double[] c = parameters;
         double[] s = Arrays.copyOfRange(params, 0, camParCount);
-        finalCamera = initCam.fromParameters(s);
+        finalCamera = initCam.withParameters(s);
         finalViews = new ViewTransform[M];
         int start = s.length;
         for (int k = 0; k < M; k++) {

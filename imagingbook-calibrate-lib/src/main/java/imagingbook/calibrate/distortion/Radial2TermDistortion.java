@@ -59,7 +59,7 @@ public class Radial2TermDistortion extends RadialDistortion {
     // ----------------------------------------
 
     @Override
-    public Radial2TermDistortion fromParameters(double[]  params) {
+    public Radial2TermDistortion withParameters(double[]  params) {
         return (params == null) ?
                 new Radial2TermDistortion() :
                 new Radial2TermDistortion(params);
@@ -216,7 +216,7 @@ public class Radial2TermDistortion extends RadialDistortion {
         double aa3 = a3 * Math.pow(s, 1-3);
         double aa5 = a5 * Math.pow(s, 1-5);
         Radial2TermDistortion distortion2 =
-                distortion.fromParameters(new double[] {aa3, aa5});
+                distortion.withParameters(new double[] {aa3, aa5});
         System.out.println("params2 = " + Arrays.toString(distortion2.getParameters()));
         System.out.format("cam2: %.5f -> %.5f\n", s * r, distortion2.fRad(s * r));
     }

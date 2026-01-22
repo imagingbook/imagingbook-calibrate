@@ -68,7 +68,7 @@ public class Radial2TermDistortionTest {
         // assertEquals(k0, ldm2.getParameter(0), tol);
         // assertEquals(k1, ldm2.getParameter(1), tol);
 
-        DistortionModel dm3 = dm.fromParameters(new double[] {0.4, -0.1});
+        DistortionModel dm3 = dm.withParameters(new double[] {0.4, -0.1});
         assertEquals(0.4, dm3.getParameter(0), tol);
         assertEquals(-0.1, dm3.getParameter(1), tol);
     }

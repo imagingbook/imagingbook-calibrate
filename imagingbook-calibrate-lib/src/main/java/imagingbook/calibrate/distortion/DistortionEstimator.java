@@ -121,7 +121,7 @@ public class DistortionEstimator {
         // double err2 = D.operate(kopt).subtract(d).getNorm();
         // System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
-        DistortionModel distFinal = distortion.fromParameters(kopt.toArray());
+        DistortionModel distFinal = distortion.withParameters(kopt.toArray());
         // return new Camera(initCam.getAffineMatrix(), distFinal);
         return new Camera(camera.getLinearParameters(), distFinal);
     }

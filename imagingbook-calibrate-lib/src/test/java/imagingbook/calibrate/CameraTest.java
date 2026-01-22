@@ -58,9 +58,9 @@ public class CameraTest {
     }
 
     @Test
-    public void fromParameters() {
+    public void withParameters() {
         double[] p = {830, 832, 0.5, 300, 200, -0.4, 0.25};
-        Camera cam2 = cam1.fromParameters(p);
+        Camera cam2 = cam1.withParameters(p);
         assertNotNull(cam2);
         assertArrayEquals(p, cam2.getParameters(), tol);
         assertEquals(p.length, cam2.getParameterCount());

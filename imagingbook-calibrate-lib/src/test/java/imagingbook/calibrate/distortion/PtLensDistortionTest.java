@@ -36,7 +36,7 @@ public class PtLensDistortionTest {
 
         // see if new coefficients are accepted and existing scale is copied
         double[] abc2= {-0.2, 0.01, 0.0};
-        PtLensDistortion dist2 = dist1.fromParameters(abc2);
+        PtLensDistortion dist2 = dist1.withParameters(abc2);
         assertArrayEquals(abc2, dist2.getParameters(), tol);
         assertEquals(abc2.length, dist2.getParameterCount());
         assertEquals(scale, dist2.getScale(), tol);

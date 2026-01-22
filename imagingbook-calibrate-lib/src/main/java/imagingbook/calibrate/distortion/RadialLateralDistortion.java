@@ -47,7 +47,7 @@ public class RadialLateralDistortion extends DistortionModel {
     }
 
     @Override
-    public RadialLateralDistortion fromParameters(double[] params) {
+    public RadialLateralDistortion withParameters(double[] params) {
         return (params == null) ?
                 new RadialLateralDistortion() :
                 new RadialLateralDistortion(params);

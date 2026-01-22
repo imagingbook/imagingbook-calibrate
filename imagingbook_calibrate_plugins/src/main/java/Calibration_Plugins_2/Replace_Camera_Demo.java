@@ -65,7 +65,7 @@ public class Replace_Camera_Demo implements PlugIn, JavaDocHelp {
 		cameraParameters[5] = k1;	// change only radial distortion parameters
 		cameraParameters[6] = k2;
 
-		Camera cameraB = cameraA.fromParameters(cameraParameters);
+		Camera cameraB = cameraA.withParameters(cameraParameters);
 
 		// create a special geometric mapping
 		Mapping2D mapping = new InterCameraMapping(cameraA, cameraB);	// inverse, maps target to source

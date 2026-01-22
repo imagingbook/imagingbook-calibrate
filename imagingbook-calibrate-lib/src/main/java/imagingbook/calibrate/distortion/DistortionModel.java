@@ -33,7 +33,7 @@ public abstract class DistortionModel {
      * @param params a parameter vector of required length
      * @return a new distortion model instance of the same type as the original
      */
-    public abstract DistortionModel fromParameters(double[]  params);
+    public abstract DistortionModel withParameters(double[]  params);
 
     // -------------------------------------------------------------------------------
 

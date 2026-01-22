@@ -63,7 +63,7 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
     }
 
     @Override
-    public PtLensDistortion fromParameters(double[]  params) {
+    public PtLensDistortion withParameters(double[]  params) {
         return new PtLensDistortion(params, this.scale);
     }
 

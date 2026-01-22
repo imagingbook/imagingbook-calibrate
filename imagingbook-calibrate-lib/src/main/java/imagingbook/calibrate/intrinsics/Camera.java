@@ -11,7 +11,6 @@ import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 
-import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
@@ -111,20 +110,35 @@ public class Camera {
 	 * Creates a new {@link Camera} instance from a parameter vector.
 	 * Matches method {@link #getParameters()}, that is
 	 * <pre>{@code
-	 *     Camera cam2 = cam1.fromParameters(cam1.getParameters());
+	 *     Camera cam2 = cam1.withParameters(cam1.getParameters());
 	 * }</pre>
 	 * creates a new camera which is identical to the original.
 	 * @param params all linear and non-linear camera parameters
 	 * @return a new Camera instance with the specified parameters and the same type of lens distortion
 	 * model as this instance
 	 */
-	public Camera fromParameters(double[] params) {
+	public Camera withParameters(double[] params) {
 		if (params.length < this.getParameterCount())
 			throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
 		int P = this.distortion.getParameterCount();
 		double[] linParams = Arrays.copyOfRange(params, 0, 5);    // = [alpha, beta, gamma, uc, vc]
 		double[] distParams = Arrays.copyOfRange(params, 5, 5 + P);
-		return new Camera(linParams, this.distortion.fromParameters(distParams));
+		return this.withParameters(linParams, distParams);
+	}
+
+	/**
+	 * Creates a new {@link Camera} instance from a parameter vector.
+	 * @param linParams linear camera parameters
+	 * @param distParams non-linear (distortion) parameters
+	 * @return a new Camera instance with the specified parameters and the same type of lens distortion
+	 * model as this instance
+	 */
+	public Camera withParameters(double[] linParams, double[] distParams) {
+		if (linParams.length != 5)
+			throw new IllegalArgumentException("wrong number of linear camera parameters: " + linParams.length);
+		if (distParams.length != this.distortion.getParameterCount())
+			throw new IllegalArgumentException("wrong number of distortion camera parameters: " + distParams.length);
+		return new Camera(linParams, this.distortion.withParameters(distParams));
 	}
 
 	// ---------------------------------------------------------------------------------------------
