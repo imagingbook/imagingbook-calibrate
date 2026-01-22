@@ -55,37 +55,31 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private static int maxEvaluations = 1000;
     private static int maxIterations  = 1000;
 
-    private List<Integer> skipList = Arrays.asList(2);
-    private boolean SKIP_CAMERA_PARAMS = false;
-    private boolean SKIP_DISTORTION_PARAMS = false;
-    private boolean SKIP_VIEW_PARAMS = true;
-    final int effParameterCnt;                   // remaining parameters (non-skipped)
+    private static boolean FIX_LINCAMERA_PARAMS = false;
+    private static boolean FIX_DISTORTION_PARAMS = false;
+    private static boolean FIX_VIEW_PARAMS = true;
+    private static List<Integer> FIX_SINGLE_PARAMS = Arrays.asList(2);
 
-    private final int[] paramSkipArray;             // parameter is skipped if skipArray[p] = -1
-    // private int[] paramIndex;                   // [origParamIndex[q] = p (index in original parameters
-    private final ArrayIndexMapper parameterIndexMapper;
+    private final BitVector activeParameters;
+    private final int effParameterCnt;                   // remaining parameters (non-skipped)
 
-    final Pnt2d[][] modPts;
+    private final Pnt2d[][] modPts;
     private final Pnt2d[][] obsPts;
 
-    final int M;                // number of views
-    final int N;                // total number of observed points
+    private final int M;                // number of views
+    private final int N;                // total number of observed points
     private final int K;        // total number of parameters
-    final int camParCount;      // number of camera parameters (7+)
-    final int viewParCount;     // number of view parameters (6)
+    private final int camParCount;      // number of camera parameters (7+)
+    private final int viewParCount;     // number of view parameters (6)
 
     private final Camera initCam;
     private Camera finalCamera;
     private final ViewTransform[] initViews;
     private ViewTransform[] finalViews;
     private final double[] initialParameters;
-    // private final double[] initialParametersScaled;
     private final double[][] parameterScales;
-
     private final ParameterAdapter adapter;
-
     private final double[] observed;
-
 
     private LeastSquaresOptimizer.Optimum result;
 
@@ -129,27 +123,33 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                 {.0005, .0005, .0005, .01, .01, .01}, //{.0005, .0005, .0005, .01, .01, .01},     // scale
                 {0, 0, 0, 0, 0, 0}                  // offset
         };
-        // double[] viewScales = {1, 1, 1, 1, 1, 1};
+
         this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
         System.out.println("parameterScales  = " + Matrix.toString(parameterScales[0]));
         System.out.println("parameterOffsets = " + Matrix.toString(parameterScales[1]));
 
         this.initialParameters = makeInitialParameters();
-        // this.initialParametersScaled = scaleParameters(initialParameters, parameterScales);
         this.K = initialParameters.length;
 
-        this.paramSkipArray = makeParamSkipArray();
-        this.parameterIndexMapper = new ArrayIndexMapper(paramSkipArray);
-        this.effParameterCnt = parameterIndexMapper.getReducedLength();// countEffParameters(paramSkipArray);
-        // this.paramIndex = makeParamIndex(paramSkipArray);
+        // ---------------------------
+        this.activeParameters = new BitVector(K);   // initially all parameters are active (non-fixed)
+        this.activeParameters.setAll();
+        if (FIX_LINCAMERA_PARAMS)  {this.fixLinearCameraParameters();}
+        if (FIX_DISTORTION_PARAMS) {this.fixDistortionParameters();}
+        if (FIX_VIEW_PARAMS)       {this.fixViewParameters();}
+        for (int p : FIX_SINGLE_PARAMS) {
+            this.fixParameter(p);
+        }
+        System.out.println("activeParameters = " + activeParameters);
+        // ---------------------------
 
-        this.adapter = new ParameterAdapter(paramSkipArray, parameterScales[0]);
-
+        // this.paramSkipArray = makeParamSkipArray();
+        // this.adapter = new ParameterAdapter(paramSkipArray, parameterScales[0]);
+        this.adapter = new ParameterAdapter(activeParameters, parameterScales[0]);
+        this.effParameterCnt = adapter.getSubsequenceLength();
         this.observed = makeObservedVector();
 
-        System.out.println("skipArray  = " + Arrays.toString(paramSkipArray));
         System.out.println("effective parameters  = " + effParameterCnt);
-        // System.out.println(" estimateDelta(1) = " +estimateDelta(1));
     }
 
     // -------------------------------------------------------------------------------------------
@@ -181,19 +181,19 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
         int Pa = initCam.getLinearParameters().length;
         int Pd = initCam.getDistortionParameters().length;
-        if (SKIP_CAMERA_PARAMS) {
+        if (FIX_LINCAMERA_PARAMS) {
             Arrays.fill(sa, 0, Pa, -1);
         }
-        if (SKIP_DISTORTION_PARAMS) {
+        if (FIX_DISTORTION_PARAMS) {
             int start = Pa;
             Arrays.fill(sa, start, start+Pd, -1);
         }
-        if (SKIP_VIEW_PARAMS) {
+        if (FIX_VIEW_PARAMS) {
             int start = Pa + Pd;
             Arrays.fill(sa, start, sa.length, -1);
         }
 
-        for (int i :  skipList) {
+        for (int i : FIX_SINGLE_PARAMS) {
             sa[i] = -1;
         }
 
@@ -205,6 +205,37 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         }
 
         return sa;
+    }
+
+    // -------------------------------------------------------------------------------------
+
+    public void fixParameter(int p) {
+        this.activeParameters.unsetBit(p);
+    }
+
+    public void fixLinearCameraParameters() {
+        for (int p = 0; p < 5; p++) {
+            fixParameter(p);
+        }
+    }
+
+    public void fixDistortionParameters() {
+        int n = initCam.getDistortionParameters().length;
+        for (int p = 5; p < 5 + n; p++) {
+            fixParameter(p);
+        }
+    }
+
+    public void fixViewParameters(int k) {
+        for (int p = 0; p < 6; p++) {
+            fixParameter(getViewParameterPos(k, p));
+        }
+    }
+
+    public void fixViewParameters() {
+        for (int k = 0; k < modPts.length; k++) {
+            fixViewParameters(k);
+        }
     }
 
     // -------------------------------------------------------------------------------------
@@ -442,7 +473,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
      *     PP[i] = PO[i] * s[i]     // PP = unscale(PO)
      * }</pre>
      */
-    static class ParameterAdapter extends ArrayIndexMapper {
+    static class ParameterAdapter extends SubsequenceMap {
         private final double[] scales;
 
         /**
@@ -487,9 +518,9 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                 throw new IllegalArgumentException("pp.length != scales.length");
             }
             // reduce and scale by omitting skipped
-            double[] PO = new double[this.getReducedLength()];
+            double[] PO = new double[this.getSubsequenceLength()];
             for (int j = 0; j < PO.length; j++) {
-                int i = this.getFullPos(j);
+                int i = this.getOriginalPos(j);
                 PO[j] = PP[i] / scales[i];
             }
             return PO;
@@ -507,7 +538,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
             double[] PPu = PP.clone();
             // insert from reduced parameters:
             for (int j = 0; j < PO.length; j++) {
-                int i = this.getFullPos(j);
+                int i = this.getOriginalPos(j);
                 PPu[i] = PO[j] * scales[i];
             }
             return PPu;
@@ -597,7 +628,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
             // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
             for (int p = 0; p < camParCount; p++) {                     // for all camera parameters
-                int col = adapter.getReducedPos(p);                     // column index for matrix J
+                int col = adapter.getSubsequencePos(p);                     // column index for matrix J
                 if (col >= 0) {
                     // update J for non-skipped parameter p
                     double pcp = pc[p];                                 // keep current parameter value
@@ -624,7 +655,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                 // nudge each view parameter in w
                 for (int i = 0; i < w.length; i++) {
                     int p = getViewParameterPos(k, i);
-                    int col = adapter.getReducedPos(p);
+                    int col = adapter.getSubsequencePos(p);
                     // int col = parameterIndexMapper.getReducedPos(p);
                     if (col >= 0) {                             // don't skip this parameter
                         double wi = w[i];                       // keep current parameter value w[i]
@@ -648,7 +679,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
             // scale J back to optimizer scale
             for (int p = 0; p < params.length; p++) {
-                int col = adapter.getReducedPos(p);
+                int col = adapter.getSubsequencePos(p);
                 // int col = parameterIndexMapper.getReducedPos(p);
                 if (col >= 0) { // non-skipped parameter
                     // multiply column J[*][p] by scale[p]:
