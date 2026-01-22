@@ -84,7 +84,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     private final double[][] parameterScales;
 
     private final double[] observed;
-    private final double[][] J;
+
 
     private LeastSquaresOptimizer.Optimum result;
 
@@ -120,7 +120,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         };
 
         double[][] distScales = {
-                { 0.002, 0.005}, //{ 0.005, 0.05},       // scale
+                { 0.002, 0.05}, //{ 0.005, 0.05},       // scale
                 { 0, 0}        // offset
         }; //new double[initCam.getDistortionParameters().length];
 
@@ -143,13 +143,11 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         // this.paramIndex = makeParamIndex(paramSkipArray);
 
 
-
-        this.J = new double[2 * N][effParameterCnt];
         this.observed = makeObservedVector();
 
         System.out.println("skipArray  = " + Arrays.toString(paramSkipArray));
         System.out.println("effective parameters  = " + effParameterCnt);
-        System.out.println(" estimateDelta(1) = " +estimateDelta(1));
+        // System.out.println(" estimateDelta(1) = " +estimateDelta(1));
     }
 
     // -------------------------------------------------------------------------------------------
@@ -280,110 +278,110 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
     // ------------------------------------
 
-    /**
-     * Calculates the Jacobian for the model at the current point.
-     * Called by the optimizer with reduced and scaled(!) parameters.
-     * The column dimension of J equals the number of non-skipped parameters.
-     * Skipped parameters are ignored.
-     * @param paramsRS reduced and scaled parameters
-     * @return
-     */
-    @Deprecated
-    double[][] getJacobian(double[] paramsRS) {
-        // get full/scaled parameters
-        double[] Yref = getValue(paramsRS);                 // values Y from undisturbed parameters
-        // expand to scaled parameters:
-        double[] paramsS = expandParams(paramsRS, initialParametersScaled);
-        // convert to unscaled parameters:
-        double[] params = unscaleParameters(paramsS, parameterScales);
-
-        // create a camera for the current parameter point
-        double[] pc = getCameraParameters(params);
-        Camera camCur = initCam.fromParameters(pc);
-
-        // clear recycled Jacobian matrix
-        for (int i = 0; i < J.length; i++) {
-            Arrays.fill(J[i], 0.0);
-        }
-
-        // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
-        for (int p = 0; p < pc.length; p++) {    // for all camera parameters
-            int col = parameterIndexMapper.getReducedPos(p);
-            if (col >= 0) {
-                // update J for non-skipped parameter p
-                double pcp = pc[p];                               // keep current parameter value
-                double delta = estimateDelta(pcp);
-                pc[p] = pc[p] + delta;        // modify parameter p
-                Camera camMod = camCur.fromParameters(pc);    // modified camera
-                // project all model points through the modified camera:
-                for (int k = 0, r = 0; k < M; k++) {            // for all views k, r = row
-//                    int q = camParCount + k * viewParCount;     // q = start in parameter vector
-//                    double[] wk = Arrays.copyOfRange(params, q, q + viewParCount);
-//                    ViewTransform Vk = new ViewTransform(wk);
-                    ViewTransform Vk = new ViewTransform(getViewParameters(params, k));
-                    for (int j = 0; j < modPts[k].length; j++, r += 2) {
-                        // project all points of view k to sensor:
-                        double[] Ymod = camMod.project(Vk, modPts[k][j]);
-                        J[r + 0][col] = (Ymod[0] - Yref[r + 0]) / delta;   // dX
-                        J[r + 1][col] = (Ymod[1] - Yref[r + 1]) / delta;   // dY
-                    }
-                }
-                pc[p] = pcp;    // revert parameter a[p] to original value
-            }
-        }
-
-        // Step 2: calculate the diagonal blocks, one for each view
-        int startRow = 0;
-        for (int k = 0; k < M; k++) {    // for all views/blocks
-            // int ps = camParCount + k * viewParCount;    // start of view parameters = start column in J
-            // double[] w = Arrays.copyOfRange(params, ps, ps + viewParCount);
-            double[] w = getViewParameters(params, k);
-            // int c = a.length + k * w.length;        // leftmost matrix column of block i
-            for (int i = 0; i < w.length; i++) {    // for all parameters in w
-                //int p = ps + i;
-                int p = getViewParameterPos(k, i);
-                int col = parameterIndexMapper.getReducedPos(p);
-                if (col >= 0) {                             // don't skip this parameter
-                    double wi = w[i];                       // keep current parameter value w[i]
-                    double delta = estimateDelta(wi);
-                    w[i] = w[i] + delta;                    // modify parameter w[i]
-                    ViewTransform Vk = new ViewTransform(w);
-                    // fill column of J in diagonal block k:
-                    for (int j = 0, r = startRow; j < modPts[k].length; j++, r+=2) {        // for all model points: calculate disturbed value
-                        double[] Ymod = camCur.project(Vk, modPts[k][j]);
-                        J[r + 0][col] = (Ymod[0] - Yref[r + 0]) / delta;   // dX
-                        J[r + 1][col] = (Ymod[1] - Yref[r + 1]) / delta;   // dY
-                    }
-                    w[i] = wi; // revert parameter w[i] to its original value
-                }
-            }
-            startRow = startRow + 2 * modPts[k].length;
-        }
-
-        printJacobian(J);
-
-        // scale J back to optimizer scale
-        for (int p = 0; p < params.length; p++) {
-            int col = parameterIndexMapper.getReducedPos(p);
-            if (col >= 0) { // non-skipped parameter
-                // multiply column J[*][p] by scale[p]:
-                double s = parameterScales[0][p];
-                // System.out.printf("  --- scaling J[%d] by %.4f\n", col, s);
-                for (int j = 0; j < J.length; j++) {
-                    J[j][col] *= s;
-                }
-            }
-        }
-
-        // printJacobian(J);
-
-        double[] colNorms = getMatrixColumnNorms(J);
-        System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
-        System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
-        System.out.println("    J rank = " + getMatrixRank(J));
-        System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
-        return J;
-    }
+//     /**
+//      * Calculates the Jacobian for the model at the current point.
+//      * Called by the optimizer with reduced and scaled(!) parameters.
+//      * The column dimension of J equals the number of non-skipped parameters.
+//      * Skipped parameters are ignored.
+//      * @param paramsRS reduced and scaled parameters
+//      * @return
+//      */
+//     @Deprecated
+//     double[][] getJacobian(double[] paramsRS) {
+//         // get full/scaled parameters
+//         double[] Yref = getValue(paramsRS);                 // values Y from undisturbed parameters
+//         // expand to scaled parameters:
+//         double[] paramsS = expandParams(paramsRS, initialParametersScaled);
+//         // convert to unscaled parameters:
+//         double[] params = unscaleParameters(paramsS, parameterScales);
+//
+//         // create a camera for the current parameter point
+//         double[] pc = getCameraParameters(params);
+//         Camera camCur = initCam.fromParameters(pc);
+//
+//         // clear recycled Jacobian matrix
+//         for (int i = 0; i < J.length; i++) {
+//             Arrays.fill(J[i], 0.0);
+//         }
+//
+//         // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
+//         for (int p = 0; p < pc.length; p++) {    // for all camera parameters
+//             int col = parameterIndexMapper.getReducedPos(p);
+//             if (col >= 0) {
+//                 // update J for non-skipped parameter p
+//                 double pcp = pc[p];                               // keep current parameter value
+//                 double delta = estimateDelta(pcp);
+//                 pc[p] = pc[p] + delta;        // modify parameter p
+//                 Camera camMod = camCur.fromParameters(pc);    // modified camera
+//                 // project all model points through the modified camera:
+//                 for (int k = 0, r = 0; k < M; k++) {            // for all views k, r = row
+// //                    int q = camParCount + k * viewParCount;     // q = start in parameter vector
+// //                    double[] wk = Arrays.copyOfRange(params, q, q + viewParCount);
+// //                    ViewTransform Vk = new ViewTransform(wk);
+//                     ViewTransform Vk = new ViewTransform(getViewParameters(params, k));
+//                     for (int j = 0; j < modPts[k].length; j++, r += 2) {
+//                         // project all points of view k to sensor:
+//                         double[] Ymod = camMod.project(Vk, modPts[k][j]);
+//                         J[r + 0][col] = (Ymod[0] - Yref[r + 0]) / delta;   // dX
+//                         J[r + 1][col] = (Ymod[1] - Yref[r + 1]) / delta;   // dY
+//                     }
+//                 }
+//                 pc[p] = pcp;    // revert parameter a[p] to original value
+//             }
+//         }
+//
+//         // Step 2: calculate the diagonal blocks, one for each view
+//         int startRow = 0;
+//         for (int k = 0; k < M; k++) {    // for all views/blocks
+//             // int ps = camParCount + k * viewParCount;    // start of view parameters = start column in J
+//             // double[] w = Arrays.copyOfRange(params, ps, ps + viewParCount);
+//             double[] w = getViewParameters(params, k);
+//             // int c = a.length + k * w.length;        // leftmost matrix column of block i
+//             for (int i = 0; i < w.length; i++) {    // for all parameters in w
+//                 //int p = ps + i;
+//                 int p = getViewParameterPos(k, i);
+//                 int col = parameterIndexMapper.getReducedPos(p);
+//                 if (col >= 0) {                             // don't skip this parameter
+//                     double wi = w[i];                       // keep current parameter value w[i]
+//                     double delta = estimateDelta(wi);
+//                     w[i] = w[i] + delta;                    // modify parameter w[i]
+//                     ViewTransform Vk = new ViewTransform(w);
+//                     // fill column of J in diagonal block k:
+//                     for (int j = 0, r = startRow; j < modPts[k].length; j++, r+=2) {        // for all model points: calculate disturbed value
+//                         double[] Ymod = camCur.project(Vk, modPts[k][j]);
+//                         J[r + 0][col] = (Ymod[0] - Yref[r + 0]) / delta;   // dX
+//                         J[r + 1][col] = (Ymod[1] - Yref[r + 1]) / delta;   // dY
+//                     }
+//                     w[i] = wi; // revert parameter w[i] to its original value
+//                 }
+//             }
+//             startRow = startRow + 2 * modPts[k].length;
+//         }
+//
+//         // printJacobian(J);
+//
+//         // scale J back to optimizer scale
+//         for (int p = 0; p < params.length; p++) {
+//             int col = parameterIndexMapper.getReducedPos(p);
+//             if (col >= 0) { // non-skipped parameter
+//                 // multiply column J[*][p] by scale[p]:
+//                 double s = parameterScales[0][p];
+//                 // System.out.printf("  --- scaling J[%d] by %.4f\n", col, s);
+//                 for (int j = 0; j < J.length; j++) {
+//                     J[j][col] *= s;
+//                 }
+//             }
+//         }
+//
+//         // printJacobian(J);
+//
+//         double[] colNorms = getMatrixColumnNorms(J);
+//         System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
+//         System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
+//         System.out.println("    J rank = " + getMatrixRank(J));
+//         System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
+//         return J;
+//     }
 
 
     void printJacobian(double[][] JAC) {
@@ -440,7 +438,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         System.out.println("initialParameters (unscaled) = " + Matrix.toString(ipu));
 
         // MultivariateJacobianFunction model = new FullOptimizationModel();
-        MultivariateJacobianFunction model = new CombinedModel();
+        MultivariateJacobianFunction model = new CombinedModel(2 * N, effParameterCnt);
 
         double[] pStart = reduceParams(scaleParameters(initialParameters, parameterScales));
         System.out.println("start Parameters = " + Matrix.toString(pStart));
@@ -459,10 +457,9 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
         this.result = result;
         double[] optParams = result.getPoint().toArray();
         PrintPrecision.set(8);
-        System.out.println("optimal parameters (reduced) = " + Matrix.toString(optParams));
-        // double[] fullParams = insertItem(optParams, PARAMETER_SKIP_INDEX, 0.0);
+        // System.out.println("optimal parameters (reduced) = " + Matrix.toString(optParams));
         double[] fullParams = expandParams(optParams, initialParameters);
-        System.out.println("scaled optimal parameters (full)   = " + Matrix.toString(fullParams));
+        // System.out.println("scaled optimal parameters (full)   = " + Matrix.toString(fullParams));
         double[] unscaledParams = unscaleParameters(fullParams, parameterScales);
         System.out.println("unscaled optimal parameters (full) = " + Matrix.toString(unscaledParams));
         updateEstimates(unscaledParams);
@@ -659,21 +656,29 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
     // -------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------
 
-    @Deprecated
-    private class FullOptimizationModel implements MultivariateJacobianFunction {
-
-        @Override
-        public Pair<RealVector, RealMatrix> value(RealVector realVector) {
-            double[] paramsS = realVector.toArray();
-            RealVector Y = new ArrayRealVector(getValue(paramsS), false);
-            RealMatrix J = new Array2DRowRealMatrix(getJacobian(paramsS), false);
-            return Pair.create(Y, J);
-        }
-    }
+    // @Deprecated
+    // private class FullOptimizationModel implements MultivariateJacobianFunction {
+    //
+    //     @Override
+    //     public Pair<RealVector, RealMatrix> value(RealVector realVector) {
+    //         double[] paramsS = realVector.toArray();
+    //         RealVector Y = new ArrayRealVector(getValue(paramsS), false);
+    //         RealMatrix J = new Array2DRowRealMatrix(getJacobian(paramsS), false);
+    //         return Pair.create(Y, J);
+    //     }
+    // }
 
     // ----------------------------
 
     class CombinedModel implements MultivariateJacobianFunction {
+
+        private final double[] Y;       // value vector (allocated once and recycled)
+        private final double[][] J;     // Jacobian matrix (allocated once and recycled)
+
+        CombinedModel(int rows, int cols) {
+            this.Y = new double[rows];      // [2 * N[
+            this.J = new double[rows][cols];    // [2 * N][effParameterCnt]
+        }
 
         @Override
         public Pair<RealVector, RealMatrix> value(RealVector point) {
@@ -689,7 +694,9 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
 
             // calculate value vector (V) ----------------------------------------------
 
-            double[] Y = new double[2 * N];             // new value vector
+            // double[] Y = new double[2 * N];             // new value vector
+            Arrays.fill(Y, 0.0);
+
             // process each view
             for (int k = 0, r = 0; k < M; k++) {
                 // create transform for view k
@@ -757,7 +764,7 @@ public class OptimizerFresh2 implements NonlinearOptimizer {
                 startRow += 2 * modPts[k].length;
             }
 
-            printJacobian(J);
+            // printJacobian(J);
 
             // scale J back to optimizer scale
             for (int p = 0; p < params.length; p++) {
