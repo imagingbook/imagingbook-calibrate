@@ -12,6 +12,7 @@ import imagingbook.calibrate.optimize.obsolete.NonlinearOptimizer;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
+import imagingbook.common.util.SubsequenceMapping;
 import imagingbook.common.util.bits.BitVector;
 import org.apache.commons.math4.legacy.core.Pair;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
@@ -203,7 +204,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
     public void optimize() {
         setup();
         MultivariateJacobianFunction model = new CombinedModel(2 * N, activeParameterCnt);
-        double[] pStart = adapter.getOptimizerParameters(initialParameters);
+        double[] pStart = adapter.getModelParameters(initialParameters);
         System.out.println("start Parameters = " + Matrix.toString(pStart));
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
@@ -221,7 +222,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
         double[] optParams = result.getPoint().toArray();
         PrintPrecision.set(8);
 
-        double[] finalParams = adapter.getPhysicalParameters(optParams, initialParameters);
+        double[] finalParams = adapter.getFullParameters(optParams, initialParameters);
         System.out.println("unscaled optimal parameters (full) = " + Matrix.toString(finalParams));
         updateEstimates(finalParams);
 
@@ -302,7 +303,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
 
     double[] getAutoScales(double[] allParams) {
         MultivariateJacobianFunction model = new CombinedModel(2 * N, activeParameterCnt);
-        double[] pStart = adapter.getOptimizerParameters(allParams);
+        double[] pStart = adapter.getModelParameters(allParams);
         RealMatrix Jac = model.value(new ArrayRealVector(pStart, false)).getSecond();
         double[] scales = new double[allParams.length];
         Arrays.fill(scales, 1.0);
@@ -310,7 +311,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
         for (int q = 0; q < activeParameterCnt; q++) {
             double norm = Jac.getColumnVector(q).getNorm();
             double s = (norm < 1e-12) ? 1.0 : (1.0 / norm);
-            int p = adapter.getOriginalPos(q);
+            int p = adapter.getFullParamIdx(q);
             scales[p] = s;
         }
         return scales;
@@ -394,86 +395,134 @@ public class OverallOptimizer implements NonlinearOptimizer {
     // ----------------------------------------------------------------------------------------
 
     /**
-     * This helper class maps physical parameters (PPs) to optimizer parameters (POs).
-     * Optimizer are a scaled subset of the physical parameters. Scaling is performed as
+     * Maps between <em>full</em> (original) parameters (pF) and <em>model</em> parameters (pM),
+     * which are a subset of the full parameters. Converts parameter indexes and scales.
+     * Let i, j be the indexes for the same parameter in the full and model parameter vectors,
+     * respectively, s[i] the scale for parameter i:
      * <pre>{@code
-     *     PO[i] = PP[i] / s[i]     // PO = scale(PP)
-     *     PP[i] = PO[i] * s[i]     // PP = unscale(PO)
+     *     pM[j] <- pF[i] / s[i]     // pM = scale(pF)
+     *     pF[i] <- pM[j] * s[i]     // pF = unscale(pM)
      * }</pre>
+     * Scale values must be non-zero but may be positve or negative.
      */
-    static class ParameterAdapter extends SubsequenceMap {
+    static class ParameterAdapter {
 
-        private double[] scales;                      // for scaling parameters
+        private final SubsequenceMapping sMap;     // maps full parameter to model indexes (and back)
+        private final double[] scales;                  // scale vales (for full parameter vector)
 
         /**
          * Constructor. Throws an exception if {@code subset} and {@code scales} are not of the
          * same length or if {@code scales} contains zero values.
-         * @param subset a {@link BitVector} flagging the parameters to be kept truncated parameters
-         * @param scales a vector of non-zero scale values, one for each parameter
+         * @param subset a {@link BitVector} flagging the model parameters
+         * @param scales a vector of non-zero scale values, one for each full parameter (pass
+         * {@code null} to set all scales to 1.0)
          */
         ParameterAdapter(BitVector subset, double[] scales) {
-            super(subset);
+            this.sMap = new SubsequenceMapping(subset);
             if (scales == null) {
                 this.scales = new double[subset.length()];
                 Arrays.fill(this.scales, 1.0);
             }
             else {
-                setScales(scales);
+                this.scales = scales.clone();
             }
         }
 
+        /**
+         * Updates the parameter scale values.
+         * @param scales a vector of non-zero scale values, one for each full parameter
+         */
         void setScales(double[] scales) {
-            if (scales.length != this.getOriginalLength()) {
+            if (scales.length != sMap.getOrigSequenceLength()) {
                 throw new IllegalArgumentException("scales.length != skipArray.length");
             }
             for (int i = 0; i < scales.length; i++) {
-                if (Math.abs(scales[i]) < 1e-9) {
-                    throw new IllegalArgumentException("zero scale value at pos " + i);
+                if (Math.abs(scales[i]) < 1e-12) {
+                    throw new IllegalArgumentException("scale value < 1e-12 at pos " + i);
                 }
+                this.scales[i] = scales[i];
             }
-            this.scales = scales;
         }
 
         /**
-         * Maps unscaled physical parameters {@code PP} to scaled optimizer parameters.
-         * @param PP unscaled physical parameters
-         * @return reduced and scaled optimizer parameters
+         * Maps unscaled, full parameters {@code pFull} to reduced and scaled model parameters.
+         * @param pFull unscaled full parameters
+         * @return reduced and scaled model parameters
          */
-        double[] getOptimizerParameters(double[] PP) {
-            if (PP.length != scales.length) {
+        double[] getModelParameters(double[] pFull) {
+            if (pFull.length != scales.length) {
                 throw new IllegalArgumentException("pp.length != scales.length");
             }
             // reduce and scale by omitting skipped
-            double[] PO = new double[this.getSubsequenceLength()];
-            for (int j = 0; j < PO.length; j++) {
-                int i = this.getOriginalPos(j);
-                PO[j] = PP[i] / scales[i];
+            double[] pModel = new double[sMap.getSubSequenceLength()];
+            for (int j = 0; j < pModel.length; j++) {
+                int i = sMap.getOrigPosition(j);
+                pModel[j] = pFull[i] / scales[i];
             }
-            return PO;
+            return pModel;
         }
 
         /**
-         * Maps scaled optimizer parameters {@code PO} to expanded and unscaled physical parameters.
-         * Parameters from {@code PO} are merged into a copy of the physical parameter vector
-         * {@code PP}. Parameters not contained in {@code PO} are thus taken from {@code PP}.
-         * @param PO reduced and scaled optimizer parameters
-         * @param PP unscaled physical parameters (template)
-         * @return expanded and unscaled physical parameters
+         * Maps scaled model parameters {@code pModel} to full and unscaled physical parameters.
+         * Parameters from {@code pModel} are merged into a copy of the full parameter vector
+         * {@code pFull}. Parameters missing from {@code pModel} are carried over from {@code pFull}.
+         * @param pModel reduced, scaled model parameters
+         * @param pFull expanded, unscaled full parameters (template)
+         * @return expanded, unscaled full parameters
          */
-        double[] getPhysicalParameters(double[] PO, double[] PP) {
-            double[] PPu = PP.clone();
+        double[] getFullParameters(double[] pModel, double[] pFull) {
+            double[] pF = pFull.clone();
             // insert from reduced parameters:
-            for (int j = 0; j < PO.length; j++) {
-                int i = this.getOriginalPos(j);
-                PPu[i] = PO[j] * scales[i];
+            for (int j = 0; j < pModel.length; j++) {
+                int i = sMap.getOrigPosition(j);
+                pF[i] = pModel[j] * scales[i];
             }
-            return PPu;
+            return pF;
         }
 
-        double getScale(int p) {
+        /**
+         * Returns the scale value for the specified parameter.
+         * @param p parameter index (in full parameter vector)
+         * @return the corresponding scale value
+         */
+        double getParameterScale(int p) {
             return scales[p];
         }
 
+        /**
+         * Returns the index in the full parameter vector for the given model parameter index.
+         * @param modelIdx index in model parameter vector
+         * @return the corresponding full parameter index
+         */
+        public int getFullParamIdx(int modelIdx) {
+            return sMap.getOrigPosition(modelIdx);
+        }
+
+        /**
+         * Returns the model parameter index for a given full parameter index. Returns -1 if
+         * the corresponding parameter is not contained in the model parameters.
+         * @param fullIdx index in full parameter vector
+         * @return the model parameter index or -1 if not conteined in the model
+         */
+        public int getModelParamIdx(int fullIdx) {
+            return sMap.getSubPosition(fullIdx);
+        }
+
+        /**
+         * Returns the length of the full parameter vector.
+         * @return the length of the full parameter vector
+         */
+        public int getFullParamLength() {
+            return sMap.getOrigSequenceLength();
+        }
+
+        /**
+         * Returns the length of the model parameter vector.
+         * @return the length of the model parameter vector
+         */
+        public int getModelParamLength() {
+            return sMap.getSubSequenceLength();
+        }
     }
 
     // -------------------------------------------------------------------------------------
@@ -526,7 +575,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
 
         @Override
         public Pair<RealVector, RealMatrix> value(RealVector point) {
-            double[] params = adapter.getPhysicalParameters(point.toArray(), initialParameters);
+            double[] params = adapter.getFullParameters(point.toArray(), initialParameters);
             // create a new Camera instance:
             double[] pc = assembler.getCameraParameters(params);
             Camera cam = initCam.withParameters(pc);
@@ -555,7 +604,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
 
             // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
             for (int p = 0; p < assembler.getCameraParamCount(); p++) {                     // for all camera parameters
-                int col = adapter.getSubsequencePos(p);                 // column index for matrix J
+                int col = adapter.getModelParamIdx(p);                 // column index for matrix J
                 if (col >= 0) {
                     // update J for non-skipped parameter p
                     double pcp = pc[p];                                 // keep current parameter value
@@ -582,7 +631,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
                 // nudge each view parameter in w
                 for (int i = 0; i < w.length; i++) {
                     int p = assembler.getViewParameterPos(k, i);
-                    int col = adapter.getSubsequencePos(p);
+                    int col = adapter.getModelParamIdx(p);
                     // int col = parameterIndexMapper.getReducedPos(p);
                     if (col >= 0) {                             // don't skip this parameter
                         double wi = w[i];                       // keep current parameter value w[i]
@@ -606,11 +655,11 @@ public class OverallOptimizer implements NonlinearOptimizer {
 
             // scale J back to optimizer scale
             for (int p = 0; p < params.length; p++) {
-                int col = adapter.getSubsequencePos(p);
+                int col = adapter.getModelParamIdx(p);
                 // int col = parameterIndexMapper.getReducedPos(p);
                 if (col >= 0) { // non-skipped parameter
                     // multiply column J[*][p] by scale[p]:
-                    double s = adapter.getScale(p);     //parameterScales[p];
+                    double s = adapter.getParameterScale(p);     //parameterScales[p];
                     // System.out.printf("  --- scaling J[%d] by %.4f\n", col, s);
                     for (int j = 0; j < J.length; j++) {
                         J[j][col] *= s;
