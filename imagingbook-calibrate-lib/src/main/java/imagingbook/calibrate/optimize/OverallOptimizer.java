@@ -108,21 +108,6 @@ public class OverallOptimizer implements NonlinearOptimizer {
         // ---------------------------
         this.activeParamFlags = new BitVector(K);   // initially all parameters are active (non-fixed)
         this.activeParamFlags.setAll();             // to be modified by subsequent fixParameters() calls
-
-//        if (FIX_LINCAMERA_PARAMS)  {this.fixLinearCameraParameters();}
-//        if (FIX_DISTORTION_PARAMS) {this.fixDistortionParameters();}
-//        if (FIX_VIEW_PARAMS)       {this.fixViewParameters();}
-//        if (FIX_SINGLE_PARAMS != null) {this.fixParameters(FIX_SINGLE_PARAMS);}
-//        System.out.println("activeParamFlags = " + activeParamFlags);
-
-//        double[] camScales = {1, 1, 1, 0.1, 0.1};    // alpha, beta, gamma, uc, vc
-//        double[] distScales = { 0.002, 0.05};
-//        double[] viewScales = { .0005, .0005, .0005, .01, .01, .01};
-//        this.parameterScales = makeParameterScales(camScales, distScales, viewScales, M);
-//        System.out.println("parameterScales  = " + Matrix.toString(parameterScales));
-
-        // ---------------------------
-
     }
 
     // -------------------------------------------------------------------------------------
@@ -570,7 +555,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
 
             // Step 1: calculate the leftmost (green) block of J associated with camera intrinsics
             for (int p = 0; p < assembler.getCameraParamCount(); p++) {                     // for all camera parameters
-                int col = adapter.getSubsequencePos(p);                     // column index for matrix J
+                int col = adapter.getSubsequencePos(p);                 // column index for matrix J
                 if (col >= 0) {
                     // update J for non-skipped parameter p
                     double pcp = pc[p];                                 // keep current parameter value
