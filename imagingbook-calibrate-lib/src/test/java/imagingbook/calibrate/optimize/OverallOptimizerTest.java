@@ -13,10 +13,7 @@ import org.junit.Test;
 // import static imagingbook.calibrate.optimize.OverallOptimizer.makeParamIndex;
 import static org.junit.Assert.*;
 
-public class OptimizerFresh2Test {
-
-
-
+public class OverallOptimizerTest {
 
     @Test
     public void ParameterAdapterTest() {
