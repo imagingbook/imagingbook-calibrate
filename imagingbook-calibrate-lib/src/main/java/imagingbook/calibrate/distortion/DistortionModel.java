@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.math.Matrix;
 
 import java.util.Locale;
@@ -16,16 +17,30 @@ import java.util.Locale;
 public abstract class DistortionModel {
 
     final double[] parameters;      // variable number of distortion parameters
-    // final double domainScale;       // assumed geometric scale (relative to normalized projection)
 
     DistortionModel(double[] parameters) {
         this.parameters = parameters;
-        // this.domainScale = domainScale;
     }
 
-    // DistortionModel(double[] parameters) {
-    //     this(parameters, 1.0);      // default scale is 1.0
-    // }
+    public static DistortionModel create(DistortionModelType type) {
+        switch (type) {
+            case Radial2Term ->     { return new Radial2TermDistortion(); }
+            case Radial3Term ->     { return new Radial3TermDistortion(); }
+            case RadialLateral ->   { return new RadialLateralDistortion(); }
+            case PtLens ->          { return new PtLensDistortion(); }
+            default -> throw new  IllegalArgumentException("Unknown DistortionModel type");
+        }
+    }
+
+    public static DistortionModel create(DistortionModelType type, Camera cam, int imgWidth, int imgHeight) {
+        switch (type) {
+            case Radial2Term ->     { return new Radial2TermDistortion(); }
+            case Radial3Term ->     { return new Radial3TermDistortion(); }
+            case RadialLateral ->   { return new RadialLateralDistortion(); }
+            case PtLens ->          { return new PtLensDistortion(cam, imgWidth, imgHeight); }
+            default -> throw new  IllegalArgumentException("Unknown DistortionModel type");
+        }
+    }
 
     /**
      * Copies this distortion model instance with modified parameters.

@@ -42,6 +42,9 @@ public abstract class Camera {
         if (A != null && A.length != 5) {
             throw new IllegalArgumentException("required camera parameters length is 5");
         }
+        if (distortion == null) {
+            throw new IllegalArgumentException("distortion model is null");
+        }
         this.A = (A != null) ?
                 new double[][] {
                         { A[0], A[2], A[3] },
@@ -265,6 +268,12 @@ public abstract class Camera {
      * @param distortion the new distortion model
      */
     public void setDistortion(DistortionModel distortion) {
+        if (distortion == null) {
+            throw new IllegalArgumentException("distortion cannot be null");
+        }
+        if (distortion.getClass() != this.distortion.getClass()) {
+            throw new IllegalArgumentException("distortion class mismatch");
+        }
         this.distortion = distortion;
     }
 

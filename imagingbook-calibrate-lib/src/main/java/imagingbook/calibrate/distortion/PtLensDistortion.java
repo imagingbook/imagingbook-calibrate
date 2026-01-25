@@ -7,7 +7,6 @@
 package imagingbook.calibrate.distortion;
 
 import imagingbook.calibrate.intrinsics.Camera;
-import imagingbook.calibrate.intrinsics.StandardCamera;
 import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
@@ -27,9 +26,13 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
     private final double scale;
 
     @Deprecated
-    public static PtLensDistortion from(StandardCamera cam, int imgWidth, int imgHeight) {
+    public static PtLensDistortion from(Camera cam, int imgWidth, int imgHeight) {
         double scale = findScale(cam, imgWidth, imgHeight);
         return new PtLensDistortion(new double[] {0, 0, 0}, scale);
+    }
+
+    public PtLensDistortion(Camera cam, int imgWidth, int imgHeight) {
+        this(new double[] {0, 0, 0}, findScale(cam, imgWidth, imgHeight));
     }
 
     /**
@@ -47,7 +50,14 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
     public static double findScale(Camera cam, int imgWidth, int imgHeight) {
         return Math.max(
                  cam.getAlpha() / (0.5 * imgWidth),
-                 cam.getBeta() / (0.5 * imgHeight));
+                 cam.getBeta()  / (0.5 * imgHeight));
+    }
+
+    /**
+     * Creates a dummy distortion instance to be replaced later.
+     */
+    public PtLensDistortion() {
+        this(new double[] {0, 0, 0}, 1);
     }
 
     /**
