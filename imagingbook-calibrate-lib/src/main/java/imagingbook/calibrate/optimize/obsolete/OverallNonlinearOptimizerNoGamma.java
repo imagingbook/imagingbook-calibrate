@@ -259,8 +259,10 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
     /**
      * Performs Levenberg-Marquardt non-linear optimization to get better estimates of the
      * parameters.
+     *
+     * @return
      */
-    public void optimize() {
+    public boolean optimize() {
         // RealVector start = new ArrayRealVector(initialParameters, false);
         System.out.println("initialParameters = " + Matrix.toString(initialParameters));
         // double[] observed = makeObservedVector();
@@ -293,6 +295,7 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
 
         PrintPrecision.set(3);
         System.out.println("Covariance Matrix: \n" + Matrix.toString(getCovarianceMatrix(result)));
+        return true;
     }
 
     // -----------------------------------------------------------------------------------------

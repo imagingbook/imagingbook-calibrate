@@ -229,8 +229,10 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
     /**
      * Performs Levenberg-Marquardt non-linear optimization to get better estimates of the
      * parameters.
+     *
+     * @return
      */
-    public void optimize() {
+    public boolean optimize() {
         // RealVector start = new ArrayRealVector(initialParameters, false);
         System.out.println("initialParameters = " + Matrix.toString(initialParameters));
         // double[] observed = makeObservedVector();
@@ -264,6 +266,7 @@ public class OverallNonlinearOptimizer implements NonlinearOptimizer {
         this.result = result;
         double[] optParams = result.getPoint().toArray();
         updateEstimates(unscaleParameters(optParams, parameterScales));
+        return true;
     }
 
     // -----------------------------------------------------------------------------------------

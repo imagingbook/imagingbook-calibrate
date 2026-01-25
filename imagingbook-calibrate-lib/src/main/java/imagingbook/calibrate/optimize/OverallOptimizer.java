@@ -15,6 +15,8 @@ import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.SubsequenceMapping;
 import imagingbook.common.util.bits.BitVector;
 import org.apache.commons.math4.legacy.core.Pair;
+import org.apache.commons.math4.legacy.exception.TooManyEvaluationsException;
+import org.apache.commons.math4.legacy.exception.TooManyIterationsException;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
@@ -85,6 +87,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
     private Camera finalCamera;
     private ViewTransform[] finalViews;
 
+    private String failureReason;
 
     /**
      * The only constructor.
@@ -105,7 +108,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
         this.assembler = new ParameterAssembler(initCam, M);
         this.initialParameters =  assembler.assembleParameters(initCam, viewList);     // makeInitialParameters();
         this.K = initialParameters.length;
-        System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
+        // System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
         // ---------------------------
         this.activeParamFlags = new BitVector(K);   // initially all parameters are active (non-fixed)
         this.activeParamFlags.setAll();             // to be modified by subsequent fixParameters() calls
@@ -120,16 +123,16 @@ public class OverallOptimizer implements NonlinearOptimizer {
      * It is an error if setup() is called more than once.
      */
     private void setup() {
-        System.out.println("activeParamFlags = " + activeParamFlags);
+        // System.out.println("activeParamFlags = " + activeParamFlags);
         this.adapter = new ParameterAdapter(activeParamFlags, null);    // all scales = 1
         this.activeParameterCnt = activeParamFlags.cardinality();     // adapter.getSubsequenceLength();
 
         double[] autoScales = getAutoScales(initialParameters);
         PrintPrecision.set(6);
-        System.out.println("autoScales = " + Matrix.toString(autoScales));
+        // System.out.println("autoScales = " + Matrix.toString(autoScales));
         this.adapter.setScales(autoScales);
 
-        System.out.printf("problem size = %d x %d\n", 2*N, activeParameterCnt);
+        // System.out.printf("problem size = %d x %d\n", 2*N, activeParameterCnt);
     }
 
     // -------------------------------------------------------------------------------------------
@@ -200,12 +203,14 @@ public class OverallOptimizer implements NonlinearOptimizer {
     /**
      * Performs Levenberg-Marquardt non-linear optimization to get better estimates of the
      * parameters.
+     *
+     * @return
      */
-    public void optimize() {
+    public boolean optimize() {
         setup();
         MultivariateJacobianFunction model = new CombinedModel(2 * N, activeParameterCnt);
         double[] pStart = adapter.getModelParameters(initialParameters);
-        System.out.println("start Parameters = " + Matrix.toString(pStart));
+        // System.out.println("start Parameters = " + Matrix.toString(pStart));
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
                 .target(observed)
@@ -216,18 +221,27 @@ public class OverallOptimizer implements NonlinearOptimizer {
                 .build();
         LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer().withInitialStepBoundFactor(100);
         // System.out.println("LevenbergMarquardtOptimizer: InitialStepBoundFactor = " + lm.getInitialStepBoundFactor());
-        LeastSquaresOptimizer.Optimum result = lm.optimize(problem);
+
+        LeastSquaresOptimizer.Optimum result;
+        try {
+            result = lm.optimize(problem);
+        }
+        catch (TooManyIterationsException | TooManyEvaluationsException e) {
+            failureReason = "maximum number of iterations or evaluations exceeded";
+            return false;
+        }
 
         this.result = result;
         double[] optParams = result.getPoint().toArray();
         PrintPrecision.set(8);
 
         double[] finalParams = adapter.getFullParameters(optParams, initialParameters);
-        System.out.println("unscaled optimal parameters (full) = " + Matrix.toString(finalParams));
+        // System.out.println("unscaled optimal parameters (full) = " + Matrix.toString(finalParams));
         updateEstimates(finalParams);
 
         // PrintPrecision.set(3);
         // System.out.println("Covariance Matrix: \n" + Matrix.toString(getCovarianceMatrix(result)));
+        return true;
     }
 
     // -----------------------------------------------------------------------------------------
@@ -555,6 +569,10 @@ public class OverallOptimizer implements NonlinearOptimizer {
         return result.getResiduals();
     }
 
+    public String getFailureReason() {
+        return (failureReason != null) ? failureReason : "";
+    }
+
     // -------------------------------------------------------------------------------------
     // -------------------------------------------------------------------------------------
 
@@ -670,10 +688,10 @@ public class OverallOptimizer implements NonlinearOptimizer {
             // printJacobian(J);
 
             double[] colNorms = getMatrixColumnNorms(J);
-            System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
-            System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
-            System.out.println("    J rank = " + getMatrixRank(J));
-            System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
+            // System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
+            // System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
+            // System.out.println("    J rank = " + getMatrixRank(J));
+            // System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
 
             // prepare return values
             RealVector YY = new ArrayRealVector(Y, false);

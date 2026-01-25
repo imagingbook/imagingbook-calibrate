@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface NonlinearOptimizer {
 
-    public void optimize();
+    public boolean optimize();
 	public int getIterations();
     public int getEvaluations();
     public RealVector getResiduals();

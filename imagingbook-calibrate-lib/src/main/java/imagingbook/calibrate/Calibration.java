@@ -25,6 +25,8 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import java.util.ArrayList;
 import java.util.List;
 
+import static imagingbook.common.math.Arithmetic.sqr;
+
 /**
  * <p>This is the main camera calibration class.
  * Instances of {@link Calibration} are supposed to be used in the following way:</p>
@@ -180,48 +182,91 @@ public class Calibration {
 		// NonlinearOptimizer optim =
 		// 		new OverallNonlinearOptimizer_Unscaled(improvedCam, initViews, modelPntSet, imagePntSet);
 
-		OverallOptimizer optim =
-				new OverallOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
-		optim.fixGamma();
-		optim.fixViewParameters();
+		OverallOptimizer optim = new OverallOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
+		// optim.fixGamma();
+		// optim.fixViewParameters();
 
-		optim.optimize();
-		System.out.println("optimize1: iterations = " + optim.getIterations());
-		System.out.println("optimize1: evaluations = " + optim.getEvaluations());
-		System.out.println("optimize1: |residuals| = " + optim.getResiduals().getNorm());
+		if (optim.optimize()) {
+			System.out.println("optimize1: iterations = " + optim.getIterations());
+			System.out.println("optimize1: evaluations = " + optim.getEvaluations());
+			System.out.println("optimize1: |residuals| = " + optim.getResiduals().getNorm());
 
-		finalCam = optim.getFinalCamera();
-        debug("final camera = " + finalCam);
+			finalCam = optim.getFinalCamera();
+			debug("final camera = " + finalCam);
+			finalViews = optim.getFinalViews();
+		}
+		else {
+			System.out.println("overall optimization failed, reason: " + optim.getFailureReason());
+			finalCam = improvedCam;
+			finalViews = initViews;
+		}
 
-		OverallOptimizer optim2 =
-				new OverallOptimizer(finalCam, initViews, modelPntSet, imagePntSet);
-		optim2.fixLinearCameraParameters();
-		optim2.fixDistortionParameters();
-		optim2.optimize();
 
-		System.out.println("optimize2: iterations = " + optim2.getIterations());
-		System.out.println("optimize2: evaluations = " + optim2.getEvaluations());
-		System.out.println("optimize2: |residuals| = " + optim2.getResiduals().getNorm());
-		finalViews = optim2.getFinalViews();
 
-		OverallOptimizer optim3 =
-				new OverallOptimizer(finalCam, finalViews, modelPntSet, imagePntSet);
-		optim3.fixGamma();
-		optim3.fixViewParameters();
-		optim3.optimize();
-		System.out.println("optimize3: iterations = " + optim3.getIterations());
-		System.out.println("optimize3: evaluations = " + optim3.getEvaluations());
-		System.out.println("optimize3: |residuals| = " + optim3.getResiduals().getNorm());
+
+		// OverallOptimizer optim2 =
+		// 		new OverallOptimizer(finalCam, initViews, modelPntSet, imagePntSet);
+		// optim2.fixLinearCameraParameters();
+		// optim2.fixDistortionParameters();
+		// optim2.optimize();
+		//
+		// System.out.println("optimize2: iterations = " + optim2.getIterations());
+		// System.out.println("optimize2: evaluations = " + optim2.getEvaluations());
+		// System.out.println("optimize2: |residuals| = " + optim2.getResiduals().getNorm());
+		// finalViews = optim2.getFinalViews();
+
 
 	}
 
 	//---------------------------------------------------------------------------
 
-	public double getReprojectionError(int k) {
-		return getReprojectionError(finalCam, finalViews.get(k), modelPntSet.get(k), imagePntSet.get(k));
+	/**
+	 * Calculates and returns the RMS reprojection error for a single view,
+	 * specified by the camera and view parameters.
+	 * @param k
+	 * @return
+	 */
+	public double getRmsReprojectionError(int k) {
+		return getRmsReprojectionError(finalCam, finalViews.get(k), modelPntSet.get(k), imagePntSet.get(k));
 	}
 
-    public double getReprojectionError(Camera cam, ViewTransform view, Pnt2d[] modelPts, Pnt2d[] imagePts) {
+	/**
+	 * Calculates and returns the total RMS reprojection error for a multiple views with the same camera,
+	 * specified by the camera and view parameters.
+	 * <pre>{@code
+	 *     $RMS_{total} = \sqrt{\frac{\sum_{k=1}^{M} (N_k \cdot RMS_k^2)}{\sum_{k=1}^{M} N_k}}$
+	 * }</pre>
+	 * @param cam
+	 * @param viewList
+	 * @param modelPtsList
+	 * @param imagePtsList
+	 * @return
+	 */
+	public double getRmsReprojectionError(Camera cam, List<ViewTransform> viewList, List<Pnt2d[]> modelPtsList, List<Pnt2d[]> imagePtsList) {
+		int m = viewList.size();
+		double errSum = 0.0;
+		int nCnt = 0;
+		for (int k = 0; k < m; k++) {
+			int nk = modelPtsList.get(k).length;
+			errSum += nk * sqr(getRmsReprojectionError(cam, viewList.get(k), modelPtsList.get(k), imagePtsList.get(k)));
+			nCnt += nk;
+		}
+		return Math.sqrt(errSum / nCnt);
+	}
+
+	/**
+	 * Calculates and returns the RMS reprojection error for a single view,
+	 * specified by the camera and view parameters.
+	 * <pre>{@code
+	 *     $RMS_k = \sqrt{ \frac{1}{N_k}  \sum_{j=1}^{N_k} d_j^2 }$
+	 * }</pre>
+	 * @param cam camera parameters
+	 * @param view view parameters
+	 * @param modelPts model points
+	 * @param imagePts image points
+	 * @return
+	 */
+    public double getRmsReprojectionError(Camera cam, ViewTransform view, Pnt2d[] modelPts, Pnt2d[] imagePts) {
         if (modelPts.length != imagePts.length) {
             throw new IllegalStateException("model and image pt arrays must have same length");
         }
@@ -229,18 +274,17 @@ public class Calibration {
 		 for (int j = 0; j < modelPts.length; j++) {
 		 	double[] uv = cam.project(view, modelPts[j]);
 		 	double[] UV = imagePts[j].toDoubleArray();
-		 	double du = uv[0] - UV[0];
-		 	double dv = uv[1] - UV[1];
-		 	sqError = sqError + du * du + dv * dv;
+			 double dj = sqr(uv[0] - UV[0]) + sqr(uv[1] - UV[1]); // squared distance
+		 	sqError += dj;
 		 }
-    	 return sqError;
+    	 return Math.sqrt(sqError / modelPts.length);
     }
 
     public double getTotalReprojectionError() {
         checkState();
     	double totalError = 0;
     	for (int k = 0; k < M; k++) {
-    		totalError = totalError + getReprojectionError(k);
+    		totalError = totalError + getRmsReprojectionError(k);
     	}
     	return totalError;
     }

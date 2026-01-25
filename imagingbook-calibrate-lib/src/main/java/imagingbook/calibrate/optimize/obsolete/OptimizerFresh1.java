@@ -293,8 +293,10 @@ public class OptimizerFresh1 implements NonlinearOptimizer {
     /**
      * Performs Levenberg-Marquardt non-linear optimization to get better estimates of the
      * parameters.
+     *
+     * @return
      */
-    public void optimize() {
+    public boolean optimize() {
         // RealVector start = new ArrayRealVector(initialParameters, false);
         System.out.println("initialParameters = " + Matrix.toString(initialParameters));
         MultivariateJacobianFunction model = new FullOptimizationModel();
@@ -323,6 +325,7 @@ public class OptimizerFresh1 implements NonlinearOptimizer {
 
         // PrintPrecision.set(3);
         // System.out.println("Covariance Matrix: \n" + Matrix.toString(getCovarianceMatrix(result)));
+        return true;
     }
 
     // -----------------------------------------------------------------------------------------
