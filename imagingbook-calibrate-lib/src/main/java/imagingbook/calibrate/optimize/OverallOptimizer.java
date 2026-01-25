@@ -168,6 +168,15 @@ public class OverallOptimizer implements NonlinearOptimizer {
         }
     }
 
+    public void fixGamma() {
+        fixParameter(2);
+    }
+
+    public void fixPrincipalPoint() {
+        fixParameter(3);
+        fixParameter(4);
+    }
+
     public void fixLinearCameraParameters() {
         for (int p = 0; p < 5; p++) {       // TODO
             fixParameter(p);
@@ -187,9 +196,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
         }
     }
 
-    public void fixGamma() {
-        fixParameter(2);
-    }
+
 
     public void fixViewParameters() {
         for (int k = 0; k < modPts.length; k++) {

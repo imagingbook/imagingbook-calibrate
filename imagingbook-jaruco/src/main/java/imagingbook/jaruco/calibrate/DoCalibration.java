@@ -70,7 +70,7 @@ public class DoCalibration {
 
         // set up calibration
         Calibration.Parameters params = new Calibration.Parameters();
-        params.distortionModelType = DistortionModelType.Radial2Term;
+        params.distortionModelType = DistortionModelType.Radial3Term;
         params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.debug = false;

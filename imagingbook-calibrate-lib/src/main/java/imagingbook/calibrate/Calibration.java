@@ -165,6 +165,8 @@ public class Calibration {
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Estimate lens distortion from initial camera and view data:");
 		DistortionModel distModel = params.distortionModelType.create(initCam, imgWidth, imgHeight);
+		System.out.println("params.distortionModelType = " + params.distortionModelType);
+		System.out.println("distModel = " + distModel);
 		initCam.setDistortion(distModel);
 		DistortionEstimator distEstim = new DistortionEstimator(initCam);
 		Camera improvedCam = distEstim.getEstimate(initViews, modelPntSet, imagePntSet);
@@ -182,38 +184,48 @@ public class Calibration {
 		// NonlinearOptimizer optim =
 		// 		new OverallNonlinearOptimizer_Unscaled(improvedCam, initViews, modelPntSet, imagePntSet);
 
-		OverallOptimizer optim = new OverallOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
-		optim.fixGamma();
-		optim.fixViewParameters();
+		OverallOptimizer optim1 = new OverallOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
+		optim1.fixGamma();
+		optim1.fixViewParameters();
 
-		if (optim.optimize()) {
-			System.out.println("optimize1: iterations = " + optim.getIterations());
-			System.out.println("optimize1: evaluations = " + optim.getEvaluations());
-			System.out.println("optimize1: |residuals| = " + optim.getResiduals().getNorm());
-			System.out.println("optimize1: RMS error = " + optim.getRmsError());
+		System.out.println("improved camera = " + improvedCam);
 
-			finalCam = optim.getFinalCamera();
-			debug("final camera = " + finalCam);
-			finalViews = optim.getFinalViews();
+		if (optim1.optimize()) {
+			finalCam = optim1.getFinalCamera();
+			finalViews = optim1.getFinalViews();
+			System.out.println("optimize1: iterations = " + optim1.getIterations());
+			System.out.println("optimize1: evaluations = " + optim1.getEvaluations());
+			System.out.println("optimize1: |residuals| = " + optim1.getResiduals().getNorm());
+			System.out.println("optimize1: RMS error = " + optim1.getRmsError());
+			System.out.println("optimize1 camera = " + finalCam);
 		}
 		else {
-			System.out.println("overall optimization failed, reason: " + optim.getFailureReason());
+			System.out.println("overall optimization 1 failed, reason: " + optim1.getFailureReason());
 			finalCam = improvedCam;
 			finalViews = initViews;
 		}
 
-
 		OverallOptimizer optim2 =
 				new OverallOptimizer(finalCam, initViews, modelPntSet, imagePntSet);
-		optim2.fixLinearCameraParameters();
-		optim2.fixDistortionParameters();
-		optim2.optimize();
+		// optim2.fixLinearCameraParameters();
+		// optim2.fixDistortionParameters();
+		optim2.fixGamma();
+		optim2.fixPrincipalPoint();
 
-		System.out.println("optimize2: iterations = " + optim2.getIterations());
-		System.out.println("optimize2: evaluations = " + optim2.getEvaluations());
-		System.out.println("optimize2: |residuals| = " + optim2.getResiduals().getNorm());
-		finalViews = optim2.getFinalViews();
-
+		if (optim2.optimize()) {
+			finalCam = optim2.getFinalCamera();
+			finalViews = optim2.getFinalViews();
+			System.out.println("optimize2: iterations = " + optim2.getIterations());
+			System.out.println("optimize2: evaluations = " + optim2.getEvaluations());
+			System.out.println("optimize2: |residuals| = " + optim2.getResiduals().getNorm());
+			System.out.println("optimize2: RMS error = " + optim2.getRmsError());
+			System.out.println("optimize2 camera = " + finalCam);
+		}
+		else {
+			System.out.println("overall optimization 2 failed, reason: " + optim2.getFailureReason());
+			// finalCam = improvedCam;
+			// finalViews = initViews;
+		}
 
 	}
 
