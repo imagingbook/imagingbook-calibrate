@@ -1,16 +1,14 @@
 /*******************************************************************************
  * Permission to use and distribute this software is granted under the BSD 2-Clause
  * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
- * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
+ * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate;
+package imagingbook.calibrate.intrinsics;
 
 import imagingbook.calibrate.distortion.DistortionModel;
 import imagingbook.calibrate.distortion.Radial2TermDistortion;
 import imagingbook.calibrate.extrinsics.ViewTransform;
-import imagingbook.calibrate.intrinsics.Camera;
-import imagingbook.calibrate.intrinsics.SimpleCamera;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
 
@@ -22,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class SimpleCameraTest {
 
     static final double tol = 1e-6;
-    static final Camera cam1 =
+    static final AbstractCamera cam1 =
             new SimpleCamera(new double[] { 832.5, 303.959, 206.585 },
             new Radial2TermDistortion(new double[] {-0.228601, 0.190353}));
     static final ViewTransform view = new ViewTransform();
@@ -33,7 +31,7 @@ public class SimpleCameraTest {
         double beta = alpha;
         double gamma = 0;
         double uc = 300, vc = 200;
-        Camera cam = new SimpleCamera(new double[] {alpha, uc, vc}, new Radial2TermDistortion());
+        AbstractCamera cam = new SimpleCamera(new double[] {alpha, uc, vc}, new Radial2TermDistortion());
         // ----------------------------------------------------
         assertEquals(alpha, cam.getAlpha(), tol);
         assertEquals(beta, cam.getBeta(), tol);
@@ -62,7 +60,7 @@ public class SimpleCameraTest {
     @Test
     public void withParametersTest1() {
         double[] p = {830, 300, 200, -0.4, 0.25};
-        Camera cam2 = cam1.withParameters(p);
+        AbstractCamera cam2 = cam1.withParameters(p);
         assertNotNull(cam2);
         assertArrayEquals(p, cam2.getParameters(), tol);
         assertEquals(p.length, cam2.getParameterCount());
@@ -78,7 +76,7 @@ public class SimpleCameraTest {
     public void withParametersTest2() {
         double[] linP = {830, 300, 200};
         double[] distP = {-0.4, 0.25};
-        Camera cam2 = cam1.withParameters(linP, distP);
+        AbstractCamera cam2 = cam1.withParameters(linP, distP);
         assertNotNull(cam2);
         assertArrayEquals(linP, cam2.getLinearParameters(), tol);
 

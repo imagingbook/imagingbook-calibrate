@@ -7,6 +7,7 @@
 package imagingbook.calibrate.optimize.obsolete;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
+import imagingbook.calibrate.intrinsics.AbstractCamera;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
@@ -55,7 +56,7 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
     final int viewParCount;     // number of view parameters (6)
 
     private final Camera initCam;
-    private Camera finalCamera;
+    private AbstractCamera finalCamera;
     private final ViewTransform[] initViews;
     private ViewTransform[] finalViews;
     private final double[] initialParameters;
@@ -114,7 +115,7 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
         System.out.println("OverallNonlinearOptimizer: pS = " + Matrix.toString(paramsS));
         System.out.println("OverallNonlinearOptimizer: pU = " + Matrix.toString(params));
         double[] a = Arrays.copyOfRange(params, 0, camParCount);
-        Camera cam = initCam.withParameters(a);
+        AbstractCamera cam = initCam.withParameters(a);
         // double[] V = new double[2 * N + 1];     // extra row for gamma penalty
         double[] V = new double[2 * N];     // no gamma penalty
         int r = 0;
@@ -152,7 +153,7 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
         double[] params = unscaleParameters(paramsS, parameterScales);
 
         double[] a = Arrays.copyOfRange(params, 0, camParCount);    // camera parameters
-        Camera camOrig = initCam.withParameters(a);
+        AbstractCamera camOrig = initCam.withParameters(a);
 
         for (int i = 0; i < J.length; i++) {        // clear recycled Jacobian matrix
             Arrays.fill(J[i], 0.0);
@@ -163,7 +164,7 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
             double ap = a[p];                    // keep original parameter value
             double delta = estimateDelta(ap);
             a[p] = a[p] + delta;        // modify parameter p
-            Camera camMod = camOrig.withParameters(a);    // modified camera
+            AbstractCamera camMod = camOrig.withParameters(a);    // modified camera
 
             for (int k = 0, r = 0; k < M; k++) {    // for all views k, r = row
                 int q = camParCount + k * viewParCount;
@@ -451,7 +452,7 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
      * Returns the optimized camera parameters.
      * @return the optimized camera parameters
      */
-    public Camera getFinalCamera() {
+    public AbstractCamera getFinalCamera() {
         return finalCamera;
     }
 

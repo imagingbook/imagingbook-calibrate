@@ -12,7 +12,7 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 /**
  * A simplified camera model with just one focal length (alpha = beta) and no skew (gamma = 0).
  */
-public class SimpleCamera extends Camera {
+public class SimpleCamera extends AbstractCamera {
 
     /**
      * Constructor.

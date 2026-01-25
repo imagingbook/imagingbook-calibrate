@@ -1,15 +1,14 @@
 /*******************************************************************************
  * Permission to use and distribute this software is granted under the BSD 2-Clause
  * "Simplified" License (see http://opensource.org/licenses/BSD-2-Clause).
- * Copyright (c) 2016-2025 Wilhelm Burger. All rights reserved.
+ * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate;
+package imagingbook.calibrate.intrinsics;
 
 import imagingbook.calibrate.distortion.DistortionModel;
 import imagingbook.calibrate.distortion.Radial2TermDistortion;
 import imagingbook.calibrate.extrinsics.ViewTransform;
-import imagingbook.calibrate.intrinsics.Camera;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.junit.Test;
 
@@ -21,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class CameraTest {
 
     static final double tol = 1e-6;
-    static final Camera cam1 =
+    static final AbstractCamera cam1 =
             new Camera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585 },
             new Radial2TermDistortion(new double[] {-0.228601, 0.190353}));
     static final ViewTransform view = new ViewTransform();
@@ -60,7 +59,7 @@ public class CameraTest {
     @Test
     public void withParameters1() {
         double[] p = {830, 832, 0.5, 300, 200, -0.4, 0.25};
-        Camera cam2 = cam1.withParameters(p);
+        AbstractCamera cam2 = cam1.withParameters(p);
         assertNotNull(cam2);
         assertArrayEquals(p, cam2.getParameters(), tol);
         assertEquals(p.length, cam2.getParameterCount());
@@ -78,7 +77,7 @@ public class CameraTest {
     public void withParametersTest2() {
         double[] linP = {830, 832, 0.5, 300, 200};
         double[] distP = {-0.4, 0.25};
-        Camera cam2 = cam1.withParameters(linP, distP);
+        AbstractCamera cam2 = cam1.withParameters(linP, distP);
         assertNotNull(cam2);
         assertArrayEquals(linP, cam2.getLinearParameters(), tol);
 

@@ -4,6 +4,7 @@ import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import imagingbook.calibrate.Calibration;
 import imagingbook.calibrate.distortion.DistortionModelType;
+import imagingbook.calibrate.intrinsics.AbstractCamera;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
@@ -90,7 +91,7 @@ public class DoCalibration {
         calibration.calibrate();
         // ---------------------------------------------------------------------------------
 
-        Camera camFinal = calibration.getFinalCamera();
+        AbstractCamera camFinal = calibration.getFinalCamera();
         if (camFinal == null) {
             System.out.println("Calibration failed");
         }
