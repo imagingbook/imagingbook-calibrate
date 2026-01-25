@@ -8,15 +8,15 @@ package imagingbook.calibrate.intrinsics;
 
 import imagingbook.calibrate.distortion.DistortionModel;
 
-import java.util.Locale;
+
 
 /**
  * Represents the internals of a camera, consisting of a linear (affine) transformation matrix and
  * a non-linear lens distortion model.
- * Instances of {@link Camera} are considered immutable. Various constructors are provided for
+ * Instances of {@link StandardCamera} are considered immutable. Various constructors are provided for
  * copying instances with modified parameters.
  */
-public class Camera extends AbstractCamera {
+public class StandardCamera extends AbstractCamera {
 
 	/**
 	 * Constructor. Both arguments may be {@code null}, in which case a dummy camera instance is
@@ -24,7 +24,7 @@ public class Camera extends AbstractCamera {
 	 * @param A vector of 5 linear (affine) camera parameters: alpha, beta, gamma, uc, vc (may be {@code null})
 	 * @param distortion instance of {@link DistortionModel} (may be {@code null})
 	 */
-	public Camera(double[] A, DistortionModel distortion) {
+	public StandardCamera(double[] A, DistortionModel distortion) {
 		super(A, distortion);
 	}
 

@@ -8,7 +8,7 @@ package imagingbook.calibrate.optimize.obsolete;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.AbstractCamera;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
@@ -55,7 +55,7 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
     final int camParCount;      // number of camera parameters (7+)
     final int viewParCount;     // number of view parameters (6)
 
-    private final Camera initCam;
+    private final StandardCamera initCam;
     private AbstractCamera finalCamera;
     private final ViewTransform[] initViews;
     private ViewTransform[] finalViews;
@@ -72,7 +72,7 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
     private LeastSquaresOptimizer.Optimum result;
 
 
-    public OverallNonlinearOptimizerNoGamma(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
+    public OverallNonlinearOptimizerNoGamma(StandardCamera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
         this.initCam = initCam;
         this.camParCount = initCam.getParameterCount();
         this.viewParCount = ViewTransform.PARAMETER_COUNT;
@@ -333,7 +333,7 @@ public class OverallNonlinearOptimizerNoGamma implements NonlinearOptimizer {
      * @param viewScales scales for view transform parameters
      * @param viewCnt number of views
      * @return a vector scale values for all parameters
-     */   // TODO: revise to use initial Camera to obtain default scale values
+     */   // TODO: revise to use initial StandardCamera to obtain default scale values
     static double[][] makeParameterScales(double[] camScales, double[] distScales, double[] viewScales, int viewCnt) {
         int camParCount = camScales.length;
         int distParCount = distScales.length;

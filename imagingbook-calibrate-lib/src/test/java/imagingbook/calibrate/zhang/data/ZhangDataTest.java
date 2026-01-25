@@ -7,7 +7,7 @@
 package imagingbook.calibrate.zhang.data;
 
 import imagingbook.calibrate.distortion.Radial2TermDistortion;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.junit.Test;
@@ -69,7 +69,7 @@ public class ZhangDataTest {
 
     @Test
     public void getCamera() {
-        Camera cam = ZhangData.getCamera();
+        StandardCamera cam = ZhangData.getCamera();
         assertNotNull(cam);
 
         assertNotNull(cam.getDistortion());

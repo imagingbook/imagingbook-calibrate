@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Pnt2d.PntDouble;
@@ -30,10 +30,10 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
  * </pre>
  */
 public class RectificationMapping implements Mapping2D {
-	private final Camera cam;
+	private final StandardCamera cam;
 	private final RealMatrix Ai;	// inverse of the intrinsic camera matrix (2 x 3)
 
-	public RectificationMapping (Camera cam) {
+	public RectificationMapping (StandardCamera cam) {
 //		this.isInverseFlag = true;	// maps target -> source
 		this.cam = cam;
 		this.Ai = cam.getInverseA();

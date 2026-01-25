@@ -12,7 +12,8 @@ import ij.ImageStack;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.intrinsics.InterCameraMapping;
 import imagingbook.calibrate.zhang.data.CalibrationImage;
 import imagingbook.calibrate.zhang.data.ZhangData;
@@ -52,7 +53,7 @@ public class Replace_Camera_Demo implements PlugIn, JavaDocHelp {
 		testIm.show();
 
 		// get the camera intrinsics (typically by calibration):
-		Camera cameraA = ZhangData.getCamera();
+		AbstractCamera cameraA = ZhangData.getCamera();
 
 		double[] cameraParameters = cameraA.getParameters();
 		k1 = cameraParameters[5];
@@ -65,7 +66,7 @@ public class Replace_Camera_Demo implements PlugIn, JavaDocHelp {
 		cameraParameters[5] = k1;	// change only radial distortion parameters
 		cameraParameters[6] = k2;
 
-		Camera cameraB = cameraA.withParameters(cameraParameters);
+		AbstractCamera cameraB = cameraA.withParameters(cameraParameters);
 
 		// create a special geometric mapping
 		Mapping2D mapping = new InterCameraMapping(cameraA, cameraB);	// inverse, maps target to source

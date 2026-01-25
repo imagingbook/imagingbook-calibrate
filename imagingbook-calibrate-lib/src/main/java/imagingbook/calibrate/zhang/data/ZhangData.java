@@ -8,7 +8,7 @@ package imagingbook.calibrate.zhang.data;
 
 import imagingbook.calibrate.distortion.DistortionModel;
 import imagingbook.calibrate.distortion.Radial2TermDistortion;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
@@ -54,14 +54,14 @@ public abstract class ZhangData {
 		return (RT == null) ? null : new ViewTransform(MatrixUtils.createRealMatrix(RT));
 	}
 	
-	public static Camera getCamera() {
+	public static StandardCamera getCamera() {
 		// http://research.microsoft.com/en-us/um/people/zhang/calib/Calibration/Calib.txt
-		// return new Camera (
+		// return new StandardCamera (
 		// 		832.5,   832.53, 0.204494, 	// alpha, beta, gamma, (!)
 		// 		303.959, 206.585,			// u_c, v_c
 		// 		-0.228601, 0.190353);		// k1, k2
         DistortionModel distortion = new Radial2TermDistortion(new double[] {-0.228601, 0.190353});
-        return new Camera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585}, distortion);
+        return new StandardCamera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585}, distortion);
 	}
 		
 // 	public static int extractViewNumber(String imgShortTitle) {

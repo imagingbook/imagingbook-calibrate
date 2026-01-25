@@ -8,7 +8,7 @@ package imagingbook.calibrate.distortion;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.AbstractCamera;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.junit.Test;
 
@@ -110,7 +110,7 @@ public class PtLensDistortionTest {
         double alpha = 700;
         double beta = alpha;
 
-        Camera cam = new Camera(new double[] { alpha, beta, 0, 0.5 * W, 0.5 * H }, null);
+        StandardCamera cam = new StandardCamera(new double[] { alpha, beta, 0, 0.5 * W, 0.5 * H }, null);
         cam.setDistortion(DistortionModelType.PtLens.create(cam, W, H));
 
         double scale = cam.getDistortion().getScale();       // = 2.916666
@@ -146,12 +146,12 @@ public class PtLensDistortionTest {
 
         PtLensDistortion nullDist = new PtLensDistortion(null, scale);
         // non-distorting camera (just for comparison):
-        Camera nullCam = new Camera(new double[] { alpha, beta, 0, uc, vc }, nullDist);
+        StandardCamera nullCam = new StandardCamera(new double[] { alpha, beta, 0, uc, vc }, nullDist);
 
         // set up the actual camera:
         ViewTransform view = new ViewTransform();           // identity view
         PtLensDistortion realDist = new PtLensDistortion(abc, scale);
-        Camera realCam = new Camera(new double[] { alpha, beta, 0, uc, vc }, realDist);
+        StandardCamera realCam = new StandardCamera(new double[] { alpha, beta, 0, uc, vc }, realDist);
 
         Pnt2d[] modelPoints = makeModelPoints(20);
         List<Pnt2d[]> modPntList = Collections.singletonList(modelPoints);

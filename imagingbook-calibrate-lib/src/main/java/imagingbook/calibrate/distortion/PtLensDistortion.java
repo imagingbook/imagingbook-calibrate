@@ -7,7 +7,7 @@
 package imagingbook.calibrate.distortion;
 
 import imagingbook.calibrate.intrinsics.AbstractCamera;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
@@ -27,7 +27,7 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
     private final double scale;
 
     @Deprecated
-    public static PtLensDistortion from(Camera cam, int imgWidth, int imgHeight) {
+    public static PtLensDistortion from(StandardCamera cam, int imgWidth, int imgHeight) {
         double scale = findScale(cam, imgWidth, imgHeight);
         return new PtLensDistortion(new double[] {0, 0, 0}, scale);
     }
@@ -39,7 +39,7 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
      * {@code W} and {@code H} (whichever is smaller) and the intrinsic camera parameters
      * {@code alpha} and {@code beta} (which define the system's focal length).
      *
-     * @param cam a {@code Camera} instance with initialized linear part (affine transform)
+     * @param cam a {@code StandardCamera} instance with initialized linear part (affine transform)
      * @param imgWidth image width {@code W}
      * @param imgHeight image height {@code H}
      * @return the scale factor to apply to normalised projection coordinates

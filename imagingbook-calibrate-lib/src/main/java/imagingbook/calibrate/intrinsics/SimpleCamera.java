@@ -25,7 +25,7 @@ public class SimpleCamera extends AbstractCamera {
     }
 
     @Override
-    public Camera withParameters(RealMatrix A) {
+    public StandardCamera withParameters(RealMatrix A) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

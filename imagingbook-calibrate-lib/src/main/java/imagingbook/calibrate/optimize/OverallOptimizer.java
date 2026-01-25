@@ -8,7 +8,7 @@ package imagingbook.calibrate.optimize;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.AbstractCamera;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.optimize.obsolete.NonlinearOptimizer;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
@@ -92,7 +92,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
 
     /**
      * The only constructor.
-     * @param initCam initial {@link Camera} instance
+     * @param initCam initial {@link StandardCamera} instance
      * @param viewList a list of M {@link ViewTransform} instances
      * @param modPntSet a list of M model point sets
      * @param obsPntSet a list of M sensor point sets
@@ -261,7 +261,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
      * @param viewScales scales for view transform parameters
      * @param viewCnt number of views
      * @return a vector scale values for all parameters
-     */   // TODO: revise to use initial Camera to obtain default scale values
+     */   // TODO: revise to use initial StandardCamera to obtain default scale values
     double[] makeParameterScales(double[] camScales, double[] distScales, double[] viewScales, int viewCnt) {
         int camLinParCount =  camScales.length;
         int camDistParCount = distScales.length;
@@ -606,7 +606,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
         @Override
         public Pair<RealVector, RealMatrix> value(RealVector point) {
             double[] params = adapter.getFullParameters(point.toArray(), initialParameters);
-            // create a new Camera instance:
+            // create a new StandardCamera instance:
             double[] pc = assembler.getCameraParameters(params);
             AbstractCamera cam = initCam.withParameters(pc);
 

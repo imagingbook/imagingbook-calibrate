@@ -13,7 +13,7 @@ import java.util.List;
  * Transformations for Zhang's sample data 
  * (http://research.microsoft.com/en-us/um/people/zhang/calib/Calibration/Calib.txt)
  * 
-Camera:
+StandardCamera:
 832.5 0.204494 832.53 303.959 206.585
 -0.228601 0.190353
 

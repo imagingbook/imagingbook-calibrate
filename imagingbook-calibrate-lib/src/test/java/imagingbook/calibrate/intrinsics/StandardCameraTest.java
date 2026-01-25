@@ -17,11 +17,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class CameraTest {
+public class StandardCameraTest {
 
     static final double tol = 1e-6;
     static final AbstractCamera cam1 =
-            new Camera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585 },
+            new StandardCamera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585 },
             new Radial2TermDistortion(new double[] {-0.228601, 0.190353}));
     static final ViewTransform view = new ViewTransform();
 
@@ -29,7 +29,7 @@ public class CameraTest {
     public void CameraConstructorTest() {
         double alpha = 810, beta = 815, gamma = 0.2;
         double uc = 300, vc = 200;
-        Camera cam = new Camera(new double[] {alpha, beta, gamma, uc, vc},
+        StandardCamera cam = new StandardCamera(new double[] {alpha, beta, gamma, uc, vc},
                                 new Radial2TermDistortion());
         // ----------------------------------------------------
         assertEquals(alpha, cam.getAlpha(), tol);

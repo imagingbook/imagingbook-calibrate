@@ -12,7 +12,7 @@ import ij.ImageStack;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.zhang.data.CalibrationImage;
 import imagingbook.calibrate.zhang.data.ZhangData;
@@ -64,7 +64,7 @@ public class View_Interpolation_Demo implements PlugIn, JavaDocHelp {
             return;
         }
 
-        Camera cam = ZhangData.getCamera();
+        StandardCamera cam = ZhangData.getCamera();
         Pnt2d[] modelPoints = ZhangData.getModelPoints();
 
         final int w = testIm.getWidth();
@@ -112,7 +112,7 @@ public class View_Interpolation_Demo implements PlugIn, JavaDocHelp {
 
     // ----------------------------------------------------------------------
 
-    List<Shape> makePyramids(Camera cam, ViewTransform view, Pnt2d[] modelPoints) {
+    List<Shape> makePyramids(StandardCamera cam, ViewTransform view, Pnt2d[] modelPoints) {
         List<Shape> shapes = new ArrayList<>();
         for (int i = 0; i < modelPoints.length; i += 4) {
             Pnt2d[] modelSq = new Pnt2d[4];

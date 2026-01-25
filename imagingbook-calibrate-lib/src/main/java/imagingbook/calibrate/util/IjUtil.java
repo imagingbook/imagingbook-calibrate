@@ -37,7 +37,7 @@ public class IjUtil {
 	// -------------------------------------------------------------------
 	
 	
-	// public static PlotWindow plotLensDistortionFunction(Camera cam, double rmax) {
+	// public static PlotWindow plotLensDistortionFunction(StandardCamera cam, double rmax) {
 	// 	int n = 100;
     //
 	// 	double[] xVals = new double[n];

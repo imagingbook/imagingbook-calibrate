@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.zhang.data.ZhangData;
 import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
@@ -197,7 +197,7 @@ public class Radial2TermDistortion extends RadialDistortion {
         System.out.println("r = " + r);
         System.out.println("s = " + s);
         System.out.println("s r = " + s * r);
-        Camera cam1 = ZhangData.getCamera();
+        StandardCamera cam1 = ZhangData.getCamera();
         Radial2TermDistortion distortion = (Radial2TermDistortion) cam1.getDistortion();
         double[] params1 = cam1.getDistortion().getParameters();
         System.out.println("params1 = " + Arrays.toString(params1));

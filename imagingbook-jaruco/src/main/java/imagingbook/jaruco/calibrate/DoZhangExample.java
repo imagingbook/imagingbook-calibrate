@@ -4,12 +4,11 @@ import ij.IJ;
 import imagingbook.calibrate.Calibration;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.intrinsics.AbstractCamera;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
 
 import static imagingbook.calibrate.distortion.DistortionModelType.Radial2Term;
-import static imagingbook.calibrate.distortion.DistortionModelType.RadialLateral;
 
 public class DoZhangExample {
 
@@ -18,7 +17,7 @@ public class DoZhangExample {
 
     public static void main(String[] args) {
         Pnt2d[] modelPoints = ZhangData.getModelPoints();
-        Camera camReference = ZhangData.getCamera();
+        StandardCamera camReference = ZhangData.getCamera();
         Pnt2d[][] obsPoints = ZhangData.getAllObservedPoints();
         int M = obsPoints.length;
 
@@ -55,7 +54,7 @@ public class DoZhangExample {
         }
 
         if (ListCameraViews) {
-            IJ.log("\n**** Camera view parameters (3D rotation and translation): ****");
+            IJ.log("\n**** StandardCamera view parameters (3D rotation and translation): ****");
             for (int k = 0; k < M; k++) {
                 ViewTransform view = calibration.getFinalViewTransform(k);
                 IJ.log("View " + k + ":\n" + view.toString());

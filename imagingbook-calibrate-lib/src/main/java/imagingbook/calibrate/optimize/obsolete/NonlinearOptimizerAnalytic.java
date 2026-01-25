@@ -7,7 +7,7 @@
 package imagingbook.calibrate.optimize.obsolete;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.analysis.MultivariateMatrixFunction;
 
@@ -29,7 +29,7 @@ import static java.lang.Math.sqrt;
  */
 public class NonlinearOptimizerAnalytic extends OverallNonlinearOptimizer {
 
-	public NonlinearOptimizerAnalytic(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
+	public NonlinearOptimizerAnalytic(StandardCamera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modelPntSet, List<Pnt2d[]> obsPntSet) {
 		super(initCam, viewList, modelPntSet, obsPntSet);
         if (camParCount > 7)
             throw new IllegalArgumentException("analytic optimizer cannot handle more than 7 parameters");

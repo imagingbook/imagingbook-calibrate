@@ -12,7 +12,8 @@ import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import imagingbook.calibrate.Calibration;
 import imagingbook.calibrate.Calibration.Parameters;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.zhang.data.CalibrationImage;
 import imagingbook.calibrate.zhang.data.ZhangData;
@@ -77,7 +78,7 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 		}
 
 		Pnt2d[] modelPoints = ZhangData.getModelPoints();
-		Camera camReference = ZhangData.getCamera();
+		StandardCamera camReference = ZhangData.getCamera();
 		Pnt2d[][] obsPoints = ZhangData.getAllObservedPoints();
 
 		// Set up the calibrator ------------------------------------------
@@ -95,7 +96,7 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 		// Perform calibration ------------------------------------------
 
 		zcalib.calibrate();
-		Camera camFinal = zcalib.getFinalCamera();
+		AbstractCamera camFinal = zcalib.getFinalCamera();
 		if (camFinal == null) {
 			IJ.error("Calibration failed");
 			return;
@@ -110,7 +111,7 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 		}
 
 		if (ListCameraViews) {
-			IJ.log("\n**** Camera view parameters (3D rotation and translation): ****");
+			IJ.log("\n**** StandardCamera view parameters (3D rotation and translation): ****");
 			for (int k = 0; k < M; k++) {
 				ViewTransform view = zcalib.getFinalViewTransform(k);
 				IJ.log("View " + k + ":\n" + view.toString());

@@ -11,7 +11,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.distortion.RectificationMapping;
 import imagingbook.calibrate.zhang.data.CalibrationImage;
 import imagingbook.calibrate.zhang.data.ZhangData;
@@ -45,7 +45,7 @@ public class Rectify_Camera_Demo implements PlugIn, JavaDocHelp {
 		String title = testIm.getShortTitle();
 
 		// get pre-calculated camera intrinsics (typically by calibration):
-		Camera camera = ZhangData.getCamera();
+		StandardCamera camera = ZhangData.getCamera();
 
 		// create a special geometric mapping
 		Mapping2D mapping = new RectificationMapping(camera);	// inverse, ie., maps target to source

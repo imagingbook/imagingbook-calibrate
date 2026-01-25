@@ -10,7 +10,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.zhang.data.CalibrationImage;
 import imagingbook.calibrate.zhang.data.ZhangData;
@@ -67,7 +67,7 @@ public class Draw_3D_Axes_Demo implements PlugIn, JavaDocHelp {
 		}
 
 		// get pre-calculated camera intrinsics and view parameters (typically by calibration):
-		Camera camera = ZhangData.getCamera();
+		StandardCamera camera = ZhangData.getCamera();
 		ViewTransform[] views = ZhangData.getAllViewTransforms();
 		final int M = views.length;
 
@@ -87,7 +87,7 @@ public class Draw_3D_Axes_Demo implements PlugIn, JavaDocHelp {
 		testIm.setOverlay(ola.getOverlay());
 	}
 
-	private Shape get3DAxisProjection(Camera cam, ViewTransform V, double[] P1, double[] P2) {
+	private Shape get3DAxisProjection(StandardCamera cam, ViewTransform V, double[] P1, double[] P2) {
 		double[] u1 = cam.project(V, P1);
 		double[] u2 = cam.project(V, P2);
 		return new Line2D.Double(u1[0], u1[1], u2[0], u2[1]);

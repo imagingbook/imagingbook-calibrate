@@ -110,29 +110,29 @@ public abstract class AbstractCamera {
     // ---------------------------------------------------------------------------
 
     /**
-     * Creates a new {@link Camera} instance from an existing instance using the supplied parameters.
+     * Creates a new {@link StandardCamera} instance from an existing instance using the supplied parameters.
      * @param A a 2x3 affine transformation matrix
-     * @return a new Camera instance with the specified parameters and the same type of lens distortion
+     * @return a new StandardCamera instance with the specified parameters and the same type of lens distortion
      * 	 * model as this instance
      */
-    public Camera withParameters(RealMatrix A) {
+    public StandardCamera withParameters(RealMatrix A) {
         double alpha = A.getEntry(0, 0);
         double beta = A.getEntry(1, 1);
         double gamma = A.getEntry(0, 1);
         double uc = A.getEntry(0, 2);
         double vc = A.getEntry(1, 2);
-        return new Camera(new double[] {alpha, beta, gamma, uc, vc}, this.distortion);
+        return new StandardCamera(new double[] {alpha, beta, gamma, uc, vc}, this.distortion);
     }
 
     /**
-     * Creates a new {@link Camera} instance from an existing instance using the supplied parameters.
+     * Creates a new {@link StandardCamera} instance from an existing instance using the supplied parameters.
      * Matches method {@link #getParameters()}, that is
      * <pre>{@code
-     *     Camera cam2 = cam1.withParameters(cam1.getParameters());
+     *     StandardCamera cam2 = cam1.withParameters(cam1.getParameters());
      * }</pre>
      * creates a new camera which is identical to the original.
      * @param params all linear and non-linear camera parameters
-     * @return a new Camera instance with the specified parameters and the same type of lens distortion
+     * @return a new StandardCamera instance with the specified parameters and the same type of lens distortion
      * model as this instance
      */
     public AbstractCamera withParameters(double[] params) {
@@ -146,10 +146,10 @@ public abstract class AbstractCamera {
     }
 
     /**
-     * Creates a new {@link Camera} instance from an existing instance using the supplied parameters.
+     * Creates a new {@link StandardCamera} instance from an existing instance using the supplied parameters.
      * @param linParams linear camera parameters
      * @param distParams non-linear (distortion) parameters
-     * @return a new Camera instance with the specified parameters and the same type of lens distortion
+     * @return a new StandardCamera instance with the specified parameters and the same type of lens distortion
      * model as this instance
      */
     public AbstractCamera withParameters(double[] linParams, double[] distParams) {

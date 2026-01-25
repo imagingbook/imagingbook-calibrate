@@ -7,7 +7,7 @@
 package imagingbook.calibrate.distortion;
 
 import imagingbook.calibrate.intrinsics.AbstractCamera;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
@@ -123,8 +123,8 @@ public class DistortionEstimator {
         // System.out.format("err1=%.2f, err2=%.2f \n", err1, err2);
 
         DistortionModel distFinal = distortion.withParameters(kopt.toArray());
-        // return new Camera(initCam.getAffineMatrix(), distFinal);
-        return new Camera(camera.getLinearParameters(), distFinal);
+        // return new StandardCamera(initCam.getAffineMatrix(), distFinal);
+        return new StandardCamera(camera.getLinearParameters(), distFinal);
     }
 
 }

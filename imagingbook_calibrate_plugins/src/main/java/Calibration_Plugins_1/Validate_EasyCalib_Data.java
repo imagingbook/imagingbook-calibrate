@@ -10,7 +10,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.zhang.data.CalibrationImage;
 import imagingbook.calibrate.zhang.data.ZhangData;
@@ -70,7 +70,7 @@ public class Validate_EasyCalib_Data implements PlugIn, JavaDocHelp {
 
 
 		Pnt2d[] modelPoints = ZhangData.getModelPoints();				// get the reference model points
-		Camera camReal = ZhangData.getCamera();				// get the (known) camera intrinsics
+		StandardCamera camReal = ZhangData.getCamera();				// get the (known) camera intrinsics
 		ViewTransform[] viewsReal = ZhangData.getAllViewTransforms();	// get the (known) camera views
 		if (viewsReal.length != M) {
 			IJ.error("Wrong number of view transforms: " + viewsReal.length);

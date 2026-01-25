@@ -13,7 +13,7 @@ import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.homography.HomographyEstimator;
 import imagingbook.calibrate.homography.HomographyEstimatorSimple;
 import imagingbook.calibrate.intrinsics.AbstractCamera;
-import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimatorConstrained;
 import imagingbook.calibrate.optimize.obsolete.NonlinearOptimizer;
@@ -137,7 +137,7 @@ public class Calibration {
 		}
 
 		// Create an initial dummy camera (standard or simple):
-		initCam = new Camera(null, null);
+		initCam = new StandardCamera(null, null);
 
 		// Step 1: Calculate the homographies for each of the given M views:
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");

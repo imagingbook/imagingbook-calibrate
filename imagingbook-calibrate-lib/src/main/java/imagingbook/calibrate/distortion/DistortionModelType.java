@@ -7,7 +7,6 @@
 package imagingbook.calibrate.distortion;
 
 import imagingbook.calibrate.intrinsics.AbstractCamera;
-import imagingbook.calibrate.intrinsics.Camera;
 
 import java.util.Objects;
 import java.util.function.Function;
