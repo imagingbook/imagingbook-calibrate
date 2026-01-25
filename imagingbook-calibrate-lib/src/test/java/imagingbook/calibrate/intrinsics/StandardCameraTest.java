@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class StandardCameraTest {
 
     static final double tol = 1e-6;
-    static final AbstractCamera cam1 =
+    static final Camera cam1 =
             new StandardCamera(new double[] { 832.5, 832.53, 0.204494, 303.959, 206.585 },
             new Radial2TermDistortion(new double[] {-0.228601, 0.190353}));
     static final ViewTransform view = new ViewTransform();
@@ -59,7 +59,7 @@ public class StandardCameraTest {
     @Test
     public void withParameters1() {
         double[] p = {830, 832, 0.5, 300, 200, -0.4, 0.25};
-        AbstractCamera cam2 = cam1.withParameters(p);
+        Camera cam2 = cam1.withParameters(p);
         assertNotNull(cam2);
         assertArrayEquals(p, cam2.getParameters(), tol);
         assertEquals(p.length, cam2.getParameterCount());
@@ -77,7 +77,7 @@ public class StandardCameraTest {
     public void withParametersTest2() {
         double[] linP = {830, 832, 0.5, 300, 200};
         double[] distP = {-0.4, 0.25};
-        AbstractCamera cam2 = cam1.withParameters(linP, distP);
+        Camera cam2 = cam1.withParameters(linP, distP);
         assertNotNull(cam2);
         assertArrayEquals(linP, cam2.getLinearParameters(), tol);
 

@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
-import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
@@ -44,7 +44,7 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
      * @param imgHeight image height {@code H}
      * @return the scale factor to apply to normalised projection coordinates
      */
-    public static double findScale(AbstractCamera cam, int imgWidth, int imgHeight) {
+    public static double findScale(Camera cam, int imgWidth, int imgHeight) {
         return Math.max(
                  cam.getAlpha() / (0.5 * imgWidth),
                  cam.getBeta() / (0.5 * imgHeight));

@@ -20,7 +20,7 @@ import java.util.Locale;
  * Represents the internals of a camera, consisting of a linear (affine) transformation matrix and
  * a non-linear lens distortion model.
  */
-public abstract class AbstractCamera {
+public abstract class Camera {
 
     /**
      * The camera's inner transformation matrix:
@@ -31,8 +31,14 @@ public abstract class AbstractCamera {
     final double[][] A;		// 2 x 3 2D affine transformation matrix
     DistortionModel distortion;
 
-
-    protected AbstractCamera(double[] A, DistortionModel distortion) {
+    /**
+     * Non-public onstructor.
+     * Both arguments may be {@code null}, in which case a dummy camera instance is created for
+     * later duplication.
+     * @param A vector of 5 linear (affine) camera parameters: alpha, beta, gamma, uc, vc (may be {@code null})
+     * @param distortion instance of {@link DistortionModel} (may be {@code null})
+     */
+    Camera(double[] A, DistortionModel distortion) {
         if (A != null && A.length != 5) {
             throw new IllegalArgumentException("required camera parameters length is 5");
         }
@@ -51,7 +57,7 @@ public abstract class AbstractCamera {
 
     /**
      * Returns the total number of linear and non-linear (distortion) camera parameters,
-     * which is 5 pluy the (variable) number of distortion parameters.
+     * which is 5 plus the (variable) number of distortion parameters.
      * @return the total number of parameters for this camera
      */
     public int getParameterCount() {
@@ -77,6 +83,11 @@ public abstract class AbstractCamera {
     public abstract int getLinParameterCount();
 
 
+    /**
+     * Returns the number of distortion parameters (coefficients). The result is 0 if this
+     * camera has no distortion model attached.
+     * @return the number of distortion parameters
+     */
     public int getDistParameterCount() {
         return (distortion != null) ? distortion.getParameterCount() : 0;
     }
@@ -87,7 +98,6 @@ public abstract class AbstractCamera {
      * @return the camera's linear parameters
      */
     public abstract double[] getLinearParameters();
-
 
     /**
      * Returns the {@link DistortionModel} instance attached to this camera.
@@ -135,7 +145,7 @@ public abstract class AbstractCamera {
      * @return a new StandardCamera instance with the specified parameters and the same type of lens distortion
      * model as this instance
      */
-    public AbstractCamera withParameters(double[] params) {
+    public Camera withParameters(double[] params) {
         if (params.length < this.getParameterCount())
             throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
         int P = getLinParameterCount();
@@ -152,7 +162,7 @@ public abstract class AbstractCamera {
      * @return a new StandardCamera instance with the specified parameters and the same type of lens distortion
      * model as this instance
      */
-    public AbstractCamera withParameters(double[] linParams, double[] distParams) {
+    public Camera withParameters(double[] linParams, double[] distParams) {
         if (linParams.length != getLinParameterCount())
             throw new IllegalArgumentException("wrong number of linear camera parameters: " + linParams.length);
         if (distParams.length != getDistParameterCount())

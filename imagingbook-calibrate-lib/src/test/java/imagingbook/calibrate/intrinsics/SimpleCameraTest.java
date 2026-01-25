@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class SimpleCameraTest {
 
     static final double tol = 1e-6;
-    static final AbstractCamera cam1 =
+    static final Camera cam1 =
             new SimpleCamera(new double[] { 832.5, 303.959, 206.585 },
             new Radial2TermDistortion(new double[] {-0.228601, 0.190353}));
     static final ViewTransform view = new ViewTransform();
@@ -31,7 +31,7 @@ public class SimpleCameraTest {
         double beta = alpha;
         double gamma = 0;
         double uc = 300, vc = 200;
-        AbstractCamera cam = new SimpleCamera(new double[] {alpha, uc, vc}, new Radial2TermDistortion());
+        Camera cam = new SimpleCamera(new double[] {alpha, uc, vc}, new Radial2TermDistortion());
         // ----------------------------------------------------
         assertEquals(alpha, cam.getAlpha(), tol);
         assertEquals(beta, cam.getBeta(), tol);
@@ -60,7 +60,7 @@ public class SimpleCameraTest {
     @Test
     public void withParametersTest1() {
         double[] p = {830, 300, 200, -0.4, 0.25};
-        AbstractCamera cam2 = cam1.withParameters(p);
+        Camera cam2 = cam1.withParameters(p);
         assertNotNull(cam2);
         assertArrayEquals(p, cam2.getParameters(), tol);
         assertEquals(p.length, cam2.getParameterCount());
@@ -76,7 +76,7 @@ public class SimpleCameraTest {
     public void withParametersTest2() {
         double[] linP = {830, 300, 200};
         double[] distP = {-0.4, 0.25};
-        AbstractCamera cam2 = cam1.withParameters(linP, distP);
+        Camera cam2 = cam1.withParameters(linP, distP);
         assertNotNull(cam2);
         assertArrayEquals(linP, cam2.getLinearParameters(), tol);
 

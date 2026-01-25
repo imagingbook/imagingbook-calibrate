@@ -7,7 +7,7 @@
 package imagingbook.calibrate.optimize.obsolete;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
-import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.Camera;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.List;
@@ -19,6 +19,6 @@ public interface NonlinearOptimizer {
     public int getEvaluations();
     public RealVector getResiduals();
 
-    public AbstractCamera getFinalCamera();
+    public Camera getFinalCamera();
     public List<ViewTransform> getFinalViews();
 }

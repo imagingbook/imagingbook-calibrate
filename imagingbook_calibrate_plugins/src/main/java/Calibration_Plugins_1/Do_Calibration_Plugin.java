@@ -12,7 +12,7 @@ import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import imagingbook.calibrate.Calibration;
 import imagingbook.calibrate.Calibration.Parameters;
-import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.zhang.data.CalibrationImage;
@@ -96,7 +96,7 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 		// Perform calibration ------------------------------------------
 
 		zcalib.calibrate();
-		AbstractCamera camFinal = zcalib.getFinalCamera();
+		Camera camFinal = zcalib.getFinalCamera();
 		if (camFinal == null) {
 			IJ.error("Calibration failed");
 			return;

@@ -16,7 +16,7 @@ import imagingbook.calibrate.distortion.DistortionModel;
  * Instances of {@link StandardCamera} are considered immutable. Various constructors are provided for
  * copying instances with modified parameters.
  */
-public class StandardCamera extends AbstractCamera {
+public class StandardCamera extends Camera {
 
 	/**
 	 * Constructor. Both arguments may be {@code null}, in which case a dummy camera instance is

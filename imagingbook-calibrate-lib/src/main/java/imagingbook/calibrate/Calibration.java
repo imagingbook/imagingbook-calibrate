@@ -12,7 +12,7 @@ import imagingbook.calibrate.distortion.DistortionModelType;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.homography.HomographyEstimator;
 import imagingbook.calibrate.homography.HomographyEstimatorSimple;
-import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimatorConstrained;
@@ -80,7 +80,7 @@ public class Calibration {
 	private RealMatrix[] homographies = null;
 	private final Parameters params;
 	private final int imgWidth, imgHeight;
-	private AbstractCamera initCam, finalCam;
+	private Camera initCam, finalCam;
 	private List<ViewTransform> initViews;
 	private List<ViewTransform> finalViews;
 
@@ -173,7 +173,7 @@ public class Calibration {
 		System.out.println("distModel = " + distModel);
 		initCam.setDistortion(distModel);
 		DistortionEstimator distEstim = new DistortionEstimator(initCam);
-		AbstractCamera improvedCam = distEstim.getEstimate(initViews, modelPntSet, imagePntSet);
+		Camera improvedCam = distEstim.getEstimate(initViews, modelPntSet, imagePntSet);
         debug("improved camera = " + improvedCam);
 
 		// Step 5: Refine all parameters by overall non-linear optimization
@@ -275,7 +275,7 @@ public class Calibration {
 	 * @param imagePtsList list of image point arrays, one for each view
 	 * @return the RMS reprojection error for multiple views
 	 */
-	public double getRmsReprojectionError(AbstractCamera cam, List<ViewTransform> viewList, List<Pnt2d[]> modelPtsList, List<Pnt2d[]> imagePtsList) {
+	public double getRmsReprojectionError(Camera cam, List<ViewTransform> viewList, List<Pnt2d[]> modelPtsList, List<Pnt2d[]> imagePtsList) {
 		if (viewList.size() != modelPtsList.size() || viewList.size() != imagePtsList.size()) {
 			throw new IllegalArgumentException("view, model and image point lists must have same size");
 		}
@@ -313,7 +313,7 @@ public class Calibration {
 	 * @param imagePts image points
 	 * @return the RMS reprojection error for a single view
 	 */
-    public double getRmsReprojectionError(AbstractCamera cam, ViewTransform view, Pnt2d[] modelPts, Pnt2d[] imagePts) {
+    public double getRmsReprojectionError(Camera cam, ViewTransform view, Pnt2d[] modelPts, Pnt2d[] imagePts) {
         if (modelPts.length != imagePts.length) {
             throw new IllegalStateException("model and image pt arrays must have same length");
         }
@@ -359,7 +359,7 @@ public class Calibration {
 	 * Returns the initial camera model (no lens distortion).
 	 * @return the initial camera model
 	 */
-    public AbstractCamera getInitialCamera() {
+    public Camera getInitialCamera() {
         checkState();
     	return initCam;
     }
@@ -368,7 +368,7 @@ public class Calibration {
 	 * Returns the final camera model (including lens distortion).
 	 * @return the final camera model
 	 */
-    public AbstractCamera getFinalCamera() {
+    public Camera getFinalCamera() {
         checkState();
     	return finalCam;
     }

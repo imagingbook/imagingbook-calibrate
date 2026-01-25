@@ -22,10 +22,10 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
  */
 public class InterCameraMapping implements Mapping2D {
 
-	private final AbstractCamera camA, camB;
+	private final Camera camA, camB;
 	private final RealMatrix Abi;    // inverse of the intrinsic camera b matrix (2 x 3)
 
-	public InterCameraMapping(AbstractCamera camA, AbstractCamera camB) {
+	public InterCameraMapping(Camera camA, Camera camB) {
 //		this.isInverseFlag = true;	// maps target -> source
 		this.camA = camA;        // camera A (used to produce the source image)
 		this.camB = camB;        // camera B (determines the geometry the target image)

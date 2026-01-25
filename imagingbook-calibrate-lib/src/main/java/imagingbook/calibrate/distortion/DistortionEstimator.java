@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
-import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -26,10 +26,10 @@ import java.util.List;
  */
 public class DistortionEstimator {
 
-    private final AbstractCamera camera;
+    private final Camera camera;
     private final DistortionModel distortion;
 
-    public DistortionEstimator(AbstractCamera camera) {
+    public DistortionEstimator(Camera camera) {
         if (camera == null) {
             throw new IllegalArgumentException("initCam is null");
         }
@@ -55,7 +55,7 @@ public class DistortionEstimator {
      * @param modPntSet a sequence of M 2D model points
      * @param obsPntSet a sequence of M 2D image points
      */
-    public AbstractCamera getEstimate(List<ViewTransform> viewList,
+    public Camera getEstimate(List<ViewTransform> viewList,
                               List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
 
         int P = distortion.getParameterCount();          // number of distortion parameters

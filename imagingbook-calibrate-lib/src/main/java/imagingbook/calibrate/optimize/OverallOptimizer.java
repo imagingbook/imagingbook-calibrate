@@ -7,7 +7,7 @@
 package imagingbook.calibrate.optimize;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
-import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.optimize.obsolete.NonlinearOptimizer;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -67,7 +67,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
     private final BitVector variableParamFlags;
     private int variableParamCnt;
 
-    private final AbstractCamera initCam;
+    private final Camera initCam;
     private final Pnt2d[][] modPts;
     private final Pnt2d[][] obsPts;
     private final ViewTransform[] initViews;
@@ -85,7 +85,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
 
     // optimization results:
     private LeastSquaresOptimizer.Optimum result;
-    private AbstractCamera finalCamera;
+    private Camera finalCamera;
     private ViewTransform[] finalViews;
 
     private String failureReason;
@@ -97,7 +97,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
      * @param modPntSet a list of M model point sets
      * @param obsPntSet a list of M sensor point sets
      */
-    public OverallOptimizer(AbstractCamera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
+    public OverallOptimizer(Camera initCam, List<ViewTransform> viewList, List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
         this.initCam = initCam;
         this.M = obsPntSet.size();
         this.N = checkAndCount(viewList, modPntSet, obsPntSet);
@@ -356,21 +356,21 @@ public class OverallOptimizer implements NonlinearOptimizer {
      */
     static class ParameterAssembler {
 
-        private final AbstractCamera cam;
+        private final Camera cam;
         private final int viewCount;
         private final int camLinParamCount = 5;
         private final int viewParamCount = ViewTransform.PARAMETER_COUNT;
         private final int camDistParamCount;
         private final int paramCnt;
 
-        ParameterAssembler(AbstractCamera cam, int viewCount) {
+        ParameterAssembler(Camera cam, int viewCount) {
             this.cam = cam;
             this.viewCount = viewCount;
             this.camDistParamCount = cam.getDistortion().getParameterCount();
             this.paramCnt = camLinParamCount + camDistParamCount + viewCount * viewParamCount;
         }
 
-        double[] assembleParameters(AbstractCamera cam, List<ViewTransform> views) {
+        double[] assembleParameters(Camera cam, List<ViewTransform> views) {
             if (viewCount != views.size()) {
                 throw new IllegalArgumentException("view count does not match list size: " + views.size());
             }
@@ -553,7 +553,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
      * Returns the optimized camera parameters.
      * @return the optimized camera parameters
      */
-    public AbstractCamera getFinalCamera() {
+    public Camera getFinalCamera() {
         return finalCamera;
     }
 
@@ -608,7 +608,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
             double[] params = adapter.getFullParameters(point.toArray(), initialParameters);
             // create a new StandardCamera instance:
             double[] pc = assembler.getCameraParameters(params);
-            AbstractCamera cam = initCam.withParameters(pc);
+            Camera cam = initCam.withParameters(pc);
 
             // populate value vector (Y) ----------------------------------------------
 
@@ -640,7 +640,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
                     double pcp = pc[p];                                 // keep current parameter value
                     double delta = estimateDelta(pcp);
                     pc[p] = pc[p] + delta;                              // nudge camera parameter p
-                    AbstractCamera camMod = cam.withParameters(pc);             // modified camera
+                    Camera camMod = cam.withParameters(pc);             // modified camera
                     // project all model points through the modified camera:
                     for (int k = 0, row = 0; k < M; k++) {              // for all views k
                         ViewTransform Vk = new ViewTransform(assembler.getViewParameters(params, k));

@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
-import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.Camera;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -29,14 +29,14 @@ public enum DistortionModelType {
 
     // holds each enum's factory instance
     // private final BiFunction<Integer, Integer, ? extends DistortionModel> factory;
-    private final TriFunction<AbstractCamera, Integer, Integer, ? extends DistortionModel> factory;
+    private final TriFunction<Camera, Integer, Integer, ? extends DistortionModel> factory;
 
     // enum constructor
 //    DistortionModelType(BiFunction<Integer, Integer, ? extends DistortionModel> factory) {
 //        this.factory = factory;
 //    }
 
-    DistortionModelType(TriFunction<AbstractCamera, Integer, Integer, ? extends DistortionModel> factory) {
+    DistortionModelType(TriFunction<Camera, Integer, Integer, ? extends DistortionModel> factory) {
         this.factory = factory;
     }
 
@@ -49,7 +49,7 @@ public enum DistortionModelType {
      * @param ImgHeight the image height
      * @return a new {@link DistortionModel} instance
      */
-    public DistortionModel create(AbstractCamera cam, int imgWidth, int ImgHeight) {
+    public DistortionModel create(Camera cam, int imgWidth, int ImgHeight) {
         return factory.apply(cam, imgWidth, ImgHeight);
     }
 

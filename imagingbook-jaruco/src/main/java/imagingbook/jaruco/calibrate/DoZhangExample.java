@@ -3,7 +3,7 @@ package imagingbook.jaruco.calibrate;
 import ij.IJ;
 import imagingbook.calibrate.Calibration;
 import imagingbook.calibrate.extrinsics.ViewTransform;
-import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.zhang.data.ZhangData;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -38,7 +38,7 @@ public class DoZhangExample {
         // Perform calibration ------------------------------------------
 
         calibration.calibrate();
-        AbstractCamera camFinal = calibration.getFinalCamera();
+        Camera camFinal = calibration.getFinalCamera();
         if (camFinal == null) {
             System.out.println("Calibration failed");
             return;

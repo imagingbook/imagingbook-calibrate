@@ -7,7 +7,7 @@
 package imagingbook.calibrate.distortion;
 
 import imagingbook.calibrate.extrinsics.ViewTransform;
-import imagingbook.calibrate.intrinsics.AbstractCamera;
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import org.junit.Test;
@@ -171,7 +171,7 @@ public class PtLensDistortionTest {
 
         // start parameter estimation:
         DistortionEstimator estimtr = new DistortionEstimator(nullCam);
-        AbstractCamera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);
+        Camera camImproved = estimtr.getEstimate(List.of(view), modPntList, imgPntList);
 
         // PrintPrecision.set(8);
         System.out.println("distortion = " + camImproved.getDistortion());
