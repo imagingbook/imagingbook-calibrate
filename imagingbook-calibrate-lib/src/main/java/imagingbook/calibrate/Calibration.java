@@ -135,6 +135,9 @@ public class Calibration {
 			throw new IllegalStateException("min. one view needed to run calibration, use addView()");
 		}
 
+		// Create an initial dummy camera (standard or simple):
+		initCam = new Camera(null, null);
+
 		// Step 1: Calculate the homographies for each of the given M views:
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         homographies = new  RealMatrix[M];
@@ -152,7 +155,7 @@ public class Calibration {
 		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
 		IntrinsicsEstimator intrEstm = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
 		RealMatrix Ainit = intrEstm.estimate(homographies);
-		initCam = Camera.from(Ainit); //new Camera(Ainit, null);
+		initCam = initCam.withParameters(Ainit);
         debug("initial camera = " + initCam);
 		
 		// Step 3: Calculate the extrinsic view parameters (3D view transforms)

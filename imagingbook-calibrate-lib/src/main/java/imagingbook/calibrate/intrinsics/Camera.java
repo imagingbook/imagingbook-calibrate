@@ -13,7 +13,6 @@ import imagingbook.common.math.Matrix;
 
 import org.apache.commons.math4.legacy.linear.MatrixUtils;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
-import org.apache.commons.math4.legacy.linear.RealVector;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -32,76 +31,47 @@ public class Camera {
 	 * | alpha  gamma  uc |
 	 * |     0   beta  vc |</pre>
 	 */
-	private final double[][] A;		// 2 x 3 2D affine transformation matrix
-	private DistortionModel distortion;
+	final double[][] A;		// 2 x 3 2D affine transformation matrix
+	DistortionModel distortion;
 
-//	/**
-//	 * Basic constructor.
-//	 * @param alpha
-//	 * @param beta
-//	 * @param gamma
-//	 * @param uc
-//	 * @param vc
-//	 * @param distortion
-//	 */
-//	@Deprecated
-//	public Camera(double alpha, double beta, double gamma, double uc, double vc, DistortionModel distortion) {
-//		this(makeAffineMatrix(alpha, beta, gamma, uc, vc), distortion);
-//	}
+	// public Camera() {
+	// 	this(null, null);
+	// }
 
 	/**
-	 * Constructor.
-	 * @param a vector of 5 linear (affine) camera parameters: alpha, beta, gamma, uc, vc
-	 * @param distortion instance of lens distortion model
+	 * Constructor. Both arguments may be {@code null}, in which case a dummy camera instance is
+	 * created for later duplication.
+	 * @param A vector of 5 linear (affine) camera parameters: alpha, beta, gamma, uc, vc (may be {@code null})
+	 * @param distortion instance of {@link DistortionModel} (may be {@code null})
 	 */
-	public Camera(double[] a, DistortionModel distortion) {
-		if (a.length != 5) {
-			throw new IllegalArgumentException("exactly 5 camera parameters required: " + a.length);
-		}
-		this.A = new double[][] {
-				{ a[0], a[2], a[3] },
-				{   0,  a[1], a[4] }};
-		this.distortion = distortion; // ? new Radial2TermDistortion(0, 0) : new Radial2TermDistortion(K);
+	public Camera(double[] A, DistortionModel distortion) {
+		// if (A != null && A.length != getLinParameterCount()) {
+		// 	throw new IllegalArgumentException("required camera parameters length is " + getParameterCount());
+		// }
+		this.A = (A != null) ?
+				new double[][] {
+					{ A[0], A[2], A[3] },
+					{   0,  A[1], A[4] }} :
+				new double[][] {
+					{ 1, 0, 0 },
+					{ 0, 1, 0 }
+				};
+		this.distortion = distortion;
 	}
 
-//	/**
-//	 * Creates an affine 2x3 transformation matrix from 5 intrinsic camera parameters.
-//	 * @param alpha
-//	 * @param beta
-//	 * @param gamma
-//	 * @param uc
-//	 * @param vc
-//	 * @return the 2D affine transformation matrix
-//	 */
-//	private static RealMatrix makeAffineMatrix(double alpha, double beta, double gamma, double uc, double vc) {
-//		return new Array2DRowRealMatrix(new double[][] {
-//				{alpha, gamma, uc},
-//				{    0,  beta, vc}}, false);
-//	}
-
-//	/**
-//	 * Creates a standard camera from a transformation matrix and a vector of lens distortion coefficients.
-//	 * @param A the (min.) 2 x 3 matrix holding the intrinsic camera parameters
-//	 * @param distortion a lens distortion model instance
-//	 */
-//	public Camera(RealMatrix A, DistortionModel distortion) {
-//		this.distortion = distortion; // ? new Radial2TermDistortion(0, 0) : new Radial2TermDistortion(K);
-//		this.A = A.getSubMatrix(0, 1, 0, 2).getData();
-//	}
-
 	/**
-	 * Factory method for creating a new camera instance from an
-	 * affine transformation matrix, with no distortion model attached.
+	 * Creates a new {@link Camera} instance from an existing instance using the supplied parameters.
 	 * @param A a 2x3 affine transformation matrix
-	 * @return a ned {@link Camera} instance
+	 * @return a new Camera instance with the specified parameters and the same type of lens distortion
+	 * 	 * model as this instance
 	 */
-	public static Camera from(RealMatrix A) {
+	public Camera withParameters(RealMatrix A) {
 		double alpha = A.getEntry(0, 0);
 		double beta = A.getEntry(1, 1);
 		double gamma = A.getEntry(0, 1);
 		double uc = A.getEntry(0, 2);
 		double vc = A.getEntry(1, 2);
-		return new Camera(new double[] {alpha, beta, gamma, uc, vc}, null);
+		return new Camera(new double[] {alpha, beta, gamma, uc, vc}, this.distortion);
 	}
 
 // --------------------------------------------------------------------------
@@ -120,10 +90,11 @@ public class Camera {
 	public Camera withParameters(double[] params) {
 		if (params.length < this.getParameterCount())
 			throw new IllegalArgumentException("wrong number of camera parameters: " + params.length);
-		int P = this.distortion.getParameterCount();
-		double[] linParams = Arrays.copyOfRange(params, 0, 5);    // = [alpha, beta, gamma, uc, vc]
-		double[] distParams = Arrays.copyOfRange(params, 5, 5 + P);
-		return this.withParameters(linParams, distParams);
+		int P = getLinParameterCount();
+		int Q = getDistParameterCount();
+		double[] linParams = Arrays.copyOfRange(params, 0, P);    // = [alpha, beta, gamma, uc, vc] or fewer
+		double[] distParams = Arrays.copyOfRange(params, P, P + Q);
+		return withParameters(linParams, distParams);
 	}
 
 	/**
@@ -134,11 +105,19 @@ public class Camera {
 	 * model as this instance
 	 */
 	public Camera withParameters(double[] linParams, double[] distParams) {
-		if (linParams.length != 5)
+		if (linParams.length != getLinParameterCount())
 			throw new IllegalArgumentException("wrong number of linear camera parameters: " + linParams.length);
-		if (distParams.length != this.distortion.getParameterCount())
+		if (distParams.length != getDistParameterCount())
 			throw new IllegalArgumentException("wrong number of distortion camera parameters: " + distParams.length);
-		return new Camera(linParams, this.distortion.withParameters(distParams));
+
+		DistortionModel newDist = distortion.withParameters(distParams);
+        try {
+            return this.getClass().getDeclaredConstructor(double[].class, DistortionModel.class)
+					.newInstance(linParams, newDist);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+		// return new SimpleCamera(linParams, this.distortion.withParameters(distParams));
 	}
 
 	// ---------------------------------------------------------------------------------------------
@@ -241,7 +220,16 @@ public class Camera {
 	// -------------------------------------------------------------------
 
 	/**
-	 * Returns the camera's linear parameters as a vector
+	 * Returns the number of linear coefficients in the vector returned by
+	 * {@link #getLinearParameters()}.
+	 * @return the number of linear parameters
+	 */
+	public int getLinParameterCount() {
+		return 5;
+	}
+
+	/**
+	 * Returns the camera's linear parameters as a 5-vector
 	 * (alpha, beta, gamma, uc, vc).
 	 * @return the camera's linear parameters
 	 */
@@ -278,14 +266,20 @@ public class Camera {
 		return this.distortion;
 	}
 
+	public int getDistParameterCount() {
+		return (distortion != null) ? this.distortion.getParameterCount() : 0;
+	}
+
 	/**
 	 * Returns the total number of linear and non-linear (distortion) camera parameters,
 	 * which is 5 pluy the (variable) number of distortion parameters.
 	 * @return the total number of parameters for this camera
 	 */
 	public int getParameterCount() {
-		return 5 + distortion.getParameterCount();
+		return getLinParameterCount() + getDistParameterCount();
 	}
+
+	// --------------------------------------------------------------------------------------------
 
 	/**
 	 * Returns the camera's alpha value.
@@ -365,23 +359,23 @@ public class Camera {
 		return MatrixUtils.createRealMatrix(Ai);
 	}
 
-	/**
-	 * Returns the homography for the given view as a 3 x 3 matrix.
-	 * @param view the extrinsic view parameters
-	 * @return the homography matrix
-	 */
-	public RealMatrix getHomography(ViewTransform view) {
-		RealMatrix RT = view.getRotationMatrix();
-		RealVector T = view.getTranslationVector();
-		RT.setColumnVector(2, T);
-
-		RealMatrix AM = MatrixUtils.createRealMatrix(3, 3);
-		AM.setSubMatrix(A, 0, 0);
-		AM.setEntry(2, 2, 1);
-
-		RealMatrix H = AM.multiply(RT);
-		return H.scalarMultiply(1.0 / H.getEntry(2, 2));
-	}
+	// /**
+	//  * Returns the homography for the given view as a 3 x 3 matrix.
+	//  * @param view the extrinsic view parameters
+	//  * @return the homography matrix
+	//  */
+	// public RealMatrix getHomography(ViewTransform view) {
+	// 	RealMatrix RT = view.getRotationMatrix();
+	// 	RealVector T = view.getTranslationVector();
+	// 	RT.setColumnVector(2, T);
+	//
+	// 	RealMatrix AM = MatrixUtils.createRealMatrix(3, 3);
+	// 	AM.setSubMatrix(A, 0, 0);
+	// 	AM.setEntry(2, 2, 1);
+	//
+	// 	RealMatrix H = AM.multiply(RT);
+	// 	return H.scalarMultiply(1.0 / H.getEntry(2, 2));
+	// }
 
 	// -------------------------------------------------------------------
 
