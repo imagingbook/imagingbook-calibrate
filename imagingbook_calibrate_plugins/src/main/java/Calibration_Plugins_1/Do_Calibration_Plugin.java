@@ -115,8 +115,8 @@ public class Do_Calibration_Plugin implements PlugIn, JavaDocHelp {
 				ViewTransform view = zcalib.getFinalViewTransform(k);
 				IJ.log("View " + k + ":\n" + view.toString());
 			}
-			IJ.log(String.format("\nSquared projection error: %.3f\n",
-					zcalib.getTotalReprojectionError()));
+			IJ.log(String.format("\nRMS reprojection error: %.3f\n",
+					zcalib.getRmsReprojectionError()));
 		}
 
 		ShapeOverlayAdapter ola = new ShapeOverlayAdapter();

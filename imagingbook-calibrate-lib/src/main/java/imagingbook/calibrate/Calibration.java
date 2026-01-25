@@ -183,13 +183,14 @@ public class Calibration {
 		// 		new OverallNonlinearOptimizer_Unscaled(improvedCam, initViews, modelPntSet, imagePntSet);
 
 		OverallOptimizer optim = new OverallOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
-		// optim.fixGamma();
-		// optim.fixViewParameters();
+		optim.fixGamma();
+		optim.fixViewParameters();
 
 		if (optim.optimize()) {
 			System.out.println("optimize1: iterations = " + optim.getIterations());
 			System.out.println("optimize1: evaluations = " + optim.getEvaluations());
 			System.out.println("optimize1: |residuals| = " + optim.getResiduals().getNorm());
+			System.out.println("optimize1: RMS error = " + optim.getRmsError());
 
 			finalCam = optim.getFinalCamera();
 			debug("final camera = " + finalCam);
@@ -202,18 +203,16 @@ public class Calibration {
 		}
 
 
+		OverallOptimizer optim2 =
+				new OverallOptimizer(finalCam, initViews, modelPntSet, imagePntSet);
+		optim2.fixLinearCameraParameters();
+		optim2.fixDistortionParameters();
+		optim2.optimize();
 
-
-		// OverallOptimizer optim2 =
-		// 		new OverallOptimizer(finalCam, initViews, modelPntSet, imagePntSet);
-		// optim2.fixLinearCameraParameters();
-		// optim2.fixDistortionParameters();
-		// optim2.optimize();
-		//
-		// System.out.println("optimize2: iterations = " + optim2.getIterations());
-		// System.out.println("optimize2: evaluations = " + optim2.getEvaluations());
-		// System.out.println("optimize2: |residuals| = " + optim2.getResiduals().getNorm());
-		// finalViews = optim2.getFinalViews();
+		System.out.println("optimize2: iterations = " + optim2.getIterations());
+		System.out.println("optimize2: evaluations = " + optim2.getEvaluations());
+		System.out.println("optimize2: |residuals| = " + optim2.getResiduals().getNorm());
+		finalViews = optim2.getFinalViews();
 
 
 	}
@@ -221,37 +220,69 @@ public class Calibration {
 	//---------------------------------------------------------------------------
 
 	/**
-	 * Calculates and returns the RMS reprojection error for a single view,
-	 * specified by the camera and view parameters.
-	 * @param k
-	 * @return
+	 * Returns the RMS reprojection error for the final result of this {@link Calibration} instance.
+	 * @return the RMS reprojection error (average error per projected point)
 	 */
-	public double getRmsReprojectionError(int k) {
-		return getRmsReprojectionError(finalCam, finalViews.get(k), modelPntSet.get(k), imagePntSet.get(k));
+	public double getRmsReprojectionError() {
+		return getRmsReprojectionError(finalCam, finalViews, modelPntSet, imagePntSet);
 	}
 
+	// public double getRmsReprojectionErrorCheck() {
+	// 	int m = finalViews.size();
+	// 	double squaredErrSum = 0.0;
+	// 	int n = 0;
+	// 	for (int k = 0; k < m; k++) {
+	// 		ViewTransform view = finalViews.get(k);
+	// 		Pnt2d[] modelPts = modelPntSet.get(k);
+	// 		Pnt2d[] imagePts = imagePntSet.get(k);
+	// 		int nk = modelPntSet.get(k).length;
+	// 		for (int j = 0; j < nk; j++) {
+	// 			double[] uv = finalCam.project(view, modelPts[j]);
+	// 			double[] UV = imagePts[j].toDoubleArray();
+	// 			double dj2 = sqr(uv[0] - UV[0]) + sqr(uv[1] - UV[1]); // squared distance
+	// 			squaredErrSum += dj2;
+	// 		}
+	// 		n += nk;
+	// 	}
+	// 	return Math.sqrt(squaredErrSum / n);
+	// }
+
 	/**
-	 * Calculates and returns the total RMS reprojection error for a multiple views with the same camera,
+	 * Calculates and returns the total RMS reprojection error for multiple views with the same camera,
 	 * specified by the camera and view parameters.
 	 * <pre>{@code
 	 *     $RMS_{total} = \sqrt{\frac{\sum_{k=1}^{M} (N_k \cdot RMS_k^2)}{\sum_{k=1}^{M} N_k}}$
 	 * }</pre>
-	 * @param cam
-	 * @param viewList
-	 * @param modelPtsList
-	 * @param imagePtsList
-	 * @return
+	 * @param cam camera parameters
+	 * @param viewList list of {@link ViewTransform} instances, one for each view
+	 * @param modelPtsList list of model point arrays, one for each view
+	 * @param imagePtsList list of image point arrays, one for each view
+	 * @return the RMS reprojection error for multiple views
 	 */
 	public double getRmsReprojectionError(Camera cam, List<ViewTransform> viewList, List<Pnt2d[]> modelPtsList, List<Pnt2d[]> imagePtsList) {
+		if (viewList.size() != modelPtsList.size() || viewList.size() != imagePtsList.size()) {
+			throw new IllegalArgumentException("view, model and image point lists must have same size");
+		}
 		int m = viewList.size();
-		double errSum = 0.0;
-		int nCnt = 0;
+		double squaredErrSum = 0.0;
+		int n = 0;
 		for (int k = 0; k < m; k++) {
 			int nk = modelPtsList.get(k).length;
-			errSum += nk * sqr(getRmsReprojectionError(cam, viewList.get(k), modelPtsList.get(k), imagePtsList.get(k)));
-			nCnt += nk;
+			squaredErrSum += nk * sqr(getRmsReprojectionError(cam, viewList.get(k), modelPtsList.get(k), imagePtsList.get(k)));
+			n += nk;
 		}
-		return Math.sqrt(errSum / nCnt);
+		return Math.sqrt(squaredErrSum / n);
+	}
+
+
+	/**
+	 * Calculates and returns the RMS reprojection error for a single view of the final calibration
+	 * result.
+	 * @param k	view number
+	 * @return the RMS reprojection error for a single view of the final calibration result
+	 */
+	public double getRmsReprojectionError(int k) {
+		return getRmsReprojectionError(finalCam, finalViews.get(k), modelPntSet.get(k), imagePntSet.get(k));
 	}
 
 	/**
@@ -264,7 +295,7 @@ public class Calibration {
 	 * @param view view parameters
 	 * @param modelPts model points
 	 * @param imagePts image points
-	 * @return
+	 * @return the RMS reprojection error for a single view
 	 */
     public double getRmsReprojectionError(Camera cam, ViewTransform view, Pnt2d[] modelPts, Pnt2d[] imagePts) {
         if (modelPts.length != imagePts.length) {
@@ -278,15 +309,6 @@ public class Calibration {
 		 	sqError += dj;
 		 }
     	 return Math.sqrt(sqError / modelPts.length);
-    }
-
-    public double getTotalReprojectionError() {
-        checkState();
-    	double totalError = 0;
-    	for (int k = 0; k < M; k++) {
-    		totalError = totalError + getRmsReprojectionError(k);
-    	}
-    	return totalError;
     }
     
     // ----------------------------------------------------------------------

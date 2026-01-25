@@ -58,9 +58,13 @@ public class DoZhangExample {
             for (int k = 0; k < M; k++) {
                 ViewTransform view = calibration.getFinalViewTransform(k);
                 IJ.log("View " + k + ":\n" + view.toString());
+                IJ.log(String.format("RMS error: %.3f\n", calibration.getRmsReprojectionError(k)));
             }
 
-            IJ.log(String.format("\nProjection error: %.3f\n", Math.sqrt(calibration.getTotalReprojectionError())));
+
         }
+
+        IJ.log(String.format("Total RMS error: %.3f\n", calibration.getRmsReprojectionError()));
+        // IJ.log(String.format("Check RMS error: %.3f\n", calibration.getRmsReprojectionErrorCheck()));
     }
 }

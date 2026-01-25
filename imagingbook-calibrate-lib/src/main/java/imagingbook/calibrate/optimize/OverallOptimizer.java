@@ -569,6 +569,10 @@ public class OverallOptimizer implements NonlinearOptimizer {
         return result.getResiduals();
     }
 
+    public double getRmsError() {
+        return result.getResiduals().getNorm() / Math.sqrt(N);
+    }
+
     public String getFailureReason() {
         return (failureReason != null) ? failureReason : "";
     }
