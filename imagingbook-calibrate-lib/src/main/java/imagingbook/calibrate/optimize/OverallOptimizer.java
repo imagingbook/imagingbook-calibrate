@@ -63,8 +63,8 @@ public class OverallOptimizer implements NonlinearOptimizer {
     private static boolean FIX_VIEW_PARAMS = false;
     private static List<Integer> FIX_SINGLE_PARAMS = Arrays.asList();
 
-    private final BitVector activeParamFlags;
-    private int activeParameterCnt;
+    private final BitVector variableParamFlags;
+    private int variableParamCnt;
 
     private final Camera initCam;
     private final Pnt2d[][] modPts;
@@ -110,8 +110,8 @@ public class OverallOptimizer implements NonlinearOptimizer {
         this.K = initialParameters.length;
         // System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
         // ---------------------------
-        this.activeParamFlags = new BitVector(K);   // initially all parameters are active (non-fixed)
-        this.activeParamFlags.setAll();             // to be modified by subsequent fixParameters() calls
+        this.variableParamFlags = new BitVector(K);   // initially all parameters are active (non-fixed)
+        this.variableParamFlags.setAll();             // to be modified by subsequent fixParameters() calls
     }
 
     // -------------------------------------------------------------------------------------
@@ -124,8 +124,8 @@ public class OverallOptimizer implements NonlinearOptimizer {
      */
     private void setup() {
         // System.out.println("activeParamFlags = " + activeParamFlags);
-        this.adapter = new ParameterAdapter(activeParamFlags, null);    // all scales = 1
-        this.activeParameterCnt = activeParamFlags.cardinality();     // adapter.getSubsequenceLength();
+        this.adapter = new ParameterAdapter(variableParamFlags, null);    // all scales = 1
+        this.variableParamCnt = variableParamFlags.cardinality();     // adapter.getSubsequenceLength();
 
         double[] autoScales = getAutoScales(initialParameters);
         PrintPrecision.set(6);
@@ -159,7 +159,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
     // -------------------------------------------------------------------------------------
 
     public void fixParameter(int p) {
-        this.activeParamFlags.unsetBit(p);
+        this.variableParamFlags.unsetBit(p);
     }
 
     public void fixParameters(List<Integer> params) {
@@ -215,7 +215,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
      */
     public boolean optimize() {
         setup();
-        MultivariateJacobianFunction model = new CombinedModel(2 * N, activeParameterCnt);
+        MultivariateJacobianFunction model = new CombinedModel(2 * N, variableParamCnt);
         double[] pStart = adapter.getModelParameters(initialParameters);
         // System.out.println("start Parameters = " + Matrix.toString(pStart));
 
@@ -323,13 +323,13 @@ public class OverallOptimizer implements NonlinearOptimizer {
     // Parameter scaling --------------------------------------------------------------------
 
     double[] getAutoScales(double[] allParams) {
-        MultivariateJacobianFunction model = new CombinedModel(2 * N, activeParameterCnt);
+        MultivariateJacobianFunction model = new CombinedModel(2 * N, variableParamCnt);
         double[] pStart = adapter.getModelParameters(allParams);
         RealMatrix Jac = model.value(new ArrayRealVector(pStart, false)).getSecond();
         double[] scales = new double[allParams.length];
         Arrays.fill(scales, 1.0);
 
-        for (int q = 0; q < activeParameterCnt; q++) {
+        for (int q = 0; q < variableParamCnt; q++) {
             double norm = Jac.getColumnVector(q).getNorm();
             double s = (norm < 1e-12) ? 1.0 : (1.0 / norm);
             int p = adapter.getFullParamIdx(q);
