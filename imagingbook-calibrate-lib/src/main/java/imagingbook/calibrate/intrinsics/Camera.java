@@ -269,7 +269,10 @@ public abstract class Camera {
      */
     public void setDistortion(DistortionModel distortion) {
         if (distortion == null) {
-            throw new IllegalArgumentException("distortion cannot be null");
+            throw new IllegalArgumentException("new distortion cannot be null");
+        }
+        if (this.distortion == null) {
+            throw new IllegalStateException("existing distortion cannot be null");
         }
         if (distortion.getClass() != this.distortion.getClass()) {
             throw new IllegalArgumentException("distortion class mismatch");
