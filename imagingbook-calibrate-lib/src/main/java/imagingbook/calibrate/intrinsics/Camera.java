@@ -43,7 +43,7 @@ public abstract class Camera {
             throw new IllegalArgumentException("required camera parameters length is 5");
         }
         if (distortion == null) {
-            throw new IllegalArgumentException("distortion model is null");
+            throw new IllegalArgumentException("distortion model must not be null");
         }
         this.A = (A != null) ?
                 new double[][] {
@@ -264,7 +264,8 @@ public abstract class Camera {
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Sets or replaces the distortion model used by this camera.
+     * Sets or replaces the distortion model used by this camera. The new distortion model must be
+     * of the same type as the original.
      * @param distortion the new distortion model
      */
     public void setDistortion(DistortionModel distortion) {
@@ -275,7 +276,7 @@ public abstract class Camera {
             throw new IllegalStateException("existing distortion cannot be null");
         }
         if (distortion.getClass() != this.distortion.getClass()) {
-            throw new IllegalArgumentException("distortion class mismatch");
+            throw new IllegalArgumentException("distortion type mismatch");
         }
         this.distortion = distortion;
     }
@@ -365,6 +366,15 @@ public abstract class Camera {
         final double u = A[0][0] * x + A[0][1] * y + A[0][2];
         final double v =               A[1][1] * y + A[1][2];
         return new double[] {u, v};
+    }
+
+    // -------------------------------------------------------------------
+
+    static double[] checkLength(double[] a, int n) {
+        if (a.length != n) {
+            throw new IllegalArgumentException("array lengths does not match, expected " + n);
+        }
+        return a;
     }
 
     // -------------------------------------------------------------------

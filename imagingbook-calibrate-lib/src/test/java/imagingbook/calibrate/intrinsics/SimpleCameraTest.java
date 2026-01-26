@@ -97,6 +97,36 @@ public class SimpleCameraTest {
         assertTrue(dist instanceof Radial2TermDistortion);
     }
 
+    @Test
+    public void getParameterCount() {
+        assertEquals(5, cam1.getParameterCount());
+        assertEquals(3, cam1.getLinParameterCount());
+        assertEquals(2, cam1.getDistParameterCount());
+    }
+
+    @Test
+    public void getParameters() {
+        double alpha = 810, beta = 810, gamma = 0, uc = 300, vc = 200;
+        double k0 = 0.02, k1 = -0.1;
+        Camera cam = new SimpleCamera(new double[] {alpha, uc, vc},
+                new Radial2TermDistortion((new double[] {k0, k1})));
+
+        System.out.println("cam = " + cam);
+        double[] lp = cam.getLinearParameters();
+        assertArrayEquals(new double[] {alpha, uc, vc}, lp, tol);
+
+        double[] dp = cam.getDistortionParameters();
+        assertArrayEquals(new double[] {k0, k1}, dp, tol);
+
+        double[] p = cam.getParameters();
+        assertArrayEquals(new double[] {alpha, uc, vc, k0, k1}, p, tol);
+
+        assertEquals(alpha, cam.getAlpha(), tol);
+        assertEquals(beta, cam.getBeta(), tol);
+        assertEquals(gamma, cam.getGamma(), tol);
+        assertEquals(uc, cam.getUc(), tol);
+        assertEquals(vc, cam.getVc(), tol);
+    }
 
     @Test
     public void projectNormalized() {
@@ -111,34 +141,6 @@ public class SimpleCameraTest {
     }
 
     @Test
-    public void getParameters() {
-    }
-
-    @Test
-    public void getParameterCount() {
-    }
-
-    @Test
-    public void getAlpha() {
-    }
-
-    @Test
-    public void getBeta() {
-    }
-
-    @Test
-    public void getGamma() {
-    }
-
-    @Test
-    public void getUc() {
-    }
-
-    @Test
-    public void getVc() {
-    }
-
-    @Test
     public void getAffineMatrix() {
     }
 
@@ -146,7 +148,4 @@ public class SimpleCameraTest {
     public void getInverseA() {
     }
 
-    @Test
-    public void getHomography() {
-    }
 }

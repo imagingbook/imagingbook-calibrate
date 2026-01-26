@@ -21,11 +21,12 @@ public class StandardCamera extends Camera {
 	/**
 	 * Constructor. Both arguments may be {@code null}, in which case a dummy camera instance is
 	 * created for later duplication.
-	 * @param A vector of 5 linear (affine) camera parameters: alpha, beta, gamma, uc, vc (may be {@code null})
+	 * @param a vector of 5 linear (affine) camera parameters: alpha, beta, gamma, uc, vc (may be {@code null})
 	 * @param distortion instance of {@link DistortionModel} (may be {@code null})
 	 */
-	public StandardCamera(double[] A, DistortionModel distortion) {
-		super(A, distortion);
+	public StandardCamera(double[] a, DistortionModel distortion) {
+		super(a, distortion);
+		checkLength(a, 5);
 	}
 
 	// -------------------------------------------------------------------
