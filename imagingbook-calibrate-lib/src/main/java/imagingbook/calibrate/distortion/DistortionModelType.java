@@ -23,8 +23,7 @@ public enum DistortionModelType {
     Radial2Term((camera, w, h)    -> new Radial2TermDistortion()),
     Radial3Term((camera, w, h)    -> new Radial3TermDistortion()),
     RadialLateral((camera, w, h)  -> new RadialLateralDistortion()),
-    PtLens((camera, w, h)         -> new PtLensDistortion(null,
-                                                PtLensDistortion.findScale(camera, w, h))),
+    PtLens((camera, w, h)         -> new PtLensDistortion(camera)),
     ;
 
     // holds each enum's factory instance

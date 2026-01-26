@@ -25,8 +25,13 @@ public class StandardCamera extends Camera {
 	 * @param distortion instance of {@link DistortionModel} (may be {@code null})
 	 */
 	public StandardCamera(double[] a, DistortionModel distortion) {
-		super(a, distortion);
+		super(a, distortion, -1, -1);
 		checkLength(a, 5);
+	}
+
+	// create a dummy camera with no distortion
+	public StandardCamera(int imgWidth, int imgHeight) {
+		super(null, null, imgWidth, imgHeight);
 	}
 
 	// -------------------------------------------------------------------

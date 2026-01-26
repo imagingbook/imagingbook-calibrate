@@ -25,14 +25,14 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
     private final double a, b, c;
     private final double scale;
 
-    @Deprecated
-    public static PtLensDistortion from(Camera cam, int imgWidth, int imgHeight) {
-        double scale = findScale(cam, imgWidth, imgHeight);
-        return new PtLensDistortion(new double[] {0, 0, 0}, scale);
-    }
+    // @Deprecated
+    // public static PtLensDistortion from(Camera cam) {
+    //     double scale = findScale(cam);
+    //     return new PtLensDistortion(new double[] {0, 0, 0}, scale);
+    // }
 
-    public PtLensDistortion(Camera cam, int imgWidth, int imgHeight) {
-        this(new double[] {0, 0, 0}, findScale(cam, imgWidth, imgHeight));
+    public PtLensDistortion(Camera cam) {
+        this(new double[] {0, 0, 0}, findScale(cam));
     }
 
     /**
@@ -42,15 +42,13 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
      * {@code W} and {@code H} (whichever is smaller) and the intrinsic camera parameters
      * {@code alpha} and {@code beta} (which define the system's focal length).
      *
-     * @param cam a {@code StandardCamera} instance with initialized linear part (affine transform)
-     * @param imgWidth image width {@code W}
-     * @param imgHeight image height {@code H}
-     * @return the scale factor to apply to normalised projection coordinates
+     * @param cam a {@code StandardCamera} instance with initialized linear part (affine transform)}
+     * @return the scale factor to apply to normalized projection coordinates
      */
-    public static double findScale(Camera cam, int imgWidth, int imgHeight) {
+    public static double findScale(Camera cam) {
         return Math.max(
-                 cam.getAlpha() / (0.5 * imgWidth),
-                 cam.getBeta()  / (0.5 * imgHeight));
+                 cam.getAlpha() / (0.5 * cam.getImgWidth()),
+                 cam.getBeta()  / (0.5 * cam.getImgHeight()));
     }
 
     /**

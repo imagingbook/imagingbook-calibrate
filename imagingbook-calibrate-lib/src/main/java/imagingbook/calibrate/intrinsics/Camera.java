@@ -7,6 +7,7 @@
 package imagingbook.calibrate.intrinsics;
 
 import imagingbook.calibrate.distortion.DistortionModel;
+import imagingbook.calibrate.distortion.DistortionModelType;
 import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.math.Matrix;
@@ -22,6 +23,18 @@ import java.util.Locale;
  */
 public abstract class Camera {
 
+    public enum Type {
+        StandardCamera,
+        SimpleCamera;
+    }
+
+    // public static Camera create(Type camType, int imgWidth, int imgHeight) {
+    //     DistortionModel distModel = DistortionModel.create(distType);
+    //     return null;
+    // }
+
+    // --------------------------------------------------------------------------------------------
+
     /**
      * The camera's inner transformation matrix:
      * <pre>
@@ -29,31 +42,38 @@ public abstract class Camera {
      * |     0   beta  vc |</pre>
      */
     final double[][] A;		// 2 x 3 2D affine transformation matrix
+    final int imgWidth, imgHeight;
     DistortionModel distortion;
 
+
     /**
-     * Non-public onstructor.
-     * Both arguments may be {@code null}, in which case a dummy camera instance is created for
-     * later duplication.
-     * @param A vector of 5 linear (affine) camera parameters: alpha, beta, gamma, uc, vc (may be {@code null})
-     * @param distortion instance of {@link DistortionModel} (may be {@code null})
+     * Non-public onstructor. Both arguments may be {@code null}, in which case a dummy camera
+     * instance is created for later duplication.
+     *
+     * @param a vector of 5 linear (affine) camera parameters: alpha, beta, gamma, uc, vc (may be
+     * {@code null})
+     * @param distortion instance of {@link DistortionModel} (may not be {@code null})
+     * @param imgWidth
+     * @param imgHeight
      */
-    Camera(double[] A, DistortionModel distortion) {
-        if (A != null && A.length != 5) {
+    Camera(double[] a, DistortionModel distortion, int imgWidth, int imgHeight) {
+        if (a != null && a.length != 5) {
             throw new IllegalArgumentException("required camera parameters length is 5");
         }
         if (distortion == null) {
             throw new IllegalArgumentException("distortion model must not be null");
         }
-        this.A = (A != null) ?
+        this.A = (a != null) ?
                 new double[][] {
-                        { A[0], A[2], A[3] },
-                        {   0,  A[1], A[4] }} :
+                        { a[0], a[2], a[3] },
+                        {   0,  a[1], a[4] }} :
                 new double[][] {
                         { 1, 0, 0 },
                         { 0, 1, 0 }
                 };
         this.distortion = distortion;
+        this.imgWidth = imgWidth;
+        this.imgHeight = imgHeight;
     }
 
     // ---------------------------------------------------------------------------
@@ -261,6 +281,14 @@ public abstract class Camera {
         return MatrixUtils.createRealMatrix(Ai);
     }
 
+    public int getImgWidth() {
+        return imgWidth;
+    }
+
+    public int getImgHeight() {
+        return imgHeight;
+    }
+
     // ---------------------------------------------------------------------------------------------
 
     /**
@@ -279,6 +307,14 @@ public abstract class Camera {
             throw new IllegalArgumentException("distortion type mismatch");
         }
         this.distortion = distortion;
+    }
+
+    public void initDistortion(DistortionModelType distType) {
+        if (this.distortion != null) {
+            throw new IllegalStateException("cannot be initialize existing distortion: " +
+                    distortion.getClass().getSimpleName());
+        }
+        distortion = DistortionModel.create(distType, this);
     }
 
     // ---------------------------------------------------------------------------------------------

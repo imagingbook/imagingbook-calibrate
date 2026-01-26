@@ -32,12 +32,12 @@ public abstract class DistortionModel {
         }
     }
 
-    public static DistortionModel create(DistortionModelType type, Camera cam, int imgWidth, int imgHeight) {
+    public static DistortionModel create(DistortionModelType type, Camera cam) {
         switch (type) {
             case Radial2Term ->     { return new Radial2TermDistortion(); }
             case Radial3Term ->     { return new Radial3TermDistortion(); }
             case RadialLateral ->   { return new RadialLateralDistortion(); }
-            case PtLens ->          { return new PtLensDistortion(cam, imgWidth, imgHeight); }
+            case PtLens ->          { return new PtLensDistortion(cam); }
             default -> throw new  IllegalArgumentException("Unknown DistortionModel type");
         }
     }

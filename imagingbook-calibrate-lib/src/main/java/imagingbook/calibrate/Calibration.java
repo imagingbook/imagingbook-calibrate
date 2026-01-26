@@ -136,9 +136,6 @@ public class Calibration {
 			throw new IllegalStateException("min. one view needed to run calibration, use addView()");
 		}
 
-		// Create an initial dummy camera (standard or simple):
-		initCam = new StandardCamera(null, null);
-
 		// Step 1: Calculate the homographies for each of the given M views:
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         homographies = new  RealMatrix[M];
@@ -154,8 +151,12 @@ public class Calibration {
 		// Step 2: Estimate intrinsic camera parameters by linear optimization:
 		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
 		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
-		IntrinsicsEstimator intrEstm = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
+		IntrinsicsEstimator intrEstm = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);	// TODO: use selected camera model already for intrinsics estimation!!
 		RealMatrix Ainit = intrEstm.estimate(homographies);
+
+		// Create an initial dummy camera (standard or simple):
+		// initCam = new StandardCamera(null, DistortionModel.create(params.distortionModelType));
+		initCam = new StandardCamera(imgWidth, imgHeight);
 		initCam = initCam.withParameters(Ainit);
         debug("initial camera = " + initCam);
 		
@@ -168,10 +169,13 @@ public class Calibration {
 
 		// Step 4: Determine the lens distortion from initial estimates:
 		debug("Step 4: Estimate lens distortion from initial camera and view data:");
-		DistortionModel distModel = params.distortionModelType.create(initCam, imgWidth, imgHeight);
+
+		// DistortionModel distModel = params.distortionModelType.create(initCam, imgWidth, imgHeight);
+		DistortionModel distModel = DistortionModel.create(params.distortionModelType, initCam);
 		System.out.println("params.distortionModelType = " + params.distortionModelType);
 		System.out.println("distModel = " + distModel);
 		initCam.setDistortion(distModel);
+
 		DistortionEstimator distEstim = new DistortionEstimator(initCam);
 		Camera improvedCam = distEstim.getEstimate(initViews, modelPntSet, imagePntSet);
         debug("improved camera = " + improvedCam);

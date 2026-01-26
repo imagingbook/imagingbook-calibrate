@@ -21,8 +21,13 @@ public class SimpleCamera extends Camera {
      */
     public SimpleCamera(double[] a, DistortionModel distortion) {
         // alpha, beta, gamma, uc, vc
-        super(new double[] {a[0], a[0], 0, a[1], a[2]}, distortion);
+        super(new double[] {a[0], a[0], 0, a[1], a[2]}, distortion, -1, -1);
         checkLength(a, 3);
+    }
+
+    // create a dummy camera with no distortion
+    public SimpleCamera(int imgWidth, int imgHeight) {
+        super(null, null, imgWidth, imgHeight);
     }
 
     @Override
