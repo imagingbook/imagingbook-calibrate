@@ -21,8 +21,9 @@ import imagingbook.common.image.ImageMapper;
 import imagingbook.common.image.interpolation.InterpolationMethod;
 
 import static imagingbook.common.ij.DialogUtils.formatText;
+import static imagingbook.common.util.Timing.timeNanos;
 
-public class PtLens_Dist_Plugin implements PlugInFilter {
+public class PtLens_Dist_Plugin_1 implements PlugInFilter {
 
     ImagePlus im;
 
@@ -33,6 +34,8 @@ public class PtLens_Dist_Plugin implements PlugInFilter {
     double a = -0.0030105199701668;
     double b = 0.00307881852077996;
     double c = -0.0107098456707285;
+
+    boolean parallel = false;
 
     @Override
     public int setup(String s, ImagePlus im) {
@@ -83,10 +86,13 @@ public class PtLens_Dist_Plugin implements PlugInFilter {
         ImageProcessor source = im.getProcessor();
         ImageProcessor target = source.createProcessor(W, H);
         ImageMapper mapper = new ImageMapper(mapping, null, InterpolationMethod.Bicubic);
+        mapper.WORK_PARALLEL = parallel;
 
         IJ.log("Starting mapping");
-        mapper.map(source, target);
-        IJ.log("done");
+        long nanos = timeNanos(() -> {
+            mapper.map(source, target);
+         });
+        IJ.log("Took " + (nanos / 1000000.0) + " ms");
 
         new ImagePlus("Target", target).show();
     }
@@ -109,6 +115,7 @@ public class PtLens_Dist_Plugin implements PlugInFilter {
         gd.addNumericField("b", b);
         gd.addToSameRow();
         gd.addNumericField("c", c);
+        gd.addCheckbox("parallel", parallel);
 
         gd.showDialog();
         if (gd.wasCanceled())
@@ -121,6 +128,7 @@ public class PtLens_Dist_Plugin implements PlugInFilter {
         a = gd.getNextNumber();
         b = gd.getNextNumber();
         c = gd.getNextNumber();
+        parallel = gd.getNextBoolean();
 
         return true;
     }
