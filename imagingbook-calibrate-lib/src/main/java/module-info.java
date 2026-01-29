@@ -12,6 +12,7 @@ module imagingbook.calibrate.lib {
     requires org.apache.commons.numbers.complex;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.core;
+    requires java.net.http;
 
     exports imagingbook.calibrate;
     exports imagingbook.calibrate.zhang.data;
