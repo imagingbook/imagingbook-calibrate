@@ -59,6 +59,7 @@ public class DistortionEstimator {
                               List<Pnt2d[]> modPntSet, List<Pnt2d[]> obsPntSet) {
 
         int P = distortion.getParameterCount();          // number of distortion parameters
+        System.out.println("DistortionEstimator.getEstimate: distortion = " + distortion);
         if (P == 0) {
             return camera; // nothing to optimize
         }
@@ -124,7 +125,7 @@ public class DistortionEstimator {
 
         DistortionModel distFinal = distortion.withParameters(kopt.toArray());
         // return new StandardCamera(initCam.getAffineMatrix(), distFinal);
-        return new StandardCamera(camera.getLinearParameters(), distFinal);
+        return camera.withParameters(camera.getLinearParameters(), distFinal.getParameters());
     }
 
 }

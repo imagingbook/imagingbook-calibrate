@@ -17,10 +17,10 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
  * Version 1 (Zhang's original closed form solution). Estimates intrinsic camera parameters from multiple
  * homographies.
  */
-public class IntrinsicsEstimatorZhang implements IntrinsicsEstimator {
+public class IntrinsicsEstimatorUnconstrained implements IntrinsicsEstimator {
 
     @Override
-    public RealMatrix estimate(RealMatrix[] homographies) {
+    public RealMatrix estimateIntrinsics(RealMatrix[] homographies) {
         final int M = homographies.length;
         int rows = 2 * M + 1;
         double[][] V = new double[rows][];

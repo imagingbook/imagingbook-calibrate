@@ -4,17 +4,8 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate.intrinsics;
+package imagingbook.calibrate.util;
 
-import org.apache.commons.math4.legacy.linear.RealMatrix;
-
-/**
- * Common interface for camera intrinsics estimators.
- */
-public interface IntrinsicsEstimator {
-
-    public RealMatrix estimateIntrinsics(RealMatrix[] homographies);
-
-    // public Camera estimateIntrinsics(RealMatrix[] homographies, Camera.Type camType, boolean coupleAlphaBeta);
+public record ImgDimensions(int width, int height) {
 
 }

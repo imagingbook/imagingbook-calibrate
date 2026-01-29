@@ -6,7 +6,6 @@
  ******************************************************************************/
 package imagingbook.calibrate.intrinsics;
 
-import imagingbook.common.math.Matrix;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
 import org.apache.commons.math4.legacy.linear.DecompositionSolver;
@@ -20,9 +19,11 @@ import static imagingbook.common.math.Arithmetic.sqr;
  * Estimates intrinsic camera parameters assuming that there is no skew (gamma = 0) and
  * the principal projection point is at the image center. This method is numerically
  * much more robust than the full-parameter estimation used in
- * {@link IntrinsicsEstimatorZhang}.
+ * {@link IntrinsicsEstimatorUnconstrained}.
  */
 public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
+
+    private static final double PRECOND = 1e6;    // constant to precondition the linear system (probably not needed)
 
     private final double uc;
     private final double vc;
@@ -37,18 +38,19 @@ public class IntrinsicsEstimatorConstrained implements IntrinsicsEstimator {
         System.out.println("IntrinsicsEstimatorConstrained(): width=" + width + ", height=" + height);
         this.uc = 0.5 * width;
         this.vc = 0.5 * height;
-        this.T = new Array2DRowRealMatrix(new double[][]
+        this.T = new Array2DRowRealMatrix(new double[][]        // translation matrix
                 {{1, 0, -uc},
                  {0, 1, -vc},
-                 {0, 0, 1}}, false);
+                 {0, 0,   1}}, false);
     }
 
+    // --------------------------------------------------------------------------------------------
+
     @Override
-    public RealMatrix estimate(RealMatrix[] homographies) {
+    public RealMatrix estimateIntrinsics(RealMatrix[] homographies) {
         final int M = homographies.length;
         double[][] V = new double[2 * M][];
         double[] c = new double[2 * M];
-        double PRECOND = 1e6;    // constant to precondition the linear system (probably not needed)
 
         for (int k = 0; k < M; k++) {
             checkIfNormalized(homographies[k]);

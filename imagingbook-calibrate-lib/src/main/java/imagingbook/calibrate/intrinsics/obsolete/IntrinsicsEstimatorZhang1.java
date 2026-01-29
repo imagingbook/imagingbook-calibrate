@@ -20,7 +20,7 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 public class IntrinsicsEstimatorZhang1 implements IntrinsicsEstimator {
 
     @Override
-    public RealMatrix estimate(RealMatrix[] homographies) {
+    public RealMatrix estimateIntrinsics(RealMatrix[] homographies) {
         final int M = homographies.length;
         int rows = 2 * M;
         double[][] V = new double[rows][];

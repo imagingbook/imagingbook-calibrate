@@ -7,6 +7,8 @@
 package imagingbook.calibrate.distortion;
 
 import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.common.geometry.basic.Pnt2d;
+import imagingbook.common.geometry.mappings.Mapping2D;
 import imagingbook.common.math.Matrix;
 
 import java.util.Locale;
@@ -85,7 +87,6 @@ public abstract class DistortionModel {
         return 1.0;
     }
 
-
     // -------------------------------------------------------------------------------
 
     /**
@@ -99,6 +100,8 @@ public abstract class DistortionModel {
      */
     abstract double[][] getDMatrixRowsUV(double x, double y, double du, double dv);
 
+    // --------------------------------------------------------------------------
+
     /**
      * Applies lens distortion to a point in the ideal 2D projection.
      * @param xy a 2D point in the ideal projection
@@ -106,12 +109,20 @@ public abstract class DistortionModel {
      */
     public abstract double[] warp(double[] xy);
 
+    public Pnt2d warp(Pnt2d xy) {
+        return Pnt2d.from(warp(xy.toDoubleArray()));
+    }
+
     /**
      * Applies inverse lens distortion to a given point in the ideal image plane.
      * @param xyd a distorted 2D point in the ideal image plane
      * @return the undistorted point
      */
     public abstract double[] unwarp(double[] xyd);
+
+    public Pnt2d unwarp(Pnt2d xyd) {
+        return Pnt2d.from(unwarp(xyd.toDoubleArray()));
+    }
 
     // --------------------------------------------------------------------------
 

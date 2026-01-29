@@ -13,9 +13,11 @@ import imagingbook.calibrate.extrinsics.ViewTransform;
 import imagingbook.calibrate.homography.HomographyEstimator;
 import imagingbook.calibrate.homography.HomographyEstimatorSimple;
 import imagingbook.calibrate.intrinsics.Camera;
-import imagingbook.calibrate.intrinsics.StandardCamera;
+import imagingbook.calibrate.intrinsics.CameraFactory;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimator;
 import imagingbook.calibrate.intrinsics.IntrinsicsEstimatorConstrained;
+import imagingbook.calibrate.intrinsics.SimpleCamera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.optimize.obsolete.NonlinearOptimizer;
 import imagingbook.calibrate.optimize.OverallOptimizer;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -58,6 +60,10 @@ public class Calibration {
 	 * Parameters can be specified by setting the associated public fields.
 	 */
 	public static class Parameters implements ParameterBundle<Calibration> {
+		/** Camera type to be used. */
+		// public Camera.Type cameraType = Camera.Type.SimpleCamera;
+		public Camera.Type cameraType = Camera.Type.StandardCamera;
+
         /** Lens distortion model to be used. */
         public DistortionModelType distortionModelType = DistortionModelType.Radial2Term;
 		/** Normalize point coordinates for numerical stability in homography estimation. */
@@ -69,7 +75,7 @@ public class Calibration {
 		/** Use numeric (instead of analytic) calculation of the Jacobian in {@link NonlinearOptimizer}. */
 		public boolean useNumericJacobian = true;
 		/** Turn on debugging output. */
-		public boolean debug = false;					
+		public boolean debug = true;
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -136,7 +142,8 @@ public class Calibration {
 			throw new IllegalStateException("min. one view needed to run calibration, use addView()");
 		}
 
-		// Step 1: Calculate the homographies for each of the given M views:
+		// Step 1: Calculate the homographies for each of the given M views: -----------------------
+
 		debug("Step 1: Calculate the homographies for each of the given " + M + " views");
         homographies = new  RealMatrix[M];
 		HomographyEstimator hestmtr =
@@ -148,26 +155,27 @@ public class Calibration {
 			debug("homography" + k + ": \n" + homographies[k]);
         }
 
-		// Step 2: Estimate intrinsic camera parameters by linear optimization:
-		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
-		// IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorZhang();
-		IntrinsicsEstimator intrEstm = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);	// TODO: use selected camera model already for intrinsics estimation!!
-		RealMatrix Ainit = intrEstm.estimate(homographies);
+		// Step 2: Estimate intrinsic camera parameters by linear optimization: --------------------
 
-		// Create an initial dummy camera (standard or simple):
-		// initCam = new StandardCamera(null, DistortionModel.create(params.distortionModelType));
-		initCam = new StandardCamera(imgWidth, imgHeight);
-		initCam = initCam.withParameters(Ainit);
+		debug("Step 2: Estimate intrinsic camera parameters by linear optimization");
+		CameraFactory camFactory = new CameraFactory(imgWidth, imgHeight);
+		initCam = camFactory.createCamera(params.cameraType, homographies);
+
+		// initCam = Camera.create(params.cameraType);			// bare camera without any data
+		// // IntrinsicsEstimator intrEstimtr = new IntrinsicsEstimatorUnconstrained();
+		// IntrinsicsEstimator intrEstm = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);	// TODO: use selected camera model already for intrinsics estimation!!
+		// RealMatrix Ainit = intrEstm.estimateIntrinsics(homographies);
+		// initCam = initCam.withParameters(Ainit);	// not implemented for SimpleCamera
         debug("initial camera = " + initCam);
 		
-		// Step 3: Calculate the extrinsic view parameters (3D view transforms)
+		// Step 3: Calculate the extrinsic view parameters (3D view transforms) --------------------
 		debug("Step 3: calculate the extrinsic view parameters (3D view transforms)");
         initViews = new ArrayList<>();
         for (int i = 0; i < M; i++) {
-            initViews.add(ViewTransform.from(Ainit, homographies[i]));
+            initViews.add(ViewTransform.from(initCam.get3x3Matrix(), homographies[i]));
         }
 
-		// Step 4: Determine the lens distortion from initial estimates:
+		// Step 4: Determine the lens distortion from initial estimates: ---------------------------
 		debug("Step 4: Estimate lens distortion from initial camera and view data:");
 
 		// DistortionModel distModel = params.distortionModelType.create(initCam, imgWidth, imgHeight);
@@ -180,23 +188,16 @@ public class Calibration {
 		Camera improvedCam = distEstim.getEstimate(initViews, modelPntSet, imagePntSet);
         debug("improved camera = " + improvedCam);
 
-		// Step 5: Refine all parameters by overall non-linear optimization
+		// Step 5: Refine all parameters by overall non-linear optimization ------------------------
 		debug("Step 5: Refine all parameters by non-linear optimization");
-        debug("non-linear optimization:  useNumericJacobian = " + params.useNumericJacobian);
-		// NonlinearOptimizer optim = (params.useNumericJacobian) ?
-		// 		new NonlinearOptimizerNumeric(improvedCam, initViews, modelPntSet, imagePntSet) :
-		// 		new NonlinearOptimizerAnalytic(improvedCam, initViews, modelPntSet, imagePntSet);
-
-		// no parameter scaling but penalizing gamma with factor 1000000, results are good!
-		// (J condition No = 9.051008281593193E7), 1 iteration, 12 evaluations
-		// NonlinearOptimizer optim =
-		// 		new OverallNonlinearOptimizer_Unscaled(improvedCam, initViews, modelPntSet, imagePntSet);
 
 		OverallOptimizer optim1 = new OverallOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
 		optim1.fixGamma();
 		optim1.fixViewParameters();
 
 		System.out.println("improved camera = " + improvedCam);
+
+		System.out.println("Optimize STEP 1 ");
 
 		if (optim1.optimize()) {
 			finalCam = optim1.getFinalCamera();
@@ -219,6 +220,8 @@ public class Calibration {
 		// optim2.fixDistortionParameters();
 		optim2.fixGamma();
 		optim2.fixPrincipalPoint();
+
+		System.out.println("Optimize STEP 2 ");
 
 		if (optim2.optimize()) {
 			finalCam = optim2.getFinalCamera();
@@ -407,9 +410,9 @@ public class Calibration {
 
 	void debug(String msg) {
 		if (params.debug) {
-			try(var prec = PrintPrecision.set(6)) {
+			// try(var prec = PrintPrecision.set(6)) {
 				System.out.println("[Debug] " + msg);
-			}
+			// }
 		}
 	}
     

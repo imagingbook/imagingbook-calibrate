@@ -27,7 +27,7 @@ public class DoZhangExample {
         params.normalizePoints = true;
         params.useNumericJacobian = true;
         params.distortionModelType = Radial2Term; //Radial3Term;
-        params.debug = false;
+        // params.debug = false;
 
         Calibration calibration = new Calibration(params, 640, 480);
         for (int k = 0; k < M; k++) {

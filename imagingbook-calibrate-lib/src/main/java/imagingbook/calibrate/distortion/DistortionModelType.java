@@ -19,7 +19,6 @@ import java.util.function.Function;
  * }</pre>
  */
 public enum DistortionModelType {
-    NullDistortion((camera, w, h) -> new NullDistortion()),
     Radial2Term((camera, w, h)    -> new Radial2TermDistortion()),
     Radial3Term((camera, w, h)    -> new Radial3TermDistortion()),
     RadialLateral((camera, w, h)  -> new RadialLateralDistortion()),

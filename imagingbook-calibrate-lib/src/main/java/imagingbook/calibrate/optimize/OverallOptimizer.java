@@ -80,7 +80,7 @@ public class OverallOptimizer implements NonlinearOptimizer {
     private final double[] initialParameters;
     //private final double[] parameterScales;
 
-    private final ParameterAssembler assembler;
+    private final ParameterVectorBuilder assembler;
     private ParameterAdapter adapter;
 
     // optimization results:
@@ -106,10 +106,10 @@ public class OverallOptimizer implements NonlinearOptimizer {
         this.obsPts = obsPntSet.toArray(new Pnt2d[0][]);
         this.observed = makeObservedVector();
 
-        this.assembler = new ParameterAssembler(initCam, M);
-        this.initialParameters =  assembler.assembleParameters(initCam, viewList);     // makeInitialParameters();
+        this.assembler = new ParameterVectorBuilder(initCam, M);
+        this.initialParameters =  assembler.getParameters(initCam, viewList);     // makeInitialParameters();
         this.K = initialParameters.length;
-        // System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
+        System.out.println("initialParameters  = " + Matrix.toString(initialParameters));
         // ---------------------------
         this.variableParamFlags = new BitVector(K);   // initially all parameters are active (non-fixed)
         this.variableParamFlags.setAll();             // to be modified by subsequent fixParameters() calls
@@ -163,11 +163,11 @@ public class OverallOptimizer implements NonlinearOptimizer {
         this.variableParamFlags.unsetBit(p);
     }
 
-    public void fixParameters(List<Integer> params) {
-        for (int p : params) {
-            fixParameter(p);
-        }
-    }
+    // public void fixParameters(List<Integer> params) {
+    //     for (int p : params) {
+    //         fixParameter(p);
+    //     }
+    // }
 
     public void fixGamma() {
         fixParameter(2);
@@ -179,25 +179,25 @@ public class OverallOptimizer implements NonlinearOptimizer {
     }
 
     public void fixLinearCameraParameters() {
-        for (int p = 0; p < 5; p++) {       // TODO
+        int n = initCam.getLinParameterCount();
+        for (int p = 0; p < n; p++) {
             fixParameter(p);
         }
     }
 
     public void fixDistortionParameters() {
-        int n = initCam.getDistortionParameters().length;
-        for (int p = 5; p < 5 + n; p++) {
+        int n = initCam.getLinParameterCount();
+        int m = initCam.getDistParameterCount();
+        for (int p = n; p < n + m; p++) {
             fixParameter(p);
         }
     }
 
     public void fixViewParameters(int k) {
-        for (int p = 0; p < 6; p++) {
+        for (int p = 0; p < ViewTransform.PARAMETER_COUNT; p++) {
             fixParameter(assembler.getViewParameterPos(k, p));
         }
     }
-
-
 
     public void fixViewParameters() {
         for (int k = 0; k < modPts.length; k++) {
@@ -347,71 +347,6 @@ public class OverallOptimizer implements NonlinearOptimizer {
      */
     private void setViewParameterScales(double[] scales, int k) {
 
-    }
-
-    // ----------------------------------------------------------------------------------------
-
-    /**
-     * Helps to assemble and disassemble parameter vectors.
-     */
-    static class ParameterAssembler {
-
-        private final Camera cam;
-        private final int viewCount;
-        private final int camLinParamCount = 5;
-        private final int viewParamCount = ViewTransform.PARAMETER_COUNT;
-        private final int camDistParamCount;
-        private final int paramCnt;
-
-        ParameterAssembler(Camera cam, int viewCount) {
-            this.cam = cam;
-            this.viewCount = viewCount;
-            this.camDistParamCount = cam.getDistortion().getParameterCount();
-            this.paramCnt = camLinParamCount + camDistParamCount + viewCount * viewParamCount;
-        }
-
-        double[] assembleParameters(Camera cam, List<ViewTransform> views) {
-            if (viewCount != views.size()) {
-                throw new IllegalArgumentException("view count does not match list size: " + views.size());
-            }
-            double[] params = new double[paramCnt];
-            double[] cp = cam.getParameters();
-            System.arraycopy(cp, 0, params, 0, cp.length);
-            // insert M view parameters:
-            int start = cp.length;
-            for (ViewTransform V : views) {
-                double[] w = V.getParameters();
-                System.arraycopy(w, 0, params, start, w.length);
-                start = start + w.length;
-            }
-            return params;
-        }
-
-        int getCameraParamCount() {
-            return camLinParamCount + camDistParamCount;
-        }
-
-        double[] getLinearCameraParameters(double[] params) {
-            return Arrays.copyOfRange(params, 0, 5);
-        }
-
-        double[] getDistortionParameters(double[] params) {
-            int n = cam.getDistortion().getParameterCount();
-            return Arrays.copyOfRange(params, 5, 5 + n);
-        }
-
-        double[] getCameraParameters(double[] parameters) {
-            return Matrix.join(getLinearCameraParameters(parameters), getDistortionParameters(parameters));
-        }
-
-        double[] getViewParameters(double[] parameters, int k) {
-            int startPos = getViewParameterPos(k, 0);
-            return Arrays.copyOfRange(parameters, startPos, startPos + viewParamCount);
-        }
-
-        int getViewParameterPos(int k, int i) {
-            return camLinParamCount + camDistParamCount + k * viewParamCount + i;
-        }
     }
 
     // ----------------------------------------------------------------------------------------
@@ -700,10 +635,10 @@ public class OverallOptimizer implements NonlinearOptimizer {
             // printJacobian(J);
 
             double[] colNorms = getMatrixColumnNorms(J);
-            // System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
-            // System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
-            // System.out.println("    J rank = " + getMatrixRank(J));
-            // System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
+            System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
+            System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
+            System.out.println("    J rank = " + getMatrixRank(J));
+            System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
 
             // prepare return values
             RealVector YY = new ArrayRealVector(Y, false);

@@ -6,48 +6,55 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Pnt2d.PntDouble;
 import imagingbook.common.geometry.mappings.Mapping2D;
+import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 /**
  * <p>
- * This class represents a special geometric mapping for  rectifying (i.e., removing the lens distortion from) an image,
- * given the associated camera parameters. The transformation maps any position {@code x'} in the rectified image to the
- * corresponding position {@code x} in the original (distorted) image. The mapping is implicitly inverted, i.e., maps
- * target to source image coordinates.
+ * This class represents a special geometric mapping for  rectifying (i.e., removing the lens
+ * distortion from) an image, given the associated camera parameters. The transformation maps
+ * a position {@code xy} in the rectified (target) image to the corresponding position {@code uv}
+ * in the distorted (source) image. The mapping is implicitly inverted, i.e., it maps
+ * target (rectified) to source (distorted) image coordinates.
  * </p>
  * <p>
  * Typically usage (by target-to-source-mapping):
  * </p>
- * <pre>
- * ImageProcessor original = ... ;  // the distorted image
- * ImageProcessor rectified = ... ; // the (new) rectified image
- * mapping.applyTo(original, rectified, InterpolationMethod.Bicubic);
+ * <pre>{@code
+ * ImageProcessor distorted = ... ;    // the distorted image (source)
+ * ImageProcessor rectified = ... ;    // the (new) rectified image (target)
+ * // ImageMapper requires a target-to-source mapping:
+ * ImageMapper mapper = new ImageMapper(new RectificationMapping(camera));
+ * mapper.map(source, target);}
  * </pre>
  */
 public class RectificationMapping implements Mapping2D {
-	private final StandardCamera cam;
-	private final RealMatrix Ai;	// inverse of the intrinsic camera matrix (2 x 3)
+	private final Camera cam;
+	private final DistortionModel distortion;
+	private final AffineMapping2D sensorToNormalizedMapping;
+	private final AffineMapping2D normalizedToSensorMapping;
 
-	public RectificationMapping (StandardCamera cam) {
-//		this.isInverseFlag = true;	// maps target -> source
+	public RectificationMapping (Camera cam) {
 		this.cam = cam;
-		this.Ai = cam.getInverseA();
+		this.distortion = cam.getDistortion();
+		this.sensorToNormalizedMapping = new AffineMapping2D(cam.getInverseA().getData());
+		this.normalizedToSensorMapping = sensorToNormalizedMapping.getInverse(); 		// new AffineMapping2D(cam.getAffineMatrix().getData());
 	}
 
 	@Override
-	public Pnt2d applyTo(Pnt2d uv) {
-		// (u,v) is an observed sensor point
-		// apply the inverse camera mapping to get the normalized (x,y) point:
-		double[] xy = Ai.operate(MathUtil.toHomogeneous(uv.toDoubleArray()));
-		// apply the camera's radial lens distortion in the normalized plane:
-		double[] xyd = cam.getDistortion().warp(xy);
-		// apply the (forward) camera mapping to get the undistorted sensor point (u',v'):
-		return PntDouble.from(cam.mapToSensorPlane(xyd));
+	public Pnt2d applyTo(Pnt2d XY) {     // (X,Y) is a point in the rectified image
+		// (1) apply the inverse linear camera mapping to get the normalized point (x,y):
+		Pnt2d xy = sensorToNormalizedMapping.applyTo(XY);
+		// (2) apply the forward radial lens distortion in the normalized plane:
+		Pnt2d xyd = distortion.warp(xy);
+		// (3) apply the (forward) linear camera mapping to get the distorted sensor point (u, v):
+		return normalizedToSensorMapping.applyTo(xyd);
 	}
 
 }

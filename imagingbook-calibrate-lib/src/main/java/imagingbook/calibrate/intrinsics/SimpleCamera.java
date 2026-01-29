@@ -16,19 +16,19 @@ public class SimpleCamera extends Camera {
 
     /**
      * Constructor.
-     * @param a vector of 3 linear camera parameters: alpha=beta, uc, vc
+     * @param A vector of 3 linear camera parameters: alpha=beta, uc, vc
      * @param distortion instance of {@link DistortionModel}
      */
-    public SimpleCamera(double[] a, DistortionModel distortion) {
+    public SimpleCamera(double[] A, DistortionModel distortion) {
         // alpha, beta, gamma, uc, vc
-        super(new double[] {a[0], a[0], 0, a[1], a[2]}, distortion, -1, -1);
-        checkLength(a, 3);
+        super(new double[] {A[0], A[0], 0, A[1], A[2]}, distortion);
+        checkLength(A, 3);
     }
 
-    // create a dummy camera with no distortion
-    public SimpleCamera(int imgWidth, int imgHeight) {
-        super(null, null, imgWidth, imgHeight);
-    }
+    // // create a dummy camera with no distortion
+    // public SimpleCamera() {
+    //     super(null, null);
+    // }
 
     @Override
     public StandardCamera withParameters(RealMatrix A) {
@@ -51,6 +51,36 @@ public class SimpleCamera extends Camera {
     public double[] getLinearParameters() {
         // alpha=beta, uc, vc
         return new double[] { A[0][0], A[0][2], A[1][2] };
+    }
+
+    @Override
+    public int getParameterIdxAlpha() { return 0;}
+
+    @Override
+    public int getParameterIdxBeta() { return -1; }
+
+    @Override
+    public int getParameterIdxGamma() { return -1; }
+
+    @Override
+    public int getParameterIdxUc() { return 1; }
+
+    @Override
+    public int getParameterIdxVc() { return 2; }
+
+    // -------------------------------------------------------------------
+
+    public static SimpleCamera fromHomographies(RealMatrix[] homographies, int imgWidth, int imgHeight) {
+        IntrinsicsEstimator estimator = new IntrinsicsEstimatorConstrained(imgWidth, imgHeight);
+        RealMatrix A = estimator.estimateIntrinsics(homographies);
+        double alpha = A.getEntry(0, 0);
+        double beta = A.getEntry(1, 1);
+        double gamma = A.getEntry(0, 1);
+        double uc = A.getEntry(0, 2);
+        double vc = A.getEntry(1, 2);
+        double ab = (alpha + beta) / 2;             // TODO: temporary fix, should only be one value from estimator!
+        double[] params = new double[] {ab, uc, vc};
+        return new SimpleCamera(params, null);
     }
 
 }

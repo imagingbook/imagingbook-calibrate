@@ -47,8 +47,8 @@ public class PtLensDistortion extends RadialDistortion implements ScaledDistorti
      */
     public static double findScale(Camera cam) {
         return Math.max(
-                 cam.getAlpha() / (0.5 * cam.getImgWidth()),
-                 cam.getBeta()  / (0.5 * cam.getImgHeight()));
+                 cam.getAlpha() / cam.getUc(),
+                 cam.getBeta()  / cam.getVc());
     }
 
     /**

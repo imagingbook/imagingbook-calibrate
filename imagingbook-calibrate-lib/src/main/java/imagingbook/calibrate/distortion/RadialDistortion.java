@@ -6,6 +6,9 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import imagingbook.common.geometry.basic.Pnt2d;
+
+// TODO: align with Mapping2D interface!
 /**
  * Lens model with radial-only distortion.
  */
@@ -41,7 +44,7 @@ public abstract class RadialDistortion extends DistortionModel {
     public double[] warp(double[] xy) {
         final double x = xy[0];
         final double y = xy[1];
-        final double r = Math.sqrt(x * x + y * y);  // undistorted radius
+        final double r = Math.hypot(x, y);  // undistorted radius
         if (r < 1e-6)
             return new double[] {0, 0};
         // final double R = warp(r);        // distorted radius
@@ -49,16 +52,42 @@ public abstract class RadialDistortion extends DistortionModel {
         return new double[] {s * x, s* y};
     }
 
+    // @Override
+    // public Pnt2d warp(Pnt2d xy) {
+    //     final double x = xy.getX();
+    //     final double y = xy.getY();
+    //     final double r = Math.hypot(x, y);  // undistorted radius
+    //     if (r < 1e-6)
+    //         return Pnt2d.from(0, 0);
+    //     // final double R = warp(r);        // distorted radius
+    //     final double s = fRad(r) / r;
+    //     return Pnt2d.from(s * x, s* y);
+    // }
+
+
+
+    // ----------------------------------------
+
     @Override
     public double[] unwarp(double[] xyd) {
         final double xd = xyd[0];
         final double yd = xyd[1];
-        final double R = Math.sqrt(xd * xd + yd * yd);	// distorted radius
+        final double R = Math.hypot(xd, yd);	// distorted radius
         if (R < 1e-6)
             return new double[] {0, 0};
-        // final double r = unwarp(R);					// undistorted radius
         final double s = fRadInv(R) / R;
         return new double[] {s * xd, s * yd};
     }
+
+    // @Override
+    // public Pnt2d unwarp(Pnt2d xyd) {
+    //     final double xd = xyd.getX();
+    //     final double yd = xyd.getY();
+    //     final double R = Math.hypot(xd, yd);	// distorted radius
+    //     if (R < 1e-6)
+    //         return Pnt2d.from(0, 0);
+    //     final double s = fRadInv(R) / R;
+    //     return Pnt2d.from(s * xd, s * yd);
+    // }
 
 }
