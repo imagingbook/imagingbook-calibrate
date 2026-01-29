@@ -29,7 +29,7 @@ public abstract class RadialDistortion extends DistortionModel {
      * @param r the original radius of a point in the ideal projection plane
      * @return the distorted radius
      */
-    abstract double fRad(double r);
+    public abstract double fRad(double r);
 
     /**
      * Inverse radial distortion function. Returns the original (undistorted)
@@ -38,7 +38,7 @@ public abstract class RadialDistortion extends DistortionModel {
      * @param R the distorted radius of a point in the ideal projection plane
      * @return the undistorted radius
      */
-    abstract double fRadInv(double R);
+    public abstract double fRadInv(double R);
 
     @Override
     public double[] warp(double[] xy) {
