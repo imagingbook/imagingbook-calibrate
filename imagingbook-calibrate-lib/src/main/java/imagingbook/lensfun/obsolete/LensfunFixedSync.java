@@ -14,6 +14,7 @@ import java.util.regex.*;
 
 import static imagingbook.lensfun.LensfunManager.LOCAL_LENSFUN_DB_PATH;
 
+@Deprecated
 public class LensfunFixedSync {
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
     // Use the API to get the listing (it's much cleaner than scraping HTML)

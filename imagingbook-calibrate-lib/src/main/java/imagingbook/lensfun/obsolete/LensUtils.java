@@ -12,6 +12,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.io.IOException;
 
+@Deprecated
 public class LensUtils {
 
     private static final HttpClient CLIENT = HttpClient.newHttpClient();

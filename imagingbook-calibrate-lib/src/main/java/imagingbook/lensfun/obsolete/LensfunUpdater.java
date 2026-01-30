@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.lensfun.obsolete;
 
+@Deprecated
 public class LensfunUpdater {
 
 

@@ -14,6 +14,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
 
+@Deprecated
 public class LensfunFinalSync {
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
 

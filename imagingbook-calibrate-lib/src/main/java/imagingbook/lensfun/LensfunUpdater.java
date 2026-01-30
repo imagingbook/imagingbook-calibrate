@@ -25,7 +25,7 @@ public class LensfunUpdater {
     // Domain for RAW data
     private static final String RAW_URL_BASE = "https://raw.githubusercontent.com/lensfun/lensfun/master/data/db/";
 
-    public void upDateLocalLensfunDB() throws Exception {
+    public void upDateLocalLensfunDBWithJson() throws Exception {
         Path localPath = Path.of(LensfunManager.LOCAL_LENSFUN_DB_PATH);
         if (Files.notExists(localPath)) Files.createDirectories(localPath);
 
@@ -46,6 +46,23 @@ public class LensfunUpdater {
 
         String json = CLIENT.send(listReq, HttpResponse.BodyHandlers.ofString()).body();
 
+        upDateLocalLensfunDBWithJson(json);
+
+        // // Extracting filenames from JSON
+        // List<String> files = new ArrayList<>();
+        // Matcher m = Pattern.compile("\"name\":\"([^\"]+\\.xml)\"").matcher(json);
+        // while (m.find()) files.add(m.group(1));
+        //
+        // System.out.println("Found " + files.size() + " files. Starting download...");
+        //
+        // for (String name : files) {
+        //     String downloadUrl = RAW_URL_BASE + name;
+        //     downloadRawFile(downloadUrl, localPath.resolve(name));
+        // }
+    }
+
+    public boolean upDateLocalLensfunDBWithJson(String json) {
+        Path localPath = Path.of(LensfunManager.LOCAL_LENSFUN_DB_PATH);
         // Extracting filenames from JSON
         List<String> files = new ArrayList<>();
         Matcher m = Pattern.compile("\"name\":\"([^\"]+\\.xml)\"").matcher(json);
@@ -55,9 +72,16 @@ public class LensfunUpdater {
 
         for (String name : files) {
             String downloadUrl = RAW_URL_BASE + name;
-            downloadRawFile(downloadUrl, localPath.resolve(name));
+            try {
+                downloadRawFile(downloadUrl, localPath.resolve(name));
+            } catch (Exception e) {
+                System.out.println("Error: could npt download file " + name);
+                return false;
+            }
         }
+        return true;
     }
+
     /**
      * Helper to download raw bytes and save them,
      * ensuring we don't accidentally save HTML error pages.
@@ -80,8 +104,9 @@ public class LensfunUpdater {
         }
     }
 
+    // --------------------------------------------------------------------------
 
     public static void main(String[] args) throws Exception {
-        new LensfunUpdater().upDateLocalLensfunDB();
+        new LensfunUpdater().upDateLocalLensfunDBWithJson();
     }
 }
