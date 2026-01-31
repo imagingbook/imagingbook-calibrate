@@ -4,7 +4,9 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.lensfun;
+package imagingbook.lensfun.obsolete;
+
+import imagingbook.lensfun.LensfunManager;
 
 import java.nio.file.*;
 import java.util.List;
