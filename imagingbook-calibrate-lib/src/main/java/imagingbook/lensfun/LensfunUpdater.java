@@ -87,7 +87,8 @@ public class LensfunUpdater {
      * Execute: Run your full upDateLocalLensfunDB() logic.
      * Commit: Only after the last file is successfully saved to disk, write the new ETag to ./local_db/.etag.
      *
-     * // TODO: timestamp.txt file? clear directory?
+     * TODO: Check/create local_lensfun_db directory!!!
+     * TODO: timestamp.txt file? clear directory?
      */
     public void performSmartUpdate() {
         try {
@@ -182,7 +183,7 @@ public class LensfunUpdater {
             try {
                 downloadRawFile(downloadUrl, localPath.resolve(name));
             } catch (Exception e) {
-                System.out.println("Error: failed to download file " + name);
+                System.out.println("Error: failed to download file " + downloadUrl);
                 return false;
             }
         }
@@ -194,6 +195,7 @@ public class LensfunUpdater {
      * ensuring we don't accidentally save HTML error pages.
      */
     private void downloadRawFile(String url, Path target) {
+        System.out.println("downloadRawFile: " + url + " -> " + target.toFile().getAbsolutePath());
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -218,7 +220,7 @@ public class LensfunUpdater {
     // --------------------------------------------------------------------------
 
     public static void main(String[] args) {
-        System.out.println("Updates available: " + new LensfunUpdater().isUpdateAvailable());
-        // new LensfunUpdater().performSmartUpdate();
+        //System.out.println("Updates available: " + new LensfunUpdater().isUpdateAvailable());
+        new LensfunUpdater().performSmartUpdate();
     }
 }
