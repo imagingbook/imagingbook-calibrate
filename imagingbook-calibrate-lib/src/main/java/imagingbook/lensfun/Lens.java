@@ -7,7 +7,6 @@
 package imagingbook.lensfun;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Lens {
@@ -16,11 +15,11 @@ public class Lens {
     private String model;
     private String type; // rectilinear, fisheye, etc.
     private double cropFactor;
-    private Range focalRange;
-    private Range apertureRange;
+    private AspectRatio aspectRatio;
+    private NumericRange focalRange;
+    private NumericRange apertureRange;
 
     private List<String> mounts = new ArrayList<>();
-
 
     // Calibration Data
     private List<Distortion> distortions = new ArrayList<>();
@@ -41,8 +40,17 @@ public class Lens {
         this.type = type;
     }
 
-    public void setCropFactor(String cropfactor) {
-        this.cropFactor = Double.parseDouble(cropfactor);
+    public void setCropFactor(double cropfactor) {
+        this.cropFactor = cropfactor;
+    }
+
+    // @Deprecated
+    // public void setCropFactor(String cropfactor) {
+    //     this.cropFactor = Double.parseDouble(cropfactor);
+    // }
+
+    public void setAspectRatio(AspectRatio aspectRatio) {
+        this.aspectRatio = aspectRatio;
     }
 
     public void addMount(String mount) {
@@ -61,9 +69,26 @@ public class Lens {
         this.vignettingEntries.add(vignetting);
     }
 
+    public void setFocalRange(NumericRange focalRange) {
+        this.focalRange = focalRange;
+    }
+
+    public void setApertureRange(NumericRange apertureRange) {
+        this.apertureRange = apertureRange;
+    }
+
+    public String getModel() {
+        return this.model;
+    }
+
     // ---------------------------------------------------------------------------------------------
 
-    public record Range(double min, double max) {}
+    public record NumericRange(double min, double max) {
+        @Override
+        public String toString() {
+            return this.min + ":" + this.max;
+        }
+    }
 
     // public record Distortion(double focal, String model, double k1, double k2, double k3) {}
     public record Distortion(double focal, String model,
@@ -74,28 +99,65 @@ public class Lens {
         }
     }
 
-    public record Tca(double focal, String model, double kr, double kb) {}
-    public record Vignetting(double focal, double aperture, double distance, String model, double k1, double k2, double k3) {}
+    public record Tca(String model, double focal,
+      double kr, double kb, // model = linear
+      double vr, double vb, double cr, double cb, double br, double bb // model = poly3
+    ) {}
+    public record Vignetting(String model, double focal, double aperture, double distance, double k1, double k2, double k3) {}
 
     public double getCropFactor() { return cropFactor; }
-    public Range getFocalRange() { return focalRange; }
-    public Range getApertureRange() { return apertureRange; }
+    public AspectRatio getAspectRatio() { return aspectRatio; }
+    public NumericRange getFocalRange() { return focalRange; }
+    public NumericRange getApertureRange() { return apertureRange; }
     public List<String> getMounts() { return mounts; }
     public List<Distortion> getDistortions() { return distortions; }
     public List<Tca> getTcaEntries() { return tcaEntries; }
     public List<Vignetting> getVignettingEntries() { return vignettingEntries; }
+
+    public record AspectRatio(int width, int height) {
+        public double asDecimal() {
+            return (double) width / height;
+        }
+
+        @Override
+        public String toString() {
+            return width + ":" + height;
+        }
+    }
 
     // ---------------------------------------------------------------------------------------------
 
     // Getters, Setters, and a toString() for debugging
     @Override
     public String toString() {
-        return String.format("%s %s (%.2f): %s", maker, model, cropFactor, Arrays.toString(getMounts().toArray(new String[0])));
+        return String.format("%s %s (%.2f)", maker, model, cropFactor);
+    }
+
+    public void print() {
+        Lens lens = this;
+        System.out.println(lens);
+        System.out.println("   Aspect ratio: " + lens.getAspectRatio());
+        System.out.println("   Mounts:");
+        System.out.println("   Focal range: " + lens.getFocalRange());
+        System.out.println("   Aperture range: " + lens.getApertureRange());
+        for (String m : lens.getMounts()) {
+            System.out.println("      " + m);
+        }
+        System.out.println("   Distortions:");
+        for (Lens.Distortion d : lens.getDistortions()) {
+            System.out.println("      " + d);
+        }
+        System.out.println("   TCA:");
+        for (Lens.Tca tca : lens.getTcaEntries()) {
+            System.out.println("      " + tca);
+        }
+        System.out.println("   Vignetting:");
+        for (Lens.Vignetting vig : lens.getVignettingEntries()) {
+            System.out.println("      " + vig);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
-
-    // Add standard Getters/Setters here...
 
     /*
     Lensfun doesn't just do a direct string match. To search effectively in Java, you should add a

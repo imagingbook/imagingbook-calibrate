@@ -10,6 +10,7 @@ import java.nio.file.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Deprecated
 public class LensDatabase {
     // private static final Path LOCAL_DIR = Path.of("./local_db");
 
