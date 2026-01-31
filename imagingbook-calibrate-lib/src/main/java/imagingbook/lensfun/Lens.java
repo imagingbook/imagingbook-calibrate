@@ -83,20 +83,32 @@ public class Lens {
         this.aspectRatio = aspectRatio;
     }
 
-    void addMount(String mount) {
-        this.mounts.add(mount);
+    void addMount(List<String> mounts) {
+        this.mounts.addAll(mounts);
     }
 
-    void addDistortion(Distortion distortion) {
-        this.distortions.add(distortion);
+    // void addDistortion(Distortion distortion) {
+    //     this.distortions.add(distortion);
+    // }
+
+    void addDistortion(List<Distortion> distortions) {
+        this.distortions.addAll(distortions);
     }
 
-    void addTca(Tca tca) {
-        this.tcaEntries.add(tca);
+    // void addTca(Tca tca) {
+    //     this.tcaEntries.add(tca);
+    // }
+
+    void addTca(List<Tca> tcas) {
+        this.tcaEntries.addAll(tcas);
     }
 
-    void addVignetting(Vignetting vignetting) {
-        this.vignettingEntries.add(vignetting);
+    // void addVignetting(Vignetting vignetting) {
+    //     this.vignettingEntries.add(vignetting);
+    // }
+
+    void addVignetting(List<Vignetting> vignettings) {
+        this.vignettingEntries.addAll(vignettings);
     }
 
     void setFocalRange(NumericRange focalRange) {
