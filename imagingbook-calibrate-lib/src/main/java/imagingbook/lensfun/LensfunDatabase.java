@@ -10,10 +10,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -41,20 +43,17 @@ public class LensfunDatabase {
 
     private final Path localDbPath = Path.of(LOCAL_LENSFUN_DB_PATH);
 
-    public void loadAllLenses() throws Exception {
+    public void loadLensfunDatabaseFiles() throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-
         // Disable DTD validation so it doesn't try to go online
         factory.setValidating(false);
         factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-
         DocumentBuilder builder = factory.newDocumentBuilder();
-
         try (var paths = Files.list(localDbPath)) {
             paths.filter(p -> p.toString().endsWith(".xml"))
                     .forEach(path -> {
                         try {
-                            parseFile(builder, path.toFile());
+                            parseLensfunFile(builder, path.toFile());
                         } catch (Exception e) {
                             System.err.println("Error parsing " + path + ": " + e.getMessage());
                         }
@@ -63,79 +62,64 @@ public class LensfunDatabase {
         System.out.println("Loaded " + masterLensList.size() + " lenses into memory.");
     }
 
-    private void parseFile(DocumentBuilder builder, File file) throws Exception {
-        Document doc = builder.parse(file);
+    private void parseLensfunFile(DocumentBuilder builder, File file) {
+        Document doc;
+        try {
+            doc = builder.parse(file);
+        } catch (SAXException | IOException e) {
+            throw new RuntimeException(e);
+        }
         doc.getDocumentElement().normalize();
 
-        // 0. Process Mount Definitions in this file
+        // 1. Process all mount definitions in this file
         NodeList mList = doc.getElementsByTagName("mount");
         for (int i = 0; i < mList.getLength(); i++) {
-            Element el = (Element) mList.item(i);
-            // Ensure this is a TOP-LEVEL mount, not a <lens><mount>
-            if (el.getParentNode().getNodeName().equals("lensdatabase")) {
-                String name = getTagValue(el, "name");
-                List<String> compat = new ArrayList<>();
-                NodeList cList = el.getElementsByTagName("compat");
-                for (int j = 0; j < cList.getLength(); j++) {
-                    compat.add(cList.item(j).getTextContent());
-                }
-                // masterMountDefinitions.put(name, new Mount(name, compat));
-                addOrUpdateMount(name, compat);
+            Node node = mList.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element element = (Element) node;
+                collectMounts(element);
             }
         }
 
-        // 1. Process Camera Definitions in this file
+        // 2. Process all camera definitions in this file
         NodeList cList = doc.getElementsByTagName("camera");
         for (int i = 0; i < cList.getLength(); i++) {
-            Element camElem = (Element) cList.item(i);
-            parseCamera(camElem);
+            Node node = cList.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                Element camElem = (Element) node;
+                collectCameras(camElem);
+            }
         }
 
-        // 2. Process Lenses in this file
+        // 3. Process all lens definitions in this file
         NodeList nList = doc.getElementsByTagName("lens");
         for (int i = 0; i < nList.getLength(); i++) {
             Node node = nList.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 Element element = (Element) node;
-
-                Lens lens = new Lens();
-                lens.setMaker(getTagValue(element, "maker"));
-                lens.setModel(getTagValue(element, "model"));
-                lens.setType(getTagValue(element, "type"));
-                lens.setCropFactor(getNumericValue(element, "cropfactor", 1.0));
-
-                // --- retrieve all mounts ---
-                NodeList mountList = element.getElementsByTagName("mount");
-                for (int j = 0; j < mountList.getLength(); j++) {
-                    String mountName = mountList.item(j).getTextContent();
-                    lens.addMount(mountName);
-                }
-
-                parseAspectRatio(element, lens);
-                parseDistortion(element, lens);
-                parseTca(element, lens);
-                parseVignetting(element, lens);
-
-                lens.setFocalRange(parseRange(element, "focal"));
-                lens.setApertureRange(parseRange(element, "aperture"));
-
-                masterLensList.add(lens);
+                collectLenses(element);
             }
         }
     }
 
-    private String getTagValue(Element element, String tagName) {
-        NodeList list = element.getElementsByTagName(tagName);
-        if (list.getLength() > 0) {
-            return list.item(0).getTextContent();
+    // --------------------------------------------------------------------------------------------
+
+    private void collectMounts(Element element) {
+        // Ensure this is a TOP-LEVEL mount, not a <lens><mount>
+        if (element.getParentNode().getNodeName().equals("lensdatabase")) {
+            String name = getTagValue(element, "name");
+            List<String> compat = new ArrayList<>();
+            NodeList cList = element.getElementsByTagName("compat");
+            for (int j = 0; j < cList.getLength(); j++) {
+                compat.add(cList.item(j).getTextContent());
+            }
+            addOrUpdateMount(name, compat);
         }
-        return "";
     }
 
-    private void parseCamera(Element camElem) {
+    private void collectCameras(Element camElem) {
         List<String> makers = getMultiTagValues("maker", camElem);
         List<String> models = getMultiTagValues("model", camElem);
-
         String primaryMaker = makers.get(0);
         String primaryModel = models.get(0);
         String variant = getTagValue(camElem, "variant"); // helper returns "" if missing
@@ -160,6 +144,41 @@ public class LensfunDatabase {
         for (String m : models) {
             cameraModelIndex.put(m.toLowerCase(), cam);
         }
+    }
+
+    private void collectLenses(Element element) {
+        Lens lens = new Lens();
+        lens.setMaker(getTagValue(element, "maker"));
+        lens.setModel(getTagValue(element, "model"));
+        lens.setType(getTagValue(element, "type"));
+        lens.setCropFactor(getNumericValue(element, "cropfactor", 1.0));
+
+        // --- retrieve all mounts ---
+        NodeList mountList = element.getElementsByTagName("mount");
+        for (int j = 0; j < mountList.getLength(); j++) {
+            String mountName = mountList.item(j).getTextContent();
+            lens.addMount(mountName);
+        }
+
+        parseAspectRatio(element, lens);
+        parseDistortion(element, lens);
+        parseTca(element, lens);
+        parseVignetting(element, lens);
+
+        lens.setFocalRange(parseRange(element, "focal"));
+        lens.setApertureRange(parseRange(element, "aperture"));
+
+        masterLensList.add(lens);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    private String getTagValue(Element element, String tagName) {
+        NodeList list = element.getElementsByTagName(tagName);
+        if (list.getLength() > 0) {
+            return list.item(0).getTextContent();
+        }
+        return "";
     }
 
     /*
@@ -369,7 +388,13 @@ public class LensfunDatabase {
 
     public List<Camera> getCamerasByMaker(String maker) {
         return uniqueCameras.stream()
-                .filter(c -> c.primaryMaker().equalsIgnoreCase(maker))
+                .filter(cam -> cam.primaryMaker().equalsIgnoreCase(maker))
+                .toList(); // TreeSet handles the sorting for us
+    }
+
+    public List<Lens> getLensesByMaker(String maker) {
+        return this.masterLensList.stream()
+                .filter(lens -> lens.getMaker().equalsIgnoreCase(maker))
                 .toList(); // TreeSet handles the sorting for us
     }
 
@@ -379,7 +404,7 @@ public class LensfunDatabase {
     static void listAllLenses() {
         LensfunDatabase mgr  = new LensfunDatabase();
         try {
-            mgr.loadAllLenses();
+            mgr.loadLensfunDatabaseFiles();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -387,19 +412,19 @@ public class LensfunDatabase {
         List<Lens> allLenses = mgr.getMasterLensList();
         for (Lens lens : allLenses) {
             System.out.println(lens);
-            System.out.println("   Aspect ratio: " + lens.getAspectRatio());
-            System.out.println("   Distortions:");
-            for (Lens.Distortion d : lens.getDistortions()) {
-                System.out.println("      " + d);
-            }
-            System.out.println("   TCA:");
-            for (Lens.Tca tca : lens.getTcaEntries()) {
-                System.out.println("      " + tca);
-            }
-            System.out.println("   Vignetting:");
-            for (Lens.Vignetting vig : lens.getVignettingEntries()) {
-                System.out.println("      " + vig);
-            }
+            // System.out.println("   Aspect ratio: " + lens.getAspectRatio());
+            // System.out.println("   Distortions:");
+            // for (Lens.Distortion d : lens.getDistortions()) {
+            //     System.out.println("      " + d);
+            // }
+            // System.out.println("   TCA:");
+            // for (Lens.Tca tca : lens.getTcaEntries()) {
+            //     System.out.println("      " + tca);
+            // }
+            // System.out.println("   Vignetting:");
+            // for (Lens.Vignetting vig : lens.getVignettingEntries()) {
+            //     System.out.println("      " + vig);
+            // }
         }
 
     }
@@ -407,7 +432,7 @@ public class LensfunDatabase {
     static void findLens(String query) {
         LensfunDatabase mgr  = new LensfunDatabase();
         try {
-            mgr.loadAllLenses();
+            mgr.loadLensfunDatabaseFiles();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -423,7 +448,7 @@ public class LensfunDatabase {
     static void listMounts() {
         LensfunDatabase mgr  = new LensfunDatabase();
         try {
-            mgr.loadAllLenses();
+            mgr.loadLensfunDatabaseFiles();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -436,7 +461,7 @@ public class LensfunDatabase {
     static void listUniqueCameras() {
         LensfunDatabase mgr  = new LensfunDatabase();
         try {
-            mgr.loadAllLenses();
+            mgr.loadLensfunDatabaseFiles();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -461,7 +486,7 @@ public class LensfunDatabase {
     static void listCameraIndex() {
         LensfunDatabase mgr  = new LensfunDatabase();
         try {
-            mgr.loadAllLenses();
+            mgr.loadLensfunDatabaseFiles();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -474,7 +499,7 @@ public class LensfunDatabase {
     static void listCameraMakers() {
         LensfunDatabase mgr  = new LensfunDatabase();
         try {
-            mgr.loadAllLenses();
+            mgr.loadLensfunDatabaseFiles();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -494,7 +519,7 @@ public class LensfunDatabase {
     static void listCamerasByMaker(String maker) {
         LensfunDatabase mgr  = new LensfunDatabase();
         try {
-            mgr.loadAllLenses();
+            mgr.loadLensfunDatabaseFiles();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -505,10 +530,25 @@ public class LensfunDatabase {
         }
     }
 
+    static void listLensesByMaker(String maker) {
+        LensfunDatabase mgr  = new LensfunDatabase();
+        try {
+            mgr.loadLensfunDatabaseFiles();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        List<Lens> lenses = mgr.getLensesByMaker(maker);
+        for (Lens lens : lenses) {
+            lens.print();
+            // System.out.println("   " + lens.getModel());
+        }
+    }
+
     static void listCompatibleLenses(String camName) {
         LensfunDatabase mgr  = new LensfunDatabase();
         try {
-            mgr.loadAllLenses();
+            mgr.loadLensfunDatabaseFiles();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -526,13 +566,14 @@ public class LensfunDatabase {
 
     public static void main(String[] args) {
         // listAllLenses();
-        // findLens("XZ-1");
+        // findLens("Canon EF 8-15mm f/4L Fisheye USM");
         // listMounts();
         // listUniqueCameras();
         // listCameraIndex();
         // listCameraMakers();
         // listCompatibleLenses("alpha 6500");
-        listCamerasByMaker(("Nikon Corporation"));
+        // listCamerasByMaker("Nikon Corporation");
+        listLensesByMaker("GoPro");
     }
 
 

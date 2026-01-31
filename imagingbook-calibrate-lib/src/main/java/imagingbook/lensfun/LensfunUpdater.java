@@ -86,6 +86,8 @@ public class LensfunUpdater {
      * Hold: If you get a 200 OK, grab the new ETag from the header but don't save it to disk yet. Keep it in a variable.
      * Execute: Run your full upDateLocalLensfunDB() logic.
      * Commit: Only after the last file is successfully saved to disk, write the new ETag to ./local_db/.etag.
+     *
+     * // TODO: timestamp.txt file? clear directory?
      */
     public void performSmartUpdate() {
         try {

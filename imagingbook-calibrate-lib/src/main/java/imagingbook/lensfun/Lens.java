@@ -10,109 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Lens {
-    // Identity
-    private String maker;
-    private String model;
-    private String type; // rectilinear, fisheye, etc.
-    private double cropFactor;
-    private AspectRatio aspectRatio;
-    private NumericRange focalRange;
-    private NumericRange apertureRange;
-
-    private List<String> mounts = new ArrayList<>();
-
-    // Calibration Data
-    private List<Distortion> distortions = new ArrayList<>();
-    private List<Tca> tcaEntries = new ArrayList<>();
-    private List<Vignetting> vignettingEntries = new ArrayList<>();
-
-    // ---------------------------------------------------------------------------------------------
-
-    public void setMaker(String maker) {
-        this.maker = maker;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setCropFactor(double cropfactor) {
-        this.cropFactor = cropfactor;
-    }
-
-    // @Deprecated
-    // public void setCropFactor(String cropfactor) {
-    //     this.cropFactor = Double.parseDouble(cropfactor);
-    // }
-
-    public void setAspectRatio(AspectRatio aspectRatio) {
-        this.aspectRatio = aspectRatio;
-    }
-
-    public void addMount(String mount) {
-        this.mounts.add(mount);
-    }
-
-    public void addDistortion(Distortion distortion) {
-        this.distortions.add(distortion);
-    }
-
-    public void addTca(Tca tca) {
-        this.tcaEntries.add(tca);
-    }
-
-    public void addVignetting(Vignetting vignetting) {
-        this.vignettingEntries.add(vignetting);
-    }
-
-    public void setFocalRange(NumericRange focalRange) {
-        this.focalRange = focalRange;
-    }
-
-    public void setApertureRange(NumericRange apertureRange) {
-        this.apertureRange = apertureRange;
-    }
-
-    public String getModel() {
-        return this.model;
-    }
-
-    // ---------------------------------------------------------------------------------------------
-
-    public record NumericRange(double min, double max) {
-        @Override
-        public String toString() {
-            return this.min + ":" + this.max;
-        }
-    }
-
-    // public record Distortion(double focal, String model, double k1, double k2, double k3) {}
-    public record Distortion(double focal, String model,
-            double k1, double k2, double a, double b, double c) {
-        // Helper to check if this entry actually contains data
-        public boolean isValid() {
-            return model != null && !model.isEmpty();
-        }
-    }
-
-    public record Tca(String model, double focal,
-      double kr, double kb, // model = linear
-      double vr, double vb, double cr, double cb, double br, double bb // model = poly3
-    ) {}
-    public record Vignetting(String model, double focal, double aperture, double distance, double k1, double k2, double k3) {}
-
-    public double getCropFactor() { return cropFactor; }
-    public AspectRatio getAspectRatio() { return aspectRatio; }
-    public NumericRange getFocalRange() { return focalRange; }
-    public NumericRange getApertureRange() { return apertureRange; }
-    public List<String> getMounts() { return mounts; }
-    public List<Distortion> getDistortions() { return distortions; }
-    public List<Tca> getTcaEntries() { return tcaEntries; }
-    public List<Vignetting> getVignettingEntries() { return vignettingEntries; }
 
     public record AspectRatio(int width, int height) {
         public double asDecimal() {
@@ -125,12 +22,140 @@ public class Lens {
         }
     }
 
+    public record NumericRange(double min, double max) {
+        @Override
+        public String toString() {
+            return this.min + ":" + this.max;
+        }
+    }
+
+    // public record Distortion(double focal, String model, double k1, double k2, double k3) {}
+    public record Distortion(double focal, String model,
+                             double k1, double k2, double a, double b, double c) {
+        // Helper to check if this entry actually contains data
+        public boolean isValid() {
+            return model != null && !model.isEmpty();
+        }
+    }
+
+    public record Tca(String model, double focal,
+                      // model = linear:
+                      double kr, double kb,
+                      // model = poly3:
+                      double vr, double vb, double cr, double cb, double br, double bb ) {}
+
+    public record Vignetting(String model, double focal, double aperture, double distance,
+                             double k1, double k2, double k3) {}
+
+// ---------------------------------------------------------------------------------------------
+
+    private String maker;
+    private String model;
+    private String type; // rectilinear, fisheye, etc.
+    private double cropFactor;
+    private AspectRatio aspectRatio;
+    private NumericRange focalRange;
+    private NumericRange apertureRange;
+    private List<String> mounts = new ArrayList<>();
+    private List<Distortion> distortions = new ArrayList<>();
+    private List<Tca> tcaEntries = new ArrayList<>();
+    private List<Vignetting> vignettingEntries = new ArrayList<>();
+
     // ---------------------------------------------------------------------------------------------
 
-    // Getters, Setters, and a toString() for debugging
+    void setMaker(String maker) {
+        this.maker = maker;
+    }
+
+    void setModel(String model) {
+        this.model = model;
+    }
+
+    void setType(String type) {
+        this.type = type;
+    }
+
+    void setCropFactor(double cropfactor) {
+        this.cropFactor = cropfactor;
+    }
+
+    void setAspectRatio(AspectRatio aspectRatio) {
+        this.aspectRatio = aspectRatio;
+    }
+
+    void addMount(String mount) {
+        this.mounts.add(mount);
+    }
+
+    void addDistortion(Distortion distortion) {
+        this.distortions.add(distortion);
+    }
+
+    void addTca(Tca tca) {
+        this.tcaEntries.add(tca);
+    }
+
+    void addVignetting(Vignetting vignetting) {
+        this.vignettingEntries.add(vignetting);
+    }
+
+    void setFocalRange(NumericRange focalRange) {
+        this.focalRange = focalRange;
+    }
+
+    void setApertureRange(NumericRange apertureRange) {
+        this.apertureRange = apertureRange;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    public String getMaker() {
+        return maker;
+    }
+
+    public String getModel() {
+        return this.model;
+    }
+
+    public double getCropFactor() {
+        return cropFactor;
+    }
+
+    public AspectRatio getAspectRatio() {
+        return aspectRatio;
+    }
+
+    public NumericRange getFocalRange() {
+        return focalRange;
+    }
+
+    public NumericRange getApertureRange() {
+        return apertureRange;
+    }
+
+    public List<String> getMounts() {
+        return mounts;
+    }
+
+    public List<Distortion> getDistortions() {
+        return distortions;
+    }
+
+    public List<Tca> getTcaEntries() {
+        return tcaEntries;
+    }
+
+    public List<Vignetting> getVignettingEntries() {
+        return vignettingEntries;
+    }
+
+
+
+    // ---------------------------------------------------------------------------------------------
+
     @Override
     public String toString() {
-        return String.format("%s %s (%.2f)", maker, model, cropFactor);
+        return String.format("%s %s (%.2f) Type=%s", maker, model, cropFactor, type);
     }
 
     public void print() {
