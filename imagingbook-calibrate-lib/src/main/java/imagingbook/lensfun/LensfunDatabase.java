@@ -31,12 +31,15 @@ import java.util.TreeSet;
  * To prevent the "DTD not found" or "Internet connection" errors we discussed earlier, we will
  * explicitly tell the parser to look for your local lensfun-database.dtd.
  */
-public class LensDatabaseManager {
+public class LensfunDatabase {
+    public static final String LOCAL_LENSFUN_DB_PATH = "local_lensfun_db\\";
+
     private final Set<Camera> uniqueCameras = new TreeSet<>(Comparator.comparing(Camera::getDisplayName));
     private final Map<String, Camera> cameraModelIndex = new HashMap<>();
     private final Map<String, Mount> mountIndex = new HashMap<>();
     private final List<Lens> masterLensList = new ArrayList<>();
-    private final Path localDbPath = Path.of(LensfunManager.LOCAL_LENSFUN_DB_PATH);
+
+    private final Path localDbPath = Path.of(LOCAL_LENSFUN_DB_PATH);
 
     public void loadAllLenses() throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -374,7 +377,7 @@ public class LensDatabaseManager {
 
     // List all lenses in DB
     static void listAllLenses() {
-        LensDatabaseManager mgr  = new LensDatabaseManager();
+        LensfunDatabase mgr  = new LensfunDatabase();
         try {
             mgr.loadAllLenses();
         } catch (Exception e) {
@@ -402,7 +405,7 @@ public class LensDatabaseManager {
     }
 
     static void findLens(String query) {
-        LensDatabaseManager mgr  = new LensDatabaseManager();
+        LensfunDatabase mgr  = new LensfunDatabase();
         try {
             mgr.loadAllLenses();
         } catch (Exception e) {
@@ -418,7 +421,7 @@ public class LensDatabaseManager {
     }
 
     static void listMounts() {
-        LensDatabaseManager mgr  = new LensDatabaseManager();
+        LensfunDatabase mgr  = new LensfunDatabase();
         try {
             mgr.loadAllLenses();
         } catch (Exception e) {
@@ -431,7 +434,7 @@ public class LensDatabaseManager {
     }
 
     static void listUniqueCameras() {
-        LensDatabaseManager mgr  = new LensDatabaseManager();
+        LensfunDatabase mgr  = new LensfunDatabase();
         try {
             mgr.loadAllLenses();
         } catch (Exception e) {
@@ -456,7 +459,7 @@ public class LensDatabaseManager {
     select the correct item in your menu.
      */
     static void listCameraIndex() {
-        LensDatabaseManager mgr  = new LensDatabaseManager();
+        LensfunDatabase mgr  = new LensfunDatabase();
         try {
             mgr.loadAllLenses();
         } catch (Exception e) {
@@ -469,7 +472,7 @@ public class LensDatabaseManager {
     }
 
     static void listCameraMakers() {
-        LensDatabaseManager mgr  = new LensDatabaseManager();
+        LensfunDatabase mgr  = new LensfunDatabase();
         try {
             mgr.loadAllLenses();
         } catch (Exception e) {
@@ -489,7 +492,7 @@ public class LensDatabaseManager {
     }
 
     static void listCamerasByMaker(String maker) {
-        LensDatabaseManager mgr  = new LensDatabaseManager();
+        LensfunDatabase mgr  = new LensfunDatabase();
         try {
             mgr.loadAllLenses();
         } catch (Exception e) {
@@ -503,7 +506,7 @@ public class LensDatabaseManager {
     }
 
     static void listCompatibleLenses(String camName) {
-        LensDatabaseManager mgr  = new LensDatabaseManager();
+        LensfunDatabase mgr  = new LensfunDatabase();
         try {
             mgr.loadAllLenses();
         } catch (Exception e) {

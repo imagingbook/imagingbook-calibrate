@@ -4,7 +4,9 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.lensfun;
+package imagingbook.lensfun.obsolete;
+
+import imagingbook.lensfun.LensfunDatabase;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -17,8 +19,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Deprecated
 public class LensfunManager {
-    public static final String LOCAL_LENSFUN_DB_PATH = "local_lensfun_db\\";
 
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
     private static final String GITHUB_WEB_URL = "https://github.com/lensfun/lensfun/tree/master/data/db";
@@ -81,7 +83,7 @@ public class LensfunManager {
         }
 
         // Path localPath = Path.of("./local_db");
-        Path localPath = Path.of(LOCAL_LENSFUN_DB_PATH);
+        Path localPath = Path.of(LensfunDatabase.LOCAL_LENSFUN_DB_PATH);
         if (Files.notExists(localPath)) Files.createDirectories(localPath);
 
         for (String fileName : xmlFiles) {
@@ -117,7 +119,7 @@ public class LensfunManager {
     // ----------------------------------------------
 
     public static void main(String[] args) throws Exception {
-        Path localPath = Path.of(LOCAL_LENSFUN_DB_PATH);
+        Path localPath = Path.of(LensfunDatabase.LOCAL_LENSFUN_DB_PATH);
         System.out.println("Local Lensfun DB Path: " + localPath.toAbsolutePath());
         new LensfunManager().upDateLocalLensfunDB();
     }

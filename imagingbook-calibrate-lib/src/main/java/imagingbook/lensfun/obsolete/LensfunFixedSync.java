@@ -12,7 +12,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
 
-import static imagingbook.lensfun.LensfunManager.LOCAL_LENSFUN_DB_PATH;
+import static imagingbook.lensfun.LensfunDatabase.LOCAL_LENSFUN_DB_PATH;
 
 @Deprecated
 public class LensfunFixedSync {
