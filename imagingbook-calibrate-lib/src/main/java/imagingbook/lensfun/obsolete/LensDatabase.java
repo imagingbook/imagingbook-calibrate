@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.lensfun.obsolete;
 
-import imagingbook.lensfun.LensfunDatabase;
+import imagingbook.lensfun.Settings;
 
 import java.nio.file.*;
 import java.util.List;
@@ -17,7 +17,7 @@ public class LensDatabase {
     // private static final Path LOCAL_DIR = Path.of("./local_db");
 
     public List<String> searchLens(String keyword) throws Exception {
-        Path localPath = Path.of(LensfunDatabase.LOCAL_LENSFUN_DB_PATH);
+        Path localPath = Settings.LOCAL_LENSFUN_DB_PATH;    // Path.of(Settings.LOCAL_LENSFUN_DB_PATH);
         System.out.println("Local Lensfun DB Path: " + localPath.toAbsolutePath());
         try (var paths = Files.walk(localPath)) {
             return paths

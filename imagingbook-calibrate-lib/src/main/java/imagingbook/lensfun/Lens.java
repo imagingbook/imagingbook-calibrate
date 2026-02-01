@@ -83,31 +83,19 @@ public class Lens {
         this.aspectRatio = aspectRatio;
     }
 
-    void addMount(List<String> mounts) {
+    void addMounts(List<String> mounts) {
         this.mounts.addAll(mounts);
     }
 
-    // void addDistortion(Distortion distortion) {
-    //     this.distortions.add(distortion);
-    // }
-
-    void addDistortion(List<Distortion> distortions) {
+    void addDistortions(List<Distortion> distortions) {
         this.distortions.addAll(distortions);
     }
 
-    // void addTca(Tca tca) {
-    //     this.tcaEntries.add(tca);
-    // }
-
-    void addTca(List<Tca> tcas) {
+    void addTcas(List<Tca> tcas) {
         this.tcaEntries.addAll(tcas);
     }
 
-    // void addVignetting(Vignetting vignetting) {
-    //     this.vignettingEntries.add(vignetting);
-    // }
-
-    void addVignetting(List<Vignetting> vignettings) {
+    void addVignettings(List<Vignetting> vignettings) {
         this.vignettingEntries.addAll(vignettings);
     }
 
@@ -174,12 +162,14 @@ public class Lens {
         Lens lens = this;
         System.out.println(lens);
         System.out.println("   Aspect ratio: " + lens.getAspectRatio());
-        System.out.println("   Mounts:");
         System.out.println("   Focal range: " + lens.getFocalRange());
         System.out.println("   Aperture range: " + lens.getApertureRange());
+
+        System.out.println("   Mounts:");
         for (String m : lens.getMounts()) {
             System.out.println("      " + m);
         }
+
         System.out.println("   Distortions:");
         for (Lens.Distortion d : lens.getDistortions()) {
             System.out.println("      " + d);

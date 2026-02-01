@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,31 +35,39 @@ import java.util.TreeSet;
  */
 public class LensfunDatabase {
 
-    public static final String LOCAL_LENSFUN_DB_PATH = "local_lensfun_db\\";
-
-    private static LensfunDatabase INSTANCE = null;
-
-    private final Set<Camera> uniqueCameras = new TreeSet<>(Comparator.comparing(Camera::getDisplayName));
+    private final Path localDbPath = Settings.LOCAL_LENSFUN_DB_PATH;
+    private final Set<Camera> masterCameraList = new TreeSet<>(Comparator.comparing(Camera::getDisplayName));
     private final Map<String, Camera> cameraModelIndex = new HashMap<>();
     private final Map<String, Mount> mountIndex = new HashMap<>();
     private final List<Lens> masterLensList = new ArrayList<>();
 
-    private final Path localDbPath = Path.of(LOCAL_LENSFUN_DB_PATH);
+    private static LensfunDatabase instance = null;
 
     public static LensfunDatabase getInstance() {
-        if (INSTANCE == null) {
+        if (instance == null) {
             LensfunDatabase db = new LensfunDatabase();
-            try {
-                db.loadLensfunDatabaseFiles();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            INSTANCE = db;
+            db.initialize();
+            instance = db;
         }
-        return INSTANCE;
+        return instance;
     }
 
+    /**
+     * Private constructor, to be used only by {@link #getInstance()} to create the singleton instance.
+     */
     private LensfunDatabase() {}
+
+    private boolean initialize() {
+        if (Files.notExists(localDbPath)) {     // first run: download database from GitHub
+            new LensfunUpdater().performSmartUpdate();
+        }
+        try {
+            this.loadLensfunDatabaseFiles();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return true;
+    }
 
     public void loadLensfunDatabaseFiles() throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -148,7 +155,6 @@ public class LensfunDatabase {
         String mount = getTagValue(camElem, "mount");
         double crop = getNumericValue(camElem, "cropfactor", 1.0);
 
-        // Create one object representing the hardware
         Camera cam = new Camera(
                 primaryMaker,
                 primaryModel,
@@ -158,7 +164,7 @@ public class LensfunDatabase {
                 crop
         );
         // 1. Add to the set for the UI list (The TreeSet keeps it alphabetized)
-        uniqueCameras.add(cam);
+        masterCameraList.add(cam);
         // 2. Index by every model name (for searching)
         for (String m : models) {
             cameraModelIndex.put(m.toLowerCase(), cam);
@@ -172,20 +178,11 @@ public class LensfunDatabase {
         lens.setType(getTagValue(lensElement, "type"));
         lens.setCropFactor(getNumericValue(lensElement, "cropfactor", 1.0));
 
-        // --- retrieve all mounts ---
-        // NodeList mountList = element.getElementsByTagName("mount");
-        // for (int j = 0; j < mountList.getLength(); j++) {
-        //     String mountName = mountList.item(j).getTextContent();
-        //     lens.addMount(mountName);
-        // }
-
-        List<String> mntNames = parseMounts(lensElement);
-        System.out.println("***************** " + lens.getModel() + " mounts: " + Arrays.toString(mntNames.toArray()));
-        lens.addMount(mntNames);
+        lens.addMounts(parseMounts(lensElement));
         lens.setAspectRatio(parseAspectRatio(lensElement));
-        lens.addDistortion(parseDistortion(lensElement));
-        lens.addTca(parseTca(lensElement));
-        lens.addVignetting(parseVignetting(lensElement));
+        lens.addDistortions(parseDistortion(lensElement));
+        lens.addTcas(parseTca(lensElement));
+        lens.addVignettings(parseVignetting(lensElement));
 
         lens.setFocalRange(parseRange(lensElement, "focal"));
         lens.setApertureRange(parseRange(lensElement, "aperture"));
@@ -227,6 +224,40 @@ public class LensfunDatabase {
         return new ArrayList<>(uniqueValues);
     }
 
+
+    // Helper to handle empty/missing attributes without crashing
+    private double getNumericAttributeValue(Element el, String attr) {
+        String val = el.getAttribute(attr);
+        if (val == null || val.isEmpty()) return 0.0;
+        try {
+            return Double.parseDouble(val);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    /**
+     * Smart numeric value reader
+     * @param element
+     * @param key
+     * @param defaultValue
+     * @return
+     */
+    private double getNumericValue(Element element, String key, double defaultValue) {
+        // 1. Check for Child Element first (e.g., <cropfactor>1.5</cropfactor>)
+        NodeList nl = element.getElementsByTagName(key);
+        if (nl.getLength() > 0) {
+            return Double.parseDouble(nl.item(0).getTextContent());
+        }
+        // 2. Fallback to Attribute (e.g., focal="50")
+        if (element.hasAttribute(key)) {
+            return Double.parseDouble(element.getAttribute(key));
+        }
+        return defaultValue;
+    }
+
+    // --------------------------------------------------------------------------------------------
+
     private List<String> parseMounts(Element element) {
         NodeList mountNodes = element.getElementsByTagName("mount");
         List<String> mounts = new ArrayList<>();
@@ -234,7 +265,6 @@ public class LensfunDatabase {
             String mountName = mountNodes.item(j).getTextContent();
             mounts.add(mountName);
         }
-        // System.out.println("***************** mounts: " + Arrays.toString(mounts.toArray()));
         return mounts;
     }
 
@@ -316,38 +346,6 @@ public class LensfunDatabase {
         return new Lens.AspectRatio(3, 2);    // Standard Lensfun default
     }
 
-
-    // Helper to handle empty/missing attributes without crashing
-    private double getNumericAttributeValue(Element el, String attr) {
-        String val = el.getAttribute(attr);
-        if (val == null || val.isEmpty()) return 0.0;
-        try {
-            return Double.parseDouble(val);
-        } catch (NumberFormatException e) {
-            return 0.0;
-        }
-    }
-
-    /**
-     * Smart numeric value reader
-     * @param element
-     * @param key
-     * @param defaultValue
-     * @return
-     */
-    private double getNumericValue(Element element, String key, double defaultValue) {
-        // 1. Check for Child Element first (e.g., <cropfactor>1.5</cropfactor>)
-        NodeList nl = element.getElementsByTagName(key);
-        if (nl.getLength() > 0) {
-            return Double.parseDouble(nl.item(0).getTextContent());
-        }
-        // 2. Fallback to Attribute (e.g., focal="50")
-        if (element.hasAttribute(key)) {
-            return Double.parseDouble(element.getAttribute(key));
-        }
-        return defaultValue;
-    }
-
     private Lens.NumericRange parseRange(Element lensElement, String tagName) {
         NodeList nl = lensElement.getElementsByTagName(tagName);
         if (nl.getLength() > 0) {
@@ -372,6 +370,8 @@ public class LensfunDatabase {
         }
         return new Lens.NumericRange(0, 0); // Unknown/Missing
     }
+
+    // -------------------------------------------------------------------------------------------
 
     public List<Lens> getMasterLensList() {
         return masterLensList;
@@ -415,7 +415,7 @@ public class LensfunDatabase {
     }
 
     public List<Camera> getCamerasByMaker(String maker) {
-        return uniqueCameras.stream()
+        return masterCameraList.stream()
                 .filter(cam -> cam.primaryMaker().equalsIgnoreCase(maker))
                 .toList(); // TreeSet handles the sorting for us
     }
@@ -429,10 +429,8 @@ public class LensfunDatabase {
     // -------------------------------------------------------------------------------------------
 
     // List all lenses in DB
-    static void listAllLenses() {
-        LensfunDatabase db = LensfunDatabase.getInstance();
-
-        List<Lens> allLenses = db.getMasterLensList();
+    void listAllLenses() {
+        List<Lens> allLenses = this.getMasterLensList();
         for (Lens lens : allLenses) {
             // System.out.println(lens);
             lens.print();
@@ -453,9 +451,8 @@ public class LensfunDatabase {
 
     }
 
-    static void findLens(String query) {
-        LensfunDatabase db = LensfunDatabase.getInstance();
-        List<Lens> allLenses = db.getMasterLensList();
+    void findLens(String query) {
+        List<Lens> allLenses = this.getMasterLensList();
         for (Lens lens : allLenses) {
             if (lens.matches(query)) {
                 lens.print();
@@ -463,19 +460,17 @@ public class LensfunDatabase {
         }
     }
 
-    static void listMounts() {
-        LensfunDatabase db = LensfunDatabase.getInstance();
-        System.out.println("Mounts " + db.mountIndex.size());
-        for (Mount md : db.mountIndex.values()) {
+    void listMounts() {
+        System.out.println("Mounts " + this.mountIndex.size());
+        for (Mount md : this.mountIndex.values()) {
             System.out.println(md);
         }
     }
 
-    static void listUniqueCameras() {
-        LensfunDatabase db = LensfunDatabase.getInstance();
-        System.out.println("Unique cameras" + db.uniqueCameras.size());
+    void listUniqueCameras() {
+        System.out.println("Unique cameras" + this.masterCameraList.size());
 
-        List<Camera> camList = new ArrayList<>(db.uniqueCameras);
+        List<Camera> camList = new ArrayList<>(this.masterCameraList);
         // List<Camera> camList = db.uniqueCameras.stream().toList();
         for (Camera cam : camList) {
             // System.out.println(cam.primaryMaker() + " " + cam.primaryModel());
@@ -490,52 +485,47 @@ public class LensfunDatabase {
     modelIndex.get("rebel t7i".toLowerCase()). It returns the Camera object, and you can instantly
     select the correct item in your menu.
      */
-    static void listCameraIndex() {
-        LensfunDatabase db = LensfunDatabase.getInstance();
-        System.out.println("Camera index: " + db.cameraModelIndex.size());
-        for (String name : db.cameraModelIndex.keySet()) {
+    void listCameraIndex() {
+        System.out.println("Camera index: " + this.cameraModelIndex.size());
+        for (String name : this.cameraModelIndex.keySet()) {
             System.out.println(name);
         }
     }
 
-    static void listCameraMakers() {
-        LensfunDatabase db = LensfunDatabase.getInstance();
-        List<String> allCamMakers = db.uniqueCameras.stream()
+    void listCameraMakers() {
+        List<String> allCamMakers = this.masterCameraList.stream()
                 .map(Camera::primaryMaker)
                 .distinct()
                 .sorted()
                 .toList();
-        System.out.println("All camera makers: " + db.uniqueCameras.size());
+        System.out.println("All camera makers: " + this.masterCameraList.size());
         for (String name : allCamMakers) {
             System.out.println(name);
         }
     }
 
-    static void listCamerasByMaker(String maker) {
-        LensfunDatabase db = LensfunDatabase.getInstance();
-        List<Camera> cams = db.getCamerasByMaker(maker);
+    void listCamerasByMaker(String maker) {
+        List<Camera> cams = this.getCamerasByMaker(maker);
         for (Camera cam : cams) {
             System.out.println("   " + cam.primaryModel());
         }
     }
 
-    static void listLensesByMaker(String maker) {
-        LensfunDatabase db = LensfunDatabase.getInstance();
-        List<Lens> lenses = db.getLensesByMaker(maker);
+    void listLensesByMaker(String maker) {
+        List<Lens> lenses = this.getLensesByMaker(maker);
         for (Lens lens : lenses) {
             lens.print();
             // System.out.println("   " + lens.getModel());
         }
     }
 
-    static void listCompatibleLenses(String camName) {
-        LensfunDatabase db = LensfunDatabase.getInstance();
-        Camera cam = db.cameraModelIndex.get(camName.toLowerCase());
+    void listCompatibleLenses(String camName) {
+        Camera cam = this.cameraModelIndex.get(camName.toLowerCase());
         if (cam == null) {
             System.out.println(camName + " not found!");
             return;
         }
-        List<Lens> lenses = db.findCompatibleLenses(cam);
+        List<Lens> lenses = this.findCompatibleLenses(cam);
         for (Lens lens : lenses) {
             System.out.println("  " + lens);
         }
@@ -544,15 +534,16 @@ public class LensfunDatabase {
     // ------------------
 
     public static void main(String[] args) {
-        // listAllLenses();
-        findLens("16-300mm F3.5-6.7 DC OS | Contemporary 025");
-        // listMounts();
-        // listUniqueCameras();
-        // listCameraIndex();
-        // listCameraMakers();
-        // listCompatibleLenses("alpha 6500");
-        // listCamerasByMaker("Nikon Corporation");
-        // listLensesByMaker("GoPro");
+        LensfunDatabase db = LensfunDatabase.getInstance();
+        db.listAllLenses();
+        // db.findLens("Vivitar 100mm f/3.5 AF Macro");
+        // db.listMounts();
+        // db.listUniqueCameras();
+        // db.listCameraIndex();
+        // db.listCameraMakers();
+        // db.listCompatibleLenses("alpha 6500");
+        // db.listCamerasByMaker("Nikon Corporation");
+        // db.listLensesByMaker("GoPro");
     }
 
 

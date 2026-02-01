@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.lensfun.obsolete;
 
-import imagingbook.lensfun.LensfunDatabase;
+import imagingbook.lensfun.Settings;
 
 import java.net.URI;
 import java.net.http.*;
@@ -24,7 +24,7 @@ public class LensfunFinalSync {
     private static final String RAW_URL_BASE = "https://raw.githubusercontent.com/lensfun/lensfun/master/data/db/";
 
     public void upDateLocalLensfunDB() throws Exception {
-        Path localPath = Path.of(LensfunDatabase.LOCAL_LENSFUN_DB_PATH);
+        Path localPath = Settings.LOCAL_LENSFUN_DB_PATH;    // Path.of(Settings.LOCAL_LENSFUN_DB_PATH);
         if (Files.notExists(localPath)) Files.createDirectories(localPath);
 
         System.out.println("Step 1: Fetching file list...");

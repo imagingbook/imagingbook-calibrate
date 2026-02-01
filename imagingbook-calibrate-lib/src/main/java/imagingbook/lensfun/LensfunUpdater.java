@@ -21,16 +21,8 @@ import java.util.regex.Pattern;
 public class LensfunUpdater {
 
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
-    // API to list files
-    private static final String API_URL = "https://api.github.com/repos/lensfun/lensfun/contents/data/db";
-    // Domain for RAW data
-    private static final String RAW_URL_BASE = "https://raw.githubusercontent.com/lensfun/lensfun/master/data/db/";
-
-    private static final String DTD_FILE_URL = "https://raw.githubusercontent.com/lensfun/lensfun/master/data/db/lensfun-database.dtd";
-
     // where to store the .etag string
-    private static final Path ETAG_STORE = Path.of(LensfunDatabase.LOCAL_LENSFUN_DB_PATH, ".etag");
-
+    private static final Path ETAG_STORE = Settings.LOCAL_LENSFUN_DB_PATH.resolve(".etag");    //Path.of(Settings.LOCAL_LENSFUN_DB_PATH, ".etag");
     private static final String HttpHeaderName = "User-Agent";
     private static final String HttpHeaderValue = "Java-Lensfun-App";
 
@@ -47,7 +39,7 @@ public class LensfunUpdater {
         try {
             String lastEtag = Files.exists(ETAG_STORE) ? Files.readString(ETAG_STORE) : "";
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL))
+                    .uri(URI.create(Settings.API_URL))
                     .header(HttpHeaderName, HttpHeaderValue)
                     .header("If-None-Match", lastEtag) // This is the magic header
                     .build();
@@ -57,11 +49,6 @@ public class LensfunUpdater {
                 return false;
             } else if (response.statusCode() == 200) {
                 System.out.println("Updates available!");
-                // Store the new Etag for next time
-                // Optional<String> newEtag = response.headers().firstValue("ETag");
-                // newEtag.ifPresent(s -> {
-                //     try { Files.writeString(ETAG_STORE, s); } catch (Exception ignored) {}
-                // });
                 return true;
             }
             return false;
@@ -91,10 +78,25 @@ public class LensfunUpdater {
      * TODO: timestamp.txt file? clear directory?
      */
     public void performSmartUpdate() {
+        Path localDirPath = Settings.LOCAL_LENSFUN_DB_PATH;     //Path.of(Settings.LOCAL_LENSFUN_DB_PATH);
+        checkLocalDirectory(localDirPath);  // create directory if necessary
+
+        // Properties localEtags = new Properties();
+        // Path manifestPath = localDirPath.resolve("manifest.properties");
+        // // load existing manifest
+        // if (Files.exists(manifestPath)) {
+        //     try (InputStream in = Files.newInputStream(manifestPath)) {
+        //         localEtags.load(in);
+        //     }
+        //     catch (IOException e) {
+        //         System.err.println("Error reading manifest.properties: " + e.getMessage());
+        //     }
+        // }
+
         try {
             String lastEtag = Files.exists(ETAG_STORE) ? Files.readString(ETAG_STORE) : "";
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL))
+                    .uri(URI.create(Settings.API_URL))
                     .header(HttpHeaderName, HttpHeaderValue)
                     .header("If-None-Match", lastEtag)
                     .build();
@@ -112,7 +114,7 @@ public class LensfunUpdater {
 
                 // 2. Perform the actual file downloads (Pass the JSON body to save an API call!)
                 String json = response.body();
-                boolean success = upDateLocalLensfunDBWithJson(json);
+                boolean success = upDateLocalLensfunDBWithJson(json, localDirPath);
 
                 // 3. ONLY COMMIT if the download was 100% successful
                 if (success && !newEtag.isEmpty()) {
@@ -129,57 +131,45 @@ public class LensfunUpdater {
         }
     }
 
+    private void checkLocalDirectory(Path localDirPath) {
+        try {
+            if (Files.notExists(localDirPath)) {
+                Files.createDirectories(localDirPath);
+                System.out.println("Created lensfun database directory: " + localDirPath.toAbsolutePath());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create local lensfun directory!", e);
+        }
+    }
+
     // ---------------------------------------------------------------------------------------------
 
-    // public void upDateLocalLensfunDBWithJson() throws Exception {
-    //     Path localPath = Path.of(LensfunManager.LOCAL_LENSFUN_DB_PATH);
-    //     if (Files.notExists(localPath)) Files.createDirectories(localPath);
-    //
+    // private boolean upDateDtdFile(Path localPath) {
     //     // 1. Download the DTD file first
     //     System.out.println("Step 1: Fetching DTD file ...");
-    //     // String dtdUrl = "https://raw.githubusercontent.com/lensfun/lensfun/master/data/db/lensfun-database.dtd";
     //     downloadRawFile(DTD_FILE_URL, localPath.resolve("lensfun-database.dtd"));
     //     System.out.println("DTD synchronized.");
-    //
-    //
-    //     // 2. Fetch the file list from API
-    //     System.out.println("Step 2: Fetching file list...");
-    //     HttpRequest listReq = HttpRequest.newBuilder()
-    //             .uri(URI.create(API_URL))
-    //             .header("Accept", "application/vnd.github.v3+json")
-    //             .header(HttpHeaderName, HttpHeaderValue) // Required by GitHub
-    //             .build();
-    //
-    //     String json = CLIENT.send(listReq, HttpResponse.BodyHandlers.ofString()).body();
-    //
-    //     upDateLocalLensfunDBWithJson(json);
-    //
-    //     // // Extracting filenames from JSON
-    //     // List<String> files = new ArrayList<>();
-    //     // Matcher m = Pattern.compile("\"name\":\"([^\"]+\\.xml)\"").matcher(json);
-    //     // while (m.find()) files.add(m.group(1));
-    //     //
-    //     // System.out.println("Found " + files.size() + " files. Starting download...");
-    //     //
-    //     // for (String name : files) {
-    //     //     String downloadUrl = RAW_URL_BASE + name;
-    //     //     downloadRawFile(downloadUrl, localPath.resolve(name));
-    //     // }
+    //     return true;
     // }
 
-    private boolean upDateLocalLensfunDBWithJson(String json) {
-        Path localPath = Path.of(LensfunDatabase.LOCAL_LENSFUN_DB_PATH);
-        // Extracting filenames from JSON
+    private boolean upDateLocalLensfunDBWithJson(String json, Path localPath) {
+
+        // 1. Mandatory DTD Check (the DTD is the 'grammar' for all those XML files)
+        Path dtdPath = localPath.resolve(Settings.DTD_FILE_NAME); // = "lensfun-database.dtd"
+        if (Files.notExists(dtdPath)) {
+            downloadRawFile(Settings.DTD_FILE_URL, dtdPath);
+        }
+
+        // 2. Fetch the XML file list from the json resonse
         List<String> files = new ArrayList<>();
         Matcher m = Pattern.compile("\"name\":\"([^\"]+\\.xml)\"").matcher(json);
         while (m.find()) {
             files.add(m.group(1));
         }
-
         System.out.println("Found " + files.size() + " files. Starting download...");
 
         for (String name : files) {
-            String downloadUrl = RAW_URL_BASE + name;
+            String downloadUrl = Settings.RAW_URL_BASE + name;
             try {
                 downloadRawFile(downloadUrl, localPath.resolve(name));
             } catch (Exception e) {
@@ -190,12 +180,13 @@ public class LensfunUpdater {
         return true;
     }
 
+
     /**
      * Helper to download raw bytes and save them,
      * ensuring we don't accidentally save HTML error pages.
      */
     private void downloadRawFile(String url, Path target) {
-        System.out.println("downloadRawFile: " + url + " -> " + target.toFile().getAbsolutePath());
+        System.out.println("downloading file " + url + " -> " + target.toFile().getAbsolutePath());
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
@@ -208,9 +199,9 @@ public class LensfunUpdater {
             // Valid Lensfun files start with DOCTYPE, <lensdatabase, or <!ELEMENT (for DTD)
             if (check.contains("<!DOCTYPE") || check.contains("<lensdatabase") || check.contains("<!ELEMENT")) {
                 Files.write(target, bytes);
-                System.out.println("Saved: " + target.getFileName());
+                // System.out.println("Saved: " + target.getFileName());
             } else {
-                System.err.println("Failed to download raw data for: " + url);
+                System.err.println("Skipped file " + url);
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -219,8 +210,41 @@ public class LensfunUpdater {
 
     // --------------------------------------------------------------------------
 
+    /*
+    https://gemini.google.com/share/97b3c67569d1
+    The ETag Manifest Strategy:
+
+    Properties localEtags = new Properties();
+    Path manifestPath = localDir.resolve("manifest.properties");
+
+    // 1. Load existing manifest
+    if (Files.exists(manifestPath)) {
+        try (InputStream in = Files.newInputStream(manifestPath)) {
+            localEtags.load(in);
+        }
+    }
+
+    // 2. Inside your JSON loop:
+    String fileName = fileObject.getString("name");
+    String githubSha = fileObject.getString("sha");
+    String localSha = localEtags.getProperty(fileName);
+
+    if (localSha == null || !localSha.equals(githubSha)) {
+        // Download file...
+        // Update the properties object
+        localEtags.setProperty(fileName, githubSha);
+    }
+
+    // 3. Save after the loop finishes
+    try (OutputStream out = Files.newOutputStream(manifestPath)) {
+        localEtags.store(out, "Lensfun Database ETags");
+    }
+     */
+
     public static void main(String[] args) {
-        //System.out.println("Updates available: " + new LensfunUpdater().isUpdateAvailable());
+        // System.out.println("Updates available: " + new LensfunUpdater().isUpdateAvailable());
         new LensfunUpdater().performSmartUpdate();
+
+
     }
 }

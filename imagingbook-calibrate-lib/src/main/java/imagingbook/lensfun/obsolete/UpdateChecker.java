@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.lensfun.obsolete;
 
-import imagingbook.lensfun.LensfunDatabase;
+import imagingbook.lensfun.Settings;
 
 import java.net.http.HttpClient;
 import java.nio.file.Path;
@@ -15,7 +15,7 @@ import java.nio.file.Path;
 public class UpdateChecker {
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
     private static final String API_URL = "https://api.github.com/repos/lensfun/lensfun/contents/data/db";
-    private static final Path ETAG_STORE = Path.of(LensfunDatabase.LOCAL_LENSFUN_DB_PATH, ".etag");     // Path.of("./local_db/.etag");
+    private static final Path ETAG_STORE = Settings.LOCAL_LENSFUN_DB_PATH.resolve(".etag"); // Path.of(Settings.LOCAL_LENSFUN_DB_PATH, ".etag");
 
     // /**
     //  * This method checks the GitHub API. It compares the ETag of the directory listing.

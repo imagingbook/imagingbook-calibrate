@@ -6,13 +6,15 @@
  ******************************************************************************/
 package imagingbook.lensfun.obsolete;
 
+import imagingbook.lensfun.Settings;
+
 import java.net.URI;
 import java.net.http.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
 
-import static imagingbook.lensfun.LensfunDatabase.LOCAL_LENSFUN_DB_PATH;
+import static imagingbook.lensfun.Settings.LOCAL_LENSFUN_DB_PATH;
 
 @Deprecated
 public class LensfunFixedSync {
@@ -22,7 +24,7 @@ public class LensfunFixedSync {
     private static final String RAW_BASE_URL = "https://lensfun.github.io/db/";
 
     public void upDateLocalLensfunDB() throws Exception {
-        Path localPath = Path.of(LOCAL_LENSFUN_DB_PATH);
+        Path localPath = Settings.LOCAL_LENSFUN_DB_PATH; // Path.of(LOCAL_LENSFUN_DB_PATH);
         if (Files.notExists(localPath)) Files.createDirectories(localPath);
 
         System.out.println("Requesting file list from GitHub API...");
@@ -70,7 +72,7 @@ public class LensfunFixedSync {
     }
 
     public static void main(String[] args) throws Exception {
-        Path localPath = Path.of(LOCAL_LENSFUN_DB_PATH);
+        Path localPath = Settings.LOCAL_LENSFUN_DB_PATH;    // Path.of(LOCAL_LENSFUN_DB_PATH);
         System.out.println("Local Lensfun DB Path: " + localPath.toAbsolutePath());
         new LensfunFixedSync().upDateLocalLensfunDB();
     }

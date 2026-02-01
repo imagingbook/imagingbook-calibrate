@@ -6,7 +6,7 @@
  ******************************************************************************/
 package imagingbook.lensfun.obsolete;
 
-import imagingbook.lensfun.LensfunDatabase;
+import imagingbook.lensfun.Settings;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -83,7 +83,7 @@ public class LensfunManager {
         }
 
         // Path localPath = Path.of("./local_db");
-        Path localPath = Path.of(LensfunDatabase.LOCAL_LENSFUN_DB_PATH);
+        Path localPath = Settings.LOCAL_LENSFUN_DB_PATH;     //Path.of(Settings.LOCAL_LENSFUN_DB_PATH);
         if (Files.notExists(localPath)) Files.createDirectories(localPath);
 
         for (String fileName : xmlFiles) {
@@ -119,7 +119,7 @@ public class LensfunManager {
     // ----------------------------------------------
 
     public static void main(String[] args) throws Exception {
-        Path localPath = Path.of(LensfunDatabase.LOCAL_LENSFUN_DB_PATH);
+        Path localPath = Settings.LOCAL_LENSFUN_DB_PATH;    // Path.of(Settings.LOCAL_LENSFUN_DB_PATH);
         System.out.println("Local Lensfun DB Path: " + localPath.toAbsolutePath());
         new LensfunManager().upDateLocalLensfunDB();
     }
