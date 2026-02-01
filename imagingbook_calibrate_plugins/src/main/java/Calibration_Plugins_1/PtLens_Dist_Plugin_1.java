@@ -86,7 +86,7 @@ public class PtLens_Dist_Plugin_1 implements PlugInFilter {
         ImageProcessor source = im.getProcessor();
         ImageProcessor target = source.createProcessor(W, H);
         ImageMapper mapper = new ImageMapper(mapping, null, InterpolationMethod.Bicubic);
-        mapper.WORK_PARALLEL = parallel;
+
 
         IJ.log("Starting mapping");
         long nanos = timeNanos(() -> {

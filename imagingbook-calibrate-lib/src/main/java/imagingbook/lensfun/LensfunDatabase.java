@@ -25,8 +25,11 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+
+import static imagingbook.lensfun.Utils.cleanNonAscii;
 
 /**
  * We will use Files.list to find all .xml files and a single DocumentBuilder to parse them.
@@ -133,11 +136,11 @@ public class LensfunDatabase {
     private void collectMounts(Element element) {
         // Ensure this is a TOP-LEVEL mount, not a <lens><mount>
         if (element.getParentNode().getNodeName().equals("lensdatabase")) {
-            String name = getTagValue(element, "name");
+            String name = cleanNonAscii(getTagValue(element, "name"));
             List<String> compat = new ArrayList<>();
             NodeList cList = element.getElementsByTagName("compat");
             for (int j = 0; j < cList.getLength(); j++) {
-                compat.add(cList.item(j).getTextContent());
+                compat.add(cleanNonAscii(cList.item(j).getTextContent()));
             }
             addOrUpdateMount(name, compat);
         }
@@ -156,8 +159,8 @@ public class LensfunDatabase {
         double crop = getNumericValue(camElem, "cropfactor", 1.0);
 
         Camera cam = new Camera(
-                primaryMaker,
-                primaryModel,
+                cleanNonAscii(primaryMaker),
+                cleanNonAscii(primaryModel),
                 makers,
                 models,
                 mount,
@@ -173,9 +176,9 @@ public class LensfunDatabase {
 
     private void collectLenses(Element lensElement) {
         Lens lens = new Lens();
-        lens.setMaker(getTagValue(lensElement, "maker"));
-        lens.setModel(getTagValue(lensElement, "model"));
-        lens.setType(getTagValue(lensElement, "type"));
+        lens.setMaker(cleanNonAscii(getTagValue(lensElement, "maker")));
+        lens.setModel(cleanNonAscii(getTagValue(lensElement, "model")));
+        lens.setType(cleanNonAscii(getTagValue(lensElement, "type")));
         lens.setCropFactor(getNumericValue(lensElement, "cropfactor", 1.0));
 
         lens.addMounts(parseMounts(lensElement));
@@ -420,10 +423,60 @@ public class LensfunDatabase {
                 .toList(); // TreeSet handles the sorting for us
     }
 
+    public Camera findCamera(String maker, String model) {
+        return getCamerasByMaker(maker).stream()
+                .filter(c -> c.getModel().equals(model))
+                .findFirst()
+                .orElse(null);
+    }
+
     public List<Lens> getLensesByMaker(String maker) {
         return this.masterLensList.stream()
                 .filter(lens -> lens.getMaker().equalsIgnoreCase(maker))
                 .toList(); // TreeSet handles the sorting for us
+    }
+
+    public List<String> getAllLensMakers() {
+        return masterLensList.stream()
+                .map(Lens::getMaker)       // Extract the maker string
+                .filter(Objects::nonNull)  // Safety check for nulls
+                .distinct()                // Remove duplicates
+                .sorted()                  // Alphabetize (A-Z)
+                .toList();                 // Convert to final list
+    }
+
+    public Lens findLens(String maker, String model) {
+        return masterLensList.stream()
+                .filter(l -> l.getMaker().equals(maker) && l.getModel().equals(model))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public List<String> getCameraMakers() {
+        return this.masterCameraList.stream()
+                .map(Camera::primaryMaker)
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    public List<String> getLensMakersForMount(String camMount) {
+        return masterLensList.stream()
+                .filter(lens -> isCompatible(camMount, lens.getMounts()))
+                .map(Lens::getMaker)
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    public boolean isCompatible(String camMount, List<String> lensMounts) {
+        for (String lm : lensMounts) {
+            if (lm.equals(camMount)) return true;
+            // Generic compatibility (e.g., Full Frame lenses on Crop sensors)
+            if (camMount.endsWith("-S") && lm.equals(camMount.substring(0, camMount.length()-2))) return true;
+            if (camMount.equals("Sony E") && lm.equals("Sony FE")) return true;
+        }
+        return false;
     }
 
     // -------------------------------------------------------------------------------------------
@@ -492,7 +545,7 @@ public class LensfunDatabase {
         }
     }
 
-    void listCameraMakers() {
+    public void listCameraMakers() {
         List<String> allCamMakers = this.masterCameraList.stream()
                 .map(Camera::primaryMaker)
                 .distinct()
@@ -535,7 +588,7 @@ public class LensfunDatabase {
 
     public static void main(String[] args) {
         LensfunDatabase db = LensfunDatabase.getInstance();
-        db.listAllLenses();
+        // db.listAllLenses();
         // db.findLens("Vivitar 100mm f/3.5 AF Macro");
         // db.listMounts();
         // db.listUniqueCameras();
@@ -543,7 +596,8 @@ public class LensfunDatabase {
         // db.listCameraMakers();
         // db.listCompatibleLenses("alpha 6500");
         // db.listCamerasByMaker("Nikon Corporation");
-        // db.listLensesByMaker("GoPro");
+        // db.listLensesByMaker("Sigma");
+        System.out.println(db.findCamera("Canon", "Canon PowerShot SX50 HS"));
     }
 
 

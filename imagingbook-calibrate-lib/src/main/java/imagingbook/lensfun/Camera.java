@@ -26,4 +26,12 @@ public record Camera(
     public String getFullIdentity() {
         return getDisplayName() + (allModels.size() > 1 ? " (also known as: " + String.join(", ", allModels) + ")" : "");
     }
+
+    public String getMaker() {
+        return primaryMaker;
+    }
+
+    public String getModel() {
+        return primaryModel;
+    }
 }

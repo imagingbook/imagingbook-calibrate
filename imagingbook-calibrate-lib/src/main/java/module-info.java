@@ -23,4 +23,5 @@ module imagingbook.calibrate.lib {
     exports imagingbook.calibrate.intrinsics;
     exports imagingbook.calibrate.extrinsics;
     exports imagingbook.calibrate.optimize;
+    exports imagingbook.lensfun;
 }

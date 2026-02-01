@@ -28,6 +28,7 @@ public final class Utils {
             }
         } else if (os.contains("mac")) {
             // macOS: Library/Application Support
+            // "/Users/<user>/Library/Application Support"
             base = Paths.get(userHome, "Library", "Application Support");
         } else {
             // Linux/Unix: .local/share
@@ -43,8 +44,22 @@ public final class Utils {
         return base.resolve(appName);
     }
 
+    // A simple, effective cleaner for Lensfun data
+    // grep -nP -n -H '[^\x00-\x7f]' *.xml
+    public static String cleanNonAscii(String text) {
+        if (text == null) return "";
+        return text
+                .replace('\u2013', '-')  // En Dash (–) -> Hyphen (-)
+                .replace('\u2014', '-')  // Em Dash (—) -> Hyphen (-)
+                .replace('\u00A0', ' ')  // Non-breaking space -> Space
+                // .replace('\u00B0', '°')  // Keep degree if you want, or change to "deg"
+                .trim();
+    }
+
+    // ----------------------------
+
     public static void main(String[] args) {
-        Path p = getAppDataDirectory("lensfun").resolve("foo");
+        Path p = getAppDataDirectory("lensfun");
         System.out.println(p.toAbsolutePath());
     }
 
