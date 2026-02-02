@@ -7,6 +7,7 @@
 package imagingbook.lensfun;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Lens {
@@ -149,13 +150,37 @@ public class Lens {
         return vignettingEntries;
     }
 
+    // ---------------------------------------------------------------------------------------------
 
+
+    public double getMinFocalForSort() {
+        // 1. Check the dedicated focalRange field
+        if (focalRange != null && focalRange.min() > 0 && focalRange.max() > 0) {
+            return focalRange.min(); // e.g., 18.0 for an 18-55mm
+        }
+
+        // 2. Fallback to the first distortion entry if focalRange is missing
+        if (distortions != null && !distortions.isEmpty()) {
+            return distortions.get(0).focal();
+        }
+
+        if (vignettingEntries != null && !vignettingEntries.isEmpty()) {
+            return vignettingEntries.get(0).focal();
+        }
+
+        if (tcaEntries != null && !tcaEntries.isEmpty()) {
+            return tcaEntries.get(0).focal();
+        }
+
+        return 0.0;
+    }
 
     // ---------------------------------------------------------------------------------------------
 
     @Override
     public String toString() {
-        return String.format("%s %s (%.2f) Type=%s", maker, model, cropFactor, type);
+        return String.format("Lens[%s %s (%.2f) mounts=%s, minf=%s]",
+                maker, model, cropFactor, Arrays.toString(mounts.toArray()), getMinFocalForSort());
     }
 
     public void print() {

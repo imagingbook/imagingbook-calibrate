@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.lensfun;
 
+import ij.IJ;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -371,7 +372,7 @@ public class LensfunDatabase {
                 System.err.println("Could not parse range for " + tagName);
             }
         }
-        return new Lens.NumericRange(0, 0); // Unknown/Missing
+        return null; // new Lens.NumericRange(0, 0); // Unknown/Missing
     }
 
     // -------------------------------------------------------------------------------------------
@@ -469,14 +470,132 @@ public class LensfunDatabase {
                 .toList();
     }
 
+    // public List<String> getLensMakersForCamera(Camera cam) {
+    //     if (isMountGeneric(cam.mount())) {
+    //         // Return every unique maker in the entire lens database
+    //         return masterLensList.stream()
+    //                 .map(Lens::getMaker)
+    //                 .distinct()
+    //                 .sorted()
+    //                 .toList();
+    //     }
+    //     // Otherwise, do the standard mount-compatibility filter
+    //     return getLensMakersForMount(cam.mount());
+    // }
+
+    // public List<String> getLensMakersForCamera(Camera cam) {
+    //     String mount = cam.mount();
+    //     boolean isGeneric = isMountGeneric(mount); // mount.equalsIgnoreCase("Generic");
+    //
+    //     return masterLensList.stream()
+    //             .filter(l -> {
+    //                 if (isGeneric) {
+    //                     // Must have at least one "Real" mount
+    //                     return l.getMounts().stream().anyMatch(mountIndex::containsKey);
+    //                 }
+    //                 return isCompatible(mount, l.getMounts());
+    //             })
+    //             .map(Lens::getMaker)
+    //             .distinct()
+    //             .sorted()
+    //             .toList();
+    // }
+
+    // TODO: 'NIKON CORPORATION' should not show!!
+    public List<String> getLensMakersForCamera(Camera selectedCam) {
+        String camMount = selectedCam.mount();
+        boolean isCamGeneric = isMountGeneric(camMount); // camMount.equalsIgnoreCase("Generic");
+
+        return masterLensList.stream()
+                .filter(l -> {
+                    if (isCamGeneric) {
+                        // RULE 1: For Generic cameras, the lens MUST have a
+                        // "Real" mount defined in your top-level mountIndex.
+                        return l.getMounts().stream().anyMatch(mountIndex::containsKey);
+                    } else {
+                        // RULE 2: For specific cameras, use your physical compatibility check.
+                        return isCompatible(camMount, l.getMounts());
+                    }
+                })
+                // Now that we've filtered the lenses, grab their makers
+                .map(Lens::getMaker)
+                .distinct()
+                .sorted()
+                .toList();
+
+        // .sort(Comparator.comparingDouble(Lens::getMinFocalForSort)
+        //         .thenComparing(Lens::getModel));
+    }
+
+
     public boolean isCompatible(String camMount, List<String> lensMounts) {
         for (String lm : lensMounts) {
-            if (lm.equals(camMount)) return true;
+            if (lm.equals(camMount))
+                return true;
             // Generic compatibility (e.g., Full Frame lenses on Crop sensors)
             if (camMount.endsWith("-S") && lm.equals(camMount.substring(0, camMount.length()-2))) return true;
             if (camMount.equals("Sony E") && lm.equals("Sony FE")) return true;
         }
         return false;
+    }
+
+    // public List<String> getLensModels(String lensMaker, String camMount) {
+    //     boolean isGeneric = isMountGeneric(camMount);
+    //
+    //     if (isGeneric) {  // Return all lenses for this maker, ignoring mount compatibility
+    //         return masterLensList.stream()
+    //                 .filter(l -> l.getMaker().equals(lensMaker))
+    //                 .map(Lens::getModel)
+    //                 .sorted()
+    //                 .toList();
+    //     }
+    //     else { // Otherwise, perform the strict physical check
+    //         return masterLensList.stream()
+    //                 .filter(l -> l.getMaker().equals(lensMaker))
+    //                 .filter(l -> isCompatible(camMount, l.getMounts()))
+    //                 .map(Lens::getModel)
+    //                 .sorted()
+    //                 .toList();
+    //     }
+    //
+    //     // return masterLensList.stream()
+    //     //         .filter(l -> l.getMaker().equals(lensMaker))
+    //     //         .filter(l -> isGeneric || isCompatible(camMount, l.getMounts()))
+    //     //         .map(Lens::getModel)
+    //     //         .sorted()
+    //     //         .toList();
+    // }
+
+    public List<String> getLensModels(String lensMaker, String camMount) {
+        // String camMount = cam.getMount();
+        boolean isCamGeneric = isMountGeneric(camMount); // camMount.equalsIgnoreCase("Generic");
+
+        return masterLensList.stream()
+                .filter(l -> l.getMaker().equals(lensMaker))
+                .filter(l -> {
+                    if (isCamGeneric) {
+                        // A lens is valid for a Generic camera ONLY if its mount
+                        // exists in our "Real Mounts" index.
+                        // This automatically rejects "canonIxus400", "fixed", etc.
+                        return l.getMounts().stream().anyMatch(mountIndex::containsKey);
+                    }
+                    // Standard path: specific camera mount must match lens mount
+                    return isCompatible(camMount, l.getMounts());
+                })
+                .sorted(Comparator      // sort by focal length
+                        .comparingDouble(Lens::getMinFocalForSort)
+                        .thenComparing(Lens::getModel))
+                .map(Lens::getModel)
+                // .sorted()
+                .toList();
+    }
+
+    private boolean isMountGeneric(String mount) {
+        if (mount == null || mount.isEmpty()) {
+            return true;
+        }
+        String m = mount.toLowerCase();
+        return m.equals("none") || m.equals("generic");
     }
 
     // -------------------------------------------------------------------------------------------
@@ -586,18 +705,55 @@ public class LensfunDatabase {
 
     // ------------------
 
+    static void nikonCheck(LensfunDatabase db) {
+        // List<Camera> cam = db.getCamerasByMaker("NIKON CORPORATION");
+        // for (Camera c : cam) {
+        //     System.out.println(c);
+        // }
+        // Camera c = db.findCamera("NIKON CORPORATION", "Coolpix P1000");
+        // System.out.println(c);
+
+        // Lens l = db.findLens("NIKON CORPORATION", "Coolpix P1000");
+        // System.out.println(l);
+
+        Camera c = db.findCamera("Generic", "Crop-factor 1.0 (Full Frame)");
+        System.out.println(c);
+
+        List<String> lensMakers = db.getLensMakersForCamera(c);
+        for (String lensMaker : lensMakers) {
+            System.out.println(lensMaker);
+        }
+    }
+
+    static void focalSortCheck(LensfunDatabase db) {
+        Lens lens = db.findLens("Canon", "Canon EF 500mm f/4L IS II USM + EF 2.0x extender III");
+        // System.out.println(lens);
+        System.out.println(lens.getMinFocalForSort());
+
+
+        List<Lens> lensList = new ArrayList<>(db.getLensesByMaker("Canon"));
+        lensList.sort(Comparator.comparingDouble(Lens::getMinFocalForSort)
+                .thenComparing(Lens::getModel));
+        for (Lens le : lensList) {
+            System.out.println(le);
+        }
+    }
+
     public static void main(String[] args) {
         LensfunDatabase db = LensfunDatabase.getInstance();
         // db.listAllLenses();
-        // db.findLens("Vivitar 100mm f/3.5 AF Macro");
+        // db.findLens("Coolpix P1000");
         // db.listMounts();
         // db.listUniqueCameras();
         // db.listCameraIndex();
         // db.listCameraMakers();
         // db.listCompatibleLenses("alpha 6500");
-        // db.listCamerasByMaker("Nikon Corporation");
+        // db.listCamerasByMaker("Generic");
         // db.listLensesByMaker("Sigma");
-        System.out.println(db.findCamera("Canon", "Canon PowerShot SX50 HS"));
+        // System.out.println(db.findCamera("Generic", "Crop-factor 1.0 (Full Frame)"));
+        // nikonP1000
+        // nikonCheck(db);
+        focalSortCheck(db);
     }
 
 

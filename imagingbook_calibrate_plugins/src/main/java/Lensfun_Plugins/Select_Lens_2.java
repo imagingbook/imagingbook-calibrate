@@ -18,7 +18,8 @@ import java.util.Vector;
 
 public class Select_Lens_2 implements PlugIn, DialogListener {
 
-    private static final String placeHolder = "-".repeat(40);
+    // private static final String placeHolder = "\u00A0".repeat(60);
+    private static final String placeHolder = "#".repeat(60);
 
     String camMaker;
     String camModel;
@@ -27,31 +28,31 @@ public class Select_Lens_2 implements PlugIn, DialogListener {
     LensfunDatabase db = LensfunDatabase.getInstance();
 
     public void run(String arg) {
-        GenericDialog gd = new GenericDialog("Select Lens");
+        // GenericDialog gd = new GenericDialog("Select Lens");
+        GenericDialog gd = new GenericDialog("Select Lens") {
+            @Override
+            protected void setup() {    // called by showDialog() after pack()
+                for (Object c : getChoices()) {
+                    Choice choice = (Choice) c;
+                    // Lock the width that the placeholders created
+                    Dimension d = choice.getPreferredSize();
+                    choice.setPreferredSize(new Dimension(d.width, d.height));
+                    choice.setMinimumSize(new Dimension(d.width, d.height));
+                }
+                // populate choices 1-3:
+                updateCameraModels(this); // Now clear and update
+            }
+        };
 
         String[] camMakers = db.getCameraMakers().toArray(new String[0]);
+        gd.addChoice("Camera Maker:", camMakers, camMakers[0]);         // Choice 0
+        gd.addChoice("Camera Model:", new String[]{placeHolder}, "");   // Choice 1
+        gd.addChoice("Lens Maker:",   new String[]{placeHolder}, "");   // Choice 2
+        gd.addChoice("Lens Model:",   new String[]{placeHolder}, "");   // Choice 3
 
-        gd.addChoice("Camera Maker:", camMakers, "Canon");
-        gd.addChoice("Camera Model:", new String[]{placeHolder}, ""); // Index 1
-        gd.addChoice("Lens Maker:", new String[]{placeHolder}, "");   // Index 2
-        gd.addChoice("Lens Model:", new String[]{placeHolder}, "");   // Index 3
-
-        // Vector<?> choices = gd.getChoices();
-        // for (Object c : choices) {
-        //     Choice choice = (Choice) c;
-        //     // Get the size the placeholder created
-        //     Dimension d = choice.getPreferredSize();
-        //     // Force this to be the minimum size so it never shrinks
-        //     choice.setMinimumSize(d);
-        // }
-
-        gd.pack();
-        // -------------------------------
-
-        // This will chain down and fill all boxes
-        updateCameraModels(gd);
         gd.addDialogListener(this);
         gd.showDialog();
+
         if (gd.wasCanceled()) {
             return;
         }
@@ -68,11 +69,13 @@ public class Select_Lens_2 implements PlugIn, DialogListener {
         IJ.log("Lens maker: " + lensMaker);
         IJ.log("Lens model: " + lensModel);
 
+        Camera theCam = db.findCamera(camMaker, camModel);
+        IJ.log("Selected camera: " + theCam);
         Lens theLens = db.findLens(lensMaker, lensModel);
         IJ.log("Selected lens: " + theLens);
     }
 
-    public void updateCameraModels(GenericDialog gd) {
+    private void updateCameraModels(GenericDialog gd) {
         String maker = ((Choice)gd.getChoices().get(0)).getSelectedItem();
         List<Camera> cams = db.getCamerasByMaker(maker);
         Choice modelChoice = (Choice)gd.getChoices().get(1);
@@ -81,27 +84,23 @@ public class Select_Lens_2 implements PlugIn, DialogListener {
         for (Camera c : cams) {
             modelChoice.add(c.getModel());
         }
-        // modelChoice.add(placeHolder);
         updateLensMakers(gd); // Chain down
     }
 
-    public void updateLensMakers(GenericDialog gd) {
+    private void updateLensMakers(GenericDialog gd) {
         Camera cam = db.findCamera(
                 ((Choice)gd.getChoices().get(0)).getSelectedItem(), // camera maker
                 ((Choice)gd.getChoices().get(1)).getSelectedItem()  // camera model
         );
+        if (cam != null) {
+            List<String> lensMakers = db.getLensMakersForCamera(cam);
+            Choice lensMakerChoice = (Choice) gd.getChoices().get(2);
 
-        String mount = cam.mount();
-        // Filter Lens Makers who have lenses for cam.getMount()
-        List<String> validMakers = db.getLensMakersForMount(mount);
-        Choice lensMakerChoice = (Choice)gd.getChoices().get(2);
-
-        lensMakerChoice.removeAll();
-        for (String m : validMakers) {
-            lensMakerChoice.add(m);
+            lensMakerChoice.removeAll();
+            for (String m : lensMakers) {
+                lensMakerChoice.add(m);
+            }
         }
-        // lensMakerChoice.add(placeHolder);
-
         updateLensList(gd);
     }
 
@@ -111,22 +110,29 @@ public class Select_Lens_2 implements PlugIn, DialogListener {
         Choice lensMakerChoice = (Choice) gd.getChoices().get(2);
         Choice lensChoice = (Choice) gd.getChoices().get(3);
 
-        // 1. Get the current camera to find its mount
-        Camera cam = db.findCamera(camMakerChoice.getSelectedItem(), camModelChoice.getSelectedItem());
+        String selectedCamMaker  = camMakerChoice.getSelectedItem();
+        String selectedCamModel = camModelChoice.getSelectedItem();
         String selectedLensMaker = lensMakerChoice.getSelectedItem();
+
+        // 1. Get the current camera to find its mount
+        Camera cam = db.findCamera(selectedCamMaker, selectedCamModel);
 
         lensChoice.removeAll();
         if (cam != null && selectedLensMaker != null) {
             // 2. Filter lenses by Maker AND Compatibility
-            List<Lens> compatibleLenses = db.getMasterLensList().stream()
-                    .filter(lens -> lens.getMaker().equals(selectedLensMaker))
-                    .filter(lens -> db.isCompatible(cam.mount(), lens.getMounts()))
-                    .toList();
+            // List<Lens> compatibleLenses = db.getMasterLensList().stream()
+            //         .filter(lens -> lens.getMaker().equals(selectedLensMaker))
+            //         .filter(lens -> db.isCompatible(mount, lens.getMounts()))
+            //         .toList();
+            // for (Lens l : compatibleLenses) {
+            //     lensChoice.add(l.getModel());
+            // }
 
-            for (Lens l : compatibleLenses) {
-                lensChoice.add(l.getModel());
+            String mount = cam.mount();
+            List<String> lensModels = db.getLensModels(selectedLensMaker, mount);
+            for (String lm : lensModels) {
+                lensChoice.add(lm);
             }
-            // lensChoice.add(placeHolder);
         }
     }
 
@@ -137,7 +143,6 @@ public class Select_Lens_2 implements PlugIn, DialogListener {
             return true;
 
         Object source = e.getSource();
-
         if (source == choices.get(0)) {
             // Start at the top: Camera Maker -> Model -> Lens Maker -> Lens
             updateCameraModels(gd);
@@ -151,38 +156,7 @@ public class Select_Lens_2 implements PlugIn, DialogListener {
             updateLensList(gd);
         }
 
-        return true;
+        return true; // Keep dialog open
     }
 
-
-    // @Override
-    // public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
-    //     // Get the Choice components (Maker is at index 0, Lens is at index 1)
-    //     Choice makerChoice = (Choice) gd.getChoices().get(0);
-    //     Choice lensChoice = (Choice) gd.getChoices().get(1);
-    //
-    //     String selectedMaker = makerChoice.getSelectedItem();
-    //     IJ.log("selectedMaker: " + selectedMaker);
-    //
-    //     // Only update if the event came from the Maker choice or if the Lens list is empty
-    //     if (e != null && e.getSource() == makerChoice) {
-    //         IJ.log("updating lensChoice");
-    //
-    //         // 1. Get filtered lenses from your manager
-    //         List<Lens> filteredLenses = db.getLensesByMaker(selectedMaker);
-    //
-    //         IJ.log("adding lenses: " + filteredLenses.size());
-    //
-    //         // 2. Update the AWT Choice component
-    //         lensChoice.removeAll();
-    //         for (Lens lens : filteredLenses) {
-    //             lensChoice.add(lens.getModel());
-    //         }
-    //
-    //         // 3. Optional: Trigger a UI refresh
-    //         gd.repaint();
-    //     }
-    //
-    //     return true; // Keep dialog open
-    // }
 }
