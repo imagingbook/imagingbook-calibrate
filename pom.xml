@@ -3,10 +3,6 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
-	<!--<groupId>com.imagingbook</groupId>-->
-	<artifactId>imagingbook-calibrate</artifactId>
-	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>com.imagingbook</groupId>
@@ -14,7 +10,11 @@
 		<version>7.3.0</version>
 		<relativePath />
 	</parent>
-	
+
+	<!--<groupId>com.imagingbook</groupId>-->
+	<artifactId>imagingbook-calibrate</artifactId>
+	<packaging>pom</packaging>
+
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>
 		Calibration software supplementing 
@@ -35,7 +35,7 @@
 
 	<scm>
 		<connection>scm:git:git://github.com/imagingbook/imagingbook-calibrate.git</connection>
-		<developerConnection>scm:git:ssh://github.com:imagingbook/imagingbook-calibrate.git.git</developerConnection>
+		<developerConnection>scm:git:ssh://github.com:imagingbook/imagingbook-calibrate.git</developerConnection>
 		<url>http://github.com/imagingbook/imagingbook-calibrate.git/tree/master</url>
 	</scm>
 	
