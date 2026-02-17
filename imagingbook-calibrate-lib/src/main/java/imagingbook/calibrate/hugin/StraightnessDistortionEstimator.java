@@ -7,12 +7,16 @@
 package imagingbook.calibrate.hugin;
 
 import imagingbook.calibrate.distortion.DistortionModel;
+import imagingbook.calibrate.distortion.Radial3TermDistortion;
 import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.line.OrthogonalLineFitEigen;
 import imagingbook.common.geometry.line.AlgebraicLine;
 import imagingbook.common.math.Arithmetic;
-import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
+import org.apache.commons.math4.legacy.exception.TooManyEvaluationsException;
+import org.apache.commons.math4.legacy.exception.TooManyIterationsException;
+import org.apache.commons.math4.legacy.fitting.leastsquares.*;
 
 import java.util.List;
 
@@ -24,11 +28,16 @@ import static imagingbook.common.math.Arithmetic.sqr;
  */
 public class StraightnessDistortionEstimator {
 
+    private static int maxEvaluations = 1000;
+    private static int maxIterations  = 1000;
+
     private final Camera initCam;
     private final DistortionModel initDistortion;
     private final int K;
     private final Pnt2d[][] pntArray;
     private final int totalPntCnt;
+
+    private String failureReason;   // TODO
 
     /**
      * Constructor.
@@ -88,8 +97,42 @@ public class StraightnessDistortionEstimator {
      */
     public Camera estimateDistortion() {
         MultivariateJacobianFunction model = new OptimizationModel(totalPntCnt, K);
+        double[] pStart = initDistortion.getParameters();
 
+        LeastSquaresProblem problem = new LeastSquaresBuilder()
+                .target(new double[totalPntCnt])    // zero vector
+                .model(model)
+                .start(pStart)
+                .maxEvaluations(maxEvaluations)
+                .maxIterations(maxIterations)
+                .build();
 
-        return initCam;
+        LevenbergMarquardtOptimizer lm = new LevenbergMarquardtOptimizer().withInitialStepBoundFactor(100);
+        LeastSquaresOptimizer.Optimum result;
+        try {
+            result = lm.optimize(problem);
+        }
+        catch (TooManyIterationsException | TooManyEvaluationsException e) {
+            failureReason = "maximum number of iterations or evaluations exceeded";
+            return null;
+        }
+
+        double[] optParams = result.getPoint().toArray();
+        DistortionModel optDistortion = initDistortion.withParameters(optParams);
+        return new StandardCamera(initCam.getLinearParameters(), optDistortion);
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+
+    static List<Pnt2d> sampleLine(AlgebraicLine line) {
+        return null;
+    }
+
+    public static void main(String[] args) {
+        double[] A = {520, 520, 0, 320, 240};
+        DistortionModel dist = new Radial3TermDistortion();
+        Camera cam = new StandardCamera(A, dist);
+        // create a couple of straight lines
+
     }
 }
