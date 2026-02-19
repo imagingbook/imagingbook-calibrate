@@ -191,22 +191,46 @@ public class Radial2TermDistortionTest {
     //      EXPERIMENTAL!!!
     // -------------------------------------------------------------------------
 
-    @Test
-    public void estimateInverseFunction2Test2() {
+    @Test  //TODO: something's wrong with the residuals!!
+    public void estimateInverseFunction2Test() {
         double[] k = new double[] {k0, k1};
         System.out.println("k = " + Arrays.toString(k));
-        Radial2TermDistortion ldm = new Radial2TermDistortion(k);
-        double[] q = ldm.estimateInverseFunction2();
+        Radial2TermDistortion fwdDistortion = new Radial2TermDistortion(k);
+        double[] q = fwdDistortion.estimateInverseFunction2();
         System.out.println("q = " + Arrays.toString(q));
+
+        // max residual = 0.0015611290017716883
+        // avg residual = 3.229585224954295E-5
+
+        Radial2TermDistortion invDistortion = new Radial2TermDistortion(q);
+        int N = 100;
+        for (int i = 0; i <= N; i++) {
+            double ru = 1.0 * i / N;
+            double rd = fwdDistortion.fRad(ru);
+            double rr = invDistortion.fRad(rd);
+            // System.out.format("%3d: %.6f -> %.6f -> %.6f\n", i, ru, rd, rr);
+            assertEquals(ru, rd, 5e-3);
+        }
+
     }
 
     @Test
-    public void estimateInverseFunction2Test3() {
+    public void estimateInverseFunction3Test() {
         double[] k = new double[] {k0, k1};
         System.out.println("k = " + Arrays.toString(k));
-        Radial2TermDistortion ldm = new Radial2TermDistortion(k);
-        double[] q = ldm.estimateInverseFunction3();
+        Radial2TermDistortion fwdDistortion = new Radial2TermDistortion(k);
+        double[] q = fwdDistortion.estimateInverseFunction3();
         System.out.println("q = " + Arrays.toString(q));
+
+        Radial3TermDistortion invDistortion = new Radial3TermDistortion(q);
+        int N = 100;
+        for (int i = 0; i <= N; i++) {
+            double ru = 1.0 * i / N;
+            double rd = fwdDistortion.fRad(ru);
+            double rr = invDistortion.fRad(rd);
+            System.out.format("%3d: %.6f -> %.6f -> %.6f\n", i, ru, rd, rr);
+        }
+
     }
 
     @Test

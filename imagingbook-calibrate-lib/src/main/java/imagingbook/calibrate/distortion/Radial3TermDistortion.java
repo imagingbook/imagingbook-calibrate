@@ -10,6 +10,14 @@ import org.apache.commons.math4.legacy.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math4.legacy.analysis.solvers.NewtonRaphsonSolver;
 import org.apache.commons.math4.legacy.analysis.solvers.UnivariateDifferentiableSolver;
 
+/**
+ * Three-term radial distortion model specified by function
+ * <pre>{@code
+ * rd = warp(ru) = ru * (1 + k0 * ru^2 + k1 * ru^4 + k2 * ru^6)
+ *               = ru + k0 * ru^3 + k1 * ru^5 + k2 * ru^7}
+ * </pre>
+ * with undistorted radius ru, distorted radius rd, and parameters k0, k1, k2.
+ */
 public class Radial3TermDistortion extends RadialDistortion {
 
     private final double k0, k1, k2;
@@ -47,11 +55,10 @@ public class Radial3TermDistortion extends RadialDistortion {
 
     @Override
     public double fRad(double r) {
-
         final double r2 = r * r;
         final double r4 = r2 * r2;
         final double r6 = r4 * r2;
-        double D = k0 * r2 + k1 * r4 + k2 * r6;		// D(r) = k1 * r^2 + k1 * r^4 + k2 * r^6
+        double D = k0 * r2 + k1 * r4 + k2 * r6;		// D(r) = k0 * r^2 + k1 * r^4 + k2 * r^6
         return r * (1 + D);
     }
 

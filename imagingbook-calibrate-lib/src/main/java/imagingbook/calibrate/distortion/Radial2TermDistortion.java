@@ -18,17 +18,21 @@ import org.apache.commons.math4.legacy.linear.QRDecomposition;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
+import imagingbook.common.math.Matrix;
+
 import java.util.Arrays;
 import java.util.Random;
 
+import static java.lang.Math.abs;
+
 /**
- * Basic radial distortion model used in Zhang's EasyCalib implementation with two
- * {@code parameters = (k0, k1)}.
- * Distortion is modeled by function
+ * Basic two-term radial distortion model specified by function
  * <pre>{@code
  * r' = warp(r) = r * (1 + k0 * r^2 + k1 * r^4)}
  *              = r + k0 * r^3 + k1 * r^5
  * </pre>
+ * with undistorted radius ru, distorted radius rd, and parameters k0, k1.
+ * This is the distortion model used in Zhang's EasyCalib implementation.
  */
 public class Radial2TermDistortion extends RadialDistortion {
 
@@ -125,33 +129,44 @@ public class Radial2TermDistortion extends RadialDistortion {
 
     /**
      * Find an approximate inverse function for
-     *  fRad(r) = r' =r * (1 + k0 * r^2 + k1 * r^4)
+     * {@code fRad(ru) = rd = ru * (1 + k0 * ru^2 + k1 * ru^4)}
      *  using the same form of polynomial
-     *  fRadInv(r') = r = r' * (1 + q0 * r'^2 + q1 * r'^4)
+     *  <pre>
+     *      {@code fRadInv(rd) = ru = rd * (1 + q0 * rd^2 + q1 * rd^4)
+     *      = rd + q0 * rd^3 + q1 * rd^5)}</pre>
+     *  with 2 parameters (q0, q1)
      * @return
      */
     public double[] estimateInverseFunction2() {
         int N = 1000;   // number of samples
+        double rRange = 1.0;
         Random rand = new Random();
-        RealMatrix A = MatrixUtils.createRealMatrix(N, 2);
-        RealVector d = new ArrayRealVector(N);
-        for (int i = 0; i < N; i++) {
-            double r = rand.nextDouble();
-            double rr = fRad(r);
-            double rr3 = rr * rr * rr;
-            double rr5 = rr3 * rr * rr;
-            A.setEntry(i, 0, rr3);
-            A.setEntry(i, 1, rr5);
-            d.setEntry(i, r - rr);
+        RealMatrix A = MatrixUtils.createRealMatrix(N+1, 2);
+        RealVector d = new ArrayRealVector(N+1);
+        for (int i = 0; i <= N; i++) {
+            double ru = rRange * i / N;     // undistorted radius
+            double rd = fRad(ru);           // distorted radius
+            double rd3 = rd * rd * rd;
+            double rd5 = rd3 * rd * rd;
+            A.setEntry(i, 0, rd3);
+            A.setEntry(i, 1, rd5);
+            d.setEntry(i, ru - rd);
         }
-
+        // solve A * q = d (least squares)
         DecompositionSolver solver = new QRDecomposition(A).getSolver();
         RealVector q = solver.solve(d);
 
         RealVector residual = d.subtract(A.operate(q));
-        double maxres = residual.getMaxValue();
+        // RealVector res2 = residual.ebeMultiply(residual);
+        double maxres = Math.abs(residual.getMaxValue());
+        int maxidx = residual.getMaxIndex();
+        double minres =Math.abs(residual.getMinValue());
+        int minidx = residual.getMinIndex();
+
+
         double avgres = residual.getNorm() / N;
-        System.out.println("max residual = " + maxres);
+        System.out.println("max residual = " + maxres + " @ " + maxidx);
+        System.out.println("min residual = " + minres + " @ " + minidx);
         System.out.println("avg residual = " + avgres);
         return q.toArray();
     }
@@ -159,23 +174,25 @@ public class Radial2TermDistortion extends RadialDistortion {
     /**
      * Just an experiment. Find coefficients for a polynomial
      * to model the inverse function.
+     * with 3 parameters (q0, q1, q2)
      * @return
      */
     public double[] estimateInverseFunction3() {
         int N = 1000;   // number of samples
+        double rRange = 1.0;
         Random rand = new Random();
-        RealMatrix A = MatrixUtils.createRealMatrix(N, 3);
-        RealVector d = new ArrayRealVector(N);
-        for (int i = 0; i < N; i++) {
-            double r = rand.nextDouble();
-            double rr = fRad(r);
-            double rr3 = rr * rr * rr;
-            double rr5 = rr3 * rr * rr;
-            double rr7 = rr5 * rr * rr;
-            A.setEntry(i, 0, rr3);
-            A.setEntry(i, 1, rr5);
-            A.setEntry(i, 2, rr7);
-            d.setEntry(i, r - rr);
+        RealMatrix A = MatrixUtils.createRealMatrix(N+1, 3);
+        RealVector d = new ArrayRealVector(N+1);
+        for (int i = 0; i <= N; i++) {
+            double ru = rRange * i / N;     // undistorted radius
+            double rd = fRad(ru);
+            double rd3 = rd * rd * rd;
+            double rd5 = rd3 * rd * rd;
+            double rd7 = rd5 * rd * rd;
+            A.setEntry(i, 0, rd3);
+            A.setEntry(i, 1, rd5);
+            A.setEntry(i, 2, rd7);
+            d.setEntry(i, ru - rd);
         }
 
         DecompositionSolver solver = new QRDecomposition(A).getSolver();
@@ -191,7 +208,7 @@ public class Radial2TermDistortion extends RadialDistortion {
         return q.toArray();
     }
 
-    public static void main(String[] args) {
+    static void runScaleCheck() {
         double r = 0.9;
         double s = 0.7;
         System.out.println("r = " + r);
@@ -234,5 +251,9 @@ public class Radial2TermDistortion extends RadialDistortion {
             sum += as[i-1] * Math.pow(s * r, i);
         }
         return sum;
+    }
+
+    public static void main(String[] args) {
+
     }
 }
