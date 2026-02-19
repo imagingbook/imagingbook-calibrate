@@ -7,12 +7,16 @@
 package imagingbook.calibrate.hugin;
 
 
+import imagingbook.common.math.Matrix;
+import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math4.legacy.core.Pair;
 import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
 import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
 import org.apache.commons.math4.legacy.linear.ArrayRealVector;
+import org.apache.commons.math4.legacy.linear.DiagonalMatrix;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
+import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
 
 /**
  * An implementation of {@link MultivariateJacobianFunction} which only defines the
@@ -36,6 +40,16 @@ public abstract class MultivariateJacobianNumeric implements MultivariateJacobia
         double[] pp = p.toArray();
         double[] Y = getValues(pp);
         double[][] J = getJacobian(pp, Y);
+
+        System.out.println(" p = " + Matrix.toString(p));
+        // System.out.println(" Y = \n" + Matrix.toString(Y));
+        // double[] colNorms = getMatrixColumnNorms(J);
+        // System.out.println(" J = \n" + Matrix.toString(J));
+        // System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
+        // System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
+        // System.out.println("    J rank = " + getMatrixRank(J));
+        // System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
+
         return new Pair<>(new ArrayRealVector(Y, false), new Array2DRowRealMatrix(J, false));
     }
 
@@ -92,5 +106,37 @@ public abstract class MultivariateJacobianNumeric implements MultivariateJacobia
         double tmp = x + dx;
         return tmp - x;
     }
+
+    private static double[] getMatrixColumnNorms(double[][] J) {
+        double[] colNorms = new double[J[0].length];
+        RealMatrix JR = new Array2DRowRealMatrix(J, false);
+        for (int j = 0; j < colNorms.length; j++) {
+            colNorms[j] = JR.getColumnVector(j).getNorm();
+        }
+        return colNorms;
+    }
+
+    private static int getMatrixRank(double[][] data) {
+        RealMatrix matrix = new Array2DRowRealMatrix(data);
+        // 2. Perform SVD
+        SingularValueDecomposition svd = new SingularValueDecomposition(matrix);
+        // 3. Get the rank
+        return svd.getRank();
+    }
+
+    public static double getJtJconditionNumber(double[][] data) {
+        double[] colNorms = getMatrixColumnNorms(data);
+        RealMatrix D = new DiagonalMatrix(colNorms);
+        RealMatrix J = new Array2DRowRealMatrix(data);
+        RealMatrix JTJ = J.transpose().multiply(J);
+        // if (showOnce) {
+        //     System.out.println("JTJ:\n" + Matrix.toString(JTJ));
+        //     showOnce = false;
+        // }
+        RealMatrix JTJD = JTJ.add(D);
+        return Matrix.getConditionNumber(JTJD);
+    }
+
+
 
 }

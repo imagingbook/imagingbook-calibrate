@@ -88,6 +88,8 @@ public class RadialLateralDistortion extends DistortionModel {
     @Override   // this will fail for large p1, p2 coefficients!
     public double[] unwarp(double[] XY) {
 
+        // return (0,0) if XY = (0,0)?
+
         MultivariateJacobianFunction model = point -> {
             double[] xyp = point.toArray();
             double x = xyp[0];
@@ -131,7 +133,7 @@ public class RadialLateralDistortion extends DistortionModel {
                 .checker(new EvaluationRmsChecker(1e-8))
                 .build();
 
-        // LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer();    // new GaussNewtonOptimizer() - alternatively
+        // LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer();
         LeastSquaresOptimizer optimizer = new GaussNewtonOptimizer();
 
         try {

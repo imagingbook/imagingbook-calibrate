@@ -13,20 +13,28 @@ import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.line.OrthogonalLineFitEigen;
 import imagingbook.common.geometry.line.AlgebraicLine;
-import imagingbook.common.math.Arithmetic;
+import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math4.legacy.exception.TooManyEvaluationsException;
 import org.apache.commons.math4.legacy.exception.TooManyIterationsException;
-import org.apache.commons.math4.legacy.fitting.leastsquares.*;
+import org.apache.commons.math4.legacy.fitting.leastsquares.EvaluationRmsChecker;
+import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
+import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
+import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
+import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static imagingbook.common.math.Arithmetic.sqr;
+import static imagingbook.common.math.Matrix.zeroVector;
 
 /**
  * Estimates non-linear camera distortion from sets of sensor points trusted to be on straight
  * lines.
+ * Version 1: One target/Jacobian row for each observed point.
  */
-public class StraightnessDistortionEstimator {
+public class StraightnessDistortionEstimator1 {
 
     private static int maxEvaluations = 1000;
     private static int maxIterations  = 1000;
@@ -46,7 +54,7 @@ public class StraightnessDistortionEstimator {
      * @param initCam initial {@link Camera} instance
      * @param points a list of point sets, each assumed to form a straight line
      */
-    public StraightnessDistortionEstimator(Camera initCam, List<List<Pnt2d>> points) {
+    public StraightnessDistortionEstimator1(Camera initCam, List<List<Pnt2d>> points) {
         this.initCam = initCam;
         this.initDistortion = initCam.getDistortion();
         this.K = initDistortion.getParameterCount();
@@ -57,6 +65,7 @@ public class StraightnessDistortionEstimator {
             cnt += pntArray[j].length;
         }
         this.totalPntCnt = cnt;
+        System.out.println("totalPntCnt = " + totalPntCnt);
     }
 
     // ---------------------------------------------------------------------------------------
@@ -68,6 +77,8 @@ public class StraightnessDistortionEstimator {
 
         @Override
         double[] getValues(double[] p) {
+            // PrintPrecision.set(6);
+            // System.out.println("p = " + Matrix.toString(p));
             double[] Y = new double[totalPntCnt];
             DistortionModel dist = initDistortion.withParameters(p);
 
@@ -88,7 +99,6 @@ public class StraightnessDistortionEstimator {
 
             return Y;
         }
-
     }
 
     /**
@@ -100,9 +110,10 @@ public class StraightnessDistortionEstimator {
         double[] pStart = initDistortion.getParameters();
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
-                .target(new double[totalPntCnt])    // zero vector
+                .target(zeroVector(totalPntCnt))
                 .model(model)
                 .start(pStart)
+                .checker(new EvaluationRmsChecker(1e-10))
                 .maxEvaluations(maxEvaluations)
                 .maxIterations(maxIterations)
                 .build();
@@ -118,21 +129,50 @@ public class StraightnessDistortionEstimator {
         }
 
         double[] optParams = result.getPoint().toArray();
+
+        System.out.println("Iterations = " + result.getIterations());
+        System.out.println("Evaluations = " + result.getEvaluations());
+        System.out.println("RMS = " + result.getRMS());
+
         DistortionModel optDistortion = initDistortion.withParameters(optParams);
         return new StandardCamera(initCam.getLinearParameters(), optDistortion);
     }
 
     // -----------------------------------------------------------------------------------------------------
 
-    static List<Pnt2d> sampleLine(AlgebraicLine line) {
-        return null;
-    }
+    static final double k0 = 0.2, k1 = -0.05, k2 = 0.02;
+
+    // static List<List<Pnt2d>> sampleStraightLines(DistortionModel dist) {
+    //     List<List<Pnt2d>> lines = new ArrayList<>();
+    //     for (int j = 0; j <= 10; j++) {
+    //         List<Pnt2d> ln = new ArrayList<>();
+    //         double y = -0.5 + j * 0.1;
+    //         for (int i = 0; i <= 10; i++) {
+    //             double x = -0.5 + i * 0.1;
+    //             ln.add(dist.warp(Pnt2d.from(x, y)));
+    //         }
+    //         lines.add(ln);
+    //     }
+    //     return lines;
+    // }
 
     public static void main(String[] args) {
         double[] A = {520, 520, 0, 320, 240};
-        DistortionModel dist = new Radial3TermDistortion();
-        Camera cam = new StandardCamera(A, dist);
-        // create a couple of straight lines
+        DistortionModel realDist = new Radial3TermDistortion(new double[] {k0, k1, k2});
+        DistortionModel initDist = new Radial3TermDistortion(new double[] {0, 0, 0});
+        Camera realCam = new StandardCamera(A, initDist);
+        // create a couple of straight lines in square [-0.5, 0.5]
+        List<List<Pnt2d>> lines = Utils.sampleStraightLines(realDist, 1, 0);
+        // for (List<Pnt2d> ln : lines) {
+        //     List<Pnt2d> unwarped = ln.stream().map(dist::unwarp).toList();
+        //     System.out.println(Arrays.toString(ln.toArray()));
+        //     // System.out.println(Arrays.toString(unwarped.toArray()));
+        // }
+
+        StraightnessDistortionEstimator1 estimator = new StraightnessDistortionEstimator1(realCam, lines);
+        Camera newCam = estimator.estimateDistortion();
+        PrintPrecision.set(6);
+        System.out.println("result = " + newCam.getDistortion());
 
     }
 }
