@@ -6,6 +6,7 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.testutils.DeterministicRandom;
 import org.junit.Test;
 
@@ -176,6 +177,44 @@ public class Radial3TermDistortionTest {
             double[] xy2 = ldm.warp(xy1);
             double[] xy3 = ldm.unwarp(xy2);
             assertArrayEquals(xy1, xy3, tol);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void warpSymmetryTest() {
+        DistortionModel dist = new Radial3TermDistortion(new double[] {k0, k1, k2});
+        Pnt2d xc = Pnt2d.from(0, 0);
+        assertTrue(xc.isCloseTo(dist.warp(xc), 1e-6));
+
+        // check for warp symmetry:
+        RandomGenerator rand = new DeterministicRandom(37);
+        for (int i = 0; i < 100; i++) {
+            Pnt2d x1 = Pnt2d.from(rand.nextDouble(), rand.nextDouble());
+            Pnt2d x2 = x1.mult(-1);   // mirror about origin
+            Pnt2d x1d = dist.warp(x1);
+            Pnt2d x2d = dist.warp(x2);
+            assertEquals(x1d.getX() - x1.getX(), x2.getX() - x2d.getX(), tol);
+            assertEquals(x1d.getY() - x1.getY(), x2.getY() - x2d.getY(), tol);
+        }
+    }
+
+    @Test
+    public void unwarpSymmetryTest() {
+        DistortionModel dist = new Radial3TermDistortion(new double[] {k0, k1, k2});
+        Pnt2d xc = Pnt2d.from(0, 0);
+        assertTrue(xc.isCloseTo(dist.unwarp(xc), 1e-6));
+
+        // check for unwarp symmetry:
+        RandomGenerator rand = new DeterministicRandom(37);
+        for (int i = 0; i < 100; i++) {
+            Pnt2d x1d = Pnt2d.from(rand.nextDouble(), rand.nextDouble());
+            Pnt2d x2d = x1d.mult(-1);   // mirror about origin
+            Pnt2d x1 = dist.unwarp(x1d);
+            Pnt2d x2 = dist.unwarp(x2d);
+            assertEquals(x1.getX() - x1d.getX(), x2d.getX() - x2.getX(), tol);
+            assertEquals(x1.getY() - x1d.getY(), x2d.getY() - x2.getY(), tol);
         }
     }
 

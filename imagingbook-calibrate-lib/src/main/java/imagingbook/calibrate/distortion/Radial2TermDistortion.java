@@ -19,11 +19,14 @@ import org.apache.commons.math4.legacy.linear.RealMatrix;
 import org.apache.commons.math4.legacy.linear.RealVector;
 
 import imagingbook.common.math.Matrix;
+import org.apache.commons.math4.legacy.stat.regression.OLSMultipleLinearRegression;
 
 import java.util.Arrays;
 import java.util.Random;
 
+import static imagingbook.common.math.Arithmetic.sqr;
 import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 /**
  * Basic two-term radial distortion model specified by function
@@ -138,16 +141,19 @@ public class Radial2TermDistortion extends RadialDistortion {
      * @return
      */
     public double[] estimateInverseFunction2() {
-        int N = 1000;   // number of samples
+        int N = 100;   // number of samples
         double rRange = 1.0;
-        Random rand = new Random();
         RealMatrix A = MatrixUtils.createRealMatrix(N+1, 2);
         RealVector d = new ArrayRealVector(N+1);
         for (int i = 0; i <= N; i++) {
-            double ru = rRange * i / N;     // undistorted radius
+            double x = rRange * i / N;
+            double ru = 1 - sqr(1 - x);     // non-uniform sampling
+            // double ru = sqrt(x);
+            // double ru = sqrt(rRange * i / N);     // undistorted radius (squared for denser sampling at the edge of the lense)
             double rd = fRad(ru);           // distorted radius
-            double rd3 = rd * rd * rd;
-            double rd5 = rd3 * rd * rd;
+            double rd2 = rd * rd;
+            double rd3 = rd2 * rd;
+            double rd5 = rd3 * rd2;
             A.setEntry(i, 0, rd3);
             A.setEntry(i, 1, rd5);
             d.setEntry(i, ru - rd);
@@ -157,17 +163,16 @@ public class Radial2TermDistortion extends RadialDistortion {
         RealVector q = solver.solve(d);
 
         RealVector residual = d.subtract(A.operate(q));
-        // RealVector res2 = residual.ebeMultiply(residual);
-        double maxres = Math.abs(residual.getMaxValue());
-        int maxidx = residual.getMaxIndex();
-        double minres =Math.abs(residual.getMinValue());
-        int minidx = residual.getMinIndex();
-
-
+        RealVector residual2 = residual.ebeMultiply(residual);
+        double maxres2 = residual2.getMaxValue();
+        int maxIdx = residual2.getMaxIndex();
         double avgres = residual.getNorm() / N;
-        System.out.println("max residual = " + maxres + " @ " + maxidx);
-        System.out.println("min residual = " + minres + " @ " + minidx);
-        System.out.println("avg residual = " + avgres);
+        double rmserr = sqrt(avgres);
+        System.out.println("estimateInverseFunction2()");
+        System.out.format("max residual^2 = %.6f (%d)\n", maxres2, maxIdx);
+        System.out.format("max residual   = %.6f (%d)\n", sqrt(maxres2), maxIdx);
+        System.out.format("avg residual = %.6f\n", avgres);
+        System.out.println("rms residual = " + rmserr);
         return q.toArray();
     }
 
@@ -178,36 +183,47 @@ public class Radial2TermDistortion extends RadialDistortion {
      * @return
      */
     public double[] estimateInverseFunction3() {
-        int N = 1000;   // number of samples
+        int N = 100;   // number of samples
         double rRange = 1.0;
-        Random rand = new Random();
         RealMatrix A = MatrixUtils.createRealMatrix(N+1, 3);
         RealVector d = new ArrayRealVector(N+1);
         for (int i = 0; i <= N; i++) {
-            double ru = rRange * i / N;     // undistorted radius
+            double x = rRange * i / N;
+                        double ru = 1 - sqr(1 - x);
+            // double ru = sqrt(x);
+            // double ru = rRange * i / N;     // undistorted radius
             double rd = fRad(ru);
-            double rd3 = rd * rd * rd;
-            double rd5 = rd3 * rd * rd;
-            double rd7 = rd5 * rd * rd;
-            A.setEntry(i, 0, rd3);
-            A.setEntry(i, 1, rd5);
-            A.setEntry(i, 2, rd7);
-            d.setEntry(i, ru - rd);
+            double rd2 = rd * rd;
+            double rd3 = rd2 * rd;
+            double rd5 = rd3 * rd2;
+            double rd7 = rd5 * rd2;
+            double w = 1; //(i < N) ? 1 : 10;
+            A.setEntry(i, 0, w * rd3);
+            A.setEntry(i, 1, w * rd5);
+            A.setEntry(i, 2, w * rd7);
+            d.setEntry(i, w * (ru - rd));
         }
 
         DecompositionSolver solver = new QRDecomposition(A).getSolver();
         RealVector q = solver.solve(d);
 
         RealVector residual = d.subtract(A.operate(q));
-        double maxres = residual.getMaxValue();
+        RealVector residual2 = residual.ebeMultiply(residual);
+        double maxres2 = residual2.getMaxValue();
+        int maxIdx = residual2.getMaxIndex();
         double avgres = residual.getNorm() / N;
-        double rmserr = Math.sqrt(avgres);
-        System.out.println("max residual = " + maxres);
-        System.out.println("avg residual = " + avgres);
+        double rmserr = sqrt(avgres);
+        System.out.println("estimateInverseFunction3()");
+        System.out.format("max residual^2 = %.6f (%d)\n", maxres2, maxIdx);
+        System.out.format("max residual   = %.6f (%d)\n", sqrt(maxres2), maxIdx);
+        System.out.format("avg residual = %.6f\n", avgres);
         System.out.println("rms residual = " + rmserr);
         return q.toArray();
     }
 
+
+
+    // -----------------------------------------------------------------------------------------
     static void runScaleCheck() {
         double r = 0.9;
         double s = 0.7;

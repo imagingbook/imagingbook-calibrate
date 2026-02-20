@@ -6,17 +6,22 @@
  ******************************************************************************/
 package imagingbook.calibrate.distortion;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.testutils.DeterministicRandom;
 import org.apache.commons.math4.legacy.analysis.solvers.LaguerreSolver;
 import org.apache.commons.numbers.complex.Complex;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.random.RandomGenerator;
 
+import static imagingbook.common.math.Arithmetic.sqr;
+import static java.lang.Math.sqrt;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class Radial2TermDistortionTest {
     
@@ -176,6 +181,46 @@ public class Radial2TermDistortionTest {
     // -------------------------------------------------------------------------
 
     @Test
+    public void warpSymmetryTest() {
+        DistortionModel dist = new Radial2TermDistortion(new double[] {k0, k1});
+        Pnt2d xc = Pnt2d.from(0, 0);
+        assertTrue(xc.isCloseTo(dist.warp(xc), 1e-6));
+
+        // check for warp symmetry:
+        RandomGenerator rand = new DeterministicRandom(37);
+        for (int i = 0; i < 100; i++) {
+            Pnt2d x1 = Pnt2d.from(rand.nextDouble(), rand.nextDouble());
+            Pnt2d x2 = x1.mult(-1);   // mirror about origin
+            Pnt2d x1d = dist.warp(x1);
+            Pnt2d x2d = dist.warp(x2);
+            assertEquals(x1d.getX() - x1.getX(), x2.getX() - x2d.getX(), tol);
+            assertEquals(x1d.getY() - x1.getY(), x2.getY() - x2d.getY(), tol);
+        }
+    }
+
+    @Test
+    public void unwarpSymmetryTest() {
+        DistortionModel dist = new Radial2TermDistortion(new double[] {k0, k1});
+        Pnt2d xc = Pnt2d.from(0, 0);
+        assertTrue(xc.isCloseTo(dist.unwarp(xc), 1e-6));
+
+        // check for unwarp symmetry:
+        RandomGenerator rand = new DeterministicRandom(37);
+        for (int i = 0; i < 100; i++) {
+            Pnt2d x1d = Pnt2d.from(rand.nextDouble(), rand.nextDouble());
+            Pnt2d x2d = x1d.mult(-1);   // mirror about origin
+            Pnt2d x1 = dist.unwarp(x1d);
+            Pnt2d x2 = dist.unwarp(x2d);
+            assertEquals(x1.getX() - x1d.getX(), x2d.getX() - x2.getX(), tol);
+            assertEquals(x1.getY() - x1d.getY(), x2d.getY() - x2.getY(), tol);
+        }
+        new Random();
+    }
+
+    // -------------------------------------------------------------------------
+
+
+    @Test
     public void getDMatrixRowUTest() {
         DistortionModel ldm = new Radial2TermDistortion(new double[] {k0, k1});
         double x = 0.3, y = -0.6, du = 210, dv = 19;
@@ -191,8 +236,13 @@ public class Radial2TermDistortionTest {
     //      EXPERIMENTAL!!!
     // -------------------------------------------------------------------------
 
-    @Test  //TODO: something's wrong with the residuals!!
+    @Test   // use a 2-tap model for the inverse function
     public void estimateInverseFunction2Test() {
+        // with weight=1, nonuniform samples, N=100:
+        // k = [0.2, -0.05]
+        // max residual^2 = 0,000004
+        // max residual   = 0,001986
+        // avg residual = 0,000114
         double[] k = new double[] {k0, k1};
         System.out.println("k = " + Arrays.toString(k));
         Radial2TermDistortion fwdDistortion = new Radial2TermDistortion(k);
@@ -204,18 +254,26 @@ public class Radial2TermDistortionTest {
 
         Radial2TermDistortion invDistortion = new Radial2TermDistortion(q);
         int N = 100;
+        double rRange = 1.0;
         for (int i = 0; i <= N; i++) {
-            double ru = 1.0 * i / N;
+            double x = rRange * i / N;
+            double ru = 1 - sqr(1 - x);
+            // double ru = sqrt(x);
             double rd = fwdDistortion.fRad(ru);
             double rr = invDistortion.fRad(rd);
-            // System.out.format("%3d: %.6f -> %.6f -> %.6f\n", i, ru, rd, rr);
-            assertEquals(ru, rd, 5e-3);
+            // double diff = Math.abs(ru - rr);
+            // System.out.format("%3d: %.6f -> %.6f -> %.6f (diff=%.6f)\n", i, ru, rd, rr, diff);
+            assertEquals(ru, rr, 0.002);
         }
-
     }
 
-    @Test
+    @Test   // use a 3-tap model for the inverse function
     public void estimateInverseFunction3Test() {
+        // with weight=1, nonuniform samples, N=100:
+        // k = [0.2, -0.05]
+        // max residual^2 = 0,000000 (25)
+        // max residual   = 0,000374 (25)
+        // avg residual = 0,000021
         double[] k = new double[] {k0, k1};
         System.out.println("k = " + Arrays.toString(k));
         Radial2TermDistortion fwdDistortion = new Radial2TermDistortion(k);
@@ -228,9 +286,10 @@ public class Radial2TermDistortionTest {
             double ru = 1.0 * i / N;
             double rd = fwdDistortion.fRad(ru);
             double rr = invDistortion.fRad(rd);
-            System.out.format("%3d: %.6f -> %.6f -> %.6f\n", i, ru, rd, rr);
+            double diff = Math.abs(ru - rr);
+            System.out.format("%3d: %.6f -> %.6f -> %.6f (diff=%.6f)\n", i, ru, rd, rr, diff);
+            assertEquals(ru, rr, 0.001);
         }
-
     }
 
     @Test

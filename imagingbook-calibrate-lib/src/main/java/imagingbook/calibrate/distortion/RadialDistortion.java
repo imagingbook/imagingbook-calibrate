@@ -49,7 +49,7 @@ public abstract class RadialDistortion extends DistortionModel {
             return new double[] {0, 0};
         // final double R = warp(r);        // distorted radius
         final double s = fRad(r) / r;
-        return new double[] {s * x, s* y};
+        return new double[] {s * x, s * y};
     }
 
     // @Override
