@@ -2,8 +2,6 @@ package imagingbook.jaruco.boards;
 
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
-import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.dict.ArucoDictionary;
 import imagingbook.jaruco.marker.ArucoMarker;
 
@@ -14,6 +12,11 @@ import java.nio.file.Path;
 
 import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_100;
 
+
+/**
+ * Represents a "Charuco"-type marker board, which consists of ArUco alternating markers and
+ * solid black squares as board elements.
+ */
 public class CharucoBoard extends AbstractBoard {
 
     public enum Predefined {
@@ -127,11 +130,6 @@ public class CharucoBoard extends AbstractBoard {
         int u = markerMap[id][0];
         int v = markerMap[id][1];
         return (BoardMarker) boardElements[u][v];
-    }
-
-    @Override
-    public Pnt2d[] getMarkerCorners(int id) {
-        return getMarker(id).getCorners();
     }
 
     @Override

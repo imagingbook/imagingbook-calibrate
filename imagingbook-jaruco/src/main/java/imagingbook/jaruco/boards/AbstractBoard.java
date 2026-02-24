@@ -197,7 +197,9 @@ public abstract class AbstractBoard {
      * @param id the marker id
      * @ an array with the four corner points
      */
-    public abstract Pnt2d[] getMarkerCorners(int id);
+    public Pnt2d[] getMarkerCorners(int id) {
+        return getMarker(id).getCorners();
+    }
 
     /**
      * Returns the number of markers on this board.

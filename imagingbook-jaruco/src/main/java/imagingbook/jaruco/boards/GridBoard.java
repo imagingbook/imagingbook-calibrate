@@ -136,11 +136,6 @@ public class GridBoard extends AbstractBoard {
     }
 
     @Override
-    public Pnt2d[] getMarkerCorners(int id) {
-        return getMarker(id).getCorners();
-    }
-
-    @Override
     public int getMarkerCount() {
         return markerMap.length;
     }
