@@ -44,14 +44,14 @@ public class StraightMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public Polygon2d getMarkerCorners(SegmentedPolygon poly) {
+    public Pnt2d[] getMarkerCorners(SegmentedPolygon poly) {
         doFit(poly);
         ProjectiveMapping2D mapping =
                 new ProjectiveMapping2D(A.getData()).getInverse(); // target to source mapping
         // map unit square corners to image space:
-        List<Pnt2d> corners = new ArrayList<>();
+        Pnt2d[] corners = new Pnt2d[4];
         for (int i = 0; i < 4; i++) {
-            corners.add(mapping.applyTo(Pnt2d.from(UNIT_SQUARE_CCW[i])));
+            corners[i] = mapping.applyTo(Pnt2d.from(UNIT_SQUARE_CCW[i]));
         }
 
         // DEBUGGING
@@ -61,7 +61,7 @@ public class StraightMarkerLocator implements MarkerLocator {
         // Main.parabCurves.add(new PolyLine2d(corners.get(2), corners.get(3)));
         // Main.parabCurves.add(new PolyLine2d(corners.get(3), corners.get(0)));
 
-        return new Polygon2d(corners);
+        return corners;
     }
 
     // -------------------------------------------------------------------------

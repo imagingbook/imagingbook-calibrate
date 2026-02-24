@@ -92,9 +92,9 @@ public class ListMatchPoints {
     static Pnt2d[] getModelPoints(AbstractBoard board) {
         List<Pnt2d> modelPoints = new ArrayList<>();
         for (int i = 0; i < board.getMarkerCount(); i++) {
-            Polygon2d corners = board.getMarkerCorners(i);
+            Pnt2d[] corners = board.getMarkerCorners(i);
             for (int j = 0; j < 4; j++) {
-                modelPoints.add(corners.getPnt(j));
+                modelPoints.add(corners[j]);
             }
         }
         return modelPoints.toArray(new Pnt2d[0]);

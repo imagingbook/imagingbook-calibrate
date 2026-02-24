@@ -56,12 +56,12 @@ public class MarkerScanner {
      * {@code threshold}, which is typically the threshold applied to obtain
      * the binary image for region and contour extraction.
      *
-     * @param poly the corners of the marker quad (image coordinates)
+     * @param sourcePts the corners of the marker quad (image coordinates)
      * @param threshold the threshold to decide 0/1 field contents
      * @return a {@link BitVector} holding the extracted bit pattern
      */
-    public BitVector getMarkerData(Polygon2d poly, int threshold) {
-        Pnt2d[] sourcePts = poly.getPntList().toArray(new Pnt2d[0]);
+    public BitVector getMarkerData(Pnt2d[] sourcePts, int threshold) {
+        //Pnt2d[] sourcePts = poly.getPntList().toArray(new Pnt2d[0]);
         // calculate homography mapping (from target to source):
         ProjectiveMapping2D hom = ProjectiveMapping2D.fromPoints(targetPts, sourcePts);
         ByteProcessor canonicalIm = new ByteProcessor(targetSize, targetSize);

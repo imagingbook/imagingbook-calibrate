@@ -3,7 +3,6 @@ package imagingbook.jaruco.marker;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,12 +52,12 @@ public class SegmentedPolygon extends Polygon2d {
         return segments[k][0];
     }
 
-    public Polygon2d getCornerPolygon() {
-        List<Pnt2d> corners = new ArrayList<>(segments.length);
+    public Pnt2d[] getCorners() {
+        Pnt2d[] corners = new Pnt2d[segments.length];
         for (int k = 0; k < segments.length; k++) {
-            corners.add(segments[k][0]);
+            corners[k] = segments[k][0];
         }
-        return new Polygon2d(corners);
+        return corners;
     }
 
     /**

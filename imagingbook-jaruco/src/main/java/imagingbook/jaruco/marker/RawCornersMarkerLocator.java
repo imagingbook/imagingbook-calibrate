@@ -1,6 +1,6 @@
 package imagingbook.jaruco.marker;
 
-import imagingbook.common.geometry.basic.Polygon2d;
+import imagingbook.common.geometry.basic.Pnt2d;
 
 /**
  * Implementation of {@link MarkerLocator} which simply passes back the raw corner
@@ -17,8 +17,8 @@ public class RawCornersMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public Polygon2d getMarkerCorners(SegmentedPolygon poly) {
-        return poly.getCornerPolygon();
+    public Pnt2d[] getMarkerCorners(SegmentedPolygon poly) {
+        return poly.getCorners();
     }
 
 }

@@ -2,6 +2,7 @@ package imagingbook.jaruco.boards;
 
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.dict.ArucoDictionary;
 import imagingbook.jaruco.marker.ArucoMarker;
@@ -129,7 +130,7 @@ public class CharucoBoard extends AbstractBoard {
     }
 
     @Override
-    public Polygon2d getMarkerCorners(int id) {
+    public Pnt2d[] getMarkerCorners(int id) {
         return getMarker(id).getCorners();
     }
 

@@ -51,8 +51,9 @@ public abstract class AbstractBoardDetector {
     public void checkBoard() {
         // check if all marker corners are in CCW order:
         for (DetectionResult detResult : detResults) {
-            Polygon2d imageCorners = detResult.getCorners();
-            if (!imageCorners.isClockwiseOnScreen()) {
+            Pnt2d[] imageCorners = detResult.getCorners();
+            Polygon2d poly = new Polygon2d(imageCorners);
+            if (!poly.isClockwiseOnScreen()) {
                 throw new RuntimeException("corners not screen-clockwise for id = "
                         + detResult.getLookup().markerId());
             }
@@ -78,10 +79,10 @@ public abstract class AbstractBoardDetector {
         List<PntPair> matches = new ArrayList<>();
         for (DetectionResult detResult : detResults) {
             int markerId = detResult.getLookup().markerId();
-            Polygon2d imageCorners = detResult.getCorners();
-            Polygon2d boardCorners = board.getMarkerCorners(markerId);
+            Pnt2d[] imageCorners = detResult.getCorners();
+            Pnt2d[] boardCorners = board.getMarkerCorners(markerId);
             for (int i = 0; i < 4; i++) {
-                matches.add(new PntPair(imageCorners.getPnt(i), boardCorners.getPnt(i)));
+                matches.add(new PntPair(imageCorners[i], boardCorners[i]));
             }
         }
         return matches;

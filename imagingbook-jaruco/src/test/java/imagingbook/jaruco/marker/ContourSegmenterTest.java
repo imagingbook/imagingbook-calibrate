@@ -36,7 +36,7 @@ class ContourSegmenterTest {
 
         // check if all corner points are the same
         Polygon2d cornerPoly1 = new Polygon2d(corners);
-        Polygon2d cornerPoly2 = segCtr.getCornerPolygon();
+        Polygon2d cornerPoly2 = new Polygon2d(segCtr.getCorners());
         assertEquals(4, cornerPoly2.length());
         assertEquals(cornerPoly1, cornerPoly2);
 

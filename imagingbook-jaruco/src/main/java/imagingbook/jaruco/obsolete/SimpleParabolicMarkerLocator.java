@@ -44,8 +44,8 @@ public class SimpleParabolicMarkerLocator implements MarkerLocator {
     }
 
     @Override
-    public Polygon2d getMarkerCorners(SegmentedPolygon poly) {
-        Pnt2d[] corners = poly.getCornerPolygon().getPntList().toArray(new Pnt2d[0]);
+    public Pnt2d[] getMarkerCorners(SegmentedPolygon poly) {
+        Pnt2d[] corners = poly.getCorners();
         Pnt2d[] unitPts = PntUtils.makePntList(UNIT_SQUARE_CCW).toArray(new Pnt2d[0]);
 
         ProjectiveMapping2D forwdMap = ProjectiveMapping2D.fromPoints(corners, unitPts);
@@ -83,7 +83,7 @@ public class SimpleParabolicMarkerLocator implements MarkerLocator {
         }
         // Main.parabCurves = parabCurves;
         // ----------------------------------------------------
-        return new Polygon2d(invMap.applyTo(Arrays.asList(ix)));
+        return invMap.applyTo(ix);
     }
 
     // Parabola fitting: -------------------------------------------------------

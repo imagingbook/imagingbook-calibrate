@@ -7,6 +7,7 @@ import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfGraphics2D;
 import com.lowagie.text.pdf.PdfWriter;
 import ij.process.ByteProcessor;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.image.ImageGraphics;
 import imagingbook.jaruco.dict.ArucoDictionary;
@@ -196,7 +197,7 @@ public abstract class AbstractBoard {
      * @param id the marker id
      * @ an array with the four corner points
      */
-    public abstract Polygon2d getMarkerCorners(int id);
+    public abstract Pnt2d[] getMarkerCorners(int id);
 
     /**
      * Returns the number of markers on this board.

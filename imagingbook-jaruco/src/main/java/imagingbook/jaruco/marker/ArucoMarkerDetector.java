@@ -3,6 +3,7 @@ package imagingbook.jaruco.marker;
 
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.regions.Contour;
 import imagingbook.common.regions.ContourTracer;
@@ -10,13 +11,13 @@ import imagingbook.common.regions.RegionContourSegmentation;
 import imagingbook.common.threshold.global.OtsuThresholder;
 import imagingbook.common.util.ParameterBundle;
 import imagingbook.common.util.bits.BitVector;
+import imagingbook.jaruco.boards.Corners;
 import imagingbook.jaruco.dict.ArucoDictionary;
 import imagingbook.jaruco.dict.ArucoDictionary.DictionaryLookupResult;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static imagingbook.jaruco.marker.MarkerLocator.Type.ParabolicFit;
 import static imagingbook.jaruco.marker.MarkerLocator.Type.StraightFit;
 
 /**
@@ -104,16 +105,17 @@ public class ArucoMarkerDetector {
         // A. Segment contour and extract quad
         ContourSegmenter segmenter = new ContourSegmenter(params.polygonalApproxAccuracyRate);
         SegmentedPolygon segPoly = segmenter.segment(poly);
-        Polygon2d corners = segPoly.getCornerPolygon();
-        if (corners.length() != 4 ||                                     // pack into a local method
-                corners.getCircularity() < params.minCircularity ||           // parameter!
-                corners.getConvexity() != -1) {
+        Pnt2d[] corners = segPoly.getCorners();
+        Polygon2d cpoly = new Polygon2d(corners);
+        if (corners.length != 4 ||                                              // pack into a local method
+                cpoly.getCircularity() < params.minCircularity ||           // parameter!
+                cpoly.getConvexity() != -1) {
             return;
         }
 
         // B. Estimate homography and locate corners
         MarkerLocator locator = MarkerLocator.createFrom(params);
-        Polygon2d initialCorners = locator.getMarkerCorners(segPoly);
+        Pnt2d[] initialCorners = locator.getMarkerCorners(segPoly);
 
         // C: Extract the canonical marker image and read the marker's bitcode
         MarkerScanner extractor = new MarkerScanner(ip, dictionary);
@@ -128,12 +130,13 @@ public class ArucoMarkerDetector {
         // E. Rotate corners to canonical to align with ArUco pattern printouts
         // (corner 0 is the top-left corner of the marker)
         // Corners are in CW order (in image coordinate system)
-        Polygon2d finalCorners = initialCorners.rotate(-lookup.rotation()); // correct but CCW
-          // TODO: bring corners to CW order (clumsy!!)
-        // finalCorners = new Polygon2d(finalCorners.getPnt(0), finalCorners.getPnt(3), finalCorners.getPnt(2), finalCorners.getPnt(1));
+        Pnt2d[] finalCorners = Corners.rotate(initialCorners, -lookup.rotation()); // correct but CCW
+        // Polygon2d finalCorners = initialCorners.rotate(-lookup.rotation()); // correct but CCW
+        // Polygon2d finalCorners = initialCorners.rotate(-lookup.rotation());
 
         // Bring finalCorners to CW order (using special reverse()!)
-        DetectionResult result = new DetectionResult(lookup, finalCorners.reverse());
+        // DetectionResult result = new DetectionResult(lookup, finalCorners.reverse());
+        DetectionResult result = new DetectionResult(lookup, Corners.reversePoints(finalCorners));
         // Merge everything into the result.
         detections.add(result);
     }
@@ -146,9 +149,9 @@ public class ArucoMarkerDetector {
     public static class DetectionResult implements Comparable<DetectionResult> {
 
         final DictionaryLookupResult lookup;
-        final Polygon2d corners;
+        final Pnt2d[] corners;
 
-        public DetectionResult(DictionaryLookupResult lookup, Polygon2d corners) {
+        public DetectionResult(DictionaryLookupResult lookup, Pnt2d[] corners) {
             this.lookup = lookup;
             this.corners = corners;
         }
@@ -157,7 +160,7 @@ public class ArucoMarkerDetector {
             return lookup;
         }
 
-        public Polygon2d getCorners() {
+        public Pnt2d[] getCorners() {
             return corners;
         }
 

@@ -35,7 +35,7 @@ public class Main {
     private static final Color MarkerColor = Color.magenta;
     private static final Color CornerColor = Color.blue;
 
-    static void doBigImageTest() {
+    static void doSmallImageTest() {
         // String IMG_PATH = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
         String IMG_PATH = SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg";
 
@@ -52,7 +52,7 @@ public class Main {
         }
     }
 
-    static void doSmallImageTest() {
+    static void doBigImageTest() {
         String[] paths = {
                 // SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg",
                 // SAMPLE_IMAGE_DIR + "single-marker-5-1.jpg",
@@ -95,7 +95,7 @@ public class Main {
 
             // process all detected markers
             for (ArucoMarkerDetector.DetectionResult marker : detectedMarkers) {
-                Polygon2d corners = marker.getCorners();
+                Pnt2d[] corners = marker.getCorners();
 
                 ola.setFont(CornerFont);
                 ola.setTextColor(CornerColor);
@@ -111,7 +111,7 @@ public class Main {
                 }
 
                 // draw the marker's id number
-                Pnt2d center = corners.getCentroid();
+                Pnt2d center = new Polygon2d(corners).getCentroid();
                 ola.setFont(MarkerFont);
                 ola.setTextColor(MarkerColor);
                 // ola.addText(center.getX(), center.getY(), res.markerId() + "/" + res.rotation() + "/" + res.hammingDist());
@@ -132,7 +132,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        doBigImageTest();
         doSmallImageTest();
-        // doBigImageTest();
     }
 }

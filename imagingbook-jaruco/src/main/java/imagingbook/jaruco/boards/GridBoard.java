@@ -2,6 +2,7 @@ package imagingbook.jaruco.boards;
 
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.dict.ArucoDictionary;
 import imagingbook.jaruco.marker.ArucoMarker;
@@ -13,7 +14,7 @@ import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_100;
 import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_1000;
 
 /**
- * Represents a marke board with all markers in the same plane and in a regular M x N grid layout.
+ * Represents a marker board with all markers in the same plane and in a regular M x N grid layout.
  * The board contains only markers from the specified dictionary, without any additional
  * geometric shapes.
  */
@@ -135,7 +136,7 @@ public class GridBoard extends AbstractBoard {
     }
 
     @Override
-    public Polygon2d getMarkerCorners(int id) {
+    public Pnt2d[] getMarkerCorners(int id) {
         return getMarker(id).getCorners();
     }
 
@@ -150,9 +151,9 @@ public class GridBoard extends AbstractBoard {
     void drawBoardContent(Graphics2D g2, double scale, double xOffset, double yOffset) {
         // draw each marker
         for (int idx = 0; idx < getMarkerCount(); idx++) {
-            Polygon2d corners = getMarkerCorners(idx);
-            double x0 = corners.getPnt(0).getX() * scale + xOffset;
-            double y0 = corners.getPnt(0).getY() * scale + yOffset;
+            Pnt2d[] corners = getMarkerCorners(idx);
+            double x0 = corners[0].getX() * scale + xOffset;
+            double y0 = corners[0].getY() * scale + yOffset;
             double mw = markerWidth * scale;
             dictionary.getMarker(idx, 0, borderBits).drawTo(g2, x0, y0, mw);
         }

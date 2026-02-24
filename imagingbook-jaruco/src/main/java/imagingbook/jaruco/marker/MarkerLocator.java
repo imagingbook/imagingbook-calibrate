@@ -1,5 +1,6 @@
 package imagingbook.jaruco.marker;
 
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 
 /**
@@ -34,6 +35,6 @@ public interface MarkerLocator {
      * @param segmentedPolygon the original, already segmented contour (see {@link SegmentedPolygon})
      * @return the refined corner points in image coordinates
      */
-    public Polygon2d getMarkerCorners(SegmentedPolygon segmentedPolygon);
+    public Pnt2d[] getMarkerCorners(SegmentedPolygon segmentedPolygon);
 
 }
