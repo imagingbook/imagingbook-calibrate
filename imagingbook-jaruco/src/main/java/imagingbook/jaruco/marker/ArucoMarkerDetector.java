@@ -64,7 +64,7 @@ public class ArucoMarkerDetector {
     // -------------------------------------------------------------------------
 
     /**
-     * The core method. Tries to locate and identify markers in the given image.
+     * Tries to locate and identify markers in the supplied image.
      * @param ip the input image
      * @return a (possibly empty) list of {@link DetectionResult} instances
      */
@@ -86,7 +86,10 @@ public class ArucoMarkerDetector {
 
         // process all contours and collect results in detections
         for (Contour candidate : ics) {
-            processOneCandidate(candidate, ip, thr, detections);
+            DetectionResult det = processOneCandidate(candidate, ip, thr);
+            if (det != null) {
+                detections.add(det);
+            }
         }
 
         // multi-threaded version:
@@ -96,11 +99,11 @@ public class ArucoMarkerDetector {
         return detections;
     }
 
-    void processOneCandidate(Contour contour, ImageProcessor ip, int thr, List<DetectionResult> detections) {
+    DetectionResult processOneCandidate(Contour contour, ImageProcessor ip, int thr) {
         Polygon2d poly = contour.getPolygon();
         // List<Pnt2d> pts = contour.getPointList();
         if (poly.length() < params.minContourLength) {                          // parameter!
-            return;
+            return null;
         }
         // A. Segment contour and extract quad
         ContourSegmenter segmenter = new ContourSegmenter(params.polygonalApproxAccuracyRate);
@@ -110,7 +113,7 @@ public class ArucoMarkerDetector {
         if (corners.length != 4 ||                                              // pack into a local method
                 cpoly.getCircularity() < params.minCircularity ||           // parameter!
                 cpoly.getConvexity() != -1) {
-            return;
+            return null;
         }
 
         // B. Estimate homography and locate corners
@@ -124,7 +127,7 @@ public class ArucoMarkerDetector {
         // D: Lookup the bitcode in the dictionary (all rotations)
         DictionaryLookupResult lookup = dictionary.lookup(bitCode, params.maxCorrectionRate);
         if (lookup == null) {
-            return;
+            return null;
         }
 
         // E. Rotate corners to canonical to align with ArUco pattern printouts
@@ -138,18 +141,20 @@ public class ArucoMarkerDetector {
         // DetectionResult result = new DetectionResult(lookup, finalCorners.reverse());
         DetectionResult result = new DetectionResult(lookup, Corners.reverse(finalCorners));
         // Merge everything into the result.
-        detections.add(result);
+        // detections.add(result);
+        return result;
     }
 
     // -------------------------------------------------------------------------
 
     /**
-     * Represents the result of a single marker detection. Supports sorting by marker id.
+     * Represents the result of a single marker detection.
+     * Implements {@link Comparable} to allow sorting by marker id.
      */
     public static class DetectionResult implements Comparable<DetectionResult> {
 
-        final DictionaryLookupResult lookup;
-        final Pnt2d[] corners;
+        final DictionaryLookupResult lookup;        // the marker's dictionary properties
+        final Pnt2d[] corners;                      // the image corner positions for this marker
 
         public DetectionResult(DictionaryLookupResult lookup, Pnt2d[] corners) {
             this.lookup = lookup;
