@@ -6,7 +6,6 @@ import imagingbook.calibrate.Calibration;
 import imagingbook.calibrate.distortion.DistortionModelType;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.jaruco.boards.AbstractBoard;
 import imagingbook.jaruco.boards.AbstractBoardDetector.PntPair;

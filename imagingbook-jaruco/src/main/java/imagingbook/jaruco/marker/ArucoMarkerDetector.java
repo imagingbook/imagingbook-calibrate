@@ -136,7 +136,7 @@ public class ArucoMarkerDetector {
 
         // Bring finalCorners to CW order (using special reverse()!)
         // DetectionResult result = new DetectionResult(lookup, finalCorners.reverse());
-        DetectionResult result = new DetectionResult(lookup, Corners.reversePoints(finalCorners));
+        DetectionResult result = new DetectionResult(lookup, Corners.reverse(finalCorners));
         // Merge everything into the result.
         detections.add(result);
     }
