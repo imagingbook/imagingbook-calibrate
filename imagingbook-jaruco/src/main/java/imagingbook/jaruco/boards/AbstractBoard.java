@@ -181,9 +181,10 @@ public abstract class AbstractBoard {
     // -----------------------------------------------------------------------------
 
     /**
-     * Returns the {@link BoardMarker} instance for the given index.
+     * Returns the {@link BoardMarker} instance for the given marker ID or
+     * null if such a marker is not on the board.
      * @param id the marker's id
-     * @return the {@link BoardMarker} instance
+     * @return the {@link BoardMarker} instance or null if none found
      */
     public abstract BoardMarker getMarker(int id);
 

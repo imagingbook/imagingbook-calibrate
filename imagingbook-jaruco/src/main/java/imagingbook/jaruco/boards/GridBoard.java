@@ -15,6 +15,8 @@ import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_1000;
 
 /**
  * Represents a marker board with all markers in the same plane and in a regular M x N grid layout.
+ * All board elements are ArUco markers (no black squares in between), in contrast to
+ * {@link CharucoBoard}.
  * The board contains only markers from the specified dictionary, without any additional
  * geometric shapes.
  */
@@ -52,8 +54,8 @@ public class GridBoard extends AbstractBoard {
 
     // ---------------------------------------------------------------------------------------------
 
-    private final BoardElement[][] boardElements;             // holds all MxN board elements
-    private final int[][] markerMap;                     // marker column/row grid coordinates
+    private final BoardElement[][] boardElements;       // holds all MxN board elements
+    private final int[][] markerMap; // markerMap[i][0] = column, markerMap[i][1] = row grid index
 
     /**
      * Constructor. Creates a board with Aruco markers placed on a rectangular grid. ArucoMarker ids are

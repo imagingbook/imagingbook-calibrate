@@ -9,6 +9,7 @@ public class BoardMarker extends ArucoMarker implements BoardElement {
     // private final Polygon2d corners;
     private final Pnt2d[] corners;
 
+    // TODO: make ArucoMarker a member (no inheritance)
     BoardMarker(AbstractBoard board, ArucoMarker marker, int col, int row) {
         super(marker);
         this.col = col;

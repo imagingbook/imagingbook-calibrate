@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Abstract super class for Aruco/Charuco board detectors.
+ */
 public abstract class AbstractBoardDetector {
 
     /**
@@ -36,9 +39,9 @@ public abstract class AbstractBoardDetector {
     // may be overridden by subclasses
     List<DetectionResult> detectMarkers(AbstractBoard board, ByteProcessor ip) {
         ArucoMarkerDetector markerDetector = new ArucoMarkerDetector(board.getDictionary());
-        List<DetectionResult> detects = markerDetector.detectMarkers(ip);
-        Collections.sort(detects);  // sort by marker id
-        return detects;
+        List<DetectionResult> detections = markerDetector.detectMarkers(ip);
+        Collections.sort(detections);  // sort by marker id
+        return detections;
     }
 
     public boolean allBoardMarkersFound() {

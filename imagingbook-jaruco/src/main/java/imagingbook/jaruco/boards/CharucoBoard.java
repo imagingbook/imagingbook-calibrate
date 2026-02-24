@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.nio.file.Path;
+import java.util.List;
 
 import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_100;
 
@@ -125,8 +126,15 @@ public class CharucoBoard extends AbstractBoard {
 
     // ----------------------------------------------------------------------------------
 
+    public BoardElement getBoardElement(int col, int row) {
+        return boardElements[col][row];
+    }
+
     @Override
     public BoardMarker getMarker(int id) {
+        if (id < 0 || id >= markerMap.length) {
+            return null;
+        }
         int u = markerMap[id][0];
         int v = markerMap[id][1];
         return (BoardMarker) boardElements[u][v];
@@ -136,6 +144,12 @@ public class CharucoBoard extends AbstractBoard {
     public int getMarkerCount() {
         return markerMap.length;
     }
+
+    // ----------------------------------------------------------------------------------
+
+
+
+    // ----------------------------------------------------------------------------------
 
     @Override
     void drawBoardContent(Graphics2D g2, double scale, double xOffset, double yOffset) {
