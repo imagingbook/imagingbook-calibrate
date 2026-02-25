@@ -41,7 +41,7 @@ public abstract class MultivariateJacobianNumeric implements MultivariateJacobia
         double[] Y = getValues(pp);
         double[][] J = getJacobian(pp, Y);
 
-        System.out.println(" p = " + Matrix.toString(p));
+        // System.out.println(" p = " + Matrix.toString(p));
         // System.out.println(" Y = \n" + Matrix.toString(Y));
         // double[] colNorms = getMatrixColumnNorms(J);
         // System.out.println(" J = \n" + Matrix.toString(J));
@@ -62,7 +62,8 @@ public abstract class MultivariateJacobianNumeric implements MultivariateJacobia
     abstract double[] getValues(double[] p);
 
     /**
-     * Calculates the Jacobian matrix by evaluating finite differences.
+     * Calculates the Jacobian matrix by evaluating finite differences using
+     * {@link #getValues(double[])} implemented by inheriting classes.
      * @param pp the current parameter point
      * @param Y the current value vector
      * @return

@@ -75,7 +75,7 @@ public class Radial3TermDistortion extends RadialDistortion {
         double[] coefficients = {-R, 1, 0, k0, 0, k1, 0, k2};
         PolynomialFunction p = new PolynomialFunction(coefficients);
         UnivariateDifferentiableSolver solver = new NewtonRaphsonSolver();
-        int maxEval = 20;
+        int maxEval = 100;
         double r = solver.solve(maxEval, p, R); // rInit = R
 //		System.out.format("** solver iterations = %d\n", solver.getEvaluations());
         return r;

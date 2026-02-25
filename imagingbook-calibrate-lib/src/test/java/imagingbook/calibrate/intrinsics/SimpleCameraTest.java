@@ -145,7 +145,7 @@ public class SimpleCameraTest {
     }
 
     @Test
-    public void getInverseA() {
+    public void getAffineMatrixInverse() {
     }
 
 }

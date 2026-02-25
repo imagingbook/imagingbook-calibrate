@@ -1,10 +1,16 @@
 package imagingbook.jaruco.boards;
 
 import ij.ImagePlus;
+import ij.gui.Overlay;
 import ij.process.ByteProcessor;
-import ij.process.ImageProcessor;
+import imagingbook.calibrate.distortion.DistortionModel;
+import imagingbook.calibrate.distortion.Radial3TermDistortion;
+import imagingbook.calibrate.hugin.StraightnessDistortionEstimator1;
+import imagingbook.calibrate.intrinsics.Camera;
+import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.ij.IjUtils;
-import imagingbook.jaruco.marker.ArucoMarkerDetector;
+import imagingbook.common.math.PrintPrecision;
+import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectionResult;
 
 import java.util.List;
 
@@ -51,8 +57,7 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
         ByteProcessor bp = im.getProcessor().convertToByteProcessor();
 
         CharucoBoard board = CharucoBoard.Predefined.DICT_5x5_CharucoBoard_12x8_A4L.getInstance();
-        ImageProcessor ip = board.createImage(1200);
-        new ImagePlus("Board " + board.getName(), ip).show();
+        // new ImagePlus("Board " + board.getName(), board.createImage(1200)).show();
 
         CharucoBoardDetector gbd = new CharucoBoardDetector(board, bp);
         System.out.println("markers detected: " + gbd.getDetectedMarkerCount());
@@ -68,6 +73,29 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
             System.out.println("   id: " + id);
         }
         System.out.println("all board markers found: " + gbd.allBoardMarkersFound());
+
+        // collect collinear corner points -----------------------------------
+
+        List<DetectionResult> detectedMarkers = gbd.getDetectedMarkers();
+        CollinearPointsExtractor cbe = new CollinearPointsExtractor(board, detectedMarkers);
+        // List<List<Pnt2d>> pntSets = cbe.getCollinearPointSets();
+        Overlay oly = cbe.getOverlay();
+        im.setOverlay(oly);
+        im.updateAndDraw();
+
+        // try plumb line calibration --------------------------------------------------
+
+        int w = im.getWidth();
+        int h = im.getHeight();
+        double f = w * (55.0 / 36.0);
+        System.out.println("f = " + f + " pixels");
+        double[] A = {520, 520, 0, 0.5 * w, 0.5 * h};
+        DistortionModel initDist = new Radial3TermDistortion(new double[] {0, 0, 0});
+        Camera initCam = new StandardCamera(A, initDist);
+        StraightnessDistortionEstimator1 estimator = new StraightnessDistortionEstimator1(initCam, cbe.getCollinearPointSets());
+        Camera newCam = estimator.estimateDistortion();
+        PrintPrecision.set(6);
+        System.out.println("result = " + newCam.getDistortion());
 
     }
 

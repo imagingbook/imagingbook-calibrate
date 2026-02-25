@@ -149,6 +149,8 @@ public class ArucoMarkerDetector {
 
     /**
      * Represents the result of a single marker detection.
+     * This includes the marker's dictionary properties and its sub-pixel corner positions in
+     * the image.
      * Implements {@link Comparable} to allow sorting by marker id.
      */
     public static class DetectionResult implements Comparable<DetectionResult> {

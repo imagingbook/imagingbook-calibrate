@@ -7,13 +7,9 @@
 package imagingbook.calibrate.distortion;
 
 import imagingbook.calibrate.intrinsics.Camera;
-import imagingbook.calibrate.intrinsics.StandardCamera;
-import imagingbook.calibrate.util.MathUtil;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.Pnt2d.PntDouble;
 import imagingbook.common.geometry.mappings.Mapping2D;
 import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
-import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 /**
  * <p>
@@ -43,7 +39,7 @@ public class RectificationMapping implements Mapping2D {
 	public RectificationMapping (Camera cam) {
 		this.cam = cam;
 		this.distortion = cam.getDistortion();
-		this.sensorToNormalizedMapping = new AffineMapping2D(cam.getInverseA().getData());
+		this.sensorToNormalizedMapping = new AffineMapping2D(cam.getAffineMatrixInverse().getData());
 		this.normalizedToSensorMapping = sensorToNormalizedMapping.getInverse(); 		// new AffineMapping2D(cam.getAffineMatrix().getData());
 	}
 

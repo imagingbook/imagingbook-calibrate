@@ -166,23 +166,5 @@ public class StraightnessDistortionEstimator2 {
 
     static final double k0 = 0.2, k1 = -0.05, k2 = 0.02;
 
-    public static void main(String[] args) {
-        double[] A = {520, 520, 0, 320, 240};
-        DistortionModel realDist = new Radial3TermDistortion(new double[] {k0, k1, k2});
-        DistortionModel initDist = new Radial3TermDistortion(new double[] {0, 0, 0});
-        Camera realCam = new StandardCamera(A, initDist);
-        // create a couple of straight lines in square [-0.5, 0.5]
-        List<List<Pnt2d>> lines = Utils.sampleStraightLines(realDist, 11, 11);
-        // for (List<Pnt2d> ln : lines) {
-        //     List<Pnt2d> unwarped = ln.stream().map(dist::unwarp).toList();
-        //     System.out.println(Arrays.toString(ln.toArray()));
-        //     // System.out.println(Arrays.toString(unwarped.toArray()));
-        // }
 
-        StraightnessDistortionEstimator2 estimator = new StraightnessDistortionEstimator2(realCam, lines);
-        Camera newCam = estimator.estimateDistortion();
-        PrintPrecision.set(6);
-        System.out.println("result = " + newCam.getDistortion());
-
-    }
 }

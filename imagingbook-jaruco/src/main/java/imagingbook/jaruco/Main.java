@@ -9,6 +9,7 @@ import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.jaruco.dict.ArucoDictionary;
 import imagingbook.jaruco.dict.ArucoDictionaryPredefined;
 import imagingbook.jaruco.marker.ArucoMarkerDetector;
+import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectionResult;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -85,7 +86,7 @@ public class Main {
             // parabCurves = null;
 
             // ------------------------------------------------------------
-            List<ArucoMarkerDetector.DetectionResult> detectedMarkers = new ArrayList<>();
+            List<DetectionResult> detectedMarkers = new ArrayList<>();
             long elapsed = timeNanos(() ->
                 {detectedMarkers.addAll(detector.detectMarkers(im.getProcessor()));}
             );

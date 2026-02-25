@@ -29,7 +29,7 @@ public class InterCameraMapping implements Mapping2D {
 //		this.isInverseFlag = true;	// maps target -> source
 		this.camA = camA;        // camera A (used to produce the source image)
 		this.camB = camB;        // camera B (determines the geometry the target image)
-		this.Abi = camB.getInverseA();
+		this.Abi = camB.getAffineMatrixInverse();
 	}
 
 	@Override

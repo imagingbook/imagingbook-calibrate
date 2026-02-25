@@ -288,7 +288,7 @@ public abstract class Camera {
      * uses closed form matrix inversion. Used for rectifying images (i.e., removing lens distortion).
      * @return the inverse of the camera intrinsic matrix A
      */
-    public RealMatrix getInverseA() {
+    public RealMatrix getAffineMatrixInverse() {
         double alpha = A[0][0];
         double beta = A[1][1];
         double gamma = A[0][1];

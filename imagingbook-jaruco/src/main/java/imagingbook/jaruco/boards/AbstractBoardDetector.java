@@ -70,6 +70,10 @@ public abstract class AbstractBoardDetector {
         return detResults.size();
     }
 
+    public List<DetectionResult> getDetectedMarkers() {
+        return detResults;
+    }
+
     public List<Integer> getDetectedMarkerIds() {
         List<Integer> ids = new ArrayList<>();
         for (DetectionResult detectionResult : detResults) {
