@@ -8,7 +8,6 @@ import com.lowagie.text.pdf.PdfGraphics2D;
 import com.lowagie.text.pdf.PdfWriter;
 import ij.process.ByteProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.image.ImageGraphics;
 import imagingbook.jaruco.dict.ArucoDictionary;
 
@@ -21,23 +20,23 @@ import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.util.Locale;
 
-public abstract class AbstractBoard {
+public abstract class AbstractMarkerBoard {
 
     final int gridCols;                 // number of grid fields in horizontal direction
     final int gridRows;                 // number of grid fields in vertical direction
-    final double squareWidth;           // grid spacing in x/y-direction
-    final double markerWidth;           // size of the ArucoMarkers
-    final ArucoDictionary dictionary;   // marker dictionary
+    final double fieldWidth;            // width of grid fields in x/y-direction
+    final double markerWidth;           // size of the ArucoMarkers (inside fields)
     final int borderBits;               // number of border layers around marker data
+    final ArucoDictionary dictionary;   // marker dictionary
     final PageFmt pdfPageFormat;        // PDF document size
 
     String name = "none";               // name of this board (used by predefined boards)   TODO:
 
-    AbstractBoard(int gridCols, int gridRows, double squareWidth, double markerWidth,
-                  ArucoDictionary dictionary, int borderBits, PageFmt pdfPageFormat) {
+    AbstractMarkerBoard(int gridCols, int gridRows, double fieldWidth, double markerWidth,
+                        ArucoDictionary dictionary, int borderBits, PageFmt pdfPageFormat) {
         this.gridCols = gridCols;
         this.gridRows = gridRows;
-        this.squareWidth = squareWidth;
+        this.fieldWidth = fieldWidth;
         this.markerWidth = markerWidth;
         this.dictionary = dictionary;
         this.borderBits = borderBits;
@@ -49,7 +48,7 @@ public abstract class AbstractBoard {
     // --------------------------------------------------------------------------------------------
 
     boolean checkMarkerSize() {
-        double markerSep = squareWidth - markerWidth;
+        double markerSep = fieldWidth - markerWidth;
         double onePin = markerWidth / (dictionary.getMarkerSize() + 2);    // size of one marker bitfield
         if (markerSep < onePin * 0.7) {
             System.err.println("[Warning] ArucoMarker border " + markerSep + " is less than 70% of ArUco pin size " + onePin);
@@ -116,8 +115,8 @@ public abstract class AbstractBoard {
      * Returns the width of the marker grid, marker position step width (in mm)
      * @ width of the marker grid (in mm)
      */
-    public double getSquareWidth() {
-        return squareWidth;
+    public double getFieldWidth() {
+        return fieldWidth;
     }
 
     /**
@@ -126,7 +125,7 @@ public abstract class AbstractBoard {
      * @return the overall width of this board (in mm)
      */
     public double getBoardWidth() {
-        return squareWidth * gridCols;
+        return fieldWidth * gridCols;
     }
 
     /**
@@ -135,7 +134,7 @@ public abstract class AbstractBoard {
      * @return the overall height of this board (in mm)
      */
     public double getBoardHeight() {
-        return squareWidth * gridRows;
+        return fieldWidth * gridRows;
     }
 
     /**
@@ -145,7 +144,7 @@ public abstract class AbstractBoard {
      * @return the field's x-position
      */
     public double getX0(int u, int v) {
-        return squareWidth * u;
+        return fieldWidth * u;
     }
 
     /**
@@ -155,7 +154,7 @@ public abstract class AbstractBoard {
      * @return the field's y-position
      */
     public double getY0(int u, int v) {
-        return squareWidth * v;
+        return fieldWidth * v;
     }
 
     // --------------------------------------------------------------------------------------------
@@ -331,6 +330,6 @@ public abstract class AbstractBoard {
     @Override
     public String toString() {
         return String.format(Locale.US, "%s %dx%d - square=%.1fmm, marker=%.1fmm, dict=%s",
-                getClass().getSimpleName(), gridCols, gridRows, squareWidth, markerWidth, dictionary.getName());
+                getClass().getSimpleName(), gridCols, gridRows, fieldWidth, markerWidth, dictionary.getName());
     }
 }

@@ -7,7 +7,7 @@ import imagingbook.calibrate.distortion.DistortionModelType;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
-import imagingbook.jaruco.boards.AbstractBoard;
+import imagingbook.jaruco.boards.AbstractMarkerBoard;
 import imagingbook.jaruco.boards.AbstractBoardDetector.PntPair;
 import imagingbook.jaruco.boards.CharucoBoard;
 import imagingbook.jaruco.cornerdata.DICT_5x5_CharucoBoard_12x8_ImgCorners;
@@ -102,7 +102,7 @@ public class DoCalibration {
 
     // --------------------------------------------------------------------------------------------
 
-    static Pnt2d[] getModelPoints(AbstractBoard board) {
+    static Pnt2d[] getModelPoints(AbstractMarkerBoard board) {
         List<Pnt2d> modelPoints = new ArrayList<>();
         for (int i = 0; i < board.getMarkerCount(); i++) {
             Pnt2d[] corners = board.getMarkerCorners(i);
@@ -136,7 +136,7 @@ public class DoCalibration {
             return points;
     }
 
-    static void showBoard(AbstractBoard board, Pnt2d[] modelPoints) {
+    static void showBoard(AbstractMarkerBoard board, Pnt2d[] modelPoints) {
         ByteProcessor boardIp = board.createImage(1200);
         double scale = (double) boardIp.getWidth() / board.getBoardWidth();
         ImagePlus boardIm = new ImagePlus(board.getName(), boardIp);

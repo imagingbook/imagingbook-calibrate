@@ -10,13 +10,13 @@ public class BoardMarker extends ArucoMarker implements BoardElement {
     private final Pnt2d[] corners;
 
     // TODO: make ArucoMarker a member (no inheritance)
-    BoardMarker(AbstractBoard board, ArucoMarker marker, int col, int row) {
+    BoardMarker(AbstractMarkerBoard board, ArucoMarker marker, int col, int row) {
         super(marker);
         this.col = col;
         this.row = row;
-        double markerMargin = (board.squareWidth - board.markerWidth) / 2;
-        double x0 = board.squareWidth * col + markerMargin;
-        double y0 = board.squareWidth * row + markerMargin;
+        double markerMargin = (board.fieldWidth - board.markerWidth) / 2;
+        double x0 = board.fieldWidth * col + markerMargin;
+        double y0 = board.fieldWidth * row + markerMargin;
         this.corners = new Pnt2d[]{
                 Pnt2d.from(x0, y0),
                 Pnt2d.from(x0 + board.markerWidth, y0),

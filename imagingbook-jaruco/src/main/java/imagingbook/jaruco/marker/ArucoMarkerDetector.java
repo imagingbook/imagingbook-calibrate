@@ -66,9 +66,9 @@ public class ArucoMarkerDetector {
     /**
      * Tries to locate and identify markers in the supplied image.
      * @param ip the input image
-     * @return a (possibly empty) list of {@link DetectionResult} instances
+     * @return a (possibly empty) list of {@link DetectedMarker} instances
      */
-    public List<DetectionResult> detectMarkers(ImageProcessor ip) {
+    public List<DetectedMarker> detectMarkers(ImageProcessor ip) {
         // STEP 1: convert input image to grayscale:
         ByteProcessor gray = ip.convertToByteProcessor();
 
@@ -82,11 +82,11 @@ public class ArucoMarkerDetector {
         // of black regions are actually INNER contours:
         List<? extends Contour> ics = ct.getInnerContours();             // inner corners run CCW?
 
-        List<DetectionResult> detections = new ArrayList<>();
+        List<DetectedMarker> detections = new ArrayList<>();
 
         // process all contours and collect results in detections
         for (Contour candidate : ics) {
-            DetectionResult det = processOneCandidate(candidate, ip, thr);
+            DetectedMarker det = processOneCandidate(candidate, ip, thr);
             if (det != null) {
                 detections.add(det);
             }
@@ -99,7 +99,7 @@ public class ArucoMarkerDetector {
         return detections;
     }
 
-    DetectionResult processOneCandidate(Contour contour, ImageProcessor ip, int thr) {
+    DetectedMarker processOneCandidate(Contour contour, ImageProcessor ip, int thr) {
         Polygon2d poly = contour.getPolygon();
         // List<Pnt2d> pts = contour.getPointList();
         if (poly.length() < params.minContourLength) {                          // parameter!
@@ -138,8 +138,8 @@ public class ArucoMarkerDetector {
         // Polygon2d finalCorners = initialCorners.rotate(-lookup.rotation());
 
         // Bring finalCorners to CW order (using special reverse()!)
-        // DetectionResult result = new DetectionResult(lookup, finalCorners.reverse());
-        DetectionResult result = new DetectionResult(lookup, Corners.reverse(finalCorners));
+        // DetectedMarker result = new DetectedMarker(lookup, finalCorners.reverse());
+        DetectedMarker result = new DetectedMarker(lookup, Corners.reverse(finalCorners));
         // Merge everything into the result.
         // detections.add(result);
         return result;
@@ -153,12 +153,12 @@ public class ArucoMarkerDetector {
      * the image.
      * Implements {@link Comparable} to allow sorting by marker id.
      */
-    public static class DetectionResult implements Comparable<DetectionResult> {
+    public static class DetectedMarker implements Comparable<DetectedMarker> {
 
         final DictionaryLookupResult lookup;        // the marker's dictionary properties
         final Pnt2d[] corners;                      // the image corner positions for this marker
 
-        public DetectionResult(DictionaryLookupResult lookup, Pnt2d[] corners) {
+        public DetectedMarker(DictionaryLookupResult lookup, Pnt2d[] corners) {
             this.lookup = lookup;
             this.corners = corners;
         }
@@ -172,7 +172,7 @@ public class ArucoMarkerDetector {
         }
 
         @Override
-        public int compareTo(DetectionResult other) {
+        public int compareTo(DetectedMarker other) {
             return Integer.compare(this.lookup.markerId(), other.lookup.markerId());
         }
 

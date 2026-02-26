@@ -8,9 +8,10 @@ import imagingbook.calibrate.distortion.Radial3TermDistortion;
 import imagingbook.calibrate.hugin.StraightnessDistortionEstimator1;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
+import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.ij.IjUtils;
 import imagingbook.common.math.PrintPrecision;
-import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectionResult;
+import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectedMarker;
 
 import java.util.List;
 
@@ -76,10 +77,10 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
 
         // collect collinear corner points -----------------------------------
 
-        List<DetectionResult> detectedMarkers = gbd.getDetectedMarkers();
-        CollinearPointsExtractor cbe = new CollinearPointsExtractor(board, detectedMarkers);
-        // List<List<Pnt2d>> pntSets = cbe.getCollinearPointSets();
-        Overlay oly = cbe.getOverlay();
+        List<DetectedMarker> detectedMarkers = gbd.getDetectedMarkers();
+        CollinearPointsExtractor cbe = new CollinearPointsExtractor(board);
+        List<List<Pnt2d>> collinearPointSets = cbe.getCollinearPointSets(detectedMarkers);
+        Overlay oly = CollinearPointsExtractor.getOverlay(collinearPointSets);
         im.setOverlay(oly);
         im.updateAndDraw();
 
@@ -92,7 +93,7 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
         double[] A = {520, 520, 0, 0.5 * w, 0.5 * h};
         DistortionModel initDist = new Radial3TermDistortion(new double[] {0, 0, 0});
         Camera initCam = new StandardCamera(A, initDist);
-        StraightnessDistortionEstimator1 estimator = new StraightnessDistortionEstimator1(initCam, cbe.getCollinearPointSets());
+        StraightnessDistortionEstimator1 estimator = new StraightnessDistortionEstimator1(initCam, collinearPointSets);
         Camera newCam = estimator.estimateDistortion();
         PrintPrecision.set(6);
         System.out.println("result = " + newCam.getDistortion());

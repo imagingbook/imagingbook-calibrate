@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 /**
  * Bridge class to avoid import of {@link com.lowagie.text.Rectangle} when calling
- * {@link AbstractBoard#saveAsPdf(Path, PageFmt, boolean)}. Custom page formats can be created by
+ * {@link AbstractMarkerBoard#saveAsPdf(Path, PageFmt, boolean)}. Custom page formats can be created by
  * <pre>
  *     new PageFmt(width, height); </pre> with dimensions in mm.
  * See OpenPDF {@link PageSize} for additional standard formats.

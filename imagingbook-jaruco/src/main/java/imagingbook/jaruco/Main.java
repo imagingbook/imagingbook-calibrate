@@ -9,7 +9,7 @@ import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import imagingbook.jaruco.dict.ArucoDictionary;
 import imagingbook.jaruco.dict.ArucoDictionaryPredefined;
 import imagingbook.jaruco.marker.ArucoMarkerDetector;
-import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectionResult;
+import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectedMarker;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -45,10 +45,10 @@ public class Main {
         ArucoDictionary dict = ArucoDictionaryPredefined.DICT_5X5_1000.getInstance();
 
         ArucoMarkerDetector detector = new ArucoMarkerDetector(dict);
-        List<ArucoMarkerDetector.DetectionResult> detectionResultObsoletes = detector.detectMarkers(im.getProcessor());
+        List<ArucoMarkerDetector.DetectedMarker> detectedMarkerObsoletes = detector.detectMarkers(im.getProcessor());
 
-        System.out.println("Markers found: " + detectionResultObsoletes.size());
-        for (ArucoMarkerDetector.DetectionResult res : detectionResultObsoletes) {
+        System.out.println("Markers found: " + detectedMarkerObsoletes.size());
+        for (DetectedMarker res : detectedMarkerObsoletes) {
             System.out.println(res);
         }
     }
@@ -86,7 +86,7 @@ public class Main {
             // parabCurves = null;
 
             // ------------------------------------------------------------
-            List<DetectionResult> detectedMarkers = new ArrayList<>();
+            List<DetectedMarker> detectedMarkers = new ArrayList<>();
             long elapsed = timeNanos(() ->
                 {detectedMarkers.addAll(detector.detectMarkers(im.getProcessor()));}
             );
@@ -95,7 +95,7 @@ public class Main {
             // ------------------------------------------------------------
 
             // process all detected markers
-            for (ArucoMarkerDetector.DetectionResult marker : detectedMarkers) {
+            for (ArucoMarkerDetector.DetectedMarker marker : detectedMarkers) {
                 Pnt2d[] corners = marker.getCorners();
 
                 ola.setFont(CornerFont);

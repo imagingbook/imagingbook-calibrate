@@ -9,7 +9,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.nio.file.Path;
-import java.util.List;
 
 import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_100;
 
@@ -18,7 +17,7 @@ import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_100;
  * Represents a "Charuco"-type marker board, which consists of ArUco alternating markers and
  * solid black squares as board elements.
  */
-public class CharucoBoard extends AbstractBoard {
+public class CharucoBoard extends AbstractMarkerBoard {
 
     public enum Predefined {
         DICT_5x5_CharucoBoard_12x8_A4L {
@@ -166,7 +165,7 @@ public class CharucoBoard extends AbstractBoard {
                     g2.setColor(Color.black);
                     double x0 = sqr.getCorner(0).getX() * scale + xOffset;   // TODO: make BlackSquare self-draw
                     double y0 = sqr.getCorner(0).getY() * scale + yOffset;
-                    double sw = squareWidth * scale;
+                    double sw = fieldWidth * scale;
                     g2.fill(new Rectangle2D.Double(x0, y0, sw, sw));
                 }
             }

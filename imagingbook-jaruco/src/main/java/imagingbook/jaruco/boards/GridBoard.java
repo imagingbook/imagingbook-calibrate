@@ -3,7 +3,6 @@ package imagingbook.jaruco.boards;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.dict.ArucoDictionary;
 import imagingbook.jaruco.marker.ArucoMarker;
 
@@ -20,7 +19,7 @@ import static imagingbook.jaruco.dict.ArucoDictionaryPredefined.DICT_5X5_1000;
  * The board contains only markers from the specified dictionary, without any additional
  * geometric shapes.
  */
-public class GridBoard extends AbstractBoard {
+public class GridBoard extends AbstractMarkerBoard {
 
     public enum Predefined {
         DICT_5X5_GridBoard_8x5_A4L {

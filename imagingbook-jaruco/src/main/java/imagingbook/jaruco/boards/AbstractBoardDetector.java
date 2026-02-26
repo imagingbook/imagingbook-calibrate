@@ -4,7 +4,7 @@ import ij.process.ByteProcessor;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.jaruco.marker.ArucoMarkerDetector;
-import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectionResult;
+import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectedMarker;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,12 +22,12 @@ public abstract class AbstractBoardDetector {
      */
     public record PntPair(Pnt2d imagePnt, Pnt2d modelPnt) { }
 
-    final AbstractBoard board;
+    final AbstractMarkerBoard board;
     final ByteProcessor ip;
-    final List<ArucoMarkerDetector.DetectionResult> detResults;
+    final List<DetectedMarker> detResults;
 
 
-    public AbstractBoardDetector(AbstractBoard board, ByteProcessor ip) {
+    public AbstractBoardDetector(AbstractMarkerBoard board, ByteProcessor ip) {
         this.ip = ip;
         this.board = board;
         this.detResults = detectMarkers(board, ip);
@@ -37,9 +37,9 @@ public abstract class AbstractBoardDetector {
     // ----------------------------------------------------------------------------------
 
     // may be overridden by subclasses
-    List<DetectionResult> detectMarkers(AbstractBoard board, ByteProcessor ip) {
+    List<DetectedMarker> detectMarkers(AbstractMarkerBoard board, ByteProcessor ip) {
         ArucoMarkerDetector markerDetector = new ArucoMarkerDetector(board.getDictionary());
-        List<DetectionResult> detections = markerDetector.detectMarkers(ip);
+        List<DetectedMarker> detections = markerDetector.detectMarkers(ip);
         Collections.sort(detections);  // sort by marker id
         return detections;
     }
@@ -53,7 +53,7 @@ public abstract class AbstractBoardDetector {
     // inheriting classes may/should override:
     public void checkBoard() {
         // check if all marker corners are in CCW order:
-        for (DetectionResult detResult : detResults) {
+        for (DetectedMarker detResult : detResults) {
             Pnt2d[] imageCorners = detResult.getCorners();
             Polygon2d poly = new Polygon2d(imageCorners);
             if (!poly.isClockwiseOnScreen()) {
@@ -70,21 +70,21 @@ public abstract class AbstractBoardDetector {
         return detResults.size();
     }
 
-    public List<DetectionResult> getDetectedMarkers() {
+    public List<DetectedMarker> getDetectedMarkers() {
         return detResults;
     }
 
     public List<Integer> getDetectedMarkerIds() {
         List<Integer> ids = new ArrayList<>();
-        for (DetectionResult detectionResult : detResults) {
-            ids.add(detectionResult.getLookup().markerId());
+        for (ArucoMarkerDetector.DetectedMarker detectedMarker : detResults) {
+            ids.add(detectedMarker.getLookup().markerId());
         }
         return ids;
     }
 
     public List<PntPair> getAllMarkerPointMatches() {
         List<PntPair> matches = new ArrayList<>();
-        for (DetectionResult detResult : detResults) {
+        for (ArucoMarkerDetector.DetectedMarker detResult : detResults) {
             int markerId = detResult.getLookup().markerId();
             Pnt2d[] imageCorners = detResult.getCorners();
             Pnt2d[] boardCorners = board.getMarkerCorners(markerId);

@@ -58,7 +58,7 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
         ColoredStroke stroke = new ColoredStroke(1.0, Color.blue);
         ColoredStroke stroke0 = new ColoredStroke(1.0 * 3, Color.red);
 
-        List<ArucoMarkerDetector.DetectionResult> detectedMarkers =
+        List<ArucoMarkerDetector.DetectedMarker> detectedMarkers =
                 detector.detectMarkers(im.getProcessor());
         // System.out.println("Markers found: " + markerDetectionResultObsoletes.size());
         if (detectedMarkers.isEmpty()) {
@@ -68,7 +68,7 @@ public class Aruco_Detect_Plugin implements PlugInFilter {
 
         ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
 
-            for (ArucoMarkerDetector.DetectionResult marker : detectedMarkers) {
+            for (ArucoMarkerDetector.DetectedMarker marker : detectedMarkers) {
             Pnt2d[] corners = marker.getCorners();
             ola.addShape(new Polygon2d(corners).getShape(), stroke);
 
