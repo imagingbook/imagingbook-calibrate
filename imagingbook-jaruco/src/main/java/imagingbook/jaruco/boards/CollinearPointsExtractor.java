@@ -36,12 +36,12 @@ public class CollinearPointsExtractor {
     }
 
     /**
-     * Collects all detected markers.
-     * @param detections the list of marker detections
+     * Collects all detected markers into a 2D array specified by the board's geometry.
+     * Fields without a detected marker remain at null.
+     * @param detections detections the list of marker detections
+     * @return a 2D array of marker detections (and null values)
      */
     private DetectedMarker[][] fillDetectionArray(List<DetectedMarker> detections) {
-        int cols = board.getGridCols();
-        int rows = board.getGridRows();
         DetectedMarker[][] detectionArray = new DetectedMarker[cols][rows];
         for (ArucoMarkerDetector.DetectedMarker det : detections) {
             int markerId = det.getLookup().markerId();
@@ -69,11 +69,10 @@ public class CollinearPointsExtractor {
             List<Pnt2d> topSet = new ArrayList<>();
             List<Pnt2d> botSet = new ArrayList<>();
             for (int u = 0; u < cols; u++) {
-               DetectedMarker marker = detectionArray[u][v];
-                if (marker == null) {  // no marker detected for field (u,v)
+                if (detectionArray[u][v] == null) {  // no marker detected for field (u,v)
                     continue;
                 }
-                Pnt2d[] corners = marker.getCorners();
+                Pnt2d[] corners = detectionArray[u][v].getCorners();
 
                 // add to line passing through corners on top of marker
                 topSet.add(corners[0]);
@@ -94,11 +93,10 @@ public class CollinearPointsExtractor {
             List<Pnt2d> lftSet = new ArrayList<>();
             List<Pnt2d> rgtSet = new ArrayList<>();
             for (int v = 0; v < rows; v++) {
-                DetectedMarker marker = detectionArray[u][v];
-                if (marker == null) {  // no marker detected for field (u,v)
+                if (detectionArray[u][v] == null) {  // no marker detected for field (u,v)
                     continue;
                 }
-                Pnt2d[] corners = marker.getCorners();
+                Pnt2d[] corners = detectionArray[u][v].getCorners();
 
                 // add to line passing through corners on top of marker
                 lftSet.add(corners[0]);
@@ -118,7 +116,6 @@ public class CollinearPointsExtractor {
         for (int i = 0; i < cols; i++) {
             addSingleDiagonalLR(detectionArray, i, 0, pointSetCollector);
         }
-
         // 2. Diagonals starting on the Left Column (Column 0, Row j)
         for (int j = 1; j < rows; j++) {
             addSingleDiagonalLR(detectionArray, 0, j, pointSetCollector);
@@ -148,7 +145,6 @@ public class CollinearPointsExtractor {
         for (int i = 0; i < cols; i++) {
             addSingleDiagonalRL(detectionArray, i, 0, pointSetCollector);
         }
-
         // 2. Diagonals starting on the Right Column (Column cols-1, Row j)
         for (int j = 1; j < rows; j++) {
             addSingleDiagonalRL(detectionArray, cols - 1, j, pointSetCollector);
@@ -175,11 +171,11 @@ public class CollinearPointsExtractor {
 
     // ------------------------------------------------
 
-    public List<List<Pnt2d>> getCollinearPointSets(List<ArucoMarkerDetector.DetectedMarker> detections) {
-        ArucoMarkerDetector.DetectedMarker[][] detectionArray = fillDetectionArray(detections);
-        List<List<Pnt2d>> allPointSets = new ArrayList<>();
+    public List<List<Pnt2d>> getCollinearPointSets(List<DetectedMarker> detections) {
+        DetectedMarker[][] detectionArray = fillDetectionArray(detections);
+        final List<List<Pnt2d>> allPointSets = new ArrayList<>();
 
-        // function for adding point sets:
+        // consumer function for adding point sets:
         Consumer<List<Pnt2d>> pointSetCollector = pointSet -> {
             if (pointSet.size() >= 3) {  // need at least 3 collinear points
                 allPointSets.add(pointSet);
@@ -215,7 +211,6 @@ public class CollinearPointsExtractor {
                 ola.addShape(point.getShape(15));
             }
         }
-
         return ola.getOverlay();
     }
 
