@@ -11,12 +11,9 @@ import imagingbook.calibrate.distortion.Radial3TermDistortion;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.geometry.basic.PolyLine2d;
-import imagingbook.common.geometry.basic.Polygon2d;
 import imagingbook.common.geometry.fitting.line.OrthogonalLineFitEigen;
 import imagingbook.common.geometry.line.AlgebraicLine;
 import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
-import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math4.legacy.exception.TooManyEvaluationsException;
 import org.apache.commons.math4.legacy.exception.TooManyIterationsException;
@@ -88,8 +85,8 @@ public class StraightnessDistortionEstimator1 {
 
         @Override
         double[] getValues(double[] p) {
-            PrintPrecision.set(6);
-            System.out.println("getValues(): p = " + Matrix.toString(p));
+            // PrintPrecision.set(6);
+            // System.out.println("getValues(): p = " + Matrix.toString(p));
             double[] Y = new double[totalPntCnt];
             DistortionModel distortion = initDistortion.withParameters(p);
 
