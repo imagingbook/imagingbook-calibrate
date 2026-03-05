@@ -6,6 +6,9 @@
  ******************************************************************************/
 package imagingbook.calibrate.hugin;
 
+import ij.ImagePlus;
+import ij.gui.Overlay;
+import ij.process.ByteProcessor;
 import imagingbook.calibrate.distortion.DistortionModel;
 import imagingbook.calibrate.distortion.Radial3TermDistortion;
 import imagingbook.calibrate.intrinsics.Camera;
@@ -102,7 +105,13 @@ public class StraightnessDistortionEstimator1 {
                 AlgebraicLine line = new OrthogonalLineFitEigen(unwarpedPts).getLine();
                 // get individual point distances:
                 for (int i = 0; i < unwarpedPts.length; i++, row++) {
-                    Y[row] = sqr(line.getSignedDistance(unwarpedPts[i]));
+                    // Y[row] = sqr(line.getSignedDistance(unwarpedPts[i]));    // = version B
+                    // Y[row] = line.getSignedDistance(unwarpedPts[i]);      // = version C
+                    // Y[row] = Math.abs(line.getSignedDistance(unwarpedPts[i]));    // = Version D works best???
+                    double d = line.getSignedDistance(unwarpedPts[i]);
+                    // Y[row] = Math.signum(d) * sqr(d) ;   // Version E
+                    double delta = 1e-6;
+                    Y[row] = Math.sqrt(d * d + delta * delta) - delta;  // Version F: Pseudo-Huber function
                 }
             }
 
@@ -175,10 +184,12 @@ public class StraightnessDistortionEstimator1 {
 
         // create collinear image point sets using the real distortion
         List<List<Pnt2d>> lines = Utils.makeCollinearPoints(realCam, 10, 10, false);
-        // for (List<Pnt2d> line : lines) {
-        //     PolyLine2d poly = new PolyLine2d(line);
-        //     System.out.println(poly);
-        // }
+        System.out.println("lines = " + lines.size());
+
+        Overlay oly = Utils.makeOverlay(lines, 640 * 0.01);
+        ImagePlus im = new ImagePlus("img", new ByteProcessor(640, 480));
+        im.setOverlay(oly);
+        im.show();
 
         StraightnessDistortionEstimator1 estimator = new StraightnessDistortionEstimator1(initCam, lines);
         Camera newCam = estimator.estimateDistortion();

@@ -58,9 +58,11 @@ public class CollinearPointsExtractor {
         return detectionArray;
     }
 
+    // ----------------------------------------------------------------
+
     /**
      * Scan {@code detectionArray} and collect corner coordinates into collinear point sets.
-     * @param detectionArray a 2D array of Arucomarker detections
+     * @param detectionArray a 2D array of Aruco marker detections
      * @param pointSetCollector {@link Consumer} function object to add a collinear point set
      */
     private void collectHorizontalLines(DetectedMarker[][] detectionArray, Consumer<List<Pnt2d>> pointSetCollector) {
@@ -110,6 +112,8 @@ public class CollinearPointsExtractor {
             pointSetCollector.accept(rgtSet);
         }
     }
+
+    // ----------------------------------------------------------------
 
     private void collectDiagonalsLR(DetectedMarker[][] detectionArray, Consumer<List<Pnt2d>> pointSetCollector) {
         // 1. Diagonals starting on the Top Row (Row 0, Column j)
@@ -192,26 +196,26 @@ public class CollinearPointsExtractor {
 
     // -------------------------------------------------------------------------------------------
 
-    /**
-     * Creates and returns an ImageJ {@link Overlay} to be attached to and displayed on top of a
-     * {@link ImagePlus} instance.
-     * @param pointSets a list of collinear sets of 2D points
-     * @return an ImageJ {@link Overlay} instance for the supplied point sets
-     */
-    public static Overlay getOverlay(List<List<Pnt2d>> pointSets) {
-        ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
-        CssColorSequencer colSeq = new CssColorSequencer();
-        for (List<Pnt2d> pointSet : pointSets) {
-            ColoredStroke lineStroke = new ColoredStroke(1.0, colSeq.next());
-            ola.setStroke(lineStroke);
-
-            PolyLine2d poly = new PolyLine2d(pointSet);
-            ola.addShape(poly.getShape());
-            for (Pnt2d point : pointSet) {
-                ola.addShape(point.getShape(15));
-            }
-        }
-        return ola.getOverlay();
-    }
+    // /**
+    //  * Creates and returns an ImageJ {@link Overlay} to be attached to and displayed on top of a
+    //  * {@link ImagePlus} instance.
+    //  * @param pointSets a list of collinear sets of 2D points
+    //  * @return an ImageJ {@link Overlay} instance for the supplied point sets
+    //  */
+    // public static Overlay getOverlay(List<List<Pnt2d>> pointSets) {
+    //     ShapeOverlayAdapter ola = new ShapeOverlayAdapter();
+    //     CssColorSequencer colSeq = new CssColorSequencer();
+    //     for (List<Pnt2d> pointSet : pointSets) {
+    //         ColoredStroke lineStroke = new ColoredStroke(1.0, colSeq.next());
+    //         ola.setStroke(lineStroke);
+    //
+    //         PolyLine2d poly = new PolyLine2d(pointSet);
+    //         ola.addShape(poly.getShape());
+    //         for (Pnt2d point : pointSet) {
+    //             ola.addShape(point.getShape(15));
+    //         }
+    //     }
+    //     return ola.getOverlay();
+    // }
 
 }

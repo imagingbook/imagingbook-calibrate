@@ -1,0 +1,71 @@
+Version A: one Y for each point set
+Y[j] = lineFit.getError();
+
+    J condition No = 168.98713123234265
+    JTJ condition number = 2.325792296881243
+Iterations = 12
+Evaluations = 13
+RMS = 2.981238477088095E-11
+result = Radial3TermDistortion{0.199964, -0.050092, 0.020061}, 
+
+-------------------------------------------------------------------------
+
+Version B: one Y for each point
+Y[row] = sqr(line.getSignedDistance(unwarpedPts[i]));
+
+    J condition No = 136.25852267201847
+    JTJ condition number = 2.1231427525872877
+Iterations = 11
+Evaluations = 12
+RMS = 1.619719671360847E-11
+result = Radial3TermDistortion{0.199900, -0.050079, 0.020006}, 
+
+-------------------------------------------------------------------------
+
+Version C: one Y for each point
+Y[row] = line.getSignedDistance(unwarpedPts[i]);
+
+    J condition No = 68.46868658254718
+    JTJ condition number = 3.6643487197333053
+Iterations = 4
+Evaluations = 19
+RMS = 4.405906078318467E-5
+result = Radial3TermDistortion{0.220024, -0.129013, 0.113448}, 
+
+-------------------------------------------------------------------------
+
+Version D: one Y for each point	          <------------------------- BEST!
+Y[row] = Math.abs(line.getSignedDistance(unwarpedPts[i]));
+
+    J condition No = 68.46868658254718
+    JTJ condition number = 3.6643487197333053
+Iterations = 5
+Evaluations = 10
+RMS = 9.902318727039575E-12
+result = Radial3TermDistortion{0.200000, -0.050000, 0.020000},
+
+-------------------------------------------------------------------------
+
+Version E: one Y for each point
+double d = line.getSignedDistance(unwarpedPts[i]);       // Version E
+Y[row] = Math.signum(d) * sqr(d) ;
+
+    J condition No = 136.25852267201847
+    JTJ condition number = 2.1231427525872877
+Iterations = 4
+Evaluations = 5
+RMS = 9.506005199799508E-7
+result = Radial3TermDistortion{0.173583, -0.063173, 0.021637}, 
+
+-------------------------------------------------------------------------
+
+Version E: one Y for each point
+double delta = 1e-6;
+Y[row] = Math.sqrt(d * d + delta * delta) - delta;  // Version F: Pseudo-Huber function
+
+    J condition No = 68.46869441423952
+    JTJ condition number = 3.664348675778479
+Iterations = 10
+Evaluations = 11
+RMS = 1.5211816093228053E-11
+result = Radial3TermDistortion{0.200000, -0.049999, 0.019999}

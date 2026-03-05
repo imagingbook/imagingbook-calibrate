@@ -25,6 +25,8 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
  */
 public abstract class MultivariateJacobianNumeric implements MultivariateJacobianFunction {
 
+    protected int iterationCounter = -1;
+
     private final int M;    // number of Jacobian rows
     private final int N;    // number of Jacobian columns
     // private final double[] Y;       // value vector (allocated once and recycled)
@@ -37,18 +39,22 @@ public abstract class MultivariateJacobianNumeric implements MultivariateJacobia
 
     @Override
     public Pair<RealVector, RealMatrix> value(RealVector p) {
+        iterationCounter++;
         double[] pp = p.toArray();
         double[] Y = getValues(pp);
         double[][] J = getJacobian(pp, Y);
 
-        // System.out.println(" p = " + Matrix.toString(p));
-        // System.out.println(" Y = \n" + Matrix.toString(Y));
-        // double[] colNorms = getMatrixColumnNorms(J);
-        // System.out.println(" J = \n" + Matrix.toString(J));
-        // System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
-        // System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
-        // System.out.println("    J rank = " + getMatrixRank(J));
-        // System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
+        if (iterationCounter < 1) {
+            PrintPrecision.set(8);
+            System.out.println(" p = " + Matrix.toString(p));
+            System.out.println(" Y = \n" + Matrix.toString(Y));
+            double[] colNorms = getMatrixColumnNorms(J);
+            System.out.println(" J = \n" + Matrix.toString(J));
+            System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
+            System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
+            // System.out.println("    J rank = " + getMatrixRank(J));
+            System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
+        }
 
         return new Pair<>(new ArrayRealVector(Y, false), new Array2DRowRealMatrix(J, false));
     }

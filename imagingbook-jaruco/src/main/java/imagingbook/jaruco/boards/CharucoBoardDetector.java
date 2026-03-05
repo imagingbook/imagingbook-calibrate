@@ -13,7 +13,10 @@ import imagingbook.common.ij.IjUtils;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectedMarker;
 
+import java.nio.file.Paths;
 import java.util.List;
+
+import static imagingbook.calibrate.hugin.Utils.makeOverlay;
 
 /**
  * Performs detection of the specified {@link GridBoard} in an image
@@ -47,11 +50,30 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
     // ----------------------------------------------------------------------------------
 
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
+    static String SAMPLE_IMAGE = "DSC_2691g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2692g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2693g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2694g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2696g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2698g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2699g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2700g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2701g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2702g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2704g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2705g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2706g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2707g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2708g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2709g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2710g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2711g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2712g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2713g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2715g.jpg";
 
     public static void main(String[] args) {
-        // String path = SAMPLE_IMAGE_DIR + "single-marker-5-0.jpg";
-        // String path = SAMPLE_IMAGE_DIR + "all-markers-small.jpg";
-        String path = SAMPLE_IMAGE_DIR + "DSC_2691g.jpg";
+        String path = Paths.get(SAMPLE_IMAGE_DIR, SAMPLE_IMAGE).toString();
         ImagePlus im = IjUtils.openImage(path);
         im.show();
 
@@ -69,10 +91,10 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
         //     System.out.println(pntPair);
         // }
 
-        List<Integer> ids = gbd.getDetectedMarkerIds();
-        for (Integer id : ids) {
-            System.out.println("   id: " + id);
-        }
+        // List<Integer> ids = gbd.getDetectedMarkerIds();
+        // for (Integer id : ids) {
+        //     System.out.println("   id: " + id);
+        // }
         System.out.println("all board markers found: " + gbd.allBoardMarkersFound());
 
         // collect collinear corner points -----------------------------------
@@ -80,9 +102,10 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
         List<DetectedMarker> detectedMarkers = gbd.getDetectedMarkers();
         CollinearPointsExtractor cbe = new CollinearPointsExtractor(board);
         List<List<Pnt2d>> collinearPointSets = cbe.getCollinearPointSets(detectedMarkers);
-        Overlay oly = CollinearPointsExtractor.getOverlay(collinearPointSets);
+        Overlay oly = makeOverlay(collinearPointSets, im.getWidth() * 0.005);
         im.setOverlay(oly);
         im.updateAndDraw();
+        System.out.println("collinearPointSets = " + collinearPointSets.size());
 
         // try plumb line calibration --------------------------------------------------
 
@@ -95,7 +118,7 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
         Camera initCam = new StandardCamera(A, initDist);
         StraightnessDistortionEstimator1 estimator = new StraightnessDistortionEstimator1(initCam, collinearPointSets);
         Camera newCam = estimator.estimateDistortion();
-        PrintPrecision.set(6);
+        PrintPrecision.set(8);
         System.out.println("result = " + newCam.getDistortion());
 
     }
