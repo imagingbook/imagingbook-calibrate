@@ -5,7 +5,7 @@ import ij.gui.Overlay;
 import ij.process.ByteProcessor;
 import imagingbook.calibrate.distortion.DistortionModel;
 import imagingbook.calibrate.distortion.Radial3TermDistortion;
-import imagingbook.calibrate.hugin.StraightnessDistortionEstimator1;
+import imagingbook.calibrate.plumbline.StraightnessDistortionEstimator1;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.geometry.basic.Pnt2d;
@@ -16,7 +16,7 @@ import imagingbook.jaruco.marker.ArucoMarkerDetector.DetectedMarker;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static imagingbook.calibrate.hugin.Utils.makeOverlay;
+import static imagingbook.calibrate.plumbline.CollinearPointsGenerator.makeOverlay;
 
 /**
  * Performs detection of the specified {@link GridBoard} in an image

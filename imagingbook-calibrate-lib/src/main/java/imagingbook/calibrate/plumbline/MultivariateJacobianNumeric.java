@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate.hugin;
+package imagingbook.calibrate.plumbline;
 
 
 import imagingbook.common.math.Matrix;

@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate.hugin;
+package imagingbook.calibrate.plumbline;
 
 import ij.ImagePlus;
 import ij.gui.Overlay;
@@ -15,6 +15,7 @@ import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.line.OrthogonalLineFitEigen;
+import imagingbook.common.geometry.line.AlgebraicLine;
 import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
 import imagingbook.common.math.PrintPrecision;
 import org.apache.commons.math4.legacy.exception.TooManyEvaluationsException;
@@ -26,7 +27,6 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static imagingbook.common.math.Arithmetic.sqr;
@@ -35,10 +35,9 @@ import static imagingbook.common.math.Matrix.zeroVector;
 /**
  * Estimates non-linear camera distortion from sets of sensor points trusted to be on straight
  * lines.
- * Version 2: One target/Jacobian row for each straight line. Generally has similar performance as
- * version 1 but struggles when there is only a single line (just 1 target value)!
+ * Version 1: One target/Jacobian row for each observed POINT.
  */
-public class StraightnessDistortionEstimator2 {
+public class StraightnessDistortionEstimator1 {
 
     private static int maxEvaluations = 1000;
     private static int maxIterations  = 1000;
@@ -49,7 +48,6 @@ public class StraightnessDistortionEstimator2 {
     private final DistortionModel initDistortion;
     private final int K;
     private final Pnt2d[][] pntArray;
-    private final int lineCnt;
     private final int totalPntCnt;
 
     private String failureReason;   // TODO
@@ -59,28 +57,32 @@ public class StraightnessDistortionEstimator2 {
      * The initial camera instance specifies the linear camera parameters (assumed to be known)
      * and the type of non-linear distortion model whose parameters are to be estimated.
      * @param initCam initial {@link Camera} instance
-     * @param points a list of point sets, each assumed to form a straight line
+     * @param points a list of point sets, each assumed to form a straight line (image coordinates)
      */
-    public StraightnessDistortionEstimator2(Camera initCam, List<List<Pnt2d>> points) {
+    public StraightnessDistortionEstimator1(Camera initCam, List<List<Pnt2d>> points) {
         this.initCam = initCam;
         this.sensorToNormalizedMapping = new AffineMapping2D(initCam.getAffineMatrixInverse().getData());
         this.normalizedToSensorMapping = new AffineMapping2D(initCam.getAffineMatrix().getData());
+
         this.initDistortion = initCam.getDistortion();
         this.K = initDistortion.getParameterCount();
-        this.lineCnt = points.size();
         this.pntArray = new Pnt2d[points.size()][];
         int cnt = 0;
         for (int j = 0; j < pntArray.length; j++) {
             this.pntArray[j] = points.get(j).toArray(new Pnt2d[0]);
             cnt += pntArray[j].length;
         }
-
         this.totalPntCnt = cnt;
         System.out.println("totalPntCnt = " + totalPntCnt);
+
+
     }
 
     // ---------------------------------------------------------------------------------------
+
     class OptimizationModel extends MultivariateJacobianNumeric {
+
+        final double huberDelta = 1e-5;     // for Pseudo-Huber function (1e-7 works best)
 
         public OptimizationModel(int rows, int cols) {
             super(rows, cols);
@@ -88,28 +90,32 @@ public class StraightnessDistortionEstimator2 {
 
         @Override
         double[] getValues(double[] p) {
-            double[] Y = new double[lineCnt];
+            // PrintPrecision.set(6);
+            // System.out.println("getValues(): p = " + Matrix.toString(p));
+            double[] Y = new double[totalPntCnt];
             DistortionModel distortion = initDistortion.withParameters(p);
 
-            // process each straight point set j:
-            for (int j = 0; j < pntArray.length; j++) {
+            // process each collinear point set j:
+            for (int j = 0, row = 0; j < pntArray.length; j++) {
                 // apply inverse warping to all points in this set
                 Pnt2d[] unwarpedPts = new Pnt2d[pntArray[j].length];
                 for (int i = 0; i < unwarpedPts.length; i++) {
                     Pnt2d xy = sensorToNormalizedMapping.applyTo(pntArray[j][i]);
                     unwarpedPts[i] = distortion.unwarp(xy);
                 }
-
-                // if (this.iterationCounter < 1) {
-                //     System.out.println("*** Processing point set " + j);
-                //     System.out.println("  original points " + Arrays.toString(pntArray[j]));
-                //     System.out.println("  unwarped points " + Arrays.toString(unwarpedPts));
-                // }
-
                 // fit a straight line to unwarped points
-                OrthogonalLineFitEigen lineFit = new OrthogonalLineFitEigen(unwarpedPts);
-                Y[j] = lineFit.getError();
+                AlgebraicLine line = new OrthogonalLineFitEigen(unwarpedPts).getLine();
+                // get individual point distances:
+                for (int i = 0; i < unwarpedPts.length; i++, row++) {
+                    double d = line.getSignedDistance(unwarpedPts[i]);
+                    // Y[row] = sqr(d);    // = version B
+                    // Y[row] = d;      // = version C
+                    // Y[row] = Math.abs(d);    // = Version D works best???
+                    // Y[row] = Math.signum(d) * sqr(d) ;   // Version E
+                    Y[row] = Math.sqrt(sqr(d) + huberDelta * huberDelta) - huberDelta;  // Version F: Pseudo-Huber function (effectively |d|)
+                }
             }
+
             return Y;
         }
     }
@@ -119,11 +125,11 @@ public class StraightnessDistortionEstimator2 {
      * @return a new camera with updated distortion model
      */
     public Camera estimateDistortion() {
-        MultivariateJacobianFunction model = new OptimizationModel(lineCnt, K);
+        MultivariateJacobianFunction model = new OptimizationModel(totalPntCnt, K);
         double[] pStart = initDistortion.getParameters();
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
-                .target(zeroVector(lineCnt))
+                .target(zeroVector(totalPntCnt))
                 .model(model)
                 .start(pStart)
                 .checker(new EvaluationRmsChecker(1e-10))
@@ -138,7 +144,8 @@ public class StraightnessDistortionEstimator2 {
         }
         catch (TooManyIterationsException | TooManyEvaluationsException e) {
             failureReason = "maximum number of iterations or evaluations exceeded";
-            return null;
+            throw new RuntimeException(e);
+            // return null;
         }
 
         double[] optParams = result.getPoint().toArray();
@@ -152,7 +159,6 @@ public class StraightnessDistortionEstimator2 {
     }
 
     // -----------------------------------------------------------------------------------------------------
-
 
     static final double k0 = 0.2, k1 = -0.05, k2 = 0.02;
 
@@ -170,36 +176,26 @@ public class StraightnessDistortionEstimator2 {
     //     return lines;
     // }
 
-
     public static void main(String[] args) {
         double[] A = {520, 520, 0, 320, 240};
         DistortionModel realDist = new Radial3TermDistortion(new double[] {k0, k1, k2});
-        // DistortionModel realDist = new Radial3TermDistortion(new double[] {0, 0, 0});
-        // DistortionModel initDist = new Radial3TermDistortion(new double[] {k0, k1, k2});
         DistortionModel initDist = new Radial3TermDistortion(new double[] {0, 0, 0});
         Camera realCam = new StandardCamera(A, realDist);
         Camera initCam = new StandardCamera(A, initDist);
 
         // create collinear image point sets using the real distortion
-        List<List<Pnt2d>> lines = Utils.makeCollinearPoints(realCam, 10, 10, false);
+        List<List<Pnt2d>> lines = new CollinearPointsGenerator(realCam).makeCollinearPoints(10, 10, false);
         System.out.println("lines = " + lines.size());
 
-        Overlay oly = Utils.makeOverlay(lines, 640 * 0.01);
+        Overlay oly = CollinearPointsGenerator.makeOverlay(lines, 640 * 0.01);
         ImagePlus im = new ImagePlus("img", new ByteProcessor(640, 480));
         im.setOverlay(oly);
         im.show();
 
-        // for (List<Pnt2d> line : lines) {
-        //     PolyLine2d poly = new PolyLine2d(line);
-        //     System.out.println(poly);
-        // }
-
-        StraightnessDistortionEstimator2 estimator = new StraightnessDistortionEstimator2(initCam, lines);
+        StraightnessDistortionEstimator1 estimator = new StraightnessDistortionEstimator1(initCam, lines);
         Camera newCam = estimator.estimateDistortion();
         PrintPrecision.set(6);
         System.out.println("result = " + newCam.getDistortion());
 
     }
-
-
 }

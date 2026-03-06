@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate.hugin;
+package imagingbook.calibrate.plumbline;
 
 import ij.ImagePlus;
 import ij.gui.Overlay;
@@ -20,27 +20,31 @@ import imagingbook.common.ij.overlay.ShapeOverlayAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class Utils {
-    private Utils() {}
+public final class CollinearPointsGenerator {
+
+    private final Camera camera;
+
+    public CollinearPointsGenerator(Camera camera) {
+        this.camera = camera;
+    }
 
     /**
      * Creates sets of "collinear" points by sampling straight lines in the ideal projection plane
      * and applying lens distortion as specified by the supplied camera.
-     * @param cam the camera
      * @param nHor number of horizontal lines
      * @param nVer number of vertical lines
      * @param roundToInt set true to round point coordinates to integers
      * @return
      */
-    public static List<List<Pnt2d>> makeCollinearPoints(Camera cam, int nHor, int nVer, boolean roundToInt) {
-        double W = cam.getUc() * 2;    // width and height of image, assuming uc/vc is at center
-        double H = cam.getVc() * 2;
+    public List<List<Pnt2d>> makeCollinearPoints(int nHor, int nVer, boolean roundToInt) {
+        double W = camera.getUc() * 2;    // width and height of image, assuming uc/vc is at center
+        double H = camera.getVc() * 2;
         int N = 10; // sample points per line
 
-        AffineMapping2D sensorToNormalizedMapping = new AffineMapping2D(cam.getAffineMatrixInverse().getData());
-        AffineMapping2D normalizedToSensorMapping = new AffineMapping2D(cam.getAffineMatrix().getData());
+        AffineMapping2D sensorToNormalizedMapping = new AffineMapping2D(camera.getAffineMatrixInverse().getData());
+        AffineMapping2D normalizedToSensorMapping = new AffineMapping2D(camera.getAffineMatrix().getData());
 
-        DistortionModel dist = cam.getDistortion();
+        DistortionModel dist = camera.getDistortion();
         List<List<Pnt2d>> lines = new ArrayList<>();
 
         // horizontal lines (step vertical)
