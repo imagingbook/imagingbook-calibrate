@@ -32,6 +32,8 @@ public abstract class MultivariateJacobianNumeric implements MultivariateJacobia
     // private final double[] Y;       // value vector (allocated once and recycled)
     // private final double[][] J;     // Jacobian matrix (allocated once and recycled)
 
+    private final boolean useCentralDifferences = true;
+
     public MultivariateJacobianNumeric(int rows, int cols) {
         this.M = rows;
         this.N = cols;
@@ -88,14 +90,23 @@ public abstract class MultivariateJacobianNumeric implements MultivariateJacobia
         for (int j = 0; j < N; j++) {   // for each parameter j
             double pj = p[j];  // keep current value for parameter j
             double delta = estimateDelta(pj);
-            // nudge parameter j:
-            p[j] = p[j] + delta;
-            // re-calculate value vector with modified parameters j:
-            double[] Ymod = getValues(p);
+            if (iterationCounter < 1) {
+                System.out.println("delta = " + delta);
+            }
+
+            // nudge parameter j and re-calculate value vector with modified parameters j:
+            p[j] = pj + delta;
+            double[] Ypos = getValues(p);
+            p[j] = pj - delta;
+            double[] Yneg = getValues(p);
+
             // update column j of Jacobian J:
             for (int i = 0; i < M; i++) {
-                J[i][j] = (Ymod[i] - Y[i]) / delta;
+                J[i][j] = (useCentralDifferences) ?
+                        (Ypos[i] - Yneg[i]) / (2 * delta):
+                        (Ypos[i] - Y[i]) / delta;
             }
+
             p[j] = pj;         // revert parameter j to original value
         }
 

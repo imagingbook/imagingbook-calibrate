@@ -1,3 +1,7 @@
+************************************************************************************
+One-Sided difference for Jacobian
+************************************************************************************
+
 Version A: one Y for each point set
 Y[j] = lineFit.getError();
 
@@ -47,7 +51,7 @@ result = Radial3TermDistortion{0.200000, -0.050000, 0.020000},
 -------------------------------------------------------------------------
 
 Version E: one Y for each point
-double d = line.getSignedDistance(unwarpedPts[i]);       // Version E
+double d = line.getSignedDistance(unwarpedPts[i]);       // Version E  -- WRONG RESULTS!
 Y[row] = Math.signum(d) * sqr(d) ;
 
     J condition No = 136.25852267201847
@@ -59,7 +63,7 @@ result = Radial3TermDistortion{0.173583, -0.063173, 0.021637},
 
 -------------------------------------------------------------------------
 
-Version E: one Y for each point
+Version F: one Y for each point
 double delta = 1e-6;
 Y[row] = Math.sqrt(d * d + delta * delta) - delta;  // Version F: Pseudo-Huber function
 
@@ -69,3 +73,84 @@ Iterations = 10
 Evaluations = 11
 RMS = 1.5211816093228053E-11
 result = Radial3TermDistortion{0.200000, -0.049999, 0.019999}
+
+************************************************************************************
+Two-Sided difference for Jacobian
+************************************************************************************
+
+Version A: one Y for each point set
+***** |J| column norms = {0.01971980, 0.01415164, 0.00858362}
+    J condition No = 169.06002532731299
+    JTJ condition number = 2.325797344178732
+Iterations = 12
+Evaluations = 13
+RMS = 2.930823484111074E-11
+result = Radial3TermDistortion{0.199948, -0.050031, 0.019991},
+
+-------------------------------------------------------------------------
+
+Version B: one Y for each point
+Y[row] = sqr(line.getSignedDistance(unwarpedPts[i]));
+
+***** |J| column norms = {0.00863828, 0.00648037, 0.00408835}
+    J condition No = 136.25868129562878
+    JTJ condition number = 2.1231429502038557
+Iterations = 11
+Evaluations = 12
+RMS = 1.61986583226859E-11
+result = Radial3TermDistortion{0.199900, -0.050079, 0.020006},
+
+-------------------------------------------------------------------------
+
+Version C: one Y for each point
+Y[row] = line.getSignedDistance(unwarpedPts[i]);
+
+***** |J| column norms = {0.49102053, 0.34179670, 0.20896133}
+    J condition No = 68.46870607614952
+    JTJ condition number = 3.664348996641478
+Iterations = 10
+Evaluations = 30
+RMS = 6.293682714344421E-7
+result = Radial3TermDistortion{0.200262, -0.051075, 0.021322},
+
+-------------------------------------------------------------------------
+
+Version D: one Y for each point	          <------------------------- BEST!
+Y[row] = Math.abs(line.getSignedDistance(unwarpedPts[i]));
+
+***** |J| column norms = {0.49102053, 0.34179670, 0.20896133}
+    J condition No = 68.46870607614952
+    JTJ condition number = 3.664348996641478
+Iterations = 7
+Evaluations = 8
+RMS = 2.739783831985885E-10
+result = Radial3TermDistortion{0.200000, -0.050000, 0.019999},
+
+-------------------------------------------------------------------------
+
+Version E: one Y for each point
+double d = line.getSignedDistance(unwarpedPts[i]);       // Version E  -- WRONG RESULTS!!
+Y[row] = Math.signum(d) * sqr(d) ;
+
+***** |J| column norms = {0.00863828, 0.00648037, 0.00408835}
+    J condition No = 136.25868129562878
+    JTJ condition number = 2.1231429502038557
+Iterations = 11
+Evaluations = 12
+RMS = 2.9878237318427616E-7
+result = Radial3TermDistortion{0.096982, 0.179448, -0.134407},
+
+
+-------------------------------------------------------------------------
+
+Version F: one Y for each point
+double delta = 1e-7;
+Y[row] = Math.sqrt(d * d + delta * delta) - delta;  // Version F: Pseudo-Huber function
+
+***** |J| column norms = {0.49102053, 0.34179670, 0.20896133}
+    J condition No = 68.46870590117719
+    JTJ condition number = 3.6643489947984413
+Iterations = 9
+Evaluations = 10
+RMS = 1.1451549313396808E-11
+result = Radial3TermDistortion{0.200000, -0.050000, 0.020000},

@@ -82,6 +82,8 @@ public class StraightnessDistortionEstimator1 {
 
     class OptimizationModel extends MultivariateJacobianNumeric {
 
+        final double huberDelta = 1e-5;     // for Pseudo-Huber function (1e-7 works best)
+
         public OptimizationModel(int rows, int cols) {
             super(rows, cols);
         }
@@ -105,13 +107,12 @@ public class StraightnessDistortionEstimator1 {
                 AlgebraicLine line = new OrthogonalLineFitEigen(unwarpedPts).getLine();
                 // get individual point distances:
                 for (int i = 0; i < unwarpedPts.length; i++, row++) {
-                    // Y[row] = sqr(line.getSignedDistance(unwarpedPts[i]));    // = version B
-                    // Y[row] = line.getSignedDistance(unwarpedPts[i]);      // = version C
-                    // Y[row] = Math.abs(line.getSignedDistance(unwarpedPts[i]));    // = Version D works best???
                     double d = line.getSignedDistance(unwarpedPts[i]);
+                    // Y[row] = sqr(d);    // = version B
+                    // Y[row] = d;      // = version C
+                    // Y[row] = Math.abs(d);    // = Version D works best???
                     // Y[row] = Math.signum(d) * sqr(d) ;   // Version E
-                    double delta = 1e-6;
-                    Y[row] = Math.sqrt(d * d + delta * delta) - delta;  // Version F: Pseudo-Huber function
+                    Y[row] = Math.sqrt(sqr(d) + huberDelta * huberDelta) - huberDelta;  // Version F: Pseudo-Huber function (effectively |d|)
                 }
             }
 

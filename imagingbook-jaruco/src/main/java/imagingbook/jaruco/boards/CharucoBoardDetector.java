@@ -50,8 +50,8 @@ public class CharucoBoardDetector extends AbstractBoardDetector {
     // ----------------------------------------------------------------------------------
 
     static String SAMPLE_IMAGE_DIR = "C:/_GITHUB/imagingbook-super/imagingbook-calibrate/imagingbook-jaruco/src/main/resources/imagingbook/jaruco/sample-images/";
-    static String SAMPLE_IMAGE = "DSC_2691g.jpg";
-    // static String SAMPLE_IMAGE = "DSC_2692g.jpg";
+    // static String SAMPLE_IMAGE = "DSC_2691g.jpg";
+    static String SAMPLE_IMAGE = "DSC_2692g.jpg";
     // static String SAMPLE_IMAGE = "DSC_2693g.jpg";
     // static String SAMPLE_IMAGE = "DSC_2694g.jpg";
     // static String SAMPLE_IMAGE = "DSC_2696g.jpg";
