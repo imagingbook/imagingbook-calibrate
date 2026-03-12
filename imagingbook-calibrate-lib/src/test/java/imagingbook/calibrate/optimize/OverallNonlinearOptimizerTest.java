@@ -6,20 +6,21 @@
  ******************************************************************************/
 package imagingbook.calibrate.optimize;
 
+import imagingbook.calibrate.optimize.support.ParameterAdapter;
 import imagingbook.common.util.bits.BitVector;
 import org.junit.Test;
 
-// import static imagingbook.calibrate.optimize.OverallOptimizer.countEffParameters;
-// import static imagingbook.calibrate.optimize.OverallOptimizer.makeParamIndex;
+// import static imagingbook.calibrate.optimize.OverallNonlinearOptimizer.countEffParameters;
+// import static imagingbook.calibrate.optimize.OverallNonlinearOptimizer.makeParamIndex;
 import static org.junit.Assert.*;
 
-public class OverallOptimizerTest {
+public class OverallNonlinearOptimizerTest {
 
     @Test
     public void ParameterAdapterTest() {
         BitVector subset = BitVector.from("1110011110");
         double[] scales = {11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-        OverallOptimizer.ParameterAdapter adapter = new OverallOptimizer.ParameterAdapter(subset, scales);
+        ParameterAdapter adapter = new ParameterAdapter(subset, scales);
 
         // assertArrayEquals(new int[] {0, 1, 2, -1, -1, 3, 4, 5, 6, -1}, adapter.origSeqIndex);
         // assertArrayEquals(new int[] {0, 1, 2, 5, 6, 7, 8}, adapter.subSeqIndex);

@@ -52,11 +52,11 @@ public final class CollinearPointsGenerator {
             List<Pnt2d> pntSet = new ArrayList<>();
             double v = (0.5 + j) * H / N;
             for (int i = 0; i < N; i++) {
-                double u = (0.5 + i) * W / N;                                               // sensor coordinate (u,v)
+                double u = (0.5 + i) * W / N;                                       // sensor coordinate (u,v)
                 Pnt2d xy = sensorToNormalizedMapping.applyTo(Pnt2d.from(u, v));     // normalized proj. (x, y)
                 Pnt2d xyw = dist.warp(xy);                                          // warped normalized proj. (xw, yw)
-                Pnt2d uv = normalizedToSensorMapping.applyTo(xyw);                  // warped image coord.
-                pntSet.add(roundToInt ? round(uv) : uv);
+                Pnt2d uvw = normalizedToSensorMapping.applyTo(xyw);                 // warped image coord.
+                pntSet.add(roundToInt ? round(uvw) : uvw);
             }
             lines.add(pntSet);
         }
@@ -66,18 +66,18 @@ public final class CollinearPointsGenerator {
             List<Pnt2d> pntSet = new ArrayList<>();
             double u = (0.5 + i) * W / N;
             for (int j = 0; j < N; j++) {
-                double v = (0.5 + j) * H / N;                                               // sensor coordinate (u,v)
+                double v = (0.5 + j) * H / N;                                       // sensor coordinate (u,v)
                 Pnt2d xy = sensorToNormalizedMapping.applyTo(Pnt2d.from(u, v));     // normalized proj. (x, y)
                 Pnt2d xyw = dist.warp(xy);                                          // warped normalized proj. (xw, yw)
-                Pnt2d uv = normalizedToSensorMapping.applyTo(xyw);                  // warped image coord.
-                pntSet.add(roundToInt ? round(uv) : uv);
+                Pnt2d uvw = normalizedToSensorMapping.applyTo(xyw);                 // warped image coord.
+                pntSet.add(roundToInt ? round(uvw) : uvw);
             }
             lines.add(pntSet);
         }
         return lines;
     }
 
-    static Pnt2d round(Pnt2d p) {
+    private static Pnt2d round(Pnt2d p) {
         int u = (int) Math.round(p.getX());
         int v = (int) Math.round(p.getY());
         return Pnt2d.from(u, v);

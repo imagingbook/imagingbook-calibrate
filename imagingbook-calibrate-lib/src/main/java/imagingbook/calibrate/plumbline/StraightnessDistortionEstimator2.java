@@ -13,6 +13,7 @@ import imagingbook.calibrate.distortion.DistortionModel;
 import imagingbook.calibrate.distortion.Radial3TermDistortion;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
+import imagingbook.calibrate.optimize.support.FiniteDifferenceModel;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.line.OrthogonalLineFitEigen;
 import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
@@ -79,9 +80,9 @@ public class StraightnessDistortionEstimator2 {
     }
 
     // ---------------------------------------------------------------------------------------
-    class OptimizationModel extends MultivariateJacobianNumeric {
+    class StraightnessOptimizationModel2 extends FiniteDifferenceModel {
 
-        public OptimizationModel(int rows, int cols) {
+        public StraightnessOptimizationModel2(int rows, int cols) {
             super(rows, cols);
         }
 
@@ -118,7 +119,7 @@ public class StraightnessDistortionEstimator2 {
      * @return a new camera with updated distortion model
      */
     public Camera estimateDistortion() {
-        MultivariateJacobianFunction model = new OptimizationModel(lineCnt, K);
+        MultivariateJacobianFunction model = new StraightnessOptimizationModel2(lineCnt, K);
         double[] pStart = initDistortion.getParameters();
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()

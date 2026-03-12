@@ -4,7 +4,7 @@
  * Copyright (c) 2016-2026 Wilhelm Burger. All rights reserved.
  * Visit https://imagingbook.com for additional details.
  ******************************************************************************/
-package imagingbook.calibrate.plumbline;
+package imagingbook.calibrate.optimize.support;
 
 
 import imagingbook.common.math.Matrix;
@@ -23,7 +23,7 @@ import org.apache.commons.math4.legacy.linear.SingularValueDecomposition;
  * {@code value} part of the model, while the associated Jacobian part is calculated
  * by finite differences.
  */
-public abstract class MultivariateJacobianNumeric implements MultivariateJacobianFunction {
+public abstract class FiniteDifferenceModel implements MultivariateJacobianFunction {
 
     protected int iterationCounter = -1;
 
@@ -34,7 +34,7 @@ public abstract class MultivariateJacobianNumeric implements MultivariateJacobia
 
     private final boolean useCentralDifferences = true;
 
-    public MultivariateJacobianNumeric(int rows, int cols) {
+    public FiniteDifferenceModel(int rows, int cols) {
         this.M = rows;
         this.N = cols;
     }
@@ -47,15 +47,17 @@ public abstract class MultivariateJacobianNumeric implements MultivariateJacobia
         double[][] J = getJacobian(pp, Y);
 
         if (iterationCounter < 1) {
-            PrintPrecision.set(8);
-            System.out.println(" p = " + Matrix.toString(p));
-            System.out.println(" Y = \n" + Matrix.toString(Y));
-            double[] colNorms = getMatrixColumnNorms(J);
-            System.out.println(" J = \n" + Matrix.toString(J));
-            System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
-            System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
-            // System.out.println("    J rank = " + getMatrixRank(J));
-            System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
+            try (var prec = PrintPrecision.set(8)) {
+                // PrintPrecision.set(8);
+                System.out.println(" p = " + Matrix.toString(p));
+                System.out.println(" Y = \n" + Matrix.toString(Y));
+                double[] colNorms = getMatrixColumnNorms(J);
+                System.out.println(" J = \n" + Matrix.toString(J));
+                System.out.println("\n***** |J| column norms = " + Matrix.toString(colNorms));
+                System.out.println("    J condition No = " + Matrix.getConditionNumber(J));
+                // System.out.println("    J rank = " + getMatrixRank(J));
+                System.out.println("    JTJ condition number = " + getJtJconditionNumber(J));
+            }
         }
 
         return new Pair<>(new ArrayRealVector(Y, false), new Array2DRowRealMatrix(J, false));

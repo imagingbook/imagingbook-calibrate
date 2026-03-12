@@ -14,8 +14,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Assembles and disassembles parameter vectors for the non-linear optimizer
- * (see {@link OverallOptimizer}).
+ * Assembles and disassembles parameter vectors from camera and view parameters for non-linear
+ * optimization.
+ * (see {@link OverallNonlinearOptimizer}).
  */
 class ParameterVectorBuilder {
 

@@ -14,14 +14,9 @@ import imagingbook.calibrate.homography.HomographyEstimator;
 import imagingbook.calibrate.homography.HomographyEstimatorSimple;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.CameraFactory;
-import imagingbook.calibrate.intrinsics.IntrinsicsEstimator;
-import imagingbook.calibrate.intrinsics.IntrinsicsEstimatorConstrained;
-import imagingbook.calibrate.intrinsics.SimpleCamera;
-import imagingbook.calibrate.intrinsics.StandardCamera;
 import imagingbook.calibrate.optimize.obsolete.NonlinearOptimizer;
-import imagingbook.calibrate.optimize.OverallOptimizer;
+import imagingbook.calibrate.optimize.OverallNonlinearOptimizer;
 import imagingbook.common.geometry.basic.Pnt2d;
-import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.ParameterBundle;
 import org.apache.commons.math4.legacy.linear.RealMatrix;
 
@@ -191,7 +186,7 @@ public class Calibration {
 		// Step 5: Refine all parameters by overall non-linear optimization ------------------------
 		debug("Step 5: Refine all parameters by non-linear optimization");
 
-		OverallOptimizer optim1 = new OverallOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
+		OverallNonlinearOptimizer optim1 = new OverallNonlinearOptimizer(improvedCam, initViews, modelPntSet, imagePntSet);
 		optim1.fixGamma();
 		optim1.fixViewParameters();
 
@@ -214,8 +209,8 @@ public class Calibration {
 			finalViews = initViews;
 		}
 
-		OverallOptimizer optim2 =
-				new OverallOptimizer(finalCam, initViews, modelPntSet, imagePntSet);
+		OverallNonlinearOptimizer optim2 =
+				new OverallNonlinearOptimizer(finalCam, initViews, modelPntSet, imagePntSet);
 		// optim2.fixLinearCameraParameters();
 		// optim2.fixDistortionParameters();
 		optim2.fixGamma();

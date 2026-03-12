@@ -13,6 +13,7 @@ import imagingbook.calibrate.distortion.DistortionModel;
 import imagingbook.calibrate.distortion.Radial3TermDistortion;
 import imagingbook.calibrate.intrinsics.Camera;
 import imagingbook.calibrate.intrinsics.StandardCamera;
+import imagingbook.calibrate.optimize.support.FiniteDifferenceModel;
 import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.line.OrthogonalLineFitEigen;
 import imagingbook.common.geometry.line.AlgebraicLine;
@@ -80,11 +81,11 @@ public class StraightnessDistortionEstimator1 {
 
     // ---------------------------------------------------------------------------------------
 
-    class OptimizationModel extends MultivariateJacobianNumeric {
+    class StraightnessOptimizationModel1 extends FiniteDifferenceModel {
 
         final double huberDelta = 1e-5;     // for Pseudo-Huber function (1e-7 works best)
 
-        public OptimizationModel(int rows, int cols) {
+        public StraightnessOptimizationModel1(int rows, int cols) {
             super(rows, cols);
         }
 
@@ -125,7 +126,7 @@ public class StraightnessDistortionEstimator1 {
      * @return a new camera with updated distortion model
      */
     public Camera estimateDistortion() {
-        MultivariateJacobianFunction model = new OptimizationModel(totalPntCnt, K);
+        MultivariateJacobianFunction model = new StraightnessOptimizationModel1(totalPntCnt, K);
         double[] pStart = initDistortion.getParameters();
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
