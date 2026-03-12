@@ -45,6 +45,10 @@ public class ParameterAdapter {
         }
     }
 
+    public ParameterAdapter(BitVector subset) {
+        this(subset, null);
+    }
+
     /**
      * Updates the parameter scale values.
      *

@@ -18,7 +18,9 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.line.OrthogonalLineFitEigen;
 import imagingbook.common.geometry.line.AlgebraicLine;
 import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
+import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
+import imagingbook.common.util.bits.BitVector;
 import org.apache.commons.math4.legacy.exception.TooManyEvaluationsException;
 import org.apache.commons.math4.legacy.exception.TooManyIterationsException;
 import org.apache.commons.math4.legacy.fitting.leastsquares.EvaluationRmsChecker;
@@ -26,7 +28,6 @@ import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math4.legacy.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math4.legacy.fitting.leastsquares.MultivariateJacobianFunction;
 
 import java.util.List;
 
@@ -85,12 +86,20 @@ public class StraightnessDistortionEstimator1 {
 
         final double huberDelta = 1e-5;     // for Pseudo-Huber function (1e-7 works best)
 
+        public StraightnessOptimizationModel1(double[] initParams, BitVector freeParameters) {
+            super(initParams, freeParameters);
+        }
+
+        // public StraightnessOptimizationModel1(int paramCount) {
+        //     super(paramCount);
+        // }
+
         // public StraightnessOptimizationModel1(int rows, int cols) {
         //     super(rows, cols);
         // }
 
         @Override
-        public double[] getValues(double[] p) {
+        public double[] getValues(double[] p) {     // full parameters p
             // PrintPrecision.set(6);
             // System.out.println("getValues(): p = " + Matrix.toString(p));
             double[] Y = new double[totalPntCnt];
@@ -126,14 +135,24 @@ public class StraightnessDistortionEstimator1 {
      * @return a new camera with updated distortion model
      */
     public Camera estimateDistortion() {
-        // MultivariateJacobianFunction model = new StraightnessOptimizationModel1(totalPntCnt, K);
-        MultivariateJacobianFunction model = new StraightnessOptimizationModel1();
-        double[] pStart = initDistortion.getParameters();
 
+        double[] pStart = initDistortion.getParameters();
+        // MultivariateJacobianFunction model = new StraightnessOptimizationModel1(totalPntCnt, K);
+        FiniteDifferenceModel model = new StraightnessOptimizationModel1(pStart, BitVector.from("110"));
+        // model.setParameterScales(new double[]{5, 10, 10});
+        double[] as = model.getAutoScales();
+        model.setParameterScales(as);
+        System.out.println("autoScales = " + Matrix.toString(as));
+
+        /*
+            Solves the given problem over the free parameters only. The LM solver has no
+            knowledge of the fixed parameters, but the model uses the full parameters for
+            calculating values (residuals).
+         */
         LeastSquaresProblem problem = new LeastSquaresBuilder()
                 .target(zeroVector(totalPntCnt))
                 .model(model)
-                .start(pStart)
+                .start(model.getFreeParameters(pStart))
                 .checker(new EvaluationRmsChecker(1e-10))
                 .maxEvaluations(maxEvaluations)
                 .maxIterations(maxIterations)
@@ -150,7 +169,10 @@ public class StraightnessDistortionEstimator1 {
             // return null;
         }
 
-        double[] optParams = result.getPoint().toArray();
+        // get the optimal free parameters
+        double[] optFreeParams = result.getPoint().toArray();
+        // merge into full parameters
+        double[] optParams = model.getFullParameters(optFreeParams);
 
         System.out.println("Iterations = " + result.getIterations());
         System.out.println("Evaluations = " + result.getEvaluations());
