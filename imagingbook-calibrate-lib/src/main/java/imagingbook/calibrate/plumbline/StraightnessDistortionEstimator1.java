@@ -85,12 +85,12 @@ public class StraightnessDistortionEstimator1 {
 
         final double huberDelta = 1e-5;     // for Pseudo-Huber function (1e-7 works best)
 
-        public StraightnessOptimizationModel1(int rows, int cols) {
-            super(rows, cols);
-        }
+        // public StraightnessOptimizationModel1(int rows, int cols) {
+        //     super(rows, cols);
+        // }
 
         @Override
-        double[] getValues(double[] p) {
+        public double[] getValues(double[] p) {
             // PrintPrecision.set(6);
             // System.out.println("getValues(): p = " + Matrix.toString(p));
             double[] Y = new double[totalPntCnt];
@@ -126,7 +126,8 @@ public class StraightnessDistortionEstimator1 {
      * @return a new camera with updated distortion model
      */
     public Camera estimateDistortion() {
-        MultivariateJacobianFunction model = new StraightnessOptimizationModel1(totalPntCnt, K);
+        // MultivariateJacobianFunction model = new StraightnessOptimizationModel1(totalPntCnt, K);
+        MultivariateJacobianFunction model = new StraightnessOptimizationModel1();
         double[] pStart = initDistortion.getParameters();
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()

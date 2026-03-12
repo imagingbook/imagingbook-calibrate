@@ -27,17 +27,20 @@ public abstract class FiniteDifferenceModel implements MultivariateJacobianFunct
 
     protected int iterationCounter = -1;
 
-    private final int M;    // number of Jacobian rows
-    private final int N;    // number of Jacobian columns
+    // private final int M;    // number of Jacobian rows
+    // private final int N;    // number of Jacobian columns
     // private final double[] Y;       // value vector (allocated once and recycled)
     // private final double[][] J;     // Jacobian matrix (allocated once and recycled)
 
     private final boolean useCentralDifferences = true;
 
-    public FiniteDifferenceModel(int rows, int cols) {
-        this.M = rows;
-        this.N = cols;
-    }
+    public FiniteDifferenceModel() {}
+
+    // @Deprecated
+    // public FiniteDifferenceModel(int rows, int cols) {
+    //     // this.M = rows;
+    //     // this.N = cols;
+    // }
 
     @Override
     public Pair<RealVector, RealMatrix> value(RealVector p) {
@@ -69,22 +72,25 @@ public abstract class FiniteDifferenceModel implements MultivariateJacobianFunct
      * @param p parameter point
      * @return the value vector
      */
-    abstract double[] getValues(double[] p);
+    public abstract double[] getValues(double[] p);
 
     /**
      * Calculates the Jacobian matrix by evaluating finite differences using
-     * {@link #getValues(double[])} implemented by inheriting classes.
-     * @param pp the current parameter point
-     * @param Y the current value vector
+     * {@link #getValues(double[])}.
+     * This method may be overridden by inheriting classes.
+     * @param pp the current parameter vector (point)
+     * @param Y the value vector for the current point
      * @return
      */
-    double[][] getJacobian(double[] pp, double[] Y) {
-        if (pp.length != N) {
-            throw new IllegalArgumentException("number of columns should be " + N);
-        }
-        if (Y.length != M) {
-            throw new IllegalArgumentException("number of rows should be " + M);
-        }
+    public double[][] getJacobian(double[] pp, double[] Y) {
+        // if (pp.length != N) {
+        //     throw new IllegalArgumentException("number of columns should be " + N);
+        // }
+        // if (Y.length != M) {
+        //     throw new IllegalArgumentException("number of rows should be " + M);
+        // }
+        final int M = Y.length;
+        final int N = pp.length;
 
         double[] p = pp.clone();
         double[][] J = new double[M][N];

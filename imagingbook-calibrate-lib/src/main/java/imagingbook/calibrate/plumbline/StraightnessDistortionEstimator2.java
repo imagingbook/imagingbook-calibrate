@@ -82,12 +82,12 @@ public class StraightnessDistortionEstimator2 {
     // ---------------------------------------------------------------------------------------
     class StraightnessOptimizationModel2 extends FiniteDifferenceModel {
 
-        public StraightnessOptimizationModel2(int rows, int cols) {
-            super(rows, cols);
-        }
+        // public StraightnessOptimizationModel2(int rows, int cols) {
+        //     super(rows, cols);
+        // }
 
         @Override
-        double[] getValues(double[] p) {
+        public double[] getValues(double[] p) {
             double[] Y = new double[lineCnt];
             DistortionModel distortion = initDistortion.withParameters(p);
 
@@ -119,7 +119,8 @@ public class StraightnessDistortionEstimator2 {
      * @return a new camera with updated distortion model
      */
     public Camera estimateDistortion() {
-        MultivariateJacobianFunction model = new StraightnessOptimizationModel2(lineCnt, K);
+        // MultivariateJacobianFunction model = new StraightnessOptimizationModel2(lineCnt, K);
+        MultivariateJacobianFunction model = new StraightnessOptimizationModel2();
         double[] pStart = initDistortion.getParameters();
 
         LeastSquaresProblem problem = new LeastSquaresBuilder()
