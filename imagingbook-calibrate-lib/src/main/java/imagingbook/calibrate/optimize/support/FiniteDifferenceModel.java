@@ -33,9 +33,7 @@ public abstract class FiniteDifferenceModel implements MultivariateJacobianFunct
 
     private final double[] initialParams;    // the initial (full) parameters
     private final double[] fullScales;
-
     private final SubsequenceMapping parameterMapping;
-
 
     private final boolean useCentralDifferences = true;
 
@@ -98,7 +96,6 @@ public abstract class FiniteDifferenceModel implements MultivariateJacobianFunct
     public double[] getFullParameters(double[] freeP) {
         double[] freeParams = freeP.clone();
         double[] freeScales = parameterMapping.getSubSequence(fullScales);
-        System.out.println("freeParams.length: " + freeParams.length);
         for (int i = 0; i < freeParams.length; i++) {
             freeParams[i] =
                     freeParams[i]
@@ -126,19 +123,32 @@ public abstract class FiniteDifferenceModel implements MultivariateJacobianFunct
     }
 
     /**
-     * TODO: Revise to calculate autoscales only on free parameters?
      * Returns auto-scale values for all parameters (including all fixed parameters).
      * @return a vector of auto-scale values
+     * TODO: check not to be called twice, with non-unit scales!
      */
-    public double[] getAutoScales() {
-        RealMatrix Jac = this.value(new ArrayRealVector(initialParams)).getSecond();
-        double[] autoScales = new double[initialParams.length];
-        for (int j = 0; j < initialParams.length; j++) {
+    public double[] getParameterAutoScales() {
+        double[] freeParams = getFreeParameters(initialParams);
+        RealMatrix Jac = value(new ArrayRealVector(freeParams)).getSecond();
+        double[] freeScales = new double[freeParams.length];
+        for (int j = 0; j < freeScales.length; j++) {
             // get norm of Jacobian column j
             double norm = Jac.getColumnVector(j).getNorm();
-            autoScales[j] = (norm < 1e-12) ? 1.0 : (1.0 / norm);
+            freeScales[j] = (norm < 1e-12) ? 1.0 : (1.0 / norm);
         }
-        return autoScales;
+        double[] fullScales = new double[initialParams.length];
+        Arrays.fill(fullScales, 1);
+        return parameterMapping.merge(freeScales, fullScales);
+    }
+
+    /**
+     * Convenience method equivalent to
+     * <pre>
+     *     {@code model.setParameterScales(model.getParameterAutoScales())}
+     * </pre>
+     */
+    public void setParameterAutoScales() {
+        setParameterScales(getParameterAutoScales());
     }
 
     // -------------------------------------------------------------------------------

@@ -18,7 +18,6 @@ import imagingbook.common.geometry.basic.Pnt2d;
 import imagingbook.common.geometry.fitting.line.OrthogonalLineFitEigen;
 import imagingbook.common.geometry.line.AlgebraicLine;
 import imagingbook.common.geometry.mappings.linear.AffineMapping2D;
-import imagingbook.common.math.Matrix;
 import imagingbook.common.math.PrintPrecision;
 import imagingbook.common.util.bits.BitVector;
 import org.apache.commons.math4.legacy.exception.TooManyEvaluationsException;
@@ -138,11 +137,10 @@ public class StraightnessDistortionEstimator1 {
 
         double[] pStart = initDistortion.getParameters();
         // MultivariateJacobianFunction model = new StraightnessOptimizationModel1(totalPntCnt, K);
-        FiniteDifferenceModel model = new StraightnessOptimizationModel1(pStart, BitVector.from("110"));
+        FiniteDifferenceModel model = new StraightnessOptimizationModel1(pStart, BitVector.from("111"));
         // model.setParameterScales(new double[]{5, 10, 10});
-        double[] as = model.getAutoScales();
-        model.setParameterScales(as);
-        System.out.println("autoScales = " + Matrix.toString(as));
+        // model.setParameterScales(model.getParameterAutoScales());
+        model.setParameterAutoScales();
 
         /*
             Solves the given problem over the free parameters only. The LM solver has no
